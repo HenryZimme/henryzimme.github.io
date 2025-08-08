@@ -1,0 +1,8 @@
+title: Henry Zimmerman
+description: Hi! My name is Henry, and I'm a machine learning enthusiast with an interest in GANs, pathfinding algorithms, climate tech, and interdisciplinary engagement.
+baseurl: ""  
+url: https://henryzimme.github.io
+timezone: America/New_York  
+markdown: kramdown
+lsi: false
+wordwrap: false
