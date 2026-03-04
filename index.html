@@ -975,7 +975,7 @@ const featured_objects = [
     simbad_id: "HD+344787",
     pipeline: true,
     type: "Active Investigation  |  Northern Sky",
-    writeup: "A Polaris analog under early investigation for the presence of an unseen binary companion. Polaris itself was recently confirmed to host a previously unresolved companion; HD 344787 shares key characteristics\u2014low pulsation amplitude, long period, and northern sky position\u2014making it a natural analog in which to search for similar signatures. The investigation will test for radial velocity anomalies and photometric variability consistent with a gravitationally bound companion. A confirmed detection would add to the emerging picture of binary frequency among low-amplitude Cepheids and carry implications for period-luminosity calibration in this regime."
+    writeup: "A Polaris analog under early investigation for the presence of an unseen binary companion. The motivation comes from a 245th AAS talk by Dupree &amp; MacLeod, whose 2026 detection of a companion orbiting Betelgeuse via chromospheric radial velocity anomalies and photometric wake signatures (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>) demonstrates that hidden companions can be recovered in evolved giants through careful spectroscopic and photometric monitoring. HD 344787 is a low-amplitude northern Cepheid with characteristics analogous to Polaris, making it a natural target in which to search for a similar signature. The investigation will test for radial velocity anomalies and photometric variability consistent with a gravitationally bound companion. A confirmed detection would contribute to the emerging picture of binary frequency among low-amplitude Cepheids and carry implications for period-luminosity calibration in this regime."
   }
 ];
 
@@ -1304,7 +1304,7 @@ function on_click(e) {
 function open_modal(obj) {
   document.getElementById('modal-type').textContent = obj.type;
   document.getElementById('modal-name').textContent = obj.name;
-  document.getElementById('modal-body').textContent = obj.writeup;
+  document.getElementById('modal-body').innerHTML = obj.writeup;
   const link = document.getElementById('modal-simbad');
   if (obj.catalog_url) {
     link.href = obj.catalog_url;
