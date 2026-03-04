@@ -2068,7 +2068,9 @@ function toggle_mobile_nav() {
   // prevent starfield interaction while menu is open
   canvas.style.pointerEvents = open ? 'none' : 'auto';
 }
-hamburger_btn.addEventListener('click', toggle_mobile_nav);
+hamburger_btn.addEventListener('click', (e) => { e.stopPropagation(); toggle_mobile_nav(); });
+mobile_nav.addEventListener('click', (e) => e.stopPropagation());
+mobile_nav.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
 mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
   a.addEventListener('click', () => {
     mobile_nav.classList.remove('open');
