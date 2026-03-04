@@ -39,7 +39,7 @@
 
     a { color: var(--blue); }
 
-    /* ── canvas ── */
+    /* canvas */
     #star-canvas {
       position: fixed;
       inset: 0;
@@ -48,7 +48,7 @@
       z-index: 0;
     }
 
-    /* ── tooltip ── */
+    /* tooltip */
     #star-tooltip {
       position: fixed;
       background: rgba(7, 9, 26, 0.92);
@@ -67,7 +67,7 @@
     }
     #star-tooltip.visible { opacity: 1; }
 
-    /* ── modal ── */
+    /* modal */
     #object-modal {
       position: fixed;
       inset: 0;
@@ -148,7 +148,7 @@
     }
     .modal-close:hover { color: var(--text); }
 
-    /* ── nav ── */
+    /* nav */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -187,10 +187,10 @@
     .nav-links a:hover { color: var(--gold); }
     .nav-links a.active { color: var(--gold); opacity: 1; }
 
-    /* ── layout ── */
+    /* layout */
     main { position: relative; z-index: 1; }
 
-    /* ── hero ── */
+    /* hero */
     #hero {
       height: 100vh;
       display: flex;
@@ -247,7 +247,7 @@
       50%       { transform: translateY(7px); opacity: 0.65; }
     }
 
-    /* ── sections ── */
+    /* sections */
     .section {
       background: var(--panel);
       border-top: 1px solid var(--panel-border);
@@ -289,7 +289,7 @@
       letter-spacing: -0.01em;
     }
 
-    /* ── about ── */
+    /* about */
     .about-footnote {
       margin-top: 28px;
       font-family: 'JetBrains Mono', monospace;
@@ -352,7 +352,7 @@
     }
     .meta-value a:hover { text-decoration: underline; }
 
-    /* ── research ── */
+    /* research */
     .research-cards {
       display: flex;
       flex-direction: column;
@@ -422,7 +422,7 @@
     }
     .card-link:hover { border-color: var(--gold); }
 
-    /* ── writing ── */
+    /* writing */
     .writing-list {
       display: flex;
       flex-direction: column;
@@ -488,7 +488,7 @@
       .writing-item { grid-template-columns: 1fr; gap: 8px; }
     }
 
-    /* ── highlights ── */
+    /* highlights */
     .highlights-table {
       display: flex;
       flex-direction: column;
@@ -542,7 +542,7 @@
     }
     .highlights-cta:hover { background: var(--gold); color: var(--bg); }
 
-    /* ── footer ── */
+    /* footer */
     footer {
       background: rgba(5, 7, 18, 0.96);
       border-top: 1px solid var(--panel-border);
@@ -577,7 +577,7 @@
     }
     .footer-links a:hover { color: var(--gold); }
 
-    /* ── bookshelf ── */
+    /* bookshelf */
     #bookshelf {
       background: var(--panel);
       border-top: 1px solid var(--panel-border);
@@ -605,7 +605,7 @@
     }
     .bookshelf-intro a:hover { border-color: var(--blue); }
 
-    /* the shelf row */
+    /* shelf row */
     .book-shelf {
       display: flex;
       align-items: flex-end;
@@ -637,7 +637,7 @@
       background: rgba(196,162,88,0.05);
       border: 1px solid var(--panel-border);
       border-bottom: 2px solid rgba(196,162,88,0.22);
-      cursor: default;
+      cursor: pointer;
       overflow: hidden;
       transition: width 0.35s cubic-bezier(0.22,1,0.36,1),
                   background 0.25s ease,
@@ -645,7 +645,9 @@
                   transform 0.25s cubic-bezier(0.22,1,0.36,1);
     }
 
-    .book-spine:hover {
+    /* hover and .active share identical expanded state */
+    .book-spine:hover,
+    .book-spine.active {
       width: 172px;
       background: rgba(196,162,88,0.09);
       border-color: rgba(196,162,88,0.42);
@@ -696,11 +698,13 @@
       text-overflow: ellipsis;
     }
 
-    .book-spine:hover .spine-title {
+    /* hide title on hover or active tap */
+    .book-spine:hover .spine-title,
+    .book-spine.active .spine-title {
       opacity: 0;
     }
 
-    /* expanded info panel — fades in on hover */
+    /* expanded info panel — fades in on hover or tap */
     .spine-panel {
       position: absolute;
       inset: 0;
@@ -714,7 +718,8 @@
       transition: opacity 0.18s 0.12s ease;
     }
 
-    .book-spine:hover .spine-panel {
+    .book-spine:hover .spine-panel,
+    .book-spine.active .spine-panel {
       opacity: 1;
     }
 
@@ -746,16 +751,17 @@
     @media (max-width: 740px) {
       #bookshelf { padding: 72px 24px; }
       .book-spine { width: 40px; }
-      .book-spine:hover { width: 150px; }
+      .book-spine:hover,
+      .book-spine.active { width: 150px; }
     }
 
-    /* ── animations ── */
+    /* animations */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* -- hamburger -- */
+    /* hamburger */
     .nav-hamburger {
       display: none;
       background: none;
@@ -801,7 +807,7 @@
       .nav-hamburger { display: flex; }
     }
 
-    /* ── responsive ── */
+    /* responsive */
     @media (max-width: 740px) {
       nav { padding: 18px 24px; }
       .nav-links { gap: 22px; }
@@ -855,6 +861,7 @@
     <li><a href="#writing">Writing</a></li>
     <li><a href="#highlights">Highlights</a></li>
     <li><a href="#bookshelf">Reading</a></li>
+  </ul>
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 
@@ -1687,6 +1694,51 @@ function on_click(e) {
   }
 }
 
+// touch handler for canvas: direct tap-to-open, no hover needed
+function on_touch_start(e) {
+  const touch = e.changedTouches[0];
+  const tx = touch.clientX;
+  const ty = touch.clientY;
+
+  if (!canvas_exposed_at(tx, ty)) return;
+
+  // update mouse position so render loop reflects touch
+  mouse.x = tx;
+  mouse.y = ty;
+
+  // check featured stars first (larger tap target)
+  let best = null;
+  let best_d = 38;
+  for (const s of star_data) {
+    if (!s.featured) continue;
+    const dx = tx - s.x, dy = ty - s.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < best_d) { best_d = d; best = s; }
+  }
+
+  if (best) {
+    e.preventDefault();
+    open_modal(best.obj_data);
+    return;
+  }
+
+  // fallback: named catalog stars with slightly wider radius than mouse
+  let best_named = null;
+  let best_nd = 22;
+  for (const s of star_data) {
+    if (!s.name || s.featured) continue;
+    const dx = tx - s.x, dy = ty - s.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < best_nd) { best_nd = d; best_named = s; }
+  }
+
+  if (best_named) {
+    e.preventDefault();
+    const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
+    window.open(url, '_blank', 'noopener');
+  }
+}
+
 function open_modal(obj) {
   document.getElementById('modal-type').textContent = obj.type;
   document.getElementById('modal-name').textContent = obj.name;
@@ -1731,6 +1783,17 @@ function init() {
 window.addEventListener('mousemove', on_mouse_move);
 window.addEventListener('click', on_click);
 window.addEventListener('resize', on_resize);
+canvas.addEventListener('touchstart', on_touch_start, { passive: false });
+
+// -- bookshelf touch toggle --
+// tap to expand; tap again or tap another spine to collapse
+document.querySelectorAll('.book-spine').forEach(spine => {
+  spine.addEventListener('click', () => {
+    const is_active = spine.classList.contains('active');
+    document.querySelectorAll('.book-spine.active').forEach(s => s.classList.remove('active'));
+    if (!is_active) spine.classList.add('active');
+  });
+});
 
 // -- scroll-spy --
 const nav_sections = ['about', 'research', 'writing', 'highlights', 'bookshelf'];
