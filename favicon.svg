@@ -1,28 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <defs>
+    <!-- radial vignette: lighter at center, darker at edge -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#0e1230"/>
+      <stop offset="100%" stop-color="#04050f"/>
+    </radialGradient>
+
+    <!-- area fill under curve -->
+    <linearGradient id="area_fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#c4a258" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#c4a258" stop-opacity="0.0"/>
+    </linearGradient>
+
+    <!-- red star glow -->
     <radialGradient id="rg" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#e05a4e" stop-opacity="0.6"/>
+      <stop offset="0%"   stop-color="#e05a4e" stop-opacity="0.7"/>
       <stop offset="100%" stop-color="#e05a4e" stop-opacity="0"/>
     </radialGradient>
+
+    <!-- blue star glow -->
     <radialGradient id="bg" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#5b8ab5" stop-opacity="0.55"/>
+      <stop offset="0%"   stop-color="#5b8ab5" stop-opacity="0.45"/>
       <stop offset="100%" stop-color="#5b8ab5" stop-opacity="0"/>
     </radialGradient>
-    <!-- clip to circle so nothing bleeds outside -->
+
+    <!-- clip everything to circle -->
     <clipPath id="clip">
       <circle cx="16" cy="16" r="15"/>
     </clipPath>
   </defs>
 
-  <!-- background circle -->
+  <!-- base background -->
   <circle cx="16" cy="16" r="15" fill="#07091a"/>
 
   <g clip-path="url(#clip)">
-    <!--
-      cepheid curve, tightly centered:
-      - starts bottom-left, sharp rise to peak, slow bumped decline, ends bottom-right
-      - entire curve fits within x:5–27, y:9–24
-    -->
+    <!-- radial vignette overlay -->
+    <circle cx="16" cy="16" r="15" fill="url(#vignette)" opacity="0.85"/>
+
+    <!-- faint axis lines -->
+    <!-- horizontal baseline at y=23 -->
+    <line x1="4" y1="23" x2="28" y2="23"
+          stroke="#c4a258" stroke-width="0.4" opacity="0.3" stroke-linecap="round"/>
+    <!-- vertical tick at peak x=12 -->
+    <line x1="12" y1="9" x2="12" y2="23"
+          stroke="#c4a258" stroke-width="0.4" opacity="0.2" stroke-linecap="round" stroke-dasharray="1,1.5"/>
+
+    <!-- area fill under curve (closed path) -->
+    <path
+      d="M 5,23
+         C 6,23 10,9 12,9
+         C 14,9 15,14 17,16
+         C 19,17.5 20,15 22,16
+         C 24,17.5 26,23 27,23
+         L 27,23 L 5,23 Z"
+      fill="url(#area_fill)"
+    />
+
+    <!-- cepheid light curve: fast rise, slow bumped decline -->
     <path
       d="M 5,23
          C 6,23 10,9 12,9
@@ -31,23 +65,23 @@
          C 24,17.5 26,23 27,23"
       fill="none"
       stroke="#c4a258"
-      stroke-width="1.6"
+      stroke-width="1.9"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
 
     <!-- red star glow above peak -->
-    <circle cx="12" cy="7" r="3.5" fill="url(#rg)"/>
-    <!-- red 4-pointed star, small -->
+    <circle cx="12" cy="7" r="4.5" fill="url(#rg)"/>
+    <!-- red 5-pointed star, focal point -->
     <g transform="translate(12,7)" fill="#e05a4e">
-      <polygon points="0,-2.0 0.6,-0.6 2.0,0 0.6,0.6 0,2.0 -0.6,0.6 -2.0,0 -0.6,-0.6"/>
+      <polygon points="0.0,-2.2 0.53,-0.73 2.09,-0.68 0.86,0.28 1.29,1.78 0.0,0.9 -1.29,1.78 -0.86,0.28 -2.09,-0.68 -0.53,-0.73"/>
     </g>
 
-    <!-- blue star glow in the trough -->
-    <circle cx="22" cy="24" r="4.5" fill="url(#bg)"/>
-    <!-- blue 4-pointed star, larger -->
-    <g transform="translate(22,24)" fill="#8ab8ff">
-      <polygon points="0,-2.8 0.85,-0.85 2.8,0 0.85,0.85 0,2.8 -0.85,0.85 -2.8,0 -0.85,-0.85"/>
+    <!-- blue star glow in trough, more subdued -->
+    <circle cx="22" cy="24" r="5" fill="url(#bg)"/>
+    <!-- blue 5-pointed star, secondary -->
+    <g transform="translate(22,24)" fill="#8ab8ff" opacity="0.85">
+      <polygon points="0.0,-3.0 0.71,-0.97 2.85,-0.93 1.14,0.37 1.76,2.43 0.0,1.2 -1.76,2.43 -1.14,0.37 -2.85,-0.93 -0.71,-0.97"/>
     </g>
   </g>
 </svg>
