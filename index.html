@@ -672,29 +672,34 @@
     .book-spine:nth-child(even) { background: rgba(120,165,210,0.04); }
     .book-spine:nth-child(3n)   { background: rgba(94,207,191,0.03); }
 
-    /* rotated spine title — visible when collapsed */
+    /* rotated spine title — visible when collapsed, modern writing mode */
     .spine-title {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      transition: opacity 0.18s ease;
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        transition: opacity 0.18s ease;
     }
 
     .spine-title span {
-      display: block;
-      white-space: nowrap;
-      font-family: 'EB Garamond', serif;
-      font-size: 10.5px;
-      letter-spacing: 0.07em;
-      color: rgba(226,221,212,0.60);
-      transform: rotate(-90deg);
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      padding: 0 6px;
+        display: block;
+        white-space: nowrap;
+        font-family: 'EB Garamond', serif;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        color: rgba(226,221,212,0.60);
+        
+        /* The Fix: Flips the text to run along the height */
+        writing-mode: vertical-rl; 
+        transform: rotate(180deg); 
+        text-align: center;
+        
+        /* Now uses the 220px height instead of 46px width */
+        max-height: 180px; 
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .book-spine:hover .spine-title {
@@ -1156,7 +1161,7 @@
         </div>
 
         <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Hitchhiker's Guide</span></div>
+          <div class="spine-title"><span>The Hitchhiker's Guide</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Hitchhiker's Guide to the Galaxy</div>
             <div class="spine-author">Douglas Adams</div>
@@ -1192,7 +1197,7 @@
         </div>
 
         <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Idiot</span></div>
+          <div class="spine-title"><span>The Idiot</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Idiot</div>
             <div class="spine-author">Elif Batuman</div>
@@ -1201,7 +1206,7 @@
         </div>
 
         <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Words That Made Us</span></div>
+          <div class="spine-title"><span>The Words That Made Us</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Words That Made Us</div>
             <div class="spine-author">Akhil Reed Amar</div>
@@ -1210,7 +1215,7 @@
         </div>
 
         <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Histories</span></div>
+          <div class="spine-title"><span>The Histories</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Histories</div>
             <div class="spine-author">Herodotus</div>
@@ -1237,7 +1242,7 @@
         </div>
 
         <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Rain God</span></div>
+          <div class="spine-title"><span>The Rain God</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Rain God</div>
             <div class="spine-author">Arturo Islas</div>
