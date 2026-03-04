@@ -880,7 +880,7 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(7,9,26,0.97);
+      background: #07091a;
       z-index: 49;
       flex-direction: column;
       align-items: center;
@@ -1850,8 +1850,9 @@ function on_click(e) {
 
 // touch handler for canvas: direct tap-to-open, no hover needed
 function on_touch_start(e) {
-  // don't process canvas taps when modal is open
+  // don't process canvas taps when modal or mobile nav is open
   if (modal.classList.contains('visible')) return;
+  if (mobile_nav.classList.contains('open')) return;
 
   const touch = e.changedTouches[0];
   const tx = touch.clientX;
