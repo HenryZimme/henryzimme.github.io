@@ -675,6 +675,23 @@
       border-radius: 1px;
     }
     .book-shelf-surface:last-child { margin-bottom: 0; }
+    @media (max-width: 740px) {
+     #bookshelf {
+       position: relative;
+     }
+  
+     /* Adds a subtle fade on the right to show there's more content */
+     #bookshelf::after {
+       content: '';
+       position: absolute;
+       right: 0;
+       bottom: 100px; /* Aligns with the shelf height */
+       width: 50px;
+       height: 240px;
+       background: linear-gradient(to left, var(--bg), transparent);
+       pointer-events: none;
+       z-index: 5;
+     }
 
     /* individual book spine */
     .book-spine {
