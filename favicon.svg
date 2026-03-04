@@ -54,18 +54,18 @@
 
     <circle cx="10" cy="15" r="4" fill="url(#rg)"/>
     <g transform="translate(10,15)" fill="#f06050" opacity="0.7">
-      <circle cx="0" cy="0" r="0.6"/>
       <ellipse cx="0" cy="0" rx="2.5" ry="0.15"/>
       <ellipse cx="0" cy="0" rx="0.15" ry="2.5"/>
+      <circle cx="0" cy="0" r="0.6"/>
     </g>
 
     <circle cx="21" cy="18" r="6" fill="url(#bg2)"/>
-    <g transform="translate(21,18)" fill="#ffffff">
-      <circle cx="0" cy="0" r="1.1" fill="#ffffff"/>
+    <g transform="translate(21,18)">
       <g fill="#8ab8ff" opacity="0.95">
         <ellipse cx="0" cy="0" rx="4" ry="0.35"/>
         <ellipse cx="0" cy="0" rx="0.35" ry="4"/>
       </g>
+      <circle cx="0" cy="0" r="1.1" fill="#ffffff"/>
     </g>
   </g>
 </svg>
