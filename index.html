@@ -68,6 +68,47 @@
     }
     #star-tooltip.visible { opacity: 1; }
 
+    /* star popover: confirmation step before simbad redirect */
+    #star-popover {
+      position: fixed;
+      background: rgba(7, 9, 26, 0.96);
+      border: 1px solid var(--panel-border);
+      padding: 12px 16px;
+      z-index: 150;
+      pointer-events: all;
+      opacity: 0;
+      transition: opacity 0.15s;
+      min-width: 180px;
+      max-width: 260px;
+    }
+    #star-popover.visible { opacity: 1; }
+    #star-popover-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #star-popover-btn {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-decoration: none;
+      border: 1px solid var(--gold-dim);
+      padding: 5px 10px;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    #star-popover-btn:hover {
+      background: rgba(196, 162, 88, 0.1);
+      border-color: rgba(196, 162, 88, 0.5);
+    }
+
     /* modal */
     #object-modal {
       position: fixed;
@@ -850,6 +891,11 @@
 <canvas id="star-canvas"></canvas>
 <div id="star-tooltip"></div>
 
+<div id="star-popover">
+  <div id="star-popover-name"></div>
+  <a id="star-popover-btn" href="#" target="_blank" rel="noopener">View on SIMBAD ↗</a>
+</div>
+
 <div id="object-modal">
   <div class="modal-inner">
     <button class="modal-close" id="modal-close-btn">&#x2715;</button>
@@ -1347,10 +1393,13 @@ const canvas = document.getElementById('star-canvas');
 const ctx = canvas.getContext('2d');
 const tooltip = document.getElementById('star-tooltip');
 const modal = document.getElementById('object-modal');
+const popover = document.getElementById('star-popover');
+const popover_name = document.getElementById('star-popover-name');
+const popover_btn = document.getElementById('star-popover-btn');
 
 document.getElementById('modal-close-btn').addEventListener('click', close_modal);
 modal.addEventListener('click', e => { if (e.target === modal) close_modal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') close_modal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { close_modal(); close_popover(); } });
 
 // featured research objects, open modal on click, pulse gold on canvas
 const featured_objects = [
@@ -1705,17 +1754,26 @@ function on_mouse_move(e) {
     tooltip.classList.add('visible');
   } else {
     tooltip.classList.remove('visible');
+    // dismiss stale popover once cursor leaves all named stars
+    if (!hover_star) close_popover();
   }
 }
 
 function on_click(e) {
-  if (!hover_star) return;
+  if (!hover_star) { close_popover(); return; }
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
   if (hover_star.featured) {
+    close_popover();
     open_modal(hover_star.obj_data);
   } else {
+    // ctrl/cmd+click: bypass confirmation and open directly
+    if (e.ctrlKey || e.metaKey) {
+      const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
+      window.open(url, '_blank', 'noopener');
+      return;
+    }
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
-    window.open(url, '_blank', 'noopener');
+    open_popover(hover_star.name, url, e.clientX, e.clientY);
   }
 }
 
@@ -1763,8 +1821,28 @@ function on_touch_start(e) {
   if (best_named) {
     e.preventDefault();
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
-    window.open(url, '_blank', 'noopener');
+    open_popover(best_named.name, url, tx, ty);
   }
+}
+
+function open_popover(name, url, cx, cy) {
+  popover_name.textContent = name;
+  popover_btn.href = url;
+
+  // position near click, clamped to viewport
+  popover.style.left = '0px';
+  popover.style.top  = '0px';
+  popover.classList.add('visible');
+  const pw = popover.offsetWidth;
+  const ph = popover.offsetHeight;
+  const left = Math.min(cx + 14, window.innerWidth  - pw - 12);
+  const top  = Math.min(cy - 8,  window.innerHeight - ph - 12);
+  popover.style.left = Math.max(8, left) + 'px';
+  popover.style.top  = Math.max(8, top)  + 'px';
+}
+
+function close_popover() {
+  popover.classList.remove('visible');
 }
 
 function open_modal(obj) {
@@ -1794,6 +1872,11 @@ modal_inner.addEventListener('touchstart', (e) => {
 modal_inner.addEventListener('touchmove', (e) => {
   e.stopPropagation(); // lets modal scroll without moving star field
 }, { passive: true });
+
+// close popover when clicking outside it (on non-star areas)
+document.addEventListener('click', (e) => {
+  if (!popover.contains(e.target) && e.target !== canvas) close_popover();
+});
 
 // ── resize ───────────────────────────────────────────────────────────────────
 
