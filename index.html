@@ -926,14 +926,6 @@
         </div>
       </div> ```
 
-### Why this matters for your specific site:
-Because you are using `display: grid;` for your `about-grid`, the browser needs to clearly see where the `about-text` column ends and where the `about-meta` column begins. 
-
-If you have an extra `</div>` (like the one at the very bottom of your snippet), it might tell the browser: *"Stop the grid here."* This would result in the rest of your website (the Research and Bookshelf sections) being pulled inside the About section or losing their side margins entirely.
-
-**Final Check:** Does your code look like a "staircase" where every opening tag has a matching closing tag at the exact same vertical alignment? If so, you're safe! 
-
-**One quick detail:** Ensure the `id="contact-email"` remains empty exactly like that—your JavaScript at the bottom of the file is what injects your email address there to protect you from bots.      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. The pulsing objects are from my own research.
     </div>
   </section>
   <section id="research" class="section">
