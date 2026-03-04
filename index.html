@@ -55,7 +55,7 @@
       border: 1px solid var(--gold-dim);
       color: var(--text);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
       padding: 5px 10px;
       border-radius: 1px;
       pointer-events: none;
@@ -95,7 +95,7 @@
 
     .modal-type {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 12px;
       letter-spacing: 0.18em;
       color: var(--gold);
       text-transform: uppercase;
@@ -122,7 +122,7 @@
     .modal-simbad {
       display: inline-block;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11.5px;
       color: var(--gold);
       text-decoration: none;
       border: 1px solid var(--gold-dim);
@@ -177,7 +177,7 @@
 
     .nav-links a {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
+      font-size: 12px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--text-dim);
@@ -201,7 +201,7 @@
 
     .hero-eyebrow {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
+      font-size: 12px;
       letter-spacing: 0.22em;
       color: var(--gold);
       text-transform: uppercase;
@@ -263,7 +263,7 @@
 
     .section-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9.5px;
+      font-size: 11.5px;
       letter-spacing: 0.28em;
       color: var(--gold);
       text-transform: uppercase;
@@ -279,7 +279,6 @@
       background: var(--panel-border);
     }
 
-
     .section-heading {
       font-family: 'EB Garamond', serif;
       font-size: clamp(32px, 5vw, 48px);
@@ -289,6 +288,7 @@
       margin-bottom: 52px;
       letter-spacing: -0.01em;
     }
+
     /* ── about ── */
     .about-footnote {
       margin-top: 28px;
@@ -333,7 +333,7 @@
 
     .meta-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9.5px;
+      font-size: 11px;
       letter-spacing: 0.16em;
       color: var(--gold);
       text-transform: uppercase;
@@ -368,7 +368,7 @@
 
     .card-id {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9.5px;
+      font-size: 11px;
       letter-spacing: 0.18em;
       color: var(--gold);
       text-transform: uppercase;
@@ -399,7 +399,7 @@
 
     .tag {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
+      font-size: 11px;
       letter-spacing: 0.1em;
       color: var(--blue);
       border: 1px solid rgba(91, 138, 181, 0.28);
@@ -410,7 +410,7 @@
     .card-link {
       display: inline-block;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9.5px;
+      font-size: 11px;
       letter-spacing: 0.12em;
       color: var(--gold);
       text-decoration: none;
@@ -449,7 +449,7 @@
 
     .writing-venue {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9.5px;
+      font-size: 11px;
       letter-spacing: 0.15em;
       color: var(--gold);
       text-transform: uppercase;
@@ -457,7 +457,7 @@
 
     .writing-date {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9.5px;
+      font-size: 11px;
       letter-spacing: 0.08em;
       color: var(--text-dim);
     }
@@ -505,7 +505,7 @@
 
     .highlights-year {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 12.5px;
       color: var(--gold);
       padding-top: 3px;
       letter-spacing: 0.05em;
@@ -531,7 +531,7 @@
       align-items: center;
       gap: 10px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11.5px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--gold);
@@ -568,7 +568,7 @@
 
     .footer-links a {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11.5px;
       letter-spacing: 0.12em;
       color: var(--text-dim);
       text-decoration: none;
@@ -615,7 +615,6 @@
       overflow-y: visible;
       scrollbar-width: none;
       -ms-overflow-style: none;
-      /* extra bottom padding so books can lift on hover */
       padding-top: 14px;
       margin-bottom: 0;
     }
@@ -640,7 +639,6 @@
       border-bottom: 2px solid rgba(196,162,88,0.22);
       cursor: default;
       overflow: hidden;
-      /* expand on hover */
       transition: width 0.35s cubic-bezier(0.22,1,0.36,1),
                   background 0.25s ease,
                   border-color 0.25s ease,
@@ -672,34 +670,30 @@
     .book-spine:nth-child(even) { background: rgba(120,165,210,0.04); }
     .book-spine:nth-child(3n)   { background: rgba(94,207,191,0.03); }
 
-    /* rotated spine title — visible when collapsed, modern writing mode */
+    /* rotated spine title — visible when collapsed */
     .spine-title {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-        transition: opacity 0.18s ease;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
     }
 
     .spine-title span {
-        display: block;
-        white-space: nowrap;
-        font-family: 'EB Garamond', serif;
-        font-size: 11px;
-        letter-spacing: 0.05em;
-        color: rgba(226,221,212,0.60);
-        
-        /* The Fix: Flips the text to run along the height */
-        writing-mode: vertical-rl; 
-        transform: rotate(180deg); 
-        text-align: center;
-        
-        /* Now uses the 220px height instead of 46px width */
-        max-height: 180px; 
-        overflow: hidden;
-        text-overflow: ellipsis;
+      display: block;
+      white-space: nowrap;
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: rgba(226,221,212,0.60);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
+      max-height: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .book-spine:hover .spine-title {
@@ -735,14 +729,14 @@
     .spine-author {
       font-family: 'Spectral', serif;
       font-style: italic;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--gold);
       line-height: 1.3;
     }
 
     .spine-impact {
       font-family: 'Spectral', serif;
-      font-size: 10.5px;
+      font-size: 12px;
       color: rgba(226,221,212,0.52);
       line-height: 1.5;
       margin-top: 5px;
@@ -760,7 +754,8 @@
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-/* -- hamburger -- */
+
+    /* -- hamburger -- */
     .nav-hamburger {
       display: none;
       background: none;
@@ -805,6 +800,7 @@
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
     }
+
     /* ── responsive ── */
     @media (max-width: 740px) {
       nav { padding: 18px 24px; }
@@ -816,22 +812,21 @@
       footer { flex-direction: column; gap: 20px; align-items: flex-start; padding: 36px 24px; }
     }
 
-/* new profile image frame */
+    /* profile image frame */
     .profile-frame {
       width: 100%;
-          margin-bottom: 2rem;
+      margin-bottom: 2rem;
       padding: 6px;
       border: 1px solid var(--gold-dim);
-      background: rgba(196, 162, 88, 0.05); /* Subtle gold tint */
+      background: rgba(196, 162, 88, 0.05);
       line-height: 0;
     }
-    
+
     .profile-frame img {
       width: 100%;
       height: auto;
       display: block;
-      /* keeps the photo slightly dim to match the star field mood */
-      opacity: 0.95; 
+      opacity: 0.95;
       filter: contrast(1.05);
     }
 
@@ -898,36 +893,40 @@
           <p>A parallel thread is asteroid rotation: I am determining the first confirmed synodic period for main-belt asteroid 7605 Cindygraber, coordinating multi-site observations across Chile, Australia, and the Canary Islands using an open-source scheduler I built for the project.</p>
           <p>I co-created <a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, a philosophical website and podcast series examining theodicy, divine perfection, and the epistemology of religious faith, developed alongside a classmate for PHR380: Faith and Doubt at Andover. The same instinct that pulls me toward hard scientific questions pulls me toward hard philosophical ones.</p>
           <p>Outside research, I captain the cross-country team, play jazz guitar, and founded RenewBlue, a campus sustainability initiative. I am drawn to problems that require patience, precision, and a willingness to tear down a model when the data demands it.</p>
-        </div> 
-
-      <div class="about-meta">
-        <div class="profile-frame">
-          <img src="HSZ_Headshot_BW.jpeg" alt="Henry Zimmerman">
         </div>
 
-        <div class="meta-item">
-          <div class="meta-label">Affiliation</div>
-          <div class="meta-value">Phillips Academy Andover<br>Class of 2027</div>
+        <div class="about-meta">
+          <div class="profile-frame">
+            <img src="HSZ_Headshot_BW.jpeg" alt="Henry Zimmerman">
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Affiliation</div>
+            <div class="meta-value">Phillips Academy Andover<br>Class of 2027</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Research Interests</div>
+            <div class="meta-value">Asteroseismology<br>Binary Cepheids<br>Stellar mergers<br>Cosmic distance scale<br>Minor planet photometry</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Collaborator</div>
+            <div class="meta-value">Dr. Bogumil Pilecki (CAMK Warsaw)</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Contact</div>
+            <div class="meta-value" id="contact-email"></div>
+          </div>
         </div>
 
-        <div class="meta-item">
-          <div class="meta-label">Research Interests</div>
-          <div class="meta-value">Asteroseismology<br>Binary Cepheids<br>Stellar mergers<br>Cosmic distance scale<br>Minor planet photometry</div>
-        </div>
-
-        <div class="meta-item">
-          <div class="meta-label">Collaborator</div>
-          <div class="meta-value">Dr. Bogumil Pilecki (CAMK Warsaw)</div>
-        </div>
-
-        <div class="meta-item">
-          <div class="meta-label">Contact</div>
-          <div class="meta-value" id="contact-email"></div>
-        </div>
       </div>
-
+      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. The pulsing objects are from my own research.</p>
     </div>
   </section>
+
+  <!-- research -->
   <section id="research" class="section">
     <div class="section-inner">
       <div class="section-label">Research</div>
@@ -1276,7 +1275,7 @@
             <div class="spine-impact">Martyrdom cannot be aspirational; it only values your action and devotion to the cause, and the cause only.</div>
           </div>
         </div>
-        
+
         <div class="book-spine" role="listitem">
           <div class="spine-title"><span>Misbehaving</span></div>
           <div class="spine-panel">
@@ -1362,7 +1361,7 @@ const featured_objects = [
     simbad_id: "HD344787",
     pipeline: true,
     type: "Active Investigation  |  Northern Sky",
-    writeup: "At the 245th AAS meeting, I watched Dupree &amp; MacLeod present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star’s atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris? Is it alone, or is something else there, invisible and waiting to be found?"
+    writeup: "At the 245th AAS meeting, I watched Dupree &amp; MacLeod present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris? Is it alone, or is something else there, invisible and waiting to be found?"
   }
 ];
 
