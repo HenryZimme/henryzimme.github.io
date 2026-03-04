@@ -610,6 +610,7 @@
     .book-shelf {
       display: flex;
       align-items: flex-end;
+      justify-content: space-between;
       gap: 5px;
       padding-bottom: 0;
       overflow-x: auto;
@@ -629,10 +630,7 @@
       margin-bottom: 20px;
       border-radius: 1px;
     }
-    /* no gap after the final surface */
-    .book-shelf-surface:last-child {
-      margin-bottom: 0;
-    }
+    .book-shelf-surface:last-child { margin-bottom: 0; }
 
     /* individual book spine */
     .book-spine {
@@ -1188,7 +1186,7 @@
         <p>Reading is where I do my most undirected thinking. I keep a running list of everything interesting I read online at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>. The books below are the ones I return to in my head. These are not necessarily the most important, but they're the ones that changed how I see something specific and didn't let me forget them.</p>
       </div>
 
-      <div class="book-shelf" role="list">
+      <div id="bookshelf-pool" style="display:none">
 
  <div class="book-spine" role="listitem">
           <div class="spine-title"><span>Misbehaving</span></div>
@@ -1262,11 +1260,6 @@
           </div>
         </div>
 
-      </div><!-- .book-shelf row 1 -->
-      <div class="book-shelf-surface"></div>
-
-      <div class="book-shelf" role="list">
-
         <div class="book-spine" role="listitem">
           <div class="spine-title"><span>Wide Sargasso Sea</span></div>
           <div class="spine-panel">
@@ -1330,8 +1323,8 @@
           </div>
         </div>
 
-      </div><!-- .book-shelf row 2 -->
-      <div class="book-shelf-surface"></div>
+      </div><!-- #bookshelf-pool -->
+      <div id="bookshelf-rows"></div>
     </div>
   </section>
 </main>
@@ -1823,6 +1816,57 @@ document.querySelectorAll('.book-spine').forEach(spine => {
     if (!is_active) spine.classList.add('active');
   });
 });
+
+// -- bookshelf adaptive layout --
+(function() {
+  const pool = document.getElementById('bookshelf-pool');
+  const rows_el = document.getElementById('bookshelf-rows');
+  if (!pool || !rows_el) return;
+
+  // grab all spines once; moving a node preserves its event listeners
+  const spines = Array.from(pool.children);
+
+  function layout_shelves() {
+    const is_mobile = window.innerWidth <= 740;
+    const w_col = is_mobile ? 40 : 46;
+    const w_exp = is_mobile ? 150 : 172;
+    const gap = 5;
+    const container_w = rows_el.parentElement.clientWidth;
+
+    // max books per row: 1 expanded + (n-1) collapsed + n gaps <= container_w
+    // n*(w_col + gap) <= container_w - w_exp + w_col
+    const n_per_row = Math.max(2, Math.floor((container_w - w_exp + w_col) / (w_col + gap)));
+
+    const total = spines.length;
+    const n_rows = Math.ceil(total / n_per_row);
+    const base = Math.floor(total / n_rows);
+    const extra = total % n_rows; // first `extra` rows get one extra book
+
+    rows_el.innerHTML = '';
+    let idx = 0;
+    for (let r = 0; r < n_rows; r++) {
+      const count = base + (r < extra ? 1 : 0);
+      const shelf = document.createElement('div');
+      shelf.className = 'book-shelf';
+      shelf.setAttribute('role', 'list');
+      for (let j = 0; j < count; j++) {
+        shelf.appendChild(spines[idx++]);
+      }
+      rows_el.appendChild(shelf);
+      const surface = document.createElement('div');
+      surface.className = 'book-shelf-surface';
+      rows_el.appendChild(surface);
+    }
+  }
+
+  layout_shelves();
+
+  let resize_timer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resize_timer);
+    resize_timer = setTimeout(layout_shelves, 120);
+  });
+})();
 
 // -- scroll-spy --
 const nav_sections = ['about', 'research', 'writing', 'highlights', 'bookshelf'];
