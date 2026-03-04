@@ -306,24 +306,7 @@
       margin: 0 auto;
     }
 
-    .section-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
-      letter-spacing: 0.28em;
-      color: var(--gold);
-      text-transform: uppercase;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--panel-border);
-    }
-
+    /* ::before = mono label pulled from data-label; ::after = decorative rule */
     .section-heading {
       font-family: 'EB Garamond', serif;
       font-size: clamp(32px, 5vw, 48px);
@@ -332,6 +315,28 @@
       color: var(--text);
       margin-bottom: 52px;
       letter-spacing: -0.01em;
+      position: sticky;
+      top: 20px;
+      background: var(--panel);
+      z-index: 10;
+      padding: 10px 0 0;
+    }
+    .section-heading::before {
+      content: attr(data-label);
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      letter-spacing: 0.28em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .section-heading::after {
+      content: '';
+      display: block;
+      height: 1px;
+      background: var(--panel-border);
+      margin-bottom: 14px;
     }
 
     /* about */
@@ -407,9 +412,13 @@
     .research-card {
       border: 1px solid var(--panel-border);
       padding: 34px 36px;
-      transition: border-color 0.25s;
+      transition: border-color 0.25s, transform 0.25s ease, box-shadow 0.25s ease;
     }
-    .research-card:hover { border-color: rgba(196, 162, 88, 0.4); }
+    .research-card:hover {
+      border-color: rgba(196, 162, 88, 0.4);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
 
     .card-id {
       font-family: 'JetBrains Mono', monospace;
@@ -621,6 +630,34 @@
       transition: color 0.18s;
     }
     .footer-links a:hover { color: var(--gold); }
+
+    /* back to top */
+    #back-to-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 300;
+      width: 40px;
+      height: 40px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, border-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #back-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #back-to-top:hover {
+      border-color: var(--gold);
+    }
 
     /* bookshelf */
     #bookshelf {
@@ -952,8 +989,7 @@
   <!-- about -->
   <section id="about" class="section">
     <div class="section-inner">
-      <div class="section-label">About</div>
-      <h2 class="section-heading">About</h2>
+      <h2 class="section-heading" data-label="About">About</h2>
       <div class="about-grid">
         <div class="about-text">
           <p class="about-lead">I'm an astrophysicist, writer, and runner. I love using logic to tease out the truth from imperfect information. I'm always looking for the ideas that challenge my perspective, whether I'm finding asteroseismic evidence of a merger in a binary Cepheid or examining Cartesian constructs</p>
@@ -997,8 +1033,7 @@
   <!-- research -->
   <section id="research" class="section">
     <div class="section-inner">
-      <div class="section-label">Research</div>
-      <h2 class="section-heading">Research</h2>
+      <h2 class="section-heading" data-label="Research">Research</h2>
       <div class="research-cards">
 
         <div class="research-card">
@@ -1057,8 +1092,7 @@
   <!-- writing -->
   <section id="writing" class="section">
     <div class="section-inner">
-      <div class="section-label">Writing</div>
-      <h2 class="section-heading">Writing</h2>
+      <h2 class="section-heading" data-label="Writing">Writing</h2>
       <div class="writing-list">
 
         <div class="writing-item">
@@ -1145,8 +1179,7 @@
   <!-- highlights -->
   <section id="highlights" class="section">
     <div class="section-inner">
-      <div class="section-label">Highlights</div>
-      <h2 class="section-heading">Highlights</h2>
+      <h2 class="section-heading" data-label="Highlights">Highlights</h2>
       <div class="highlights-table">
 
         <div class="highlights-row">
@@ -1238,8 +1271,7 @@
   <!-- bookshelf -->
   <section id="bookshelf" class="section">
     <div class="section-inner">
-      <div class="section-label">Reading</div>
-      <h2 class="section-heading">All-Time Favorites</h2>
+      <h2 class="section-heading" data-label="Reading">All-Time Favorites</h2>
 
       <div class="bookshelf-intro">
         <p>Reading is where I do my most undirected thinking. I keep a running list of everything interesting I read online at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>. The books below are the ones I return to in my head. These are not necessarily the most important, but they're the ones that changed how I see something specific and didn't let me forget them.</p>
@@ -1424,6 +1456,7 @@
   </div>
 </footer>
 
+<button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
 <script>
 const canvas = document.getElementById('star-canvas');
 const ctx = canvas.getContext('2d');
@@ -1796,6 +1829,8 @@ function on_mouse_move(e) {
 }
 
 function on_click(e) {
+  // ignore clicks that originated on UI elements layered above the canvas
+  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card')) return;
   if (!hover_star) { close_popover(); return; }
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
   if (hover_star.featured) {
@@ -2030,6 +2065,8 @@ function toggle_mobile_nav() {
   const open = mobile_nav.classList.toggle('open');
   hamburger_btn.classList.toggle('open', open);
   document.body.style.overflow = open ? 'hidden' : '';
+  // prevent starfield interaction while menu is open
+  canvas.style.pointerEvents = open ? 'none' : 'auto';
 }
 hamburger_btn.addEventListener('click', toggle_mobile_nav);
 mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
@@ -2037,8 +2074,16 @@ mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
     mobile_nav.classList.remove('open');
     hamburger_btn.classList.remove('open');
     document.body.style.overflow = '';
+    canvas.style.pointerEvents = 'auto';
   });
 });
+
+// -- back to top --
+const back_to_top_btn = document.getElementById('back-to-top');
+window.addEventListener('scroll', () => {
+  back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
+}, { passive: true });
+back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 // -- canvas hint: "click to explore" fades in then out --
 let hint_alpha = 0;
