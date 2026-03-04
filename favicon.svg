@@ -8,14 +8,18 @@
       <stop offset="0%"   stop-color="#d4a843" stop-opacity="0.22"/>
       <stop offset="100%" stop-color="#d4a843" stop-opacity="0.0"/>
     </linearGradient>
+    
     <radialGradient id="rg" cx="50%" cy="50%" r="50%">
       <stop offset="0%"   stop-color="#f06050" stop-opacity="0.5"/>
       <stop offset="100%" stop-color="#f06050" stop-opacity="0"/>
     </radialGradient>
+    
     <radialGradient id="bg2" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#8ab8ff" stop-opacity="0.8"/>
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="40%"  stop-color="#8ab8ff" stop-opacity="0.6"/>
       <stop offset="100%" stop-color="#6a9ec8" stop-opacity="0"/>
     </radialGradient>
+    
     <clipPath id="c">
       <circle cx="16" cy="16" r="15"/>
     </clipPath>
@@ -59,13 +63,14 @@
       <circle cx="0" cy="0" r="0.6"/>
     </g>
 
-    <circle cx="21" cy="18" r="6" fill="url(#bg2)"/>
+    <circle cx="21" cy="18" r="7" fill="url(#bg2)"/>
+    
     <g transform="translate(21,18)">
-      <g fill="#8ab8ff" opacity="0.95">
-        <ellipse cx="0" cy="0" rx="4" ry="0.35"/>
-        <ellipse cx="0" cy="0" rx="0.35" ry="4"/>
+      <g fill="url(#bg2)">
+        <ellipse cx="0" cy="0" rx="5" ry="0.4"/>
+        <ellipse cx="0" cy="0" rx="0.4" ry="5"/>
       </g>
-      <circle cx="0" cy="0" r="1.1" fill="#ffffff"/>
+      <circle cx="0" cy="0" r="1.0" fill="#ffffff"/>
     </g>
   </g>
 </svg>
