@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <radialGradient id="rg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e05a4e" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#e05a4e" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5b8ab5" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#5b8ab5" stop-opacity="0"/>
+    </radialGradient>
+    <!-- clip to circle so nothing bleeds outside -->
+    <clipPath id="clip">
+      <circle cx="16" cy="16" r="15"/>
+    </clipPath>
+  </defs>
+
+  <!-- background circle -->
+  <circle cx="16" cy="16" r="15" fill="#07091a"/>
+
+  <g clip-path="url(#clip)">
+    <!--
+      cepheid curve, tightly centered:
+      - starts bottom-left, sharp rise to peak, slow bumped decline, ends bottom-right
+      - entire curve fits within x:5–27, y:9–24
+    -->
+    <path
+      d="M 5,23
+         C 6,23 10,9 12,9
+         C 14,9 15,14 17,16
+         C 19,17.5 20,15 22,16
+         C 24,17.5 26,23 27,23"
+      fill="none"
+      stroke="#c4a258"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- red star glow above peak -->
+    <circle cx="12" cy="7" r="3.5" fill="url(#rg)"/>
+    <!-- red 4-pointed star, small -->
+    <g transform="translate(12,7)" fill="#e05a4e">
+      <polygon points="0,-2.0 0.6,-0.6 2.0,0 0.6,0.6 0,2.0 -0.6,0.6 -2.0,0 -0.6,-0.6"/>
+    </g>
+
+    <!-- blue star glow in the trough -->
+    <circle cx="22" cy="24" r="4.5" fill="url(#bg)"/>
+    <!-- blue 4-pointed star, larger -->
+    <g transform="translate(22,24)" fill="#8ab8ff">
+      <polygon points="0,-2.8 0.85,-0.85 2.8,0 0.85,0.85 0,2.8 -0.85,0.85 -2.8,0 -0.85,-0.85"/>
+    </g>
+  </g>
+</svg>
