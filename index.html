@@ -7,7 +7,6 @@
   <meta name="description" content="Henry Zimmerman, junior at Phillips Academy Andover. Astrophysics researcher, writer, and cross-country captain.">
   <meta property="og:title" content="Henry Zimmerman">
   <meta property="og:description" content="I follow questions wherever they lead. Astrophysics researcher, writer, cross-country captain.">
-  <meta property="og:image" content="https://henryzimme.github.io/og-preview.jpg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,6 +36,8 @@
       line-height: 1.72;
       overflow-x: hidden;
     }
+
+    a { color: var(--blue); }
 
     /* ── canvas ── */
     #star-canvas {
@@ -289,6 +290,14 @@
       letter-spacing: -0.01em;
     }
     /* ── about ── */
+    .about-footnote {
+      margin-top: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      opacity: 0.6;
+      line-height: 1.6;
+    }
     .about-grid {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
@@ -690,7 +699,6 @@
           <p>A parallel thread is asteroid rotation: I am determining the first confirmed synodic period for main-belt asteroid 7605 Cindygraber, coordinating multi-site observations across Chile, Australia, and the Canary Islands using an open-source scheduler I built for the project.</p>
           <p>I co-created <a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, a philosophical website and podcast series examining theodicy, divine perfection, and the epistemology of religious faith, developed alongside a classmate for PHR380: Faith and Doubt at Andover. The same instinct that pulls me toward hard scientific questions pulls me toward hard philosophical ones.</p>
           <p>Outside research, I captain the cross-country team, play jazz guitar, and founded RenewBlue, a campus sustainability initiative. I am drawn to problems that require patience, precision, and a willingness to tear down a model when the data demands it.</p>
-          <p>The star field behind this page is drawn from the Yale Bright Star Catalog. Hover to see names; click to open a star in SIMBAD. The pulsing objects are from my own research. My current reading list is at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>.</p>
         </div>
         <div class="about-meta">
           <div class="meta-item">
@@ -711,10 +719,9 @@
           </div>
         </div>
       </div>
+      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. The pulsing objects are from my own research. Reading list: <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>.</p>
     </div>
   </section>
-
-  <!-- research -->
   <section id="research" class="section">
     <div class="section-inner">
       <div class="section-label">Research</div>
@@ -744,7 +751,6 @@
             I am determining the first confirmed synodic rotation period for main-belt asteroid 7605 Cindygraber. I trained machine learning models on the ALCDEF Light Curve Database to predict period convergence requirements, wrote a formal observing proposal supported by this analysis, and am coordinating multi-site photometric observations across four Slooh observatories (G40 Canary Islands, W88 Chile, E62 Australia, I12 Phillips Academy). I am also extracting spectra from diffraction grating images to constrain its taxonomic classification. Observations are scheduled using an open-source Python tool I built for the project: it queries MPC ephemerides, computes per-site astronomical twilight, and models lunar sky brightness via the Krisciunas-Schaefer model. Preparing results for submission to the Minor Planet Bulletin.
           </p>
           <a class="card-link" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Observing Scheduler on GitHub</a>
-          <div class="card-tags">
           <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics on GitHub</a>
           <div class="card-tags">
             <span class="tag">Photometry</span>
@@ -821,7 +827,7 @@
             <div class="writing-date">Fall 2024</div>
           </div>
           <div class="writing-content">
-            <h3><a href="https://docs.google.com/document/d/10OUuQXJI-RP2RcMX0Od_yDC2xQvVr4zQXg1pKZ2QYIo/edit?usp=sharing" target="_blank" rel="noopener">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</a></h3>
+            <h3><a href="japan.html">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</a></h3>
             <p>Japan's demographic crisis through the lens of its historically restrictive immigration framework: what the recent policy shifts signal, and whether they go far enough.</p>
           </div>
         </div>
@@ -848,7 +854,7 @@
         <div class="highlights-row">
           <div class="highlights-year">2025</div>
           <div class="highlights-item">
-            <h4><a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a> , Philosophy of Religion</h4>
+            <h4><a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, Philosophy of Religion</h4>
             <p>Co-created a podcast series and website examining theodicy, divine perfection, design arguments, and the epistemology of religious faith. Developed with Genie Han for PHR380: Faith and Doubt at Phillips Academy Andover.</p>
           </div>
         </div>
@@ -905,7 +911,7 @@
           <div class="highlights-year">2023 &ndash;</div>
           <div class="highlights-item">
             <h4>Phillips Academy Andover</h4>
-            <p>Rigorous Course Load: AP Physics C: Mechanics and E&amp;M, BC Calculus, Advanced College Chemistry, Astronomy Research. Webster Award (History and Social Sciences). Scholastic Art and Writing Silver Key. Cross-Country Captain 2026; personal records 16:30 5km XC, 4:24 1500m. Podium finish at NEPSTA Division I Championship.</p>
+            <p>Rigorous Course Load: AP Physics C: Mechanics and E&amp;M, BC Calculus, Advanced College Chemistry, Astronomy Research. Webster Award (History and Social Sciences). Scholastic Art and Writing Silver Key. Cross-Country Captain, 2025&ndash;26 season; personal records 16:30 5km XC, 4:24 1500m. Podium finish at NEPSTA Division I Championship.</p>
           </div>
         </div>
 
