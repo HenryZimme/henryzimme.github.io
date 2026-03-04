@@ -967,6 +967,15 @@ const featured_objects = [
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243",
     type: "Main-Belt Asteroid  |  Indicative sky position",
     writeup: "A second target in the same multi-site observing campaign. I am determining the first confirmed synodic rotation period for 19243 Bunting in parallel with Cindygraber, using the same photometric pipeline and open-source scheduler. Observations are coordinated across sites in Chile, Australia, and the Canary Islands. Note: the marker position shown here and the visual magnitude is indicative, as asteroid sky coordinates and brightness change."
+  },
+  {
+    name: "HD 344787 | v = 9.32",
+    ra_deg: 295.872,
+    dec_deg: 23.178,
+    simbad_id: "HD+344787",
+    pipeline: true,
+    type: "Active Investigation  |  Northern Sky",
+    writeup: "A Polaris analog under early investigation for the presence of an unseen binary companion. Polaris itself was recently confirmed to host a previously unresolved companion; HD 344787 shares key characteristics\u2014low pulsation amplitude, long period, and northern sky position\u2014making it a natural analog in which to search for similar signatures. The investigation will test for radial velocity anomalies and photometric variability consistent with a gravitationally bound companion. A confirmed detection would add to the emerging picture of binary frequency among low-amplitude Cepheids and carry implications for period-luminosity calibration in this regime."
   }
 ];
 
@@ -1033,7 +1042,7 @@ function build_stars(catalog) {
   }
 
   // add featured research objects on top
-  const featured_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf'];
+  const featured_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
   for (let fi = 0; fi < featured_objects.length; fi++) {
     const obj = featured_objects[fi];
     const pos = project(obj.ra_deg, obj.dec_deg);
@@ -1100,13 +1109,19 @@ function draw_named_star(s, twinkle) {
 }
 
 function draw_featured_star(s) {
-  const pulse = 0.5 + 0.5 * Math.sin(time_s * 1.9 + s.phase);
+  const is_pipeline = s.obj_data && s.obj_data.pipeline;
+  // pipeline objects: slower period (0.6x), lower peak alpha
+  const pulse_freq = is_pipeline ? 1.9 * 0.6 : 1.9;
+  const pulse = 0.5 + 0.5 * Math.sin(time_s * pulse_freq + s.phase);
   const glow_r = 16 + pulse * 5;
   const c = s.color;
+  const glow_alpha = is_pipeline ? 0.22 : 0.45;
+  const ring_base  = is_pipeline ? 0.12 : 0.28;
+  const ring_pulse = is_pipeline ? 0.22 : 0.45;
 
   // radial glow
   const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glow_r);
-  grd.addColorStop(0, hex_to_rgba(c, 0.45));
+  grd.addColorStop(0, hex_to_rgba(c, glow_alpha));
   grd.addColorStop(1, hex_to_rgba(c, 0));
   ctx.beginPath();
   ctx.arc(s.x, s.y, glow_r, 0, Math.PI * 2);
@@ -1116,7 +1131,7 @@ function draw_featured_star(s) {
   // orbit ring
   ctx.beginPath();
   ctx.arc(s.x, s.y, 8 + pulse * 2.5, 0, Math.PI * 2);
-  ctx.strokeStyle = hex_to_rgba(c, 0.28 + pulse * 0.45);
+  ctx.strokeStyle = hex_to_rgba(c, ring_base + pulse * ring_pulse);
   ctx.lineWidth = 1;
   ctx.stroke();
 
@@ -1140,7 +1155,7 @@ function draw_hover_ring(s) {
 function draw_canvas_legend() {
   const items = featured_objects.map((obj, i) => ({
     label: obj.name,
-    color: ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf'][i] || '#c4a258'
+    color: ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'][i] || '#c4a258'
   }));
 
   ctx.save();
