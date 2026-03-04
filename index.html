@@ -88,10 +88,13 @@
     .modal-inner {
       max-width: 580px;
       width: calc(100% - 40px);
+      max-height: 85vh;
       background: rgba(9, 12, 28, 0.98);
       border: 1px solid var(--panel-border);
       padding: 44px 48px;
       position: relative;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .modal-type {
@@ -1718,6 +1721,9 @@ function on_click(e) {
 
 // touch handler for canvas: direct tap-to-open, no hover needed
 function on_touch_start(e) {
+  // don't process canvas taps when modal is open
+  if (modal.classList.contains('visible')) return;
+
   const touch = e.changedTouches[0];
   const tx = touch.clientX;
   const ty = touch.clientY;
@@ -1779,6 +1785,15 @@ function open_modal(obj) {
 function close_modal() {
   modal.classList.remove('visible');
 }
+
+// prevent touches on the modal from reaching the canvas touch handler
+const modal_inner = document.querySelector('.modal-inner');
+modal_inner.addEventListener('touchstart', (e) => {
+  e.stopPropagation();
+}, { passive: true });
+modal_inner.addEventListener('touchmove', (e) => {
+  e.stopPropagation(); // lets modal scroll without moving star field
+}, { passive: true });
 
 // ── resize ───────────────────────────────────────────────────────────────────
 
