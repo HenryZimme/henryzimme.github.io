@@ -1784,7 +1784,7 @@ function init() {
 window.addEventListener('mousemove', on_mouse_move);
 window.addEventListener('click', on_click);
 window.addEventListener('resize', on_resize);
-canvas.addEventListener('touchstart', on_touch_start, { passive: false });
+window.addEventListener('touchstart', on_touch_start, { passive: false });
 
 // -- bookshelf touch toggle --
 // tap to expand; tap again or tap another spine to collapse
