@@ -1263,7 +1263,7 @@ function on_mouse_move(e) {
   if (hover_star && canvas_exposed_at(e.clientX, e.clientY)) {
     const mag_str = hover_star.featured
       ? ''
-      : `  v = ${hover_star.mag.toFixed(2)}`;
+      : `  | v = ${hover_star.mag.toFixed(2)}`;
     tooltip.textContent = `${hover_star.name}${mag_str}`;
     tooltip.style.left = (e.clientX + 16) + 'px';
     tooltip.style.top  = (e.clientY - 28) + 'px';
