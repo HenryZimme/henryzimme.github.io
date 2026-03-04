@@ -52,14 +52,18 @@
       stroke-linejoin="round"
     />
 
-    <circle cx="21" cy="18" r="4.5" fill="url(#rg)"/>
-    <g transform="translate(21,18)" fill="#f06050">
-      <polygon points="0.0,-2.4 0.59,-0.81 2.28,-0.74 0.95,0.31 1.41,1.94 0.0,1.0 -1.41,1.94 -0.95,0.31 -2.28,-0.74 -0.59,-0.81"/>
+    <circle cx="10" cy="15" r="4.5" fill="url(#rg)"/>
+    <g transform="translate(10,15)" fill="#f06050">
+      <circle cx="0" cy="0" r="0.8"/>
+      <ellipse cx="0" cy="0" rx="3" ry="0.2"/>
+      <ellipse cx="0" cy="0" rx="0.2" ry="3"/>
     </g>
 
-    <circle cx="10" cy="15" r="5" fill="url(#bg2)"/>
-    <g transform="translate(10,15)" fill="#8ab8ff" opacity="0.85">
-      <polygon points="0.0,-2.8 0.68,-0.93 2.66,-0.87 1.09,0.36 1.65,2.27 0.0,1.15 -1.65,2.27 -1.09,0.36 -2.66,-0.87 -0.68,-0.93"/>
+    <circle cx="21" cy="18" r="5" fill="url(#bg2)"/>
+    <g transform="translate(21,18)" fill="#8ab8ff" opacity="0.85">
+      <circle cx="0" cy="0" r="0.9"/>
+      <ellipse cx="0" cy="0" rx="3" ry="0.25"/>
+      <ellipse cx="0" cy="0" rx="0.25" ry="3"/>
     </g>
   </g>
 </svg>
