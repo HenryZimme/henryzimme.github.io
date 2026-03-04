@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disproving Descartes’ Divine Definition Divination | Henry Zimmerman</title>
+  <meta name="description" content="">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #07091a;
+      --gold:         #c4a258;
+      --gold-dim:     rgba(196,162,88,0.25);
+      --text:         #e2ddd4;
+      --text-dim:     rgba(226,221,212,0.72);
+      --panel:        rgba(7,9,26,0.84);
+      --panel-border: rgba(196,162,88,0.18);
+      --blue:         #78a5d2;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
+    }
+
+    .nav-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-style: italic;
+    }
+    .nav-name:hover { color: var(--gold); text-decoration: none; }
+
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-back:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+      text-decoration: none;
+    }
+
+    .article-wrap {
+      max-width: 65ch;
+      margin: 0 auto;
+      padding: 120px 28px 100px;
+    }
+
+    .article-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .article-title {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .article-byline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 36px;
+    }
+
+    .article-divider {
+      border: none;
+      border-top: 1px solid var(--panel-border);
+      margin-bottom: 40px;
+    }
+
+    .article-body p {
+      margin-bottom: 1.4em;
+      text-indent: 0;
+    }
+
+
+    .article-body h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--text);
+      margin: 2.4em 0 0.9em;
+      letter-spacing: 0.01em;
+    }
+
+    .article-body h3 {
+      font-family: 'EB Garamond', serif;
+      font-size: 20px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text-dim);
+      margin: 2em 0 0.7em;
+    }
+
+    .article-body blockquote {
+      border-left: 2px solid var(--gold-dim);
+      margin: 1.6em 0;
+      padding: 0.2em 0 0.2em 1.4em;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+
+    .article-body ul,
+    .article-body ol {
+      padding-left: 1.8em;
+      margin-bottom: 1.4em;
+    }
+    .article-body li { margin-bottom: 0.4em; }
+
+    .article-body figure {
+      margin: 2em 0;
+      display: block;
+    }
+    .article-body figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid var(--panel-border);
+    }
+    .article-body figcaption {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      opacity: 0.7;
+      margin-top: 8px;
+      line-height: 1.5;
+      letter-spacing: 0.03em;
+    }
+
+    /* references heading injected by build script */
+    .article-body h2.references-heading {
+      font-size: 20px;
+      color: var(--gold);
+      margin-top: 3em;
+    }
+
+    /* inline superscript footnote refs from pandoc */
+    .article-body sup {
+      font-size: 0.72em;
+      line-height: 0;
+      vertical-align: super;
+    }
+    .article-body sup a {
+      color: var(--gold);
+      text-decoration: none;
+      padding: 0 1px;
+      border-bottom: 1px solid var(--gold-dim);
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .article-body sup a:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+      text-decoration: none;
+    }
+
+    /* pandoc footnote section */
+    .article-body section.footnotes {
+      margin-top: 3.5em;
+      padding-top: 1.6em;
+      border-top: 1px solid var(--panel-border);
+    }
+    .article-body section.footnotes::before {
+      content: 'Notes';
+      display: block;
+      font-family: 'EB Garamond', serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+      margin-bottom: 1em;
+    }
+    .article-body section.footnotes ol {
+      padding-left: 1.6em;
+    }
+    .article-body section.footnotes li {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 0.7em;
+    }
+    .article-body section.footnotes li p { margin-bottom: 0; }
+    .article-body section.footnotes a.footnote-back {
+      color: var(--gold);
+      margin-left: 4px;
+      font-size: 0.85em;
+      text-decoration: none;
+      border-bottom: none;
+    }
+    .article-body section.footnotes a.footnote-back:hover { color: var(--text); }
+
+    .article-back {
+      display: inline-block;
+      margin-top: 52px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .article-back:hover { color: var(--gold); border-color: var(--gold-dim); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      nav { padding: 18px 24px; }
+      .article-wrap { padding: 90px 18px 72px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-name">Henry Zimmerman</a>
+    <a href="index.html" class="nav-back">&larr; Return to Portfolio</a>
+  </nav>
+
+  <div class="article-wrap">
+    <h1 class="article-title">Disproving Descartes’ Divine Definition Divination</h1>
+    <div class="article-body">
+      <p>In René Descartes’ <em>Meditations on First Philosophy</em>,
+Descartes seeks to prove both God’s existence and that his ‘clear and
+distinct’ perceptions—many of which he uses to support his argument for
+God’s existence—must be true as a result. His argument for God’s
+existence centers around his conviction in God’s essence, the definition
+of God’s nature. However, Descartes does not know that his definition of
+God defines God, and accordingly, Descartes cannot prove the existence
+of the divine <em>he thinks exists</em> without fully knowing exactly
+<em>what</em> the divine is.</p>
+<p>Descartes defines God’s essence to be “infinite substance,
+independent, supremely intelligent, and supremely powerful – the thing
+from which I and everything else get our existence” (Descartes 145).
+Furthermore, he claims that “I can’t conceive of there being two or more
+Gods,” which he supports earlier in his argument by deriving God’s
+existence for the existence of one “archetype,” defined as the cause, or
+source, of all ideas (Descartes 152, 144). He claims that it is
+impossible to acquire the idea of God through his senses, and thus his
+image of God must be from God himself, arguing that “I who am finite
+would not have the idea of infinite substance in me unless it came from
+a substance that really was infinite” (Descartes 145). Finally,
+Descartes contends that “God is the only thing that I can think of whose
+existence belongs to its essence,” in other words stating that the
+definition of God and His existence are intrinsically linked, as are the
+thought of a mountain and that of a valley (Descartes 152). From the
+assertion that God’s essence cannot be separated from His existence,
+Descartes argues that to merely <em>think</em> of God’s essence must
+<em>prove</em> God’s existence. He justifies these definitions of God’s
+essence through a logically suspect argument where he argues that his
+convictions relating to God’s essence must be true because the “light of
+nature” revealed them to him.</p>
+<p>However, it is not clear that Descartes knows or <em>can</em> know
+enough of God’s essence to prove God’s existence. Descartes’ argument
+for his knowledge of God’s essence contains a paradox that stems from
+his first construction of the differences between presentational and
+formal ideas. In his explanation, he gives the example of having, “two
+different ideas of the sun,” namely: one he sees through his senses, and
+one he inferences through calculations (Descartes 143). His full
+presentational idea of the sun then constitutes both his visual
+perception and his astronomical calculations. Both parts get some form
+of reality from their cause, which in this case is the sun’s formal
+reality. A logical continuation of this argument is that if one has
+infinite perspectives of something, their presentational understanding
+of that object <em>is</em> the formal reality that object contains. The
+paradox lies here: Descartes defines the essence of God as that of a
+“<em>supremely</em> intelligent” being (Descartes 145). We can assume
+intelligence – which Descartes fails to fully explain in his
+<em>Meditations</em> – comes in part from understanding, as he uses
+intellect and understanding interchangeably in Meditation II.
+Understanding arises from the ability to grasp presentational reality as
+close to formal reality as possible; to recognize true form. Thus, the
+supreme intelligence attributed to God necessitates the supreme ability
+to perceive the true form and essence of everything. If God is
+<em>supremely</em> intelligent and has infinite substance as Descartes
+states, God must, by definition, be the <em>only</em> being that can
+grasp God’s true form and essence. This presumably means that Descartes,
+in claiming to see God’s formal reality as God sees it, is either
+contradicting himself and his definition or claiming to be supremely
+intelligent.</p>
+<p>Descartes, however, has admitted that he is not supremely
+intelligent. He’s been wrong before, as he notes that “I used to believe
+myself to grasp clearly but did not really grasp at all” (Descartes
+142). He even admits that “the gradual increase in my knowledge shows
+that I am <em>imperfect,</em> not that I am perfect,” as the act of
+increasing his knowledge concedes that gaps can exist in his knowledge
+(Descartes 146). Descartes cannot be deceived about his imperfection, as
+it is impossible to be both perfect and deceived. Because he
+acknowledges his lack supreme intelligence, Descartes is clearly not
+supremely intelligent and thus cannot grasp God’s formal reality,
+putting his understanding of God’s essence in question.</p>
+<p>Even if, through valid reasoning, all the qualities Descartes stated
+could formally be attributed to God, Descartes <em>still</em> would not
+know that his understanding of God defines God, for the burden of
+knowledge for singular essence is infinite. In his attempt to prove
+God’s existence, Descartes compares his definition of God’s essence to
+the definition of a triangle’s essence. However, there is a key
+difference: The definition of a triangle was created to define
+<em>all</em> pre-existing triangles, and it thus can exist alongside
+other attributes a triangle may have. However, since God is singular (by
+Descartes’ definition), any definition of God’s essence must
+<em>fully</em> define Him. This is because a definition of a singular
+idea must be absent of omission, as it must completely depict the idea,
+because it must be the idea. Descartes is unable to prove that the
+qualities he gives God are the only true qualities of God in the same
+way that I cannot know the essence of a forest by closely inspecting a
+few square meters or even spending an entire lifetime devoted to
+studying the forest. Therefore, even if Descartes can soundly attribute
+qualities to God, his understanding remains limited by the unknown, and
+he thus fails to define God.</p>
+<p>As Descartes cannot grasp God’s essence, it’s clear that his idea of
+God is merely presentational, acquired and produced from presentational
+ideas with finite substance such as God’s works. While Descartes paints
+his idea of God as innate, saying, “The more I consider these
+attributes, the less it seems like they could have come from me alone,”
+it is very much possible to conceive of God without an innate idea of
+Him (Descartes 145). Indeed, one presentational idea with more
+perfections than any one of its causes, such as God, can be created from
+a combination of many– or in this case all – of the existing causes
+perceived. Thomas Hobbes provides a framework for this in his objections
+to the <em>Meditations</em>, providing possible causes for each
+attribute that Descartes ascribes to God. Substance comes, “not from an
+idea but from reasoning,” infinite nature from the idea of “boundaries
+and limits,” independence from lack of origin and limits as well, and
+“supremely powerful” from the continued state of being (Bennett 49,
+Descartes 145). Notably, Hobbes, asks, “What […] is the idea through
+which Descartes understands the operation of God’s understanding?”,
+rejecting Descartes’ grounds for defining or even attributing supreme
+intelligence to God (Bennet 49). Of course, the idea of supreme
+intelligence, if it is part of God’s essence, can be produced through a
+combination of our capacity to reason and the aforementioned notion of
+infinite nature. Thus, all the qualities Descartes attributes to God can
+be acquired as presentational reality from existing causes.</p>
+<p>Descartes has failed to prove that his definition of God’s essence is
+true or complete, instead relying on his clear &amp; distinct thoughts
+in a seemingly circular manner to support this assertion, all while
+ignoring the paradoxical nature of his purported knowledge. Descartes
+has failed to prove that he has anything more than a presentational
+understanding of God’s essence and therefore cannot justify God’s
+existence in the form that he envisions.</p>
+<h2 class="references-heading">Works Cited</h2>
+<p>Descartes, René. <em>Meditations on First Philosophy</em>, translated
+from the Latin edition of 1641 by Ronald Rubin. Copyright ©1985 by Arete
+Press. Reprinted by permission of the translator and publisher.</p>
+<p>Bennett, Jonathan. <em>Objections to the Meditations and Descartes’s
+Replies</em>. 2017.</p>
+    </div>
+    <a href="index.html#writing" class="article-back">&larr; Back to writing</a>
+  </div>
+
+</body>
+</html>
