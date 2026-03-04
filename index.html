@@ -577,6 +577,179 @@
     }
     .footer-links a:hover { color: var(--gold); }
 
+    /* ── bookshelf ── */
+    #bookshelf {
+      background: var(--panel);
+      border-top: 1px solid var(--panel-border);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 100px 52px;
+    }
+
+    .bookshelf-intro {
+      max-width: 600px;
+      margin-bottom: 3.5rem;
+    }
+
+    .bookshelf-intro p {
+      font-size: 16px;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+
+    .bookshelf-intro a {
+      color: var(--blue);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(120,165,210,0.3);
+      transition: border-color 0.18s;
+    }
+    .bookshelf-intro a:hover { border-color: var(--blue); }
+
+    /* the shelf row */
+    .book-shelf {
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+      padding-bottom: 0;
+      overflow-x: auto;
+      overflow-y: visible;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      /* extra bottom padding so books can lift on hover */
+      padding-top: 14px;
+      margin-bottom: 0;
+    }
+    .book-shelf::-webkit-scrollbar { display: none; }
+
+    /* shelf surface line */
+    .book-shelf-surface {
+      height: 2px;
+      background: linear-gradient(to right, var(--panel-border), rgba(196,162,88,0.35), var(--panel-border));
+      margin-top: 0;
+      border-radius: 1px;
+    }
+
+    /* individual book spine */
+    .book-spine {
+      position: relative;
+      flex-shrink: 0;
+      width: 46px;
+      height: 220px;
+      background: rgba(196,162,88,0.05);
+      border: 1px solid var(--panel-border);
+      border-bottom: 2px solid rgba(196,162,88,0.22);
+      cursor: default;
+      overflow: hidden;
+      /* expand on hover */
+      transition: width 0.35s cubic-bezier(0.22,1,0.36,1),
+                  background 0.25s ease,
+                  border-color 0.25s ease,
+                  transform 0.25s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .book-spine:hover {
+      width: 172px;
+      background: rgba(196,162,88,0.09);
+      border-color: rgba(196,162,88,0.42);
+      transform: translateY(-8px);
+      z-index: 2;
+    }
+
+    /* vary heights per book for shelf realism */
+    .book-spine:nth-child(1)  { height: 230px; }
+    .book-spine:nth-child(2)  { height: 210px; }
+    .book-spine:nth-child(3)  { height: 225px; }
+    .book-spine:nth-child(4)  { height: 215px; }
+    .book-spine:nth-child(5)  { height: 238px; }
+    .book-spine:nth-child(6)  { height: 208px; }
+    .book-spine:nth-child(7)  { height: 228px; }
+    .book-spine:nth-child(8)  { height: 220px; }
+    .book-spine:nth-child(9)  { height: 212px; }
+    .book-spine:nth-child(10) { height: 232px; }
+
+    /* subtle tint variation per book */
+    .book-spine:nth-child(odd)  { background: rgba(196,162,88,0.04); }
+    .book-spine:nth-child(even) { background: rgba(120,165,210,0.04); }
+    .book-spine:nth-child(3n)   { background: rgba(94,207,191,0.03); }
+
+    /* rotated spine title — visible when collapsed */
+    .spine-title {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .spine-title span {
+      display: block;
+      white-space: nowrap;
+      font-family: 'EB Garamond', serif;
+      font-size: 10.5px;
+      letter-spacing: 0.07em;
+      color: rgba(226,221,212,0.60);
+      transform: rotate(-90deg);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 6px;
+    }
+
+    .book-spine:hover .spine-title {
+      opacity: 0;
+    }
+
+    /* expanded info panel — fades in on hover */
+    .spine-panel {
+      position: absolute;
+      inset: 0;
+      padding: 16px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 5px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s 0.12s ease;
+    }
+
+    .book-spine:hover .spine-panel {
+      opacity: 1;
+    }
+
+    .spine-book-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      line-height: 1.3;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .spine-author {
+      font-family: 'Spectral', serif;
+      font-style: italic;
+      font-size: 11px;
+      color: var(--gold);
+      line-height: 1.3;
+    }
+
+    .spine-impact {
+      font-family: 'Spectral', serif;
+      font-size: 10.5px;
+      color: rgba(226,221,212,0.52);
+      line-height: 1.5;
+      margin-top: 5px;
+    }
+
+    /* mobile: scrollable shelf stays, slightly smaller */
+    @media (max-width: 740px) {
+      #bookshelf { padding: 72px 24px; }
+      .book-spine { width: 40px; }
+      .book-spine:hover { width: 150px; }
+    }
+
     /* ── animations ── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(22px); }
@@ -661,7 +834,7 @@
     <li><a href="#research">Research</a></li>
     <li><a href="#writing">Writing</a></li>
     <li><a href="#highlights">Highlights</a></li>
-  </ul>
+    <li><a href="#bookshelf">Reading</a></li>
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 
@@ -670,6 +843,7 @@
   <a href="#research" class="mobile-link">Research</a>
   <a href="#writing" class="mobile-link">Writing</a>
   <a href="#highlights" class="mobile-link">Highlights</a>
+  <a href="#bookshelf" class="mobile-link">Reading</a>
   <a href="https://github.com/HenryZimme" target="_blank" rel="noopener">GitHub</a>
   <a href="https://www.linkedin.com/in/henryszimmerman/" target="_blank" rel="noopener">LinkedIn</a>
 </nav>
@@ -877,7 +1051,7 @@
       <div class="highlights-table">
 
         <div class="highlights-row">
-          <div class="highlights-year">2026</div>
+          <div class="highlights-year">2025</div>
           <div class="highlights-item">
             <h4>VLT/ESPRESSO Spectroscopy Proposal, In Progress</h4>
             <p>Preparing a proposal for time on the Very Large Telescope to obtain a high-S/N spectrum of OGLE-LMC-CEP-1347, in collaboration with Dr. Bogumil Pilecki. The proposed observations would provide direct chemical abundance constraints on the CEP-1347 system, constituting the first spectroscopic follow-up of a dynamically confirmed Cepheid merger candidate.</p>
@@ -893,7 +1067,7 @@
         </div>
 
         <div class="highlights-row">
-          <div class="highlights-year">2026</div>
+          <div class="highlights-year">2025</div>
           <div class="highlights-item">
             <h4>245th AAS Meeting, Phoenix</h4>
             <p>Attended with the Andover Astronomy Research class. Asked Cepheid researchers about tidal effects on Cepheid pulsation; the consensus was that no one had found a system clean enough to test it. Within days of returning, I identified OGLE-LMC-CEP-1347 as the right target and began the analysis that became the CEP-1347 paper.</p>
@@ -909,7 +1083,7 @@
         </div>
 
         <div class="highlights-row">
-          <div class="highlights-year">2025</div>
+          <div class="highlights-year">2024</div>
           <div class="highlights-item">
             <h4>Machine Learning, NYU Tandon School of Engineering</h4>
             <p>Class-best 90% validation accuracy on CIFAR-10 with minimal FLOPs. Applied supervised learning methods to asteroid period convergence prediction and photometric classification.</p>
@@ -925,15 +1099,15 @@
         </div>
 
         <div class="highlights-row">
-          <div class="highlights-year">2024 &ndash;</div>
+          <div class="highlights-year">2024</div>
           <div class="highlights-item">
-            <h4>RenewBlue, Co-Founder and President</h4>
+            <h4>RenewBlue, Founder and President</h4>
             <p>Co-founded a campus sustainability initiative. Organized a multi-school climate-tech hackathon, submitted building-grade algae insulation to The Earth Prize (top 100 finalist), and built a functional model of the school's cogeneration plant.</p>
           </div>
         </div>
 
         <div class="highlights-row">
-          <div class="highlights-year">2025 &ndash;</div>
+          <div class="highlights-year">2025</div>
           <div class="highlights-item">
             <h4>Writing Center Tutor, Phillips Academy</h4>
             <p>I believe the best thinking happens in dialogue. Before joining the tutoring staff, I booked 63 appointments as a student. I didn't go to fix grammar; I went to discuss my ideas with other thinkers who care about rigorous peer review and dialogue. Now, as a tutor, I try to create that same collaborative, iterative environment for others.</p>
@@ -957,6 +1131,113 @@
         </div>
 
       </div>
+    </div>
+  </section>
+
+  <!-- bookshelf -->
+  <section id="bookshelf" class="section">
+    <div class="section-inner">
+      <div class="section-label">Reading</div>
+      <h2 class="section-heading">All-Time Favorites</h2>
+
+      <div class="bookshelf-intro">
+        <p>Reading is where I do my most undirected thinking. I keep a running list of everything I read at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>. The books below are the ones I return to in my head: not necessarily the most important, but the ones that changed how I see something specific and didn't let go.</p>
+      </div>
+
+      <div class="book-shelf" role="list">
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Cry, the Beloved Country</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Cry, the Beloved Country</div>
+            <div class="spine-author">Alan Paton</div>
+            <div class="spine-impact">A lament for a country being devoured by the very order meant to hold it together.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Hitchhiker's Guide</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Hitchhiker's Guide to the Galaxy</div>
+            <div class="spine-author">Douglas Adams</div>
+            <div class="spine-impact">The universe is absurd and indifferent, and somehow that turns out to be a relief.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Man's Search for Meaning</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Man's Search for Meaning</div>
+            <div class="spine-author">Viktor Frankl</div>
+            <div class="spine-impact">The will to find meaning survives even the worst that humans can do to each other.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Cloud Cuckoo Land</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Cloud Cuckoo Land</div>
+            <div class="spine-author">Anthony Doerr</div>
+            <div class="spine-impact">A love letter to storytelling itself, stitched together across centuries and catastrophe.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Kavalier &amp; Clay</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Amazing Adventures of Kavalier &amp; Clay</div>
+            <div class="spine-author">Michael Chabon</div>
+            <div class="spine-impact">Imagination as defiance, myth-making as survival, comics as genuine art.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Idiot</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Idiot</div>
+            <div class="spine-author">Elif Batuman</div>
+            <div class="spine-impact">Over-education and under-certainty, rendered with painful comic precision.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Words That Made Us</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Words That Made Us</div>
+            <div class="spine-author">Akhil Reed Amar</div>
+            <div class="spine-impact">The Constitution is not a document but a centuries-long argument, and the argument is the point.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Histories</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Histories</div>
+            <div class="spine-author">Herodotus</div>
+            <div class="spine-impact">The first act of genuine curiosity about the human past, written by someone who couldn't stop asking why.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Jane Eyre</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Jane Eyre</div>
+            <div class="spine-author">Charlotte Bront&euml;</div>
+            <div class="spine-impact">Moral self-possession made into the engine of a whole novel.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Wide Sargasso Sea</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Wide Sargasso Sea</div>
+            <div class="spine-author">Jean Rhys</div>
+            <div class="spine-impact">Everything the canonical story erased gets its voice back, and it changes the original forever.</div>
+          </div>
+        </div>
+
+      </div><!-- .book-shelf -->
+      <div class="book-shelf-surface"></div>
     </div>
   </section>
 </main>
@@ -1394,7 +1675,7 @@ window.addEventListener('click', on_click);
 window.addEventListener('resize', on_resize);
 
 // -- scroll-spy --
-const nav_sections = ['about', 'research', 'writing', 'highlights'];
+const nav_sections = ['about', 'research', 'writing', 'highlights', 'bookshelf'];
 const nav_link_map = {};
 nav_sections.forEach(id => {
   const a = document.querySelector('.nav-links a[href="#' + id + '"]');
