@@ -1,65 +1,2042 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <defs>
-    <radialGradient id="vig" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#111630"/>
-      <stop offset="100%" stop-color="#03040d"/>
-    </radialGradient>
-    <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#d4a843" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#d4a843" stop-opacity="0.0"/>
-    </linearGradient>
-    <radialGradient id="rg" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#f06050" stop-opacity="0.8"/>
-      <stop offset="100%" stop-color="#f06050" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="bg2" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#6a9ec8" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#6a9ec8" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="c">
-      <circle cx="16" cy="16" r="15"/>
-    </clipPath>
-  </defs>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Henry Zimmerman</title>
+  <meta name="description" content="Henry Zimmerman, junior at Phillips Academy Andover. Astrophysics researcher, writer, and cross-country captain.">
+  <meta property="og:title" content="Henry Zimmerman">
+  <meta property="og:description" content="I follow questions wherever they lead. Astrophysics researcher, writer, cross-country captain.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
+  <style>
+    :root {
+      --bg: #07091a;
+      --gold: #c4a258;
+      --gold-dim: rgba(196, 162, 88, 0.25);
+      --text: #e2ddd4;
+      --text-dim: rgba(226, 221, 212, 0.72);
+      --panel: rgba(7, 9, 26, 0.84);
+      --panel-border: rgba(196, 162, 88, 0.18);
+      --blue: #78a5d2;
+    }
 
-  <circle cx="16" cy="16" r="15" fill="#07091a"/>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
-  <g clip-path="url(#c)">
-    <circle cx="16" cy="16" r="15" fill="url(#vig)" opacity="0.9"/>
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.72;
+      overflow-x: hidden;
+    }
 
-    <line x1="3" y1="24" x2="29" y2="24"
-          stroke="#d4a843" stroke-width="0.35" opacity="0.28" stroke-linecap="round"/>
-    <line x1="18" y1="7" x2="18" y2="24"
-          stroke="#d4a843" stroke-width="0.35" opacity="0.15" stroke-linecap="round"/>
+    a { color: var(--blue); }
 
-    <path
-      d="M 4,10
-         C 6,16 9,25 13,24
-         C 15,24 16,22 18,7
-         C 20,7 22,13 28,15
-         L 28,24 L 4,24 Z"
-      fill="url(#area)"
-    />
+    /* canvas */
+    #star-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
 
-    <path
-      d="M 4,10
-         C 6,16 9,25 13,24
-         C 15,24 16,22 18,7
-         C 20,7 22,13 28,15"
-      fill="none"
-      stroke="#d4a843"
-      stroke-width="2.0"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
+    /* tooltip */
+    #star-tooltip {
+      position: fixed;
+      background: rgba(7, 9, 26, 0.92);
+      border: 1px solid var(--gold-dim);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 1px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s;
+      z-index: 100;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    #star-tooltip.visible { opacity: 1; }
 
-    <circle cx="21" cy="18" r="4.5" fill="url(#rg)"/>
-    <g transform="translate(21,18)" fill="#f06050">
-      <polygon points="0.0,-2.4 0.59,-0.81 2.28,-0.74 0.95,0.31 1.41,1.94 0.0,1.0 -1.41,1.94 -0.95,0.31 -2.28,-0.74 -0.59,-0.81"/>
-    </g>
+    /* star popover: confirmation step before simbad redirect */
+    #star-popover {
+      position: fixed;
+      background: rgba(7, 9, 26, 0.96);
+      border: 1px solid var(--panel-border);
+      padding: 12px 16px;
+      z-index: 150;
+      pointer-events: all;
+      opacity: 0;
+      transition: opacity 0.15s;
+      min-width: 180px;
+      max-width: 260px;
+    }
+    #star-popover.visible { opacity: 1; }
+    #star-popover-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #star-popover-btn {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-decoration: none;
+      border: 1px solid var(--gold-dim);
+      padding: 5px 10px;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    #star-popover-btn:hover {
+      background: rgba(196, 162, 88, 0.1);
+      border-color: rgba(196, 162, 88, 0.5);
+    }
 
-    <circle cx="10" cy="15" r="5" fill="url(#bg2)"/>
-    <g transform="translate(10,15)" fill="#8ab8ff" opacity="0.85">
-      <polygon points="0.0,-2.8 0.68,-0.93 2.66,-0.87 1.09,0.36 1.65,2.27 0.0,1.15 -1.65,2.27 -1.09,0.36 -2.66,-0.87 -0.68,-0.93"/>
-    </g>
-  </g>
-</svg>
+    /* modal */
+    #object-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 18, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s;
+    }
+    #object-modal.visible { opacity: 1; pointer-events: all; }
+
+    .modal-inner {
+      max-width: 580px;
+      width: calc(100% - 40px);
+      max-height: 85vh;
+      background: rgba(9, 12, 28, 0.98);
+      border: 1px solid var(--panel-border);
+      padding: 44px 48px;
+      position: relative;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .modal-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 22px;
+      color: var(--text);
+    }
+
+    .modal-body {
+      font-family: 'Spectral', serif;
+      font-size: 15.5px;
+      line-height: 1.78;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+    }
+
+    .modal-simbad {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--gold);
+      text-decoration: none;
+      border: 1px solid var(--gold-dim);
+      padding: 7px 16px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: background 0.18s, color 0.18s;
+    }
+    .modal-simbad:hover { background: var(--gold); color: var(--bg); }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 18px;
+      cursor: pointer;
+      font-family: 'EB Garamond', serif;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    /* nav */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.65) 0%, transparent 100%);
+    }
+
+    .nav-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-style: italic;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 38px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a.active { color: var(--gold); opacity: 1; }
+
+    /* layout */
+    main { position: relative; z-index: 1; }
+
+    /* hero */
+    #hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 52px 84px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.3s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+
+    .hero-name {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(54px, 9vw, 104px);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+
+    .hero-tagline {
+      font-family: 'Spectral', serif;
+      font-size: clamp(15px, 1.8vw, 19px);
+      font-style: italic;
+      color: var(--text-dim);
+      max-width: 500px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+
+    .hero-arrow {
+      margin-top: 52px;
+      opacity: 0;
+      animation: fadeUp 0.9s 1.1s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .hero-arrow svg {
+      display: block;
+      animation: bounce-down 2.2s 2.2s ease-in-out infinite;
+    }
+    @keyframes bounce-down {
+      0%, 100% { transform: translateY(0); opacity: 0.35; }
+      50%       { transform: translateY(7px); opacity: 0.65; }
+    }
+
+    /* sections */
+    .section {
+      background: var(--panel);
+      border-top: 1px solid var(--panel-border);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 100px 52px;
+    }
+
+    .section-inner {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      letter-spacing: 0.28em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--panel-border);
+    }
+
+    .section-heading {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 52px;
+      letter-spacing: -0.01em;
+    }
+
+    /* about */
+    .about-footnote {
+      margin-top: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      opacity: 0.6;
+      line-height: 1.6;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .about-text .about-lead {
+      font-family: 'EB Garamond', serif;
+      font-size: 22px;
+      line-height: 1.58;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    .about-text p {
+      font-size: 16px;
+      color: var(--text-dim);
+      margin-bottom: 18px;
+      line-height: 1.75;
+    }
+
+    .about-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .meta-item {
+      border-left: 1px solid var(--gold-dim);
+      padding-left: 20px;
+    }
+
+    .meta-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .meta-value {
+      font-size: 14.5px;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    .meta-value a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .meta-value a:hover { text-decoration: underline; }
+
+    /* research */
+    .research-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .research-card {
+      border: 1px solid var(--panel-border);
+      padding: 34px 36px;
+      transition: border-color 0.25s;
+    }
+    .research-card:hover { border-color: rgba(196, 162, 88, 0.4); }
+
+    .card-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 13px;
+    }
+
+    .card-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 14px;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .card-body {
+      font-size: 15px;
+      line-height: 1.78;
+      color: var(--text-dim);
+      margin-bottom: 22px;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--blue);
+      border: 1px solid rgba(91, 138, 181, 0.28);
+      padding: 3px 10px;
+      text-transform: uppercase;
+    }
+
+    .card-link {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--gold-dim);
+      padding-bottom: 1px;
+      transition: border-color 0.18s;
+      margin-bottom: 20px;
+    }
+    .card-link:hover { border-color: var(--gold); }
+
+    /* writing */
+    .writing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .writing-item {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 24px;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(196, 162, 88, 0.1);
+      transition: border-color 0.22s;
+    }
+    .writing-item:first-child { border-top: 1px solid rgba(196, 162, 88, 0.1); }
+    .writing-item:hover { border-color: rgba(196, 162, 88, 0.35); }
+
+    .writing-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding-top: 3px;
+    }
+
+    .writing-venue {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .writing-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+    }
+
+    .writing-content h3 {
+      font-family: 'EB Garamond', serif;
+      font-size: 20px;
+      font-weight: 400;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .writing-content h3 a {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(226, 221, 212, 0.18);
+      transition: border-color 0.18s, color 0.18s;
+    }
+    .writing-content h3 a:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+    .writing-content p {
+      font-size: 14.5px;
+      color: var(--text-dim);
+      line-height: 1.65;
+    }
+
+    @media (max-width: 740px) {
+      .writing-item { grid-template-columns: 1fr; gap: 8px; }
+    }
+
+    /* highlights */
+    .highlights-table {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .highlights-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 24px;
+      padding: 24px 0;
+      border-bottom: 1px solid rgba(196, 162, 88, 0.1);
+    }
+
+    .highlights-year {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--gold);
+      padding-top: 3px;
+      letter-spacing: 0.05em;
+    }
+
+    .highlights-item h4 {
+      font-family: 'EB Garamond', serif;
+      font-size: 18.5px;
+      font-weight: 400;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+
+    .highlights-item p {
+      font-size: 14.5px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .highlights-cta {
+      margin-top: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border: 1px solid var(--gold-dim);
+      padding: 11px 22px;
+      transition: background 0.18s, color 0.18s;
+    }
+    .highlights-cta:hover { background: var(--gold); color: var(--bg); }
+
+    /* footer */
+    footer {
+      background: rgba(5, 7, 18, 0.96);
+      border-top: 1px solid var(--panel-border);
+      padding: 44px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-left {
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+    }
+
+    .footer-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.18s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+
+    /* bookshelf */
+    #bookshelf {
+      background: var(--panel);
+      border-top: 1px solid var(--panel-border);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 100px 52px;
+    }
+
+    .bookshelf-intro {
+      max-width: 600px;
+      margin-bottom: 3.5rem;
+    }
+
+    .bookshelf-intro p {
+      font-size: 16px;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+
+    .bookshelf-intro a {
+      color: var(--blue);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(120,165,210,0.3);
+      transition: border-color 0.18s;
+    }
+    .bookshelf-intro a:hover { border-color: var(--blue); }
+
+    /* shelf row */
+    .book-shelf {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 5px;
+      padding-bottom: 0;
+      overflow-x: auto;
+      overflow-y: visible;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-top: 14px;
+      margin-bottom: 0;
+    }
+    .book-shelf::-webkit-scrollbar { display: none; }
+
+    /* shelf surface line */
+    .book-shelf-surface {
+      height: 2px;
+      background: linear-gradient(to right, var(--panel-border), rgba(196,162,88,0.35), var(--panel-border));
+      margin-top: 0;
+      margin-bottom: 20px;
+      border-radius: 1px;
+    }
+    .book-shelf-surface:last-child { margin-bottom: 0; }
+
+    /* individual book spine */
+    .book-spine {
+      position: relative;
+      flex-shrink: 0;
+      width: 46px;
+      height: 220px;
+      background: rgba(196,162,88,0.05);
+      border: 1px solid var(--panel-border);
+      border-bottom: 2px solid rgba(196,162,88,0.22);
+      cursor: pointer;
+      overflow: hidden;
+      transition: width 0.35s cubic-bezier(0.22,1,0.36,1),
+                  background 0.25s ease,
+                  border-color 0.25s ease,
+                  transform 0.25s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    /* hover and .active share identical expanded state */
+    .book-spine:hover,
+    .book-spine.active {
+      width: 172px;
+      background: rgba(196,162,88,0.09);
+      border-color: rgba(196,162,88,0.42);
+      transform: translateY(-8px);
+      z-index: 2;
+    }
+
+    /* vary heights per book for shelf realism */
+    .book-spine:nth-child(1)  { height: 230px; }
+    .book-spine:nth-child(2)  { height: 210px; }
+    .book-spine:nth-child(3)  { height: 225px; }
+    .book-spine:nth-child(4)  { height: 215px; }
+    .book-spine:nth-child(5)  { height: 238px; }
+    .book-spine:nth-child(6)  { height: 208px; }
+    .book-spine:nth-child(7)  { height: 228px; }
+    .book-spine:nth-child(8)  { height: 220px; }
+    .book-spine:nth-child(9)  { height: 212px; }
+    .book-spine:nth-child(10) { height: 232px; }
+
+    /* subtle tint variation per book */
+    .book-spine:nth-child(odd)  { background: rgba(196,162,88,0.04); }
+    .book-spine:nth-child(even) { background: rgba(120,165,210,0.04); }
+    .book-spine:nth-child(3n)   { background: rgba(94,207,191,0.03); }
+
+    /* rotated spine title — visible when collapsed */
+    .spine-title {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .spine-title span {
+      display: block;
+      white-space: nowrap;
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: rgba(226,221,212,0.60);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
+      max-height: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* hide title on hover or active tap */
+    .book-spine:hover .spine-title,
+    .book-spine.active .spine-title {
+      opacity: 0;
+    }
+
+    /* expanded info panel — fades in on hover or tap */
+    .spine-panel {
+      position: absolute;
+      inset: 0;
+      padding: 16px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 5px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s 0.12s ease;
+    }
+
+    .book-spine:hover .spine-panel,
+    .book-spine.active .spine-panel {
+      opacity: 1;
+    }
+
+    .spine-book-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      line-height: 1.3;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .spine-author {
+      font-family: 'Spectral', serif;
+      font-style: italic;
+      font-size: 12px;
+      color: var(--gold);
+      line-height: 1.3;
+    }
+
+    .spine-impact {
+      font-family: 'Spectral', serif;
+      font-size: 12px;
+      color: rgba(226,221,212,0.52);
+      line-height: 1.5;
+      margin-top: 5px;
+    }
+
+    /* mobile: scrollable shelf stays, slightly smaller */
+    @media (max-width: 740px) {
+      #bookshelf { padding: 72px 24px; }
+      .book-spine { width: 40px; }
+      .book-spine:hover,
+      .book-spine.active { width: 150px; }
+    }
+
+    /* animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* hamburger */
+    .nav-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 51;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--text-dim);
+      transition: transform 0.22s, opacity 0.22s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .nav-mobile {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(7,9,26,0.97);
+      z-index: 49;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      font-family: 'EB Garamond', serif;
+      font-size: 28px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav-mobile a:hover, .nav-mobile a.active { color: var(--gold); }
+    @media (max-width: 740px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+    }
+
+    /* responsive */
+    @media (max-width: 740px) {
+      nav { padding: 18px 24px; }
+      .nav-links { gap: 22px; }
+      #hero { padding: 0 24px 64px; }
+      .section { padding: 72px 24px; }
+      .about-grid { grid-template-columns: 1fr; gap: 44px; }
+      .highlights-row { grid-template-columns: 1fr; gap: 6px; }
+      footer { flex-direction: column; gap: 20px; align-items: flex-start; padding: 36px 24px; }
+    }
+
+    /* profile image frame */
+    .profile-frame {
+      width: 100%;
+      margin-bottom: 2rem;
+      padding: 6px;
+      border: 1px solid var(--gold-dim);
+      background: rgba(196, 162, 88, 0.05);
+      line-height: 0;
+    }
+
+    .profile-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      opacity: 0.95;
+      filter: contrast(1.05);
+    }
+
+  </style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+<div id="star-tooltip"></div>
+
+<div id="star-popover">
+  <div id="star-popover-name"></div>
+  <a id="star-popover-btn" href="#" target="_blank" rel="noopener">View on SIMBAD ↗</a>
+</div>
+
+<div id="object-modal">
+  <div class="modal-inner">
+    <button class="modal-close" id="modal-close-btn">&#x2715;</button>
+    <div class="modal-type" id="modal-type">Featured Object</div>
+    <h2 class="modal-name" id="modal-name"></h2>
+    <p class="modal-body" id="modal-body"></p>
+    <a class="modal-simbad" id="modal-simbad" href="#" target="_blank" rel="noopener">View on SIMBAD</a>
+  </div>
+</div>
+
+<nav>
+  <a href="#hero" class="nav-name">Henry Zimmerman</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#writing">Writing</a></li>
+    <li><a href="#highlights">Highlights</a></li>
+    <li><a href="#bookshelf">Reading</a></li>
+  </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<nav class="nav-mobile" id="nav-mobile">
+  <a href="#about" class="mobile-link">About</a>
+  <a href="#research" class="mobile-link">Research</a>
+  <a href="#writing" class="mobile-link">Writing</a>
+  <a href="#highlights" class="mobile-link">Highlights</a>
+  <a href="#bookshelf" class="mobile-link">Reading</a>
+  <a href="https://github.com/HenryZimme" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://www.linkedin.com/in/henryszimmerman/" target="_blank" rel="noopener">LinkedIn</a>
+</nav>
+
+<main>
+  <!-- hero -->
+  <section id="hero">
+    <p class="hero-eyebrow">Phillips Academy Andover, Class of 2027</p>
+    <h1 class="hero-name">Henry<br>Zimmerman</h1>
+    <p class="hero-tagline">I follow questions wherever they lead.</p>
+    <div class="hero-arrow">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 7l6 6 6-6" stroke="rgba(196,162,88,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- about -->
+  <section id="about" class="section">
+    <div class="section-inner">
+      <div class="section-label">About</div>
+      <h2 class="section-heading">About</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p class="about-lead">I'm a junior at Phillips Academy who follows questions across fields, whether that means reading merger signatures in stellar pulsation data, writing about democratic backsliding in post-reunification Germany, or asking what it even means to believe something.</p>
+          <p>My main scientific work is in time-domain astronomy. In OGLE-LMC-CEP-1347, I recovered a non-radial frequency triplet whose spacing implies a rotation period far slower than the orbital period in an already-circularized orbit, a signature inconsistent with tidal locking and consistent with a recent merger disrupting the star's spin.</p>
+          <p>A parallel thread is asteroid rotation: I am determining the first confirmed synodic period for main-belt asteroid 7605 Cindygraber, coordinating multi-site observations across Chile, Australia, and the Canary Islands using an open-source scheduler I built for the project.</p>
+          <p>I co-created <a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, a philosophical website and podcast series examining theodicy, divine perfection, and the epistemology of religious faith, developed alongside a classmate for PHR380: Faith and Doubt at Andover. The same instinct that pulls me toward hard scientific questions pulls me toward hard philosophical ones.</p>
+          <p>Outside research, I captain the cross-country team, play jazz guitar, and founded RenewBlue, a campus sustainability initiative. I am drawn to problems that require patience, precision, and a willingness to tear down a model when the data demands it.</p>
+        </div>
+
+        <div class="about-meta">
+          <div class="profile-frame">
+            <img src="HSZ_Headshot_BW.jpeg" alt="Henry Zimmerman">
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Affiliation</div>
+            <div class="meta-value">Phillips Academy Andover<br>Class of 2027</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Research Interests</div>
+            <div class="meta-value">Asteroseismology<br>Binary Cepheids<br>Stellar mergers<br>Cosmic distance scale<br>Minor planet photometry</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Collaborator</div>
+            <div class="meta-value">Dr. Bogumil Pilecki (CAMK Warsaw)</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Contact</div>
+            <div class="meta-value" id="contact-email"></div>
+          </div>
+        </div>
+
+      </div>
+      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. The pulsing objects are from my own research.</p>
+    </div>
+  </section>
+
+  <!-- research -->
+  <section id="research" class="section">
+    <div class="section-inner">
+      <div class="section-label">Research</div>
+      <h2 class="section-heading">Research</h2>
+      <div class="research-cards">
+
+        <div class="research-card">
+          <div class="card-id">Primary Research, In Preparation</div>
+          <h3 class="card-title">First Asteroseismic Evidence of Merger Origin in a Binary Cepheid</h3>
+          <p class="card-body">
+            I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary Cepheid in the Large Magellanic Cloud with the shortest known orbital period in its class (~59 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I recovered a non-radial frequency triplet with spacing &Delta;f &approx; 0.0074 c/d. I validated this with a dual-domain frequency and time-evolution O-C analysis, and derived an implied rotation period of ~135 days. This is substantially slower than the 58.85 day orbital period, meaning that tidal synchronization hasn't yet occured. Since my tidal theory calculations predict that synchronization precedes circularization by over an order of magnitude, finding asynchronous rotation in a circular orbit indicates the Cepheid's spin was recently disrupted by a merger. Mode switching among four pulsation modes across the observing baseline provides additional evidence of a transient post-merger thermal state. This constitutes what appears to be the first asteroseismic evidence for merger origin in a Cepheid.
+          </p>
+          <div class="card-tags">
+            <span class="tag">Asteroseismology</span>
+            <span class="tag">Binary Cepheids</span>
+            <span class="tag">OGLE</span>
+            <span class="tag">Fourier Analysis</span>
+            <span class="tag">Stellar Mergers</span>
+            <span class="tag">LMC</span>
+          </div>
+        </div>
+
+        <div class="research-card">
+          <div class="card-id">Ongoing</div>
+          <h3 class="card-title">Rotation Period and Taxonomy of 7605 Cindygraber</h3>
+          <p class="card-body">
+            I am determining the first confirmed synodic rotation period for main-belt asteroid 7605 Cindygraber. I trained machine learning models on the ALCDEF Light Curve Database to predict period convergence requirements, wrote a formal observing proposal supported by this analysis, and am coordinating multi-site photometric observations across four Slooh observatories (G40 Canary Islands, W88 Chile, E62 Australia, I12 Phillips Academy). I am also extracting spectra from diffraction grating images to constrain its taxonomic classification. Observations are scheduled using an open-source Python tool I built for the project: it queries MPC ephemerides, computes per-site astronomical twilight, and models lunar sky brightness via the Krisciunas-Schaefer model. Preparing results for submission to the Minor Planet Bulletin.
+          </p>
+          <a class="card-link" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Observing Scheduler on GitHub</a>
+          <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics on GitHub</a>
+          <div class="card-tags">
+            <span class="tag">Photometry</span>
+            <span class="tag">Minor Planets</span>
+            <span class="tag">Machine Learning</span>
+            <span class="tag">ALCDEF</span>
+            <span class="tag">Spectroscopy</span>
+            <span class="tag">Python</span>
+          </div>
+        </div>
+
+        <div class="research-card">
+          <div class="card-id">Completed, with Dr. José Zorrilla</div>
+          <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
+          <p class="card-body">
+            My first independent research target. I remotely operated the Slooh Chile 432mm telescope for two months, performing multi-band (V&minus;I) differential photometry of the classical Cepheid U Sgr in open cluster M25. Sinusoidal light curve fits confirmed the 6.74-day period (R&sup2; = 0.93 V-band, 0.70 I-band). V-band distance calculations yielded 40.8% error versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially attenuates shorter wavelengths and why extinction corrections are critical for Cepheid distance work. Strong color index correlation (r = 0.85) provided independent evidence for the kappa-mechanism. The project expanded into an investigation of metallicity-dependent corrections to the period-luminosity relation. Next: examining whether U Sgr shows analogous post-merger asteroseismic signatures to those found in CEP-1347.
+          </p>
+          <div class="card-tags">
+            <span class="tag">Cepheid Variables</span>
+            <span class="tag">Differential Photometry</span>
+            <span class="tag">Distance Scale</span>
+            <span class="tag">Dust Extinction</span>
+            <span class="tag">Period-Luminosity</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- writing -->
+  <section id="writing" class="section">
+    <div class="section-inner">
+      <div class="section-label">Writing</div>
+      <h2 class="section-heading">Writing</h2>
+      <div class="writing-list">
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Phillipian</div>
+            <div class="writing-date">October 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="https://phillipian.net/2025/10/03/why-im-not-all-in-on-the-in-class-onslaught/" target="_blank" rel="noopener">Why I'm Not "All In" On the In-Class Onslaught</a></h3>
+            <p>Opinion piece arguing that mass in-class writing assessments (adopted to counter AI) curtail the very iterative thinking they aim to protect, drawing on a published study of time constraints and writing quality.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Revere</div>
+            <div class="writing-date">March 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="https://the-revere.com/2025/03/whats-at-stake-in-greenland/" target="_blank" rel="noopener">What's at Stake in Greenland?</a></h3>
+            <p>Analysis of Trump's Arctic ambitions: why Greenland's strategic value is real, why the approach is counterproductive, and how the sovereignty question reshapes precedent for Ukraine and Taiwan.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Revere</div>
+            <div class="writing-date">February 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="https://the-revere.com/2025/02/germanys-far-right-comeback-why-you-should-be-worried-about-the-afd/" target="_blank" rel="noopener">Germany's Far-Right Comeback: Why You Should Be Worried About the AfD</a></h3>
+            <p>On the AfD's rise from eurosceptic fringe to Germany's second-largest party: its causes, its geopolitical alignment with Russia and China, and what it means for European cohesion.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Japan Periodical</div>
+            <div class="writing-date">Fall 2024</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="japan.html">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</a></h3>
+            <p>Japan's demographic crisis through the lens of its historically restrictive immigration framework: what the recent policy shifts signal, and whether they go far enough.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">Academic Essay</div>
+            <div class="writing-date">Spring 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="muralism.html">Muerte al Invasor: Examining Siqueiros's Activist Muralism Through his Chillán Mural</a></h3>
+            <p>How David Alfaro Siqueiros's mural in Chillán, Chile reframes a shared Latin American history of colonial resistance while covertly advancing a Marxist critique of capitalism's imperial legacies.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">Academic Essay</div>
+            <div class="writing-date">Spring 2024</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="baghdad.html">Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad</a></h3>
+            <p>How caliph al-Mansour transformed an ancient legend into the center of Islamic trade, symbolic power, and intellectual life in under a century.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">Academic Essay</div>
+            <div class="writing-date">February 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="descartes.html">Disproving Descartes&#8217; Divine Definition Divination</a></h3>
+            <p>A close reading of the <em>Meditations</em> arguing that Descartes cannot prove God's existence because he cannot by his own definitions possess sufficient knowledge of God's essence to define it.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- highlights -->
+  <section id="highlights" class="section">
+    <div class="section-inner">
+      <div class="section-label">Highlights</div>
+      <h2 class="section-heading">Highlights</h2>
+      <div class="highlights-table">
+
+        <div class="highlights-row">
+          <div class="highlights-year">2026</div>
+          <div class="highlights-item">
+            <h4>VLT/ESPRESSO Spectroscopy Proposal, In Progress</h4>
+            <p>Preparing a proposal for time on the Very Large Telescope to obtain a high-S/N spectrum of OGLE-LMC-CEP-1347, in collaboration with Dr. Bogumil Pilecki. The proposed observations would provide direct chemical abundance constraints on the CEP-1347 system, constituting the first spectroscopic follow-up of a dynamically confirmed Cepheid merger candidate.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>245th AAS Meeting, Phoenix</h4>
+            <p>Attended with the Andover Astronomy Research class. Asked Cepheid researchers about tidal effects on Cepheid pulsation; the consensus was that no one had found a system clean enough to test it. Within days of returning, I identified OGLE-LMC-CEP-1347 as the right target and began the analysis that became the CEP-1347 paper.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>Writing Center Tutor, Phillips Academy</h4>
+            <p>I believe the best thinking happens in dialogue. Before joining the tutoring staff, I booked 63 appointments as a student. I didn't go to fix grammar; I went to discuss my ideas with other thinkers who care about rigorous peer review and dialogue. Now, as a tutor, I try to create that same collaborative, iterative environment for others.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>Machine Learning, NYU Tandon School of Engineering</h4>
+            <p>Class-best 90% validation accuracy on CIFAR-10 with minimal FLOPs. Applied supervised learning methods to asteroid period convergence prediction and photometric classification.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>SHAD Canada, University of British Columbia</h4>
+            <p>Designed a mesh reinforcement system to improve ductility and fracture resistance of Arctic ice roads. Derived expected mechanical behavior from composite materials literature and specified a validation protocol (3-point bending, Charpy impact, in-situ cantilever, environmental cycling) to test predictions against physical samples.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>The Webster Award &mdash; History &amp; Social Sciences</h4>
+            <p>Phillips Academy's departmental honor in history and the social sciences for achievement in the first two years.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4><a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, Philosophy of Religion</h4>
+            <p>Co-created a podcast series and website examining theodicy, divine perfection, design arguments, and the epistemology of religious faith. Developed with Genie Han for PHR380: Faith and Doubt at Phillips Academy Andover.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2024</div>
+          <div class="highlights-item">
+            <h4>RenewBlue, Co-Founder and Leader</h4>
+            <p>Co-founded a campus sustainability initiative. Organized a multi-school climate-tech hackathon, submitted building-grade algae insulation to The Earth Prize (top 100 finalist), and built a functional model of the school's cogeneration plant.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2024</div>
+          <div class="highlights-item">
+            <h4>Cleanhill Partners, Research Intern</h4>
+            <p>Researched sustainable technologies in the industrial heat sector for an energy-transition-focused private equity firm. Produced a report on emerging solutions and presented findings to senior partners.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2023 &ndash;</div>
+          <div class="highlights-item">
+            <h4>Phillips Academy Andover</h4>
+            <p>Rigorous Course Load: AP Physics C: Mechanics and E&amp;M, BC Calculus, Advanced College Chemistry, Astronomy Research. Scholastic Art and Writing Silver Key. Cross-Country Captain, 2026 season; personal records 16:30 5km XC, 4:24 1500m.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- bookshelf -->
+  <section id="bookshelf" class="section">
+    <div class="section-inner">
+      <div class="section-label">Reading</div>
+      <h2 class="section-heading">All-Time Favorites</h2>
+
+      <div class="bookshelf-intro">
+        <p>Reading is where I do my most undirected thinking. I keep a running list of everything interesting I read online at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>. The books below are the ones I return to in my head. These are not necessarily the most important, but they're the ones that changed how I see something specific and didn't let me forget them.</p>
+      </div>
+
+      <div id="bookshelf-pool" style="display:none">
+
+ <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Misbehaving</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Misbehaving: The Making of Behavioral Economics</div>
+            <div class="spine-author">Richard Thaler</div>
+            <div class="spine-impact">People aren't perfectly rational, and that's a feature, not a bug.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Rain God</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Rain God</div>
+            <div class="spine-author">Arturo Islas</div>
+            <div class="spine-impact">Martyrdom cannot be aspirational; it only values your action and devotion to the cause.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Cry, the Beloved Country</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Cry, the Beloved Country</div>
+            <div class="spine-author">Alan Paton</div>
+            <div class="spine-impact">A lament for a country being devoured by the very order meant to hold it together.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Man's Search for Meaning</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Man's Search for Meaning</div>
+            <div class="spine-author">Viktor Frankl</div>
+            <div class="spine-impact">The will to find meaning survives even the worst that humans can do to each other.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Walking</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Walking</div>
+            <div class="spine-author">Henry David Thoreau</div>
+            <div class="spine-impact">A reminder that intense thought requires the freedom of the woods to inspire and calm the mind. Insights arrive mid-stride.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Words That Made Us</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Words That Made Us</div>
+            <div class="spine-author">Akhil Reed Amar</div>
+            <div class="spine-impact">The Constitution is not a document but a centuries-long argument, and the argument is the point.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>1984</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">1984</div>
+            <div class="spine-author">George Orwell</div>
+            <div class="spine-impact">A study on the fragility of objective truth. The scientist's duty is to protect data against the gravity of narrative.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Jane Eyre</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Jane Eyre</div>
+            <div class="spine-author">Charlotte Bront&euml;</div>
+            <div class="spine-impact">Moral self-possession made into the engine of a whole novel.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Wide Sargasso Sea</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Wide Sargasso Sea</div>
+            <div class="spine-author">Jean Rhys</div>
+            <div class="spine-impact">Everything the canonical story erased gets its voice back, changing the original forever.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Idiot</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Idiot</div>
+            <div class="spine-author">Elif Batuman</div>
+            <div class="spine-impact">Over-education and under-certainty, rendered with painful comic precision.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Meditations on First Philosophy</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Meditations on First Philosophy</div>
+            <div class="spine-author">René Descartes</div>
+            <div class="spine-impact">Even the greatest thinkers can falter when caught up in their own deepest convictions.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Histories</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Histories</div>
+            <div class="spine-author">Herodotus</div>
+            <div class="spine-impact">The first act of genuine curiosity about the human past, written by someone who couldn't stop asking why.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Hitchhiker's Guide</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Hitchhiker's Guide to the Galaxy</div>
+            <div class="spine-author">Douglas Adams</div>
+            <div class="spine-impact">The universe is absurd and indifferent, and somehow that turns out to be a relief.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Kavalier &amp; Clay</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Amazing Adventures of Kavalier &amp; Clay</div>
+            <div class="spine-author">Michael Chabon</div>
+            <div class="spine-impact">Imagination as defiance, myth-making as survival, comics as genuine art.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Cloud Cuckoo Land</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Cloud Cuckoo Land</div>
+            <div class="spine-author">Anthony Doerr</div>
+            <div class="spine-impact">A love letter to storytelling itself, stitched together across centuries and catastrophe.</div>
+          </div>
+        </div>
+
+      </div><!-- #bookshelf-pool -->
+      <div id="bookshelf-rows"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-left">Henry Zimmerman, Phillips Academy Andover, Class of 2027</div>
+  <div class="footer-links">
+    <a href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Asteroid Scheduler</a>
+    <a href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics</a>
+    <a href="https://github.com/HenryZimme" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.linkedin.com/in/henryszimmerman/" target="_blank" rel="noopener">LinkedIn</a>
+  </div>
+</footer>
+
+<script>
+const canvas = document.getElementById('star-canvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('star-tooltip');
+const modal = document.getElementById('object-modal');
+const popover = document.getElementById('star-popover');
+const popover_name = document.getElementById('star-popover-name');
+const popover_btn = document.getElementById('star-popover-btn');
+
+document.getElementById('modal-close-btn').addEventListener('click', close_modal);
+modal.addEventListener('click', e => { if (e.target === modal) close_modal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { close_modal(); close_popover(); } });
+
+// featured research objects, open modal on click, pulse gold on canvas
+const featured_objects = [
+  {
+    name: "OGLE-LMC-CEP-1347 | v = 17.08",
+    ra_deg: 83.625,
+    dec_deg: -69.27,
+    simbad_id: "OGLE+LMC+CEP+1347",
+    type: "Binary Cepheid Variable  |  Large Magellanic Cloud",
+    writeup: "My primary research target: a double-overtone binary Cepheid in the Large Magellanic Cloud with the shortest known orbital period among binary Cepheids (~59 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline applied to six years of OGLE photometry, I recovered a non-radial frequency triplet with spacing \u0394f = 0.0074 c/d, the signature of rotation-induced mode splitting. After a dual-domain time-series analysis for validation I determined an implied rotation period of ~135 days, which is slower than the orbital period in an already-circularized system. Since tidal synchronization precedes circularization by orders of magnitude, finding asynchronous rotation in a circular orbit indicates the Cepheid's spin was recently disrupted by a merger. Mode switching among four pulsation modes across the observing baseline provides further evidence of a transient post-merger thermal state. This constitutes what appears to be the first asteroseismic confirmation of merger origin in a binary Cepheid. In preparation, in collaboration with Dr. Bogumil Pilecki (CAMK Warsaw)."
+  },
+  {
+    name: "U Sagittarii | v = 6.68",
+    ra_deg: 277.972,
+    dec_deg: -19.125,
+    simbad_id: "U+Sgr",
+    type: "Classical Cepheid Variable  |  Open Cluster M25",
+    writeup: "My first independent research target. U Sgr is a classical Cepheid variable embedded in open cluster M25, with a pulsation period of ~6.745 days driven by the kappa-mechanism. Using multi-band (V\u2212I) differential photometry from remotely scheduled nightly observations, I measured a distance modulus with 1.9% error, within the 4% margin set by the M25 Hipparcos parallax. I characterized dust extinction along the line of sight by comparing V-band and I-band distance moduli, and cross-validated against literature values. The project expanded into an investigation of metallicity-dependent corrections to the Cepheid period-luminosity relation and their implications for the cosmic distance scale."
+  },
+  {
+    name: "7605 Cindygraber | v = 16.0",
+    ra_deg: 163.5,
+    dec_deg: 14.2,
+    catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605",
+    type: "Main-Belt Asteroid  |  Indicative sky position",
+    writeup: "My ongoing asteroid rotation project. 7605 Cindygraber has no confirmed synodic rotation period in the literature. I trained machine learning models on the ALCDEF Light Curve Database to predict period convergence requirements as a function of observing cadence, wrote a formal multi-site observing proposal supported by a statistical analysis, and am coordinating photometric observations across sites in Chile, Australia, and the Canary Islands using my open-source asteroid observing scheduler. I am also extracting and stacking spectra from diffraction grating images of the asteroid to constrain its taxonomic classification. Note: the marker position shown here and the visual magnitude is indicative, as asteroid sky coordinates and brightness change. Follow the GitHub link to the live ephemeris scheduler."
+  },
+  {
+    name: "19243 Bunting | v = 15.9",
+    ra_deg: 210.0,
+    dec_deg: 8.5,
+    catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243",
+    type: "Main-Belt Asteroid  |  Indicative sky position",
+    writeup: "A second target in the same multi-site observing campaign. I am determining the first confirmed synodic rotation period for 19243 Bunting in parallel with Cindygraber, using the same photometric pipeline and open-source scheduler. Observations are coordinated across sites in Chile, Australia, and the Canary Islands. Note: the marker position shown here and the visual magnitude is indicative, as asteroid sky coordinates and brightness change."
+  },
+  {
+    name: "HD 344787 | v = 9.32",
+    ra_deg: 295.872,
+    dec_deg: 23.178,
+    simbad_id: "HD344787",
+    pipeline: true,
+    type: "Active Investigation  |  Northern Sky",
+    writeup: "At the 245th AAS meeting, I watched Dupree &amp; MacLeod present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris? Is it alone, or is something else there, invisible and waiting to be found?"
+  }
+];
+
+// rendering state
+let star_data = [];
+let mouse = { x: -9999, y: -9999 };
+let hover_star = null;
+let time_s = 0;
+let catalog_loaded = false;
+
+// deterministic rng, used only for per-star twinkle phase assignment
+function make_rng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = Math.imul(1664525, s) + 1013904223 >>> 0;
+    return s / 0xffffffff;
+  };
+}
+
+// equirectangular projection: ra [0, 360) degrees -> x, dec [-90, 90] -> y
+function project(ra_deg, dec_deg) {
+  return {
+    x: (ra_deg / 360) * canvas.width,
+    y: (1 - (dec_deg + 90) / 180) * canvas.height
+  };
+}
+
+// rebuild pixel coordinates after resize, ra/dec stored on each star
+function reproject() {
+  for (const s of star_data) {
+    const p = project(s.ra_deg, s.dec_deg);
+    s.x = p.x;
+    s.y = p.y;
+  }
+}
+
+// build internal star_data from parsed catalog array
+// catalog entry format: [ra_deg, dec_deg, vmag, color_hex, name_or_null]
+function build_stars(catalog) {
+  star_data = [];
+  const rng = make_rng(31415);
+
+  for (const [ra_deg, dec_deg, vmag, color, name] of catalog) {
+    const pos = project(ra_deg, dec_deg);
+    // scale dot size by magnitude: brighter = larger
+    const size = Math.max(0.4, (7.2 - vmag) * 0.38);
+    const is_named = name !== null;
+
+    star_data.push({
+      x: pos.x,
+      y: pos.y,
+      ra_deg,
+      dec_deg,
+      size,
+      mag: vmag,
+      name: is_named ? name : null,
+      // simbad uses the star name for named stars
+      simbad_id: is_named ? name : null,
+      phase: rng() * Math.PI * 2,
+      freq: 0.3 + rng() * 1.4,
+      featured: false,
+      color
+    });
+  }
+
+  // add featured research objects on top
+  const featured_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
+  for (let fi = 0; fi < featured_objects.length; fi++) {
+    const obj = featured_objects[fi];
+    const pos = project(obj.ra_deg, obj.dec_deg);
+    const rng2 = make_rng(99999 + fi * 7);
+    star_data.push({
+      x: pos.x,
+      y: pos.y,
+      ra_deg: obj.ra_deg,
+      dec_deg: obj.dec_deg,
+      size: 3.5,
+      mag: 0,
+      name: obj.name,
+      simbad_id: obj.simbad_id,
+      phase: rng2() * Math.PI * 2,
+      freq: 1.2 + fi * 0.2,
+      featured: true,
+      obj_data: obj,
+      color: featured_colors[fi] || '#c4a258'
+    });
+  }
+}
+
+// ── draw helpers ─────────────────────────────────────────────────────────────
+
+// convert #rrggbb to rgba(r,g,b,a) string
+function hex_to_rgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function draw_background_star(s, twinkle) {
+  const alpha = 0.32 + 0.24 * twinkle;
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+  ctx.fillStyle = s.color;
+  ctx.globalAlpha = alpha;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function draw_named_star(s, twinkle) {
+  // soft glow for brighter stars
+  if (s.size > 1.6) {
+    const gr = s.size * 3.4;
+    const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
+    // tint glow by star color (parse hex to rgb for rgba)
+    grd.addColorStop(0, hex_to_rgba(s.color, 0.20 * twinkle));
+    grd.addColorStop(1, hex_to_rgba(s.color, 0));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, gr, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+  }
+
+  const alpha = 0.70 + 0.30 * twinkle;
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+  ctx.fillStyle = s.color;
+  ctx.globalAlpha = alpha;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function draw_featured_star(s) {
+  const is_pipeline = s.obj_data && s.obj_data.pipeline;
+  // pipeline objects: slower period (0.6x), lower peak alpha
+  const pulse_freq = is_pipeline ? 1.9 * 0.6 : 1.9;
+  const pulse = 0.5 + 0.5 * Math.sin(time_s * pulse_freq + s.phase);
+  const glow_r = 16 + pulse * 5;
+  const c = s.color;
+  const glow_alpha = is_pipeline ? 0.22 : 0.45;
+  const ring_base  = is_pipeline ? 0.12 : 0.28;
+  const ring_pulse = is_pipeline ? 0.22 : 0.45;
+
+  // radial glow
+  const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glow_r);
+  grd.addColorStop(0, hex_to_rgba(c, glow_alpha));
+  grd.addColorStop(1, hex_to_rgba(c, 0));
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, glow_r, 0, Math.PI * 2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  // orbit ring
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, 8 + pulse * 2.5, 0, Math.PI * 2);
+  ctx.strokeStyle = hex_to_rgba(c, ring_base + pulse * ring_pulse);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // core dot
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+  ctx.fillStyle = c;
+  ctx.fill();
+}
+
+function draw_hover_ring(s) {
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, s.size + 5, 0, Math.PI * 2);
+  ctx.strokeStyle = s.featured
+    ? hex_to_rgba(s.color, 0.85)
+    : 'rgba(200,215,245,0.60)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+function draw_canvas_legend() {
+  const items = featured_objects.map((obj, i) => ({
+    label: obj.name,
+    color: ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'][i] || '#c4a258'
+  }));
+
+  ctx.save();
+  ctx.font = '600 10px "JetBrains Mono", monospace';
+  ctx.textBaseline = 'middle';
+
+  const dot_r = 4;
+  const row_h = 18;
+  const pad_x = 14;
+  const pad_y = 12;
+  const gap = 8;   // gap between dot and text
+
+  // measure widest label
+  const widths = items.map(it => ctx.measureText(it.label).width);
+  const col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
+
+  const total_w = items.length * col_w;
+  let x = pad_x;
+  const y = canvas.height - pad_y - row_h / 2;
+
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    const cx = x + dot_r;
+
+    // pulsing dot
+    const pulse = 0.5 + 0.5 * Math.sin(time_s * (1.2 + i * 0.2));
+    const glow = ctx.createRadialGradient(cx, y, 0, cx, y, dot_r * 3);
+    glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
+    glow.addColorStop(1, hex_to_rgba(it.color, 0));
+    ctx.beginPath();
+    ctx.arc(cx, y, dot_r * 3, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(cx, y, dot_r, 0, Math.PI * 2);
+    ctx.fillStyle = it.color;
+    ctx.globalAlpha = 0.8 + 0.2 * pulse;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // label
+    ctx.fillStyle = 'rgba(200,215,245,0.52)';
+    ctx.fillText(it.label, cx + dot_r + gap, y);
+
+    x += col_w;
+  }
+
+  // 'click to explore' load hint
+  if (hint_alpha > 0) {
+    ctx.save();
+    ctx.font = '300 10px "JetBrains Mono", monospace';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.6 + ')';
+    ctx.fillText('click to explore', pad_x, canvas.height - pad_y - row_h / 2 - 22);
+    ctx.restore();
+  }
+}
+
+// ── main render loop ──────────────────────────────────────────────────────────
+
+function draw(ts) {
+  time_s = ts * 0.001;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!catalog_loaded) {
+    requestAnimationFrame(draw);
+    return;
+  }
+
+  hover_star = null;
+  let min_d = 14;
+
+  for (const s of star_data) {
+    const twinkle = 0.78 + 0.22 * Math.sin(time_s * s.freq + s.phase);
+
+    if (s.featured) {
+      draw_featured_star(s);
+    } else if (s.name) {
+      draw_named_star(s, twinkle);
+      // hover detection only for named + featured stars
+      const dx = mouse.x - s.x, dy = mouse.y - s.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < min_d) { min_d = d; hover_star = s; }
+    } else {
+      draw_background_star(s, twinkle);
+    }
+  }
+
+  // featured hover detection (drawn after named so they win proximity ties)
+  for (const s of star_data) {
+    if (!s.featured) continue;
+    const dx = mouse.x - s.x, dy = mouse.y - s.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < 20) { hover_star = s; }
+  }
+
+  if (hover_star) {
+    draw_hover_ring(hover_star);
+    canvas.style.cursor = 'pointer';
+  } else {
+    canvas.style.cursor = 'default';
+  }
+
+  draw_canvas_legend();
+  requestAnimationFrame(draw);
+}
+
+// ── interaction ───────────────────────────────────────────────────────────────
+
+function canvas_exposed_at(x, y) {
+  // canvas is only interactable when the cursor is over #hero,
+  // the only section without an opaque background panel
+  const rect = document.getElementById('hero').getBoundingClientRect();
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function on_mouse_move(e) {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+
+  if (hover_star && canvas_exposed_at(e.clientX, e.clientY)) {
+    const mag_str = hover_star.featured
+      ? ''
+      : `  | v = ${hover_star.mag.toFixed(2)}`;
+    tooltip.textContent = `${hover_star.name}${mag_str}`;
+    tooltip.style.left = (e.clientX + 16) + 'px';
+    tooltip.style.top  = (e.clientY - 28) + 'px';
+    tooltip.classList.add('visible');
+  } else {
+    tooltip.classList.remove('visible');
+    // dismiss stale popover once cursor leaves all named stars
+    if (!hover_star) close_popover();
+  }
+}
+
+function on_click(e) {
+  if (!hover_star) { close_popover(); return; }
+  if (!canvas_exposed_at(e.clientX, e.clientY)) return;
+  if (hover_star.featured) {
+    close_popover();
+    open_modal(hover_star.obj_data);
+  } else {
+    // ctrl/cmd+click: bypass confirmation and open directly
+    if (e.ctrlKey || e.metaKey) {
+      const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
+      window.open(url, '_blank', 'noopener');
+      return;
+    }
+    const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
+    open_popover(hover_star.name, url, e.clientX, e.clientY);
+  }
+}
+
+// touch handler for canvas: direct tap-to-open, no hover needed
+function on_touch_start(e) {
+  // don't process canvas taps when modal is open
+  if (modal.classList.contains('visible')) return;
+
+  const touch = e.changedTouches[0];
+  const tx = touch.clientX;
+  const ty = touch.clientY;
+
+  if (!canvas_exposed_at(tx, ty)) return;
+
+  // update mouse position so render loop reflects touch
+  mouse.x = tx;
+  mouse.y = ty;
+
+  // check featured stars first (larger tap target)
+  let best = null;
+  let best_d = 38;
+  for (const s of star_data) {
+    if (!s.featured) continue;
+    const dx = tx - s.x, dy = ty - s.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < best_d) { best_d = d; best = s; }
+  }
+
+  if (best) {
+    e.preventDefault();
+    open_modal(best.obj_data);
+    return;
+  }
+
+  // fallback: named catalog stars with slightly wider radius than mouse
+  let best_named = null;
+  let best_nd = 22;
+  for (const s of star_data) {
+    if (!s.name || s.featured) continue;
+    const dx = tx - s.x, dy = ty - s.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < best_nd) { best_nd = d; best_named = s; }
+  }
+
+  if (best_named) {
+    e.preventDefault();
+    const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
+    open_popover(best_named.name, url, tx, ty);
+  }
+}
+
+function open_popover(name, url, cx, cy) {
+  popover_name.textContent = name;
+  popover_btn.href = url;
+
+  // position near click, clamped to viewport
+  popover.style.left = '0px';
+  popover.style.top  = '0px';
+  popover.classList.add('visible');
+  const pw = popover.offsetWidth;
+  const ph = popover.offsetHeight;
+  const left = Math.min(cx + 14, window.innerWidth  - pw - 12);
+  const top  = Math.min(cy - 8,  window.innerHeight - ph - 12);
+  popover.style.left = Math.max(8, left) + 'px';
+  popover.style.top  = Math.max(8, top)  + 'px';
+}
+
+function close_popover() {
+  popover.classList.remove('visible');
+}
+
+function open_modal(obj) {
+  document.getElementById('modal-type').textContent = obj.type;
+  document.getElementById('modal-name').textContent = obj.name;
+  document.getElementById('modal-body').innerHTML = obj.writeup;
+  const link = document.getElementById('modal-simbad');
+  if (obj.catalog_url) {
+    link.href = obj.catalog_url;
+    link.textContent = 'View on JPL Small-Body Database';
+  } else {
+    link.href = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id)}`;
+    link.textContent = 'View on SIMBAD';
+  }
+  modal.classList.add('visible');
+}
+
+function close_modal() {
+  modal.classList.remove('visible');
+}
+
+// prevent touches on the modal from reaching the canvas touch handler
+const modal_inner = document.querySelector('.modal-inner');
+modal_inner.addEventListener('touchstart', (e) => {
+  e.stopPropagation();
+}, { passive: true });
+modal_inner.addEventListener('touchmove', (e) => {
+  e.stopPropagation(); // lets modal scroll without moving star field
+}, { passive: true });
+
+// close popover when clicking outside it (on non-star areas)
+document.addEventListener('click', (e) => {
+  if (!popover.contains(e.target) && e.target !== canvas) close_popover();
+});
+
+// ── resize ───────────────────────────────────────────────────────────────────
+
+function on_resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  reproject();
+}
+
+// ── init: fetch catalog, build stars, start loop ───────────────
+function init() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  fetch('stars.json')
+    .then(r => r.json())
+    .then(catalog => {
+      build_stars(catalog);
+      catalog_loaded = true;
+      requestAnimationFrame(draw);
+    });
+}
+
+window.addEventListener('mousemove', on_mouse_move);
+window.addEventListener('click', on_click);
+window.addEventListener('resize', on_resize);
+window.addEventListener('touchstart', on_touch_start, { passive: false });
+
+// -- bookshelf touch toggle --
+// tap to expand; tap again or tap another spine to collapse
+document.querySelectorAll('.book-spine').forEach(spine => {
+  spine.addEventListener('click', () => {
+    const is_active = spine.classList.contains('active');
+    document.querySelectorAll('.book-spine.active').forEach(s => s.classList.remove('active'));
+    if (!is_active) spine.classList.add('active');
+  });
+});
+
+// -- bookshelf adaptive layout --
+(function() {
+  const pool = document.getElementById('bookshelf-pool');
+  const rows_el = document.getElementById('bookshelf-rows');
+  if (!pool || !rows_el) return;
+
+  // grab all spines once; moving a node preserves its event listeners
+  const spines = Array.from(pool.children);
+
+  function layout_shelves() {
+    const is_mobile = window.innerWidth <= 740;
+    const w_col = is_mobile ? 40 : 46;
+    const w_exp = is_mobile ? 150 : 172;
+    const gap = 5;
+    const container_w = rows_el.parentElement.clientWidth;
+
+    // max books per row: 1 expanded + (n-1) collapsed + n gaps <= container_w
+    // n*(w_col + gap) <= container_w - w_exp + w_col
+    const n_per_row = Math.max(2, Math.floor((container_w - w_exp + w_col) / (w_col + gap)));
+
+    const total = spines.length;
+    const n_rows = Math.ceil(total / n_per_row);
+    const base = Math.floor(total / n_rows);
+    const extra = total % n_rows; // first `extra` rows get one extra book
+
+    rows_el.innerHTML = '';
+    let idx = 0;
+    for (let r = 0; r < n_rows; r++) {
+      const count = base + (r < extra ? 1 : 0);
+      const shelf = document.createElement('div');
+      shelf.className = 'book-shelf';
+      shelf.setAttribute('role', 'list');
+      for (let j = 0; j < count; j++) {
+        shelf.appendChild(spines[idx++]);
+      }
+      rows_el.appendChild(shelf);
+      const surface = document.createElement('div');
+      surface.className = 'book-shelf-surface';
+      rows_el.appendChild(surface);
+    }
+  }
+
+  layout_shelves();
+
+  let resize_timer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resize_timer);
+    resize_timer = setTimeout(layout_shelves, 120);
+  });
+})();
+
+// -- scroll-spy --
+const nav_sections = ['about', 'research', 'writing', 'highlights', 'bookshelf'];
+const nav_link_map = {};
+nav_sections.forEach(id => {
+  const a = document.querySelector('.nav-links a[href="#' + id + '"]');
+  if (a) nav_link_map[id] = a;
+});
+const spy_observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      Object.values(nav_link_map).forEach(a => a.classList.remove('active'));
+      const link = nav_link_map[entry.target.id];
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+nav_sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) spy_observer.observe(el);
+});
+
+// -- hamburger --
+const hamburger_btn = document.getElementById('nav-hamburger');
+const mobile_nav = document.getElementById('nav-mobile');
+function toggle_mobile_nav() {
+  const open = mobile_nav.classList.toggle('open');
+  hamburger_btn.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+hamburger_btn.addEventListener('click', toggle_mobile_nav);
+mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
+  a.addEventListener('click', () => {
+    mobile_nav.classList.remove('open');
+    hamburger_btn.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+});
+
+// -- canvas hint: "click to explore" fades in then out --
+let hint_alpha = 0;
+setTimeout(() => {
+  const t0 = performance.now();
+  (function fade_in(t) {
+    hint_alpha = Math.min(1, (t - t0) / 900);
+    if (hint_alpha < 1) requestAnimationFrame(fade_in);
+  })(t0);
+  setTimeout(() => {
+    const t1 = performance.now();
+    (function fade_out(t) {
+      hint_alpha = Math.max(0, 1 - (t - t1) / 1100);
+      if (hint_alpha > 0) requestAnimationFrame(fade_out);
+    })(t1);
+  }, 3000);
+}, 2200);
+
+(function() {
+  const u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
+  const el = document.getElementById('contact-email');
+  if (el) {
+    const a = document.createElement('a');
+    a.href = 'mailto:' + u;
+    a.textContent = u;
+    a.style.color = 'var(--blue)';
+    a.style.textDecoration = 'none';
+    a.addEventListener('mouseenter', () => a.style.textDecoration = 'underline');
+    a.addEventListener('mouseleave', () => a.style.textDecoration = 'none');
+    el.appendChild(a);
+  }
+})();
+
+init();
+</script>
+</body>
+</html>
