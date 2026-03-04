@@ -708,7 +708,7 @@
           </div>
           <div class="meta-item">
             <div class="meta-label">Contact</div>
-            <div class="meta-value"><a href="mailto:henry.s.zimmerman@gmail.com">henry.s.zimmerman@gmail.com</a></div>
+            <div class="meta-value" id="contact-email"></div>
           </div>
         </div>
       </div>
@@ -1383,6 +1383,21 @@ setTimeout(() => {
     })(t1);
   }, 3000);
 }, 2200);
+
+(function() {
+  const u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
+  const el = document.getElementById('contact-email');
+  if (el) {
+    const a = document.createElement('a');
+    a.href = 'mailto:' + u;
+    a.textContent = u;
+    a.style.color = 'var(--blue)';
+    a.style.textDecoration = 'none';
+    a.addEventListener('mouseenter', () => a.style.textDecoration = 'underline');
+    a.addEventListener('mouseleave', () => a.style.textDecoration = 'none');
+    el.appendChild(a);
+  }
+})();
 
 init();
 </script>
