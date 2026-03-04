@@ -815,6 +815,26 @@
       .highlights-row { grid-template-columns: 1fr; gap: 6px; }
       footer { flex-direction: column; gap: 20px; align-items: flex-start; padding: 36px 24px; }
     }
+
+/* new profile image frame */
+    .profile-frame {
+      width: 100%;
+          margin-bottom: 2rem;
+      padding: 6px;
+      border: 1px solid var(--gold-dim);
+      background: rgba(196, 162, 88, 0.05); /* Subtle gold tint */
+      line-height: 0;
+    }
+    
+    .profile-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      /* keeps the photo slightly dim to match the star field mood */
+      opacity: 0.95; 
+      filter: contrast(1.05);
+    }
+
   </style>
 </head>
 <body>
@@ -878,27 +898,42 @@
           <p>A parallel thread is asteroid rotation: I am determining the first confirmed synodic period for main-belt asteroid 7605 Cindygraber, coordinating multi-site observations across Chile, Australia, and the Canary Islands using an open-source scheduler I built for the project.</p>
           <p>I co-created <a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, a philosophical website and podcast series examining theodicy, divine perfection, and the epistemology of religious faith, developed alongside a classmate for PHR380: Faith and Doubt at Andover. The same instinct that pulls me toward hard scientific questions pulls me toward hard philosophical ones.</p>
           <p>Outside research, I captain the cross-country team, play jazz guitar, and founded RenewBlue, a campus sustainability initiative. I am drawn to problems that require patience, precision, and a willingness to tear down a model when the data demands it.</p>
+        </div> 
+
+      <div class="about-meta">
+        <div class="profile-frame">
+          <img src="HSZ_Headshot_BW.jpg" alt="Henry Zimmerman">
         </div>
-        <div class="about-meta">
-          <div class="meta-item">
-            <div class="meta-label">Affiliation</div>
-            <div class="meta-value">Phillips Academy Andover<br>Class of 2027</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Research Interests</div>
-            <div class="meta-value">Asteroseismology<br>Binary Cepheids<br>Stellar mergers<br>Cosmic distance scale<br>Minor planet photometry</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Collaborator</div>
-            <div class="meta-value">Dr. Bogumil Pilecki (CAMK Warsaw)</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Contact</div>
-            <div class="meta-value" id="contact-email"></div>
-          </div>
+
+        <div class="meta-item">
+          <div class="meta-label">Affiliation</div>
+          <div class="meta-value">Phillips Academy Andover<br>Class of 2027</div>
         </div>
-      </div>
-      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. The pulsing objects are from my own research.
+
+        <div class="meta-item">
+          <div class="meta-label">Research Interests</div>
+          <div class="meta-value">Asteroseismology<br>Binary Cepheids<br>Stellar mergers<br>Cosmic distance scale<br>Minor planet photometry</div>
+        </div>
+
+        <div class="meta-item">
+          <div class="meta-label">Collaborator</div>
+          <div class="meta-value">Dr. Bogumil Pilecki (CAMK Warsaw)</div>
+        </div>
+
+        <div class="meta-item">
+          <div class="meta-label">Contact</div>
+          <div class="meta-value" id="contact-email"></div>
+        </div>
+      </div> ```
+
+### Why this matters for your specific site:
+Because you are using `display: grid;` for your `about-grid`, the browser needs to clearly see where the `about-text` column ends and where the `about-meta` column begins. 
+
+If you have an extra `</div>` (like the one at the very bottom of your snippet), it might tell the browser: *"Stop the grid here."* This would result in the rest of your website (the Research and Bookshelf sections) being pulled inside the About section or losing their side margins entirely.
+
+**Final Check:** Does your code look like a "staircase" where every opening tag has a matching closing tag at the exact same vertical alignment? If so, you're safe! 
+
+**One quick detail:** Ensure the `id="contact-email"` remains empty exactly like that—your JavaScript at the bottom of the file is what injects your email address there to protect you from bots.      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. The pulsing objects are from my own research.
     </div>
   </section>
   <section id="research" class="section">
