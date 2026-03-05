@@ -306,6 +306,16 @@
       margin: 0 auto;
     }
 
+    /* sr-only: visually hide text but keep it for seo and screen readers */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+    }
+
     /* ::before = mono label pulled from data-label; ::after = decorative rule */
     .section-heading {
       font-family: 'EB Garamond', serif;
@@ -325,7 +335,7 @@
       content: attr(data-label);
       display: block;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
+      font-size: 18px;
       letter-spacing: 0.28em;
       color: var(--gold);
       text-transform: uppercase;
@@ -989,7 +999,7 @@
   <!-- about -->
   <section id="about" class="section">
     <div class="section-inner">
-      <h2 class="section-heading" data-label="About">About</h2>
+      <h2 class="section-heading" data-label="About"><span class="sr-only">About</span></h2>
       <div class="about-grid">
         <div class="about-text">
           <p class="about-lead">I'm an astrophysicist, writer, and runner. I love using logic to tease out the truth from imperfect information. I'm always looking for the ideas that challenge my perspective, whether I'm finding asteroseismic evidence of a merger in a binary Cepheid or examining Cartesian constructs</p>
@@ -1033,7 +1043,7 @@
   <!-- research -->
   <section id="research" class="section">
     <div class="section-inner">
-      <h2 class="section-heading" data-label="Research">Research</h2>
+      <h2 class="section-heading" data-label="Research"><span class="sr-only">Research</span></h2>
       <div class="research-cards">
 
         <div class="research-card">
@@ -1108,7 +1118,7 @@
   <!-- writing -->
   <section id="writing" class="section">
     <div class="section-inner">
-      <h2 class="section-heading" data-label="Writing">Writing</h2>
+      <h2 class="section-heading" data-label="Writing"><span class="sr-only">Writing</span></h2>
       <div class="writing-list">
 
         <div class="writing-item">
@@ -1195,7 +1205,7 @@
   <!-- highlights -->
   <section id="highlights" class="section">
     <div class="section-inner">
-      <h2 class="section-heading" data-label="Highlights">Highlights</h2>
+      <h2 class="section-heading" data-label="Highlights"><span class="sr-only">Highlights</span></h2>
       <div class="highlights-table">
 
         <div class="highlights-row">
@@ -1287,7 +1297,7 @@
   <!-- bookshelf -->
   <section id="bookshelf" class="section">
     <div class="section-inner">
-      <h2 class="section-heading" data-label="Reading">All-Time Favorites</h2>
+      <h2 class="section-heading" data-label="Reading"><span class="sr-only">All-Time Favorites</span></h2>
 
       <div class="bookshelf-intro">
         <p>Reading is where I do my most undirected thinking. I keep a running list of everything interesting I read online at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>. The books below are the ones I return to in my head. These are not necessarily the most important, but they're the ones that changed how I see something specific and didn't let me forget them.</p>
