@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
-  <link rel="shortcut icon" href="henryzimmerman.net/favicon.svg"> <!-- fallback -->  
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" href="https://www.henryzimmerman.net/favicon.svg"> <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Orbital Phase Visualization — Henry Zimmerman</title>
   <meta name="description" content="Interactive 3D visualization of asteroid 7605 Cindygraber's orbit and illumination geometry, built to explore phase angle relationships and observational cadence." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,47 +32,24 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── top bar ─────────────────────────────────────────────── */
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: var(--bg);
-      border-bottom: 1px solid var(--panel-border);
-      padding: 0 clamp(1.25rem, 4vw, 3rem);
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* ── nav ─────────────────────────────────────────────────── */
+    nav { 
+      position: fixed; top: 0; left: 0; right: 0; 
+      padding: 22px 52px; 
+      background: linear-gradient(to bottom, rgba(7,9,26,0.95) 0%, transparent 100%); 
+      z-index: 50; 
+      display: flex; justify-content: space-between; align-items: center;
     }
-
-    .topbar-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
-      letter-spacing: 0.06em;
-      color: var(--text-dim);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.45em;
-      transition: color 0.2s;
-    }
-    .topbar-back:hover { color: var(--gold); }
-    .topbar-back::before { content: '←'; }
-
-    .topbar-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      color: rgba(196,162,88,0.55);
-      text-transform: uppercase;
-    }
+    .nav-name { font-family: 'EB Garamond', serif; font-size: 18px; color: var(--text); text-decoration: none; font-style: italic; }
+    .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: 0.14em; transition: color 0.18s; }
+    .back-link:hover { color: var(--text); }
 
     /* ── header ──────────────────────────────────────────────── */
     .viz-header {
       max-width: 780px;
       margin: 0 auto;
-      padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 3vw, 2rem);
+      /* Added 110px top padding so it clears the fixed nav bar */
+      padding: 110px clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 3vw, 2rem);
     }
 
     .viz-eyebrow {
@@ -134,16 +110,6 @@
     .plot-container .modebar-btn:hover path {
       fill: rgba(196,162,88,0.75) !important;
     }
-    nav { 
-      position: fixed; top: 0; left: 0; right: 0; 
-      padding: 22px 52px; 
-      background: linear-gradient(to bottom, rgba(7,9,26,0.95) 0%, transparent 100%); 
-      z-index: 50; 
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .nav-name { font-family: 'EB Garamond', serif; font-size: 18px; color: var(--text); text-decoration: none; font-style: italic; }
-    .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: 0.14em; transition: color 0.18s; }
-    .back-link:hover { color: var(--text); }
     
     /* ── caption / method note ───────────────────────────────── */
     .viz-caption {
@@ -213,13 +179,11 @@
 
 <body>
 
-  <!-- topbar -->
   <nav>
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
     <a href="index.html#research" class="back-link">← Back to Research</a>
   </nav>
 
-  <!-- header -->
   <header class="viz-header">
     <div class="viz-eyebrow">7605 Cindygraber &nbsp;/&nbsp; Orbital Phase Model</div>
     <h1 class="viz-title">Phase Angle and Illumination Geometry,<br>January&ndash;March 2026</h1>
@@ -235,23 +199,12 @@
 
   <hr class="viz-divider" />
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       PASTE THE ORIGINAL PLOTLY CONTENT HERE.
-       Replace the block below (from <div> ... </div> and its <script> tags)
-       with the contents of the original file's <body> section verbatim.
-       The Plotly CDN script tag should remain here or move into the <head>.
-       ═══════════════════════════════════════════════════════════════════════ -->
-
   <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
   <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
   <div class="plot-container">
-    <!-- [ORIGINAL PLOTLY DIV + ANIMATION SCRIPT GOES HERE] -->
-  </div>
+    </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════ -->
-
-  <!-- method note -->
   <div class="viz-caption">
     <p>
       Orbital geometry computed from JPL Horizons ephemeris data. Phase angle is the
@@ -265,11 +218,10 @@
     </p>
   </div>
 
-  <!-- footer -->
   <footer class="viz-footer">
     <span class="viz-footer-name">Henry Zimmerman</span>
     <ul class="viz-footer-links">
-      <li><a href="https://henryzimmerman.net">Research Portfolio/a></li>
+      <li><a href="https://henryzimmerman.net">Research Portfolio</a></li>
       <li><a href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">GitHub</a></li>
     </ul>
   </footer>
