@@ -14,7 +14,7 @@
   const K1        = (2 * Math.PI * 42 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~30.3 km/s
   const K2        = (2 * Math.PI * 76 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~54.8 km/s
   const RV_THRESH = 40;   // km/s — ESPRESSO ΔRV requirement
-  const RV_N      = 1200;
+  const RV_N      = 2400;
 
   let data        = null;
   let currentMode = 'orbital';
