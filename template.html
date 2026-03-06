@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{TITLE}} | Henry Zimmerman</title>
   <meta name="description" content="">
-  <link rel="icon" href="henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -115,7 +115,6 @@
       text-indent: 0;
     }
 
-
     .article-body h2 {
       font-family: 'EB Garamond', serif;
       font-size: 24px;
@@ -134,121 +133,40 @@
       margin: 2em 0 0.7em;
     }
 
-    .article-body blockquote {
-      border-left: 2px solid var(--gold-dim);
-      margin: 1.6em 0;
-      padding: 0.2em 0 0.2em 1.4em;
-      color: var(--text-dim);
-      font-style: italic;
-    }
-
-
-    .article-body ul,
-    .article-body ol {
-      padding-left: 1.8em;
-      margin-bottom: 1.4em;
-    }
-    .article-body li { margin-bottom: 0.4em; }
-
-    .article-body figure {
-      margin: 2em 0;
-      display: block;
-    }
-    .article-body figure img {
-      width: 100%;
-      height: auto;
-      display: block;
+    /* Back to Top Button CSS */
+    #back-to-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 300;
+      width: 40px;
+      height: 40px;
+      background: var(--panel);
       border: 1px solid var(--panel-border);
-    }
-    .article-body figcaption {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
-      color: var(--text-dim);
-      opacity: 0.7;
-      margin-top: 8px;
-      line-height: 1.5;
-      letter-spacing: 0.03em;
-    }
-
-    /* references heading injected by build script */
-    .article-body h2.references-heading {
-      font-size: 20px;
       color: var(--gold);
-      margin-top: 3em;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, border-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+      padding: 0;
     }
-
-    /* inline superscript footnote refs from pandoc */
-    .article-body sup {
-      font-size: 0.72em;
-      line-height: 0;
-      vertical-align: super;
+    #back-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
     }
-    .article-body sup a {
-      color: var(--gold);
-      text-decoration: none;
-      padding: 0 1px;
-      border-bottom: 1px solid var(--gold-dim);
-      transition: color 0.12s, border-color 0.12s;
+    #back-to-top:hover {
+      border-color: var(--gold);
     }
-    .article-body sup a:hover {
-      color: var(--text);
-      border-color: var(--text-dim);
-      text-decoration: none;
-    }
-
-    /* pandoc footnote section */
-    .article-body section.footnotes {
-      margin-top: 3.5em;
-      padding-top: 1.6em;
-      border-top: 1px solid var(--panel-border);
-    }
-    .article-body section.footnotes::before {
-      content: 'Notes';
-      display: block;
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      color: var(--gold);
-      letter-spacing: 0.02em;
-      margin-bottom: 1em;
-    }
-    .article-body section.footnotes ol {
-      padding-left: 1.6em;
-    }
-    .article-body section.footnotes li {
-      font-size: 14px;
-      color: var(--text-dim);
-      line-height: 1.6;
-      margin-bottom: 0.7em;
-    }
-    .article-body section.footnotes li p { margin-bottom: 0; }
-    .article-body section.footnotes a.footnote-back {
-      color: var(--gold);
-      margin-left: 4px;
-      font-size: 0.85em;
-      text-decoration: none;
-      border-bottom: none;
-    }
-    .article-body section.footnotes a.footnote-back:hover { color: var(--text); }
-
-    .article-back {
-      display: inline-block;
-      margin-top: 52px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .article-back:hover { color: var(--gold); border-color: var(--gold-dim); text-decoration: none; }
 
     @media (max-width: 600px) {
       nav { padding: 18px 24px; }
       .article-wrap { padding: 90px 18px 72px; }
+      #back-to-top { bottom: 20px; right: 20px; }
     }
   </style>
 </head>
@@ -256,16 +174,43 @@
 
   <nav>
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html" class="nav-back">&larr; Return to Portfolio</a>
+    <a href="index.html#research" class="nav-back">← Back to Research</a>
   </nav>
 
-  <div class="article-wrap">
-    <h1 class="article-title">{{TITLE}}</h1>
+  <article class="article-wrap">
+    <header>
+      <div class="article-meta">Research Post</div>
+      <h1 class="article-title">{{TITLE}}</h1>
+      <div class="article-byline">Henry Zimmerman</div>
+    </header>
+    
+    <hr class="article-divider">
+
     <div class="article-body">
-      {{CONTENT}}
-    </div>
-    <a href="index.html#writing" class="article-back">&larr; Back to writing</a>
-  </div>
+      </div>
+
+   
+  </article>
+
+  <button id="back-to-top" aria-label="Back to top">
+    &uarr;
+  </button>
+
+  <script>
+    const backToTopBtn = document.getElementById('back-to-top');
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 500) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
 
 </body>
 </html>
