@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{TITLE}} | Henry Zimmerman</title>
-  <meta name="description" content="">
+  <meta name="description" content="{{DESCRIPTION}}">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:           #07091a;
@@ -16,157 +16,121 @@
       --gold-dim:     rgba(196,162,88,0.25);
       --text:         #e2ddd4;
       --text-dim:     rgba(226,221,212,0.72);
-      --panel:        rgba(7,9,26,0.84);
-      --panel-border: rgba(196,162,88,0.18);
-      --blue:         #78a5d2;
+      --panel-border: rgba(196,162,88,0.2);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--bg);
+      background-color: var(--bg);
       color: var(--text);
-      font-family: 'Spectral', Georgia, serif;
-      font-size: 17px;
-      line-height: 1.75;
+      font-family: 'EB Garamond', serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
     }
-
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
 
     nav {
       position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 50;
-      padding: 22px 52px;
+      top: 0; width: 100%;
+      padding: 24px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
+      z-index: 100;
+      background: linear-gradient(to bottom, var(--bg) 80%, transparent 100%);
     }
 
     .nav-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      color: var(--gold);
       text-decoration: none;
-      font-style: italic;
     }
-    .nav-name:hover { color: var(--gold); text-decoration: none; }
 
     .nav-back {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.1em;
+      text-transform: uppercase;
       color: var(--text-dim);
       text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
     }
-    .nav-back:hover {
-      color: var(--gold);
-      border-color: var(--gold-dim);
-      text-decoration: none;
-    }
+    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
 
     .article-wrap {
-      max-width: 65ch;
+      max-width: 680px;
       margin: 0 auto;
-      padding: 120px 28px 100px;
+      padding: 160px 24px 100px;
     }
 
     .article-meta {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--gold);
       text-transform: uppercase;
-      margin-bottom: 18px;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-bottom: 12px;
     }
 
     .article-title {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(26px, 5vw, 40px);
+      font-size: clamp(32px, 5vw, 44px);
       font-weight: 400;
-      line-height: 1.2;
+      line-height: 1.1;
+      margin: 0 0 32px;
       color: var(--text);
-      margin-bottom: 10px;
-    }
-
-    .article-byline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      margin-bottom: 36px;
     }
 
     .article-divider {
-      border: none;
+      border: 0;
       border-top: 1px solid var(--panel-border);
-      margin-bottom: 40px;
+      margin: 40px 0;
     }
 
     .article-body p {
-      margin-bottom: 1.4em;
-      text-indent: 0;
-    }
-
-    .article-body h2 {
-      font-family: 'EB Garamond', serif;
-      font-size: 24px;
-      font-weight: 400;
-      color: var(--text);
-      margin: 2.4em 0 0.9em;
-      letter-spacing: 0.01em;
-    }
-
-    .article-body h3 {
-      font-family: 'EB Garamond', serif;
       font-size: 20px;
-      font-weight: 400;
+      margin-bottom: 28px;
+    }
+
+    .article-body blockquote {
+      border-left: 2px solid var(--gold-dim);
+      margin: 40px 0;
+      padding-left: 28px;
       font-style: italic;
       color: var(--text-dim);
-      margin: 2em 0 0.7em;
     }
 
-    /* Back to Top Button CSS */
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+    }
+
     #back-to-top {
       position: fixed;
-      bottom: 32px;
-      right: 32px;
-      z-index: 300;
-      width: 40px;
-      height: 40px;
-      background: var(--panel);
+      bottom: 40px; right: 40px;
+      background: none;
       border: 1px solid var(--panel-border);
       color: var(--gold);
-      font-size: 18px;
+      width: 44px; height: 44px;
       cursor: pointer;
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, border-color 0.2s ease;
+      transition: opacity 0.3s, border-color 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0;
-      padding: 0;
+      pointer-events: none;
     }
-    #back-to-top.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #back-to-top:hover {
-      border-color: var(--gold);
-    }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+    #back-to-top:hover { border-color: var(--gold); }
 
     @media (max-width: 600px) {
-      nav { padding: 18px 24px; }
-      .article-wrap { padding: 90px 18px 72px; }
-      #back-to-top { bottom: 20px; right: 20px; }
+      nav { padding: 20px; }
+      .article-wrap { padding-top: 120px; }
     }
   </style>
 </head>
@@ -174,14 +138,13 @@
 
   <nav>
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#research" class="nav-back">← Back to Research</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
   </nav>
 
   <article class="article-wrap">
     <header>
-      <div class="article-meta">Research Post</div>
+      <div class="article-meta">{{CATEGORY}}</div>
       <h1 class="article-title">{{TITLE}}</h1>
-      <div class="article-byline">Henry Zimmerman</div>
     </header>
     
     <hr class="article-divider">
@@ -189,28 +152,25 @@
     <div class="article-body">
       </div>
 
-   
-  </article>
+    <footer class="footer-nav">
+      <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+      <a href="descartes.html" class="nav-back">Next: On Descartes →</a>
+    </footer>
+      </article>
 
   <button id="back-to-top" aria-label="Back to top">
     &uarr;
   </button>
 
   <script>
-    const backToTopBtn = document.getElementById('back-to-top');
-    
+    const btt = document.getElementById('back-to-top');
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 500) {
-        backToTopBtn.classList.add('visible');
-      } else {
-        backToTopBtn.classList.remove('visible');
-      }
-    }, { passive: true });
-
-    backToTopBtn.addEventListener('click', () => {
+      if (window.pageYOffset > 300) btt.classList.add('visible');
+      else btt.classList.remove('visible');
+    });
+    btt.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   </script>
-
 </body>
 </html>
