@@ -1173,73 +1173,59 @@ The project coordinates photometry across four observatories in the Canary Islan
     </div>
   </section>
 
-  <section id="cepheid-visualization" class="section border-t border-white/5 bg-[#0c0d0e]">
-    <div class="section-inner py-12"> <div class="mb-10 border-l-2 border-blue-500/40 pl-6">
-        <h2 class="text-2xl text-gray-100 font-medium tracking-tight font-serif italic">System Dynamics: OGLE-LMC-CEP-1347</h2>
-        <p class="text-[10px] text-gray-500 mt-2 uppercase tracking-[0.3em] font-mono">Interactive Fourier-modeled binary simulation</p>
+<section id="cepheid-sim" class="relative w-full h-screen bg-black overflow-hidden border-y border-white/5">
+    
+    <canvas id="starCanvas" class="w-full h-full object-cover absolute inset-0 transition-opacity duration-1000 opacity-0"></canvas>
+
+    <div id="ui-layer" class="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 md:p-12">
+      
+      <div class="self-end flex flex-col items-end gap-6">
+        
+        <div id="hud-table" class="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 w-64 shadow-2xl transition-all duration-500">
+          <h3 class="text-[10px] font-bold text-blue-400 tracking-[0.2em] uppercase mb-4 border-b border-white/5 pb-2">System Telemetry</h3>
+          <div class="space-y-3 font-mono text-xs text-white">
+            <div class="flex justify-between border-b border-white/5 pb-1">
+              <span class="text-gray-500">V-MAG</span> 
+              <span id="hud-mag">--</span>
+            </div>
+            <div class="flex justify-between border-b border-white/5 pb-1">
+              <span class="text-gray-500">TEMP</span> 
+              <span id="hud-teff">-- K</span>
+            </div>
+            <div class="flex justify-between border-b border-white/5 pb-1">
+              <span class="text-gray-500">RADIUS</span> 
+              <span id="hud-rad">-- R☉</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">PHASE</span> 
+              <span id="hud-phase">--</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="hud-plot-container" class="opacity-0 h-32 w-72 bg-black/30 backdrop-blur-md border border-white/10 rounded-xl relative overflow-hidden transition-all duration-500 shadow-2xl">
+          <div class="absolute top-3 left-3 text-[9px] text-blue-400 font-bold uppercase tracking-widest">Flux Variance (V-Band)</div>
+          <div class="absolute left-1/2 top-0 bottom-0 w-px bg-white/30 z-10"></div>
+          <div class="absolute left-1/2 bottom-2 -translate-x-1/2 text-[8px] text-white/20 uppercase font-mono">Now</div>
+        </div>
       </div>
 
-      <div id="sim-wrapper" class="relative rounded-2xl border border-white/10 bg-black/20 overflow-hidden shadow-2xl">
-        
-        <div class="absolute top-0 left-0 right-0 p-6 z-20 flex justify-between items-start pointer-events-none">
-          <div class="flex flex-col sm:flex-row gap-3 pointer-events-auto">
-            <button onclick="setMode('orbital')" id="btn-orbital" class="btn-mode active">Orbital Focus</button>
-            <button onclick="setMode('pulsation')" id="btn-pulsation" class="btn-mode">Pulsation Focus</button>
-            <button onclick="setMode('composite')" id="btn-composite" class="btn-mode">Composite</button>
-          </div>
-          
-          <div id="hud" class="bg-black/80 backdrop-blur-md border border-white/5 p-4 rounded-xl font-mono text-[10px] tracking-widest text-gray-400 min-w-[150px]">
-            <div class="text-blue-500/80 mb-2 font-bold border-b border-white/10 pb-1 uppercase text-[9px]">Live Telemetry</div>
-            <div id="hud-mag" class="flex justify-between py-0.5"><span>MAG</span> <span class="text-gray-100">--</span></div>
-            <div id="hud-teff" class="flex justify-between py-0.5"><span>TEFF</span> <span class="text-gray-100">-- K</span></div>
-            <div id="hud-rad" class="flex justify-between py-0.5"><span>RAD</span> <span class="text-gray-100">-- R☉</span></div>
-          </div>
-        </div>
-
-        <div class="relative aspect-video flex items-center justify-center bg-[#08090a]">
-          <canvas id="starCanvas" class="w-full h-full opacity-0 transition-opacity duration-1000 z-10"></canvas>
-          
-          <div id="preview" class="absolute inset-0 bg-cover bg-center flex flex-col items-center justify-center transition-opacity duration-1000" 
-               style="background-image: linear-gradient(to bottom, rgba(12,13,14,0.8), rgba(12,13,14,0.8)), url('assets/preview.jpg');">
-            <div class="w-8 h-8 border-2 border-blue-500/10 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-            <div class="text-blue-500/40 font-mono text-[9px] tracking-[0.3em] uppercase animate-pulse">Synchronizing Data...</div>
-          </div>
-        </div>
-
-        <div class="absolute bottom-4 right-6 z-20 pointer-events-none">
-          <p class="text-[9px] font-mono text-gray-600 uppercase tracking-widest">OGLE-IV Model / 5-Harmonic Fit</p>
+      <div class="flex justify-center w-full pointer-events-auto pb-4">
+        <div class="bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full p-2 flex gap-1 shadow-2xl">
+          <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode active px-6 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-full text-white/50 hover:text-white transition-all bg-white/5">Orbital</button>
+          <button id="btn-composite" onclick="window.setMode('composite')" class="btn-mode px-6 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-full text-white/50 hover:text-white transition-all">Composite</button>
+          <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode px-6 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-full text-white/50 hover:text-white transition-all">Pulsation</button>
         </div>
       </div>
     </div>
+
+    <div id="preview" class="absolute inset-0 flex flex-col items-center justify-center bg-black z-50 transition-opacity duration-700">
+      <div class="text-blue-400 font-mono text-xs tracking-[0.5em] uppercase animate-pulse text-center">Synchronizing Data...</div>
+      <div class="mt-4 text-white/20 text-[10px] uppercase font-bold">OGLE-IV Model / 5-Harmonic Fit</div>
+    </div>
   </section>
 
-  <style>
-    /* Specific overrides to match Henry's index.html aesthetic */
-    .btn-mode {
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px;
-      font-size: 10px;
-      font-family: ui-monospace, monospace;
-      letter-spacing: 0.1em;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid rgba(255,255,255,0.05);
-      background: rgba(255,255,255,0.02);
-      color: #6b7280;
-      text-transform: uppercase;
-      backdrop-filter: blur(8px);
-      cursor: pointer;
-    }
-    .btn-mode.active {
-      background: rgba(59, 130, 246, 0.1);
-      color: #60a5fa;
-      border-color: rgba(59, 130, 246, 0.3);
-    }
-    .btn-mode:hover:not(.active) {
-      background: rgba(255,255,255,0.08);
-      color: #f3f4f6;
-    }
-  </style>
-
+  
   <section id="writing" class="section border-t border-white/5">
 
   <!-- writing -->
