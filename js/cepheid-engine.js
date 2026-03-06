@@ -184,5 +184,33 @@
     requestAnimationFrame(animate);
   }
 
-  init();
-})();
+  async function init() {
+    if (!starCanvas || !ctx) return;
+
+    try {
+      const response = await fetch('data/master_data.json');
+      
+      if (!response.ok) {
+        throw new Error(`File not found (Status: ${response.status})`);
+      }
+
+      const text = await response.text(); // Get as text first to check if empty
+      if (!text || text.trim().length === 0) {
+        throw new Error("The JSON file is empty.");
+      }
+
+      data = JSON.parse(text); // Manually parse
+      
+      if (preview) preview.classList.add('hidden');
+      starCanvas.classList.replace('opacity-0', 'opacity-100');
+      
+      window.addEventListener('resize', resize);
+      resize();
+      animate();
+    } catch (e) {
+      console.error("Cepheid Engine Error:", e.message);
+      // Show an error message on the HUD if needed
+      const magEl = document.getElementById('hud-mag');
+      if (magEl) magEl.innerText = "DATA ERROR";
+    }
+  }
