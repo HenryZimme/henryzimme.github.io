@@ -39,12 +39,13 @@
       const p = data.physics_frames;
 
       // Expanded validation: check every key animate() depends on
-      const required = ['v_mag', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'r1', 'teff'];
+      const required = ['v_mag', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'r1'];
       for (const key of required) {
         if (!p || !Array.isArray(p[key])) {
           throw new Error(`Invalid Data Structure: physics_frames.${key} is missing or not an array`);
         }
       }
+      // teff is optional — the JSON exporter doesn't currently emit it
 
       p.v_mag.forEach(v => {
         if (v < bounds.minV) bounds.minV = v;
@@ -141,8 +142,7 @@
       x1 = 0; y1 = 0; z1 = 0; x2 = 9999;
       r1   = p.r1[i];
       mag  = p.v_mag[i];
-      teff = p.teff[i];
-      // FIX: safe fallback if color1 is absent from the JSON
+      teff = safeGet(p.teff, i, null); // teff is optional in JSON
       col1 = safeGet(p.color1, i, CEPHEID_FALLBACK_COLOR);
       drawCenteredPlot(p.v_mag, i);
     } else {
@@ -154,8 +154,7 @@
       x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
       r1   = src.r1[sIdx];
       mag  = src.v_mag[sIdx];
-      teff = p.teff[i];
-      // FIX: safe fallback if color1 is absent from the JSON
+      teff = safeGet(p.teff, i, null); // teff is optional in JSON
       col1 = safeGet(src.color1, sIdx, CEPHEID_FALLBACK_COLOR);
     }
 
@@ -191,7 +190,7 @@
 
     // HUD Updates
     if (hud.mag)   hud.mag.innerText   = mag.toFixed(2);
-    if (hud.teff)  hud.teff.innerText  = `${Math.round(teff)} K`;
+    if (hud.teff)  hud.teff.innerText  = teff !== null ? `${Math.round(teff)} K` : '~6490 K';
     if (hud.rad)   hud.rad.innerText   = r1.toFixed(2);
     if (hud.phase) hud.phase.innerText = (i / p.x1.length).toFixed(2);
 
