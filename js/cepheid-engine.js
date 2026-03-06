@@ -14,7 +14,7 @@
   const K1        = (2 * Math.PI * 42 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~30.3 km/s
   const K2        = (2 * Math.PI * 76 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~54.8 km/s
   const RV_THRESH = 40;   // km/s — ESPRESSO ΔRV requirement
-  const RV_N      = 600;
+  const RV_N      = 1200;
 
   let data        = null;
   let currentMode = 'orbital';
@@ -53,12 +53,42 @@
   }
 
   // ── RV curve precomputation ───────────────────────────────────────────────
+  // rv1 includes both orbital (K1·sin φ) and pulsation (dr1/dt) contributions.
+  // The pulsation term is computed from finite differences on physics_frames.r1,
+  // mapped onto the RV_N orbital-phase grid. This adds the ~10–20 km/s sawtooth
+  // pulsation velocity riding on top of the orbital sine.
+  // Companion rv2 is orbital only (r2 = const = 12.51 R☉).
   function buildRV() {
     rv1 = []; rv2 = []; rvDelta = [];
+
+    // Pulsation velocity from r1 array ─────────────────────────────────────
+    // dr1/dt in R☉/day → km/s via R_SUN_KM / 86400
+    const r1arr = data.physics_frames.r1;
+    const N     = r1arr.length;
+    // dt in days — metadata or fallback
+    const dt = (data.metadata && data.metadata.dt)
+      ? data.metadata.dt
+      : (Array.isArray(data.physics_frames.t) && data.physics_frames.t.length > 1
+          ? data.physics_frames.t[1] - data.physics_frames.t[0]
+          : 0.6900 / 120);
+    const pulsConv = R_SUN_KM / 86400;  // R☉/day → km/s
+
+    // Build pulsation RV array at the native frame resolution
+    const vPuls = r1arr.map((_, i) => {
+      const prev = (i - 1 + N) % N;
+      const next = (i + 1) % N;
+      return ((r1arr[next] - r1arr[prev]) / (2 * dt)) * pulsConv;
+    });
+
+    // Build combined arrays on RV_N orbital-phase grid ─────────────────────
     for (let k = 0; k < RV_N; k++) {
-      const s = Math.sin(2 * Math.PI * k / RV_N);
-      const v1 =  K1 * s;
-      const v2 = -K2 * s;
+      const phi  = k / RV_N;
+      const vorb =  K1 * Math.sin(2 * Math.PI * phi);  // orbital
+      // Map orbital phase → r1 frame index
+      const posIdx = Math.round(phi * N) % N;
+      const vpuls  = vPuls[posIdx];                     // pulsation contribution
+      const v1 = vorb + vpuls;
+      const v2 = -K2 * Math.sin(2 * Math.PI * phi);    // companion orbital only
       rv1.push(v1); rv2.push(v2);
       rvDelta.push(Math.abs(v1 - v2));
     }
@@ -191,7 +221,7 @@
     const padTop = 22;
     const drawH  = ph - padTop - 8;
     const midY   = py + padTop + drawH / 2;
-    const RVMAX  = K1 + K2 + 10;
+    const RVMAX  = Math.max(K1 + K2 + 10, Math.max(...rv1.map(Math.abs), ...rv2.map(Math.abs)) * 1.1);
     const yScale = (drawH / 2) / RVMAX;
     const nPts   = 200;
     const step   = (pw - inset * 2) / nPts;
@@ -302,7 +332,7 @@
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.fillText('model prediction — no observational RVs shown', px + inset, py + ph - 8);
     ctx.fillStyle = 'rgba(255,255,255,0.13)';
-    ctx.fillText('circular orbit, i = 57° — Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35', px + inset, py + ph - 19);
+    ctx.fillText('circular orbit + pulsation dr/dt, i = 57° — Espinoza-Arancibia & Pilecki 2025', px + inset, py + ph - 19);
 
     // Legend
     ctx.textAlign = 'right';
