@@ -7,7 +7,7 @@
   let data    = null;
   let currentMode = 'orbital';
   let frameIdx    = 0;
-  let maxR1       = 1; // precomputed for pulsation zoom
+  let maxR1       = 1;
 
   // --- DOM Elements ---
   const simCanvas = document.getElementById('simCanvas');
@@ -53,9 +53,7 @@
       if (preview) preview.style.display = 'none';
       simCanvas.style.opacity = '1';
 
-      // Set initial button state properly via styles
       setMode('orbital');
-
       window.addEventListener('resize', resize);
       resize();
       animate();
@@ -73,7 +71,6 @@
       plotUI.style.opacity = (mode === 'pulsation') ? '1' : '0';
     }
 
-    // Direct style manipulation — class-based Tailwind won't work without compiler
     document.querySelectorAll('.btn-mode').forEach(b => {
       b.style.background = 'transparent';
       b.style.color      = 'rgba(255,255,255,0.4)';
@@ -83,7 +80,7 @@
     if (btn) {
       btn.style.background = 'rgba(255,255,255,0.18)';
       btn.style.color      = '#ffffff';
-      btn.style.boxShadow  = 'inset 0 0 0 1px rgba(255,255,255,0.25)';
+      btn.style.boxShadow  = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
     }
   };
 
@@ -96,7 +93,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // ── light curve plot ──────────────────────────────────────────────────────
+  // ── light curve (drawn on canvas at the div's screen position) ────────────
   function drawCenteredPlot(pData, currentIdx) {
     if (!plotUI || !pData) return;
     const rect  = plotUI.getBoundingClientRect();
@@ -106,15 +103,13 @@
     const py = rect.top  - sRect.top;
     const pw = rect.width;
     const ph = rect.height;
-
-    // Inset so line doesn't clip the container border
-    const inset = 12;
+    const inset = 16;
 
     ctx.save();
-    ctx.beginPath();
     ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth   = 3;
     ctx.lineJoin    = 'round';
+    ctx.beginPath();
 
     const points   = 120;
     const step     = (pw - inset * 2) / points;
@@ -125,9 +120,8 @@
       const idx = (currentIdx + k + pData.length) % pData.length;
       const val = pData[idx];
       const x   = px + pw / 2 + k * step;
-      // INVERTED: lower mag (brighter) plots HIGHER on screen
+      // Inverted y: lower mag = brighter = higher on screen
       const y   = py + ph / 2 - ((val - midMag) * (ph / magRange) * 0.72);
-
       if (k === -points / 2) ctx.moveTo(x, y);
       else                   ctx.lineTo(x, y);
     }
@@ -147,12 +141,11 @@
 
     ctx.clearRect(0, 0, w, h);
 
-    let i = Math.floor(frameIdx) % p.x1.length;
+    const i = Math.floor(frameIdx) % p.x1.length;
     frameIdx += (currentMode === 'pulsation' ? 0.4 : 0.8);
 
     let x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
 
-    // ── per-mode data selection ──
     if (currentMode === 'pulsation') {
       x1 = 0; y1 = 0; z1 = 0; x2 = 99999; y2 = 0; z2 = -1;
       r1   = p.r1[i];
@@ -164,7 +157,6 @@
       const isComp = (currentMode === 'composite' && c && c.r1);
       const src    = isComp ? c : p;
       const sIdx   = i % src.r1.length;
-
       x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
       x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
       r1   = src.r1[sIdx];
@@ -173,86 +165,90 @@
       col1 = safeGet(src.color1, sIdx, CEPHEID_FALLBACK_COLOR);
     }
 
-    // ── zoom ──
-    // Pulsation: star center sits in upper 38% of canvas, sized to leave room for graph
-    // Orbital: fit the full orbit with padding
-    let zoom, starCenterX, starCenterY;
+    // ── zoom & star center position ──────────────────────────────────────────
+    // Pulsation: cap star diameter to 28% of the shorter dimension so it fits
+    // cleanly in the upper portion of the canvas. The plot div lives ~60-85%
+    // down the page, so cy = h*0.28 gives a clear vertical gap.
+    // Orbital: scale so the full companion orbit fits with padding.
+    let zoom, cx, cy;
     if (currentMode === 'pulsation') {
-      // Reserve bottom ~220px for plot + buttons, star sits in the space above
-      const availH = h * 0.60;           // 60% of height for the star area
-      const maxPxR = availH * 0.42;      // star radius can use up to 42% of that space
-      zoom         = maxPxR / maxR1;
-      starCenterX  = w / 2;
-      starCenterY  = h * 0.36;           // shifted toward upper portion
+      const shortSide = Math.min(w, h);
+      const maxPxR    = shortSide * 0.14;  // radius cap: 14% of shorter dimension
+      zoom = maxPxR / maxR1;
+      cx   = w / 2;
+      cy   = h * 0.28;
     } else {
-      zoom        = (w * 0.28) / bounds.a2;
-      starCenterX = w / 2;
-      starCenterY = h / 2;
+      zoom = (Math.min(w, h) * 0.32) / bounds.a2;
+      cx   = w / 2;
+      cy   = h / 2;
     }
 
-    // ── draw orbits (orbital/composite only) ──
+    // ── orbital tracks (drawn first — behind stars) ──────────────────────────
     if (currentMode !== 'pulsation') {
-      // inclination ≈ 57° → cos(57°) ≈ 0.545 for the y-axis scale
-      const incFactor = 0.545;
+      const incFactor = 0.545; // cos(57°) — matches notebook inclination
 
-      // Companion orbit (larger)
-      ctx.strokeStyle = 'rgba(248,113,113,0.25)';
-      ctx.lineWidth   = 1;
-      ctx.setLineDash([4, 6]);
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 9]);
+
+      // Companion orbit — salmon/red, larger ellipse
+      ctx.strokeStyle = 'rgba(248, 113, 113, 0.65)';
       ctx.beginPath();
-      ctx.ellipse(starCenterX, starCenterY,
-                  bounds.a2 * zoom, bounds.a2 * zoom * incFactor,
-                  0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * incFactor, 0, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Cepheid orbit (smaller, around barycenter)
-      ctx.strokeStyle = 'rgba(196,162,88,0.25)';
+      // Cepheid orbit — gold, smaller ellipse
+      ctx.strokeStyle = 'rgba(196, 162, 88, 0.65)';
       ctx.beginPath();
-      ctx.ellipse(starCenterX, starCenterY,
-                  bounds.a1 * zoom, bounds.a1 * zoom * incFactor,
-                  0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * incFactor, 0, 0, Math.PI * 2);
       ctx.stroke();
 
-      ctx.setLineDash([]); // reset dash
+      ctx.setLineDash([]);
+      ctx.restore();
 
-      // Barycenter dot
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      // Barycenter crosshair
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1.5;
+      const b = 5;
       ctx.beginPath();
-      ctx.arc(starCenterX, starCenterY, 2.5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(cx - b, cy); ctx.lineTo(cx + b, cy);
+      ctx.moveTo(cx, cy - b); ctx.lineTo(cx, cy + b);
+      ctx.stroke();
+      ctx.restore();
     }
 
-    // ── draw stars ──
+    // ── stars ────────────────────────────────────────────────────────────────
     const drawStar = (sx, sy, r, col, glow) => {
-      const px = starCenterX + sx * zoom;
-      const py = starCenterY + sy * zoom;
-      const pr = Math.max(1.5, r * zoom);
+      const px = cx + sx * zoom;
+      const py = cy + sy * zoom;
+      const pr = Math.max(2, r * zoom);
+      ctx.save();
       ctx.fillStyle = col || CEPHEID_FALLBACK_COLOR;
       if (glow) {
-        ctx.shadowBlur  = pr * 2.2;
+        ctx.shadowBlur  = pr * 2.5;
         ctx.shadowColor = col;
       }
       ctx.beginPath();
       ctx.arc(px, py, pr, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
+      ctx.restore();
     };
 
-    // FIX: flip z comparison — positive z in this notebook convention = farther from viewer
+    // Notebook z-convention: positive z = farther from viewer.
+    // z1 < z2 → star1 is closer → draw companion first (behind), Cepheid last (front).
     if (z1 < z2) {
-      // Star 1 is closer → draw companion first (behind), Cepheid on top
       drawStar(x2, y2, COMPANION_RAD, '#f87171', false);
       drawStar(x1, y1, r1, col1, true);
     } else {
-      // Star 2 is closer → draw Cepheid first (behind), companion on top
       drawStar(x1, y1, r1, col1, true);
       drawStar(x2, y2, COMPANION_RAD, '#f87171', false);
     }
 
-    // ── HUD ──
-    if (hud.mag)   hud.mag.innerText   = mag.toFixed(3);
+    // ── HUD ──────────────────────────────────────────────────────────────────
+    if (hud.mag)   hud.mag.innerText   = mag.toFixed(1);
     if (hud.teff)  hud.teff.innerText  = teff !== null ? `${Math.round(teff)} K` : '~6490 K';
-    if (hud.rad)   hud.rad.innerText   = `${r1.toFixed(2)} R☉`;
+    if (hud.rad)   hud.rad.innerText   = `${r1.toFixed(1)} R☉`;
     if (hud.phase) hud.phase.innerText = (i / p.x1.length).toFixed(3);
 
     requestAnimationFrame(animate);
