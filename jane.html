@@ -20,12 +20,13 @@
       --panel-border: rgba(196,162,88,0.2);
     }
 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background-color: var(--bg);
       color: var(--text);
       font-family: 'EB Garamond', serif;
       line-height: 1.6;
-      margin: 0;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -33,7 +34,6 @@
       position: fixed;
       top: 0;
       width: 100%;
-      box-sizing: border-box;
       padding: 24px 40px;
       display: flex;
       justify-content: space-between;
@@ -50,30 +50,21 @@
       color: var(--gold);
       text-decoration: none;
     }
-    .article-back-link {
-      display: inline-block;
-      margin-top: 52px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .article-back-link:hover { color: var(--gold); border-color: var(--gold-dim); }
 
     .nav-back {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
       color: var(--text-dim);
       text-decoration: none;
-      transition: color 0.2s ease;
+      border-bottom: 1px solid transparent;
+      transition: color 0.2s ease, border-color 0.2s ease;
+      padding-bottom: 2px;
     }
-
-    .nav-back:hover { color: var(--gold); }
+    .nav-back:hover { 
+      color: var(--gold); 
+      border-bottom-color: var(--gold-dim); 
+    }
 
     .article-wrap {
       max-width: 720px;
@@ -123,6 +114,15 @@
       color: var(--text-dim);
     }
 
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     #back-to-top {
       position: fixed;
       bottom: 40px;
@@ -134,17 +134,18 @@
       height: 44px;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease, border-color 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-
-    #back-to-top.visible { opacity: 1; }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+    #back-to-top:hover { border-color: var(--gold); }
 
     @media (max-width: 600px) {
       .article-title { font-size: 32px; }
       nav { padding: 18px 24px; }
+      .article-wrap { padding: 90px 18px 72px; }
     }
   </style>
 </head>
@@ -152,7 +153,7 @@
 
   <nav>
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
   </nav>
 
   <article class="article-wrap">
@@ -175,16 +176,15 @@
 
       <p>As Jane matures, the threats to her autonomy become more "magnetic" and sophisticated. While Mr. Rochester attempts to pull Jane into a life that would compromise her integrity, it is St. John Rivers who presents the ultimate challenge. St. John’s religious fervor acts as a gravitational force, attempting to pull Jane’s moral needle toward his own "universalist" dogma. He doesn't just want Jane; he wants to enlist her as a tool for his own narrow definition of divinity.</p>
 
-      
-
       <p>Jane’s breakthrough occurs when she recognizes that St. John’s "magnetism" is a flawed human construct. She declares her need for a path shown by Heaven alone, rendering her morality independent of the flawed humans who surround her. Upon Jane's break from St. John's grasp, she declares, "It was my time to assume ascendency. My powers were in play, and in force." Jane fully uncouples her moral compass from St. John's magnetism, pointing herself back to the due North of God.</p>
 
       <p>Brontë uses Jane's fight for moral and religious autonomy as an analogue for the larger fight against a prescriptivism that denies agency to women. Jane's example displays both the challenges of 19th-century English society and the reductionist nature of universalist religious dogma. Through <i>Jane Eyre</i>, Brontë presents a path forward for women that calls for them to actively use the intertwined nature of their agency and ethics to achieve moral and personal ascendancy.</p>
-
-      <a href="index.html#writing" class="article-back-link">← Back to writing</a>
-      <a href="muralism.html" class="article-back-link">← Next: Mexian Muralism</a>
-
     </div>
+
+    <footer class="footer-nav">
+      <a href="index.html#writing" class="nav-back">← Back to Writing</a>
+      <a href="muralism.html" class="nav-back">Next: Mexican Muralism →</a>
+    </footer>
   </article>
 
   <button id="back-to-top" aria-label="Back to top">↑</button>
