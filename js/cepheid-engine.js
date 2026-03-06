@@ -8,7 +8,7 @@ let currentMode = 'orbital';
 let frameIdx = 0;
 
 // Grab DOM elements
-const starCanvas = document.getElementById('starstarCanvas'); // Note: ensure your HTML ID is actually 'starstarCanvas'
+const starCanvas = document.getElementById('starCanvas'); // Note: ensure your HTML ID is actually 'starCanvas'
 const ctx = starCanvas ? starCanvas.getContext('2d') : null;
 const preview = document.getElementById('preview');
 
@@ -22,7 +22,7 @@ const COLORS = {
 
 async function init() {
   if (!starCanvas || !ctx) {
-    console.error("Canvas element 'starstarCanvas' not found or 2D context unavailable.");
+    console.error("Canvas element 'starCanvas' not found or 2D context unavailable.");
     return;
   }
 
