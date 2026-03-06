@@ -3,7 +3,6 @@
   let currentMode = 'orbital';
   let frameIdx = 0;
 
-  // UPDATED: Unique ID to avoid clashing with your background starfield
   const simCanvas = document.getElementById('simCanvas'); 
   const ctx = simCanvas ? simCanvas.getContext('2d') : null;
   const preview = document.getElementById('sim-preview');
@@ -31,7 +30,7 @@
       window.addEventListener('resize', resize);
       resize();
       animate();
-    } catch (e) { console.error("Sim Error:", e); }
+    } catch (e) { console.error("Sim Data Failed:", e); }
   }
 
   window.setMode = function(mode) {
@@ -40,10 +39,10 @@
     plotUI.classList.toggle('opacity-0', mode !== 'pulsation');
     
     document.querySelectorAll('.btn-mode').forEach(b => {
-      b.classList.remove('bg-[var(--gold-dim)]', 'text-[var(--text)]');
-      b.classList.add('text-[var(--text-dim)]');
+      b.classList.remove('bg-white/5', 'text-white');
+      b.classList.add('text-white/40');
     });
-    document.getElementById(`btn-${mode}`).classList.add('bg-[var(--gold-dim)]', 'text-[var(--text)]');
+    document.getElementById(`btn-${mode}`).classList.add('bg-white/5', 'text-white');
   };
 
   function resize() {
@@ -58,7 +57,7 @@
     const rect = plotUI.getBoundingClientRect();
     const simRect = simCanvas.getBoundingClientRect();
     
-    // Relative coordinates within the simulation canvas
+    // Relative positioning to prevent "Plot Ghosting"
     const px = rect.left - simRect.left;
     const py = rect.top - simRect.top;
     const pw = rect.width;
@@ -66,7 +65,7 @@
 
     ctx.save();
     ctx.beginPath();
-    ctx.strokeStyle = '#78a5d2'; // var(--blue)
+    ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 2;
 
     const points = (w < 768) ? 80 : 160; 
@@ -76,7 +75,7 @@
     for (let k = -points/2; k < points/2; k++) {
       const idx = (currentIdx + k + pData.length) % pData.length;
       const val = pData[idx];
-      // Centering logic: middle of loop is currentIdx, rendered at pw/2
+      // MATH FIX: Centers currentIdx at (pw / 2)
       const x = px + (pw/2) + (k * step);
       const y = py + (ph/2) + ((val - ((bounds.minV + bounds.maxV)/2)) * (ph / magRange) * 0.7);
       
@@ -98,9 +97,8 @@
     ctx.clearRect(0, 0, w, h);
 
     let i = Math.floor(frameIdx) % p.x1.length;
-    frameIdx += (currentMode === 'pulsation' ? 0.35 : 0.8);
+    frameIdx += (currentMode === 'pulsation' ? 0.35 : 0.85);
 
-    // 1. DATA SELECTION
     let x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
     if (currentMode === 'pulsation') {
       x1 = 0; y1 = 0; z1 = 0; x2 = 9999;
@@ -116,23 +114,16 @@
       teff = p.teff[i];
     }
 
-    // 2. DYNAMIC SCALING
-    // Mobile-first responsiveness
-    const responsiveZoom = (w < 768) ? (w * 0.42) : (w * 0.28);
-    const zoom = (currentMode === 'pulsation') ? (w * 0.024) : responsiveZoom / bounds.a2;
+    const zoom = (currentMode === 'pulsation') ? (w * 0.022) : (w * 0.3) / bounds.a2;
 
-    // 3. DRAW ORBITS
     if (currentMode !== 'pulsation') {
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(196, 162, 88, 0.15)'; // --gold-dim
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
       ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a2*zoom, bounds.a2*zoom*0.54, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a1*zoom, bounds.a1*zoom*0.54, 0, 0, Math.PI*2); ctx.stroke();
     }
 
-    // 4. DRAW STARS
     const draw = (x, y, r, col, glow) => {
       ctx.fillStyle = col;
-      if(glow) { ctx.shadowBlur = r*zoom*1.4; ctx.shadowColor = col; }
+      if(glow) { ctx.shadowBlur = r*zoom*1.5; ctx.shadowColor = col; }
       ctx.beginPath(); ctx.arc(cx+x*zoom, cy+y*zoom, Math.max(1, r*zoom), 0, Math.PI*2); ctx.fill();
       ctx.shadowBlur = 0;
     }
@@ -140,7 +131,6 @@
     if (z1 > z2) { draw(x2, y2, 12.51, '#f87171', false); draw(x1, y1, r1, col1, true); }
     else { draw(x1, y1, r1, col1, true); draw(x2, y2, 12.51, '#f87171', false); }
 
-    // 5. UPDATE UI
     document.getElementById('hud-mag').innerText = mag.toFixed(2);
     document.getElementById('hud-teff').innerText = `${Math.round(teff)} K`;
     document.getElementById('hud-rad').innerText = r1.toFixed(2);
