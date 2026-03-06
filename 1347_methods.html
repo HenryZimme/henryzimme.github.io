@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Methodological Appendix | Henry Zimmerman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    :root {
+      --bg: #07091a;
+      --gold: #c4a258;
+      --gold-dim: rgba(196, 162, 88, 0.25);
+      --text: #e2ddd4;
+      --text-dim: rgba(226, 221, 212, 0.72);
+      --panel: rgba(7, 9, 26, 0.84);
+      --panel-border: rgba(196, 162, 88, 0.18);
+      --blue: #78a5d2;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      font-family: 'Spectral', Georgia, serif; 
+      line-height: 1.72; 
+    }
+
+    nav { 
+      position: fixed; top: 0; left: 0; right: 0; 
+      padding: 22px 52px; 
+      background: linear-gradient(to bottom, rgba(7,9,26,0.95) 0%, transparent 100%); 
+      z-index: 50; 
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-name { font-family: 'EB Garamond', serif; font-size: 18px; color: var(--text); text-decoration: none; font-style: italic; }
+    .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: 0.14em; transition: color 0.18s; }
+    .back-link:hover { color: var(--text); }
+
+    .article-container { 
+      max-width: 800px; 
+      margin: 120px auto 100px; 
+      padding: 0 40px; 
+    }
+    
+    .appendix-label { 
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; 
+      color: var(--gold); text-transform: uppercase; letter-spacing: 0.22em; 
+      margin-bottom: 20px; display: block; 
+    }
+    
+    .article-title { 
+      font-family: 'EB Garamond', serif; font-size: clamp(36px, 5vw, 48px); 
+      font-weight: 400; line-height: 1.1; margin-bottom: 30px; 
+    }
+
+    .article-content p { font-size: clamp(16px, 1.2vw + 12px, 18px); color: var(--text-dim); margin-bottom: 24px; line-height: 1.8; }
+    
+    .article-content h2 { 
+      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400; 
+      color: var(--text); margin: 60px 0 24px; 
+      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; 
+    }
+
+    figure { 
+      margin: 48px 0; background: var(--panel); 
+      border: 1px solid var(--panel-border); padding: 20px; 
+    }
+    figure img { width: 100%; height: auto; display: block; }
+    
+    figcaption { 
+      font-family: 'JetBrains Mono', monospace; font-size: 12.5px; 
+      color: var(--text-dim); line-height: 1.6; margin-top: 20px; 
+      padding-left: 16px; border-left: 2px solid var(--gold-dim); 
+    }
+
+    .code-note {
+      margin-top: 60px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      border-top: 1px solid var(--panel-border);
+      padding-top: 20px;
+    }
+
+    @media (max-width: 740px) { 
+      nav { padding: 18px 24px; } 
+      .article-container { padding: 0 24px; margin-top: 100px; } 
+      figure { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-name">Henry Zimmerman</a>
+  <a href="index.html#research" class="back-link">← Back to Research</a>
+</nav>
+
+<main class="article-container">
+  <header>
+    <span class="appendix-label">Methodological Appendix</span>
+    <h1 class="article-title">Disentangling Rotational Splitting from Photometric Aliasing in OGLE-LMC-CEP-1347</h1>
+    <p style="font-style: italic; color: var(--gold); margin-top: -10px;">This appendix documents the pipeline constructed to clean OGLE light curves, interrogate tidal residuals, and diagnose the sampling limits of ground-based photometry.</p>
+  </header>
+
+  <div class="article-content">
+    <h2>1. The Theoretical Motivator: Chandrasekhar and the Kappa Mechanism</h2>
+    <p>This investigation was initially sparked by a theoretical curiosity: how do the non-linear dynamics of Cepheid pulsation fare when embedded in binary systems with extreme tidal forces? After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I searched for an observational perspective on tidal impacts in high-mass variables, yet found a significant gap in the literature.</p>
+    
+    <p>At the 247th AAS Meeting, I discussed this gap for several hours with Dr. Barry Madore. The consensus was that while tidal impacts were theoretically inevitable in short period systems, none had been found yet. This was because to become Cepheids, stars would first have to survive Red Giant Branch expansion, which would consume any close companions.  Finding a Cepheid in a short-period orbit that had not yet undergone mass transfer is exceedingly rare, as evidenced by Nielson et al. (2015). Following the discovery of OGLE-LMC-CEP-1347 by Bogumił Pilecki ($P_{orb} = 58.85d$), I realized this target represented a rare opportunity to test these structural predictions observationally.</p>
+
+
+    <p>To isolate the residuals, I fit and subtracted multiple Fourier series to the $1O$ and $2O$ pulsation modes. Because the star is in a tight orbit, I applied a barycentric correction ($t_{corr} = t_{obs} - z/c$) using orbital parameters from Pilecki et al. (2022). This pipeline achieved a residual precision of ~0.01 mag RMS, which is comparable to a low-amplitude radial mode .</p>
+
+    <figure>
+      <img src="images/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.png" alt="Period-folded OGLE I-band light curve of OGLE-LMC-CEP-1347, first overtone mode.">
+      <figcaption>Figure 1: First-overtone (1O) mode phased light curve. Prewhitening this dominant signal was the prerequisite for investigating the underlying residuals predicted by distorted polytrope models.</figcaption>
+    </figure>
+
+    <h2>2. The Madore Reanalysis & Bayesian Model Selection</h2>
+    <p>Initial searches for phase-locked amplitude modulation yielded null results. However, following a reanalysis suggested by Dr. Madore, I performed a deeper interrogation of the residual power spectrum. Using simultaneous weighted dual-domain fitting across the OGLE $V$ and $I$ bands, I identified a symmetric frequency triplet with a spacing of $\Delta f \approx 0.0079$ c/d.</p>
+
+    <p>To ground this discovery, I tested a Stellar Spot model (parameterized as a sinusoidal amplitude modulation) against a Beat model (representing independent modes). My Bayesian Information Criterion (BIC) scoring favored the spot model ($\Delta BIC \approx 12$), providing what appeared to be strong evidence for a ~139-day physical rotational splitting—consistent with an asynchronous merger remnant.</p>
+
+    <figure>
+      <img src="images/download (36).png" alt="Dynamic spectrum of residual frequencies.">
+      <figcaption>Figure 2: Dynamic spectrum used to validate the candidate multiplet. The signal's temporal coherence across the baseline initially suggested it was intrinsic to the stellar surface.</figcaption>
+    </figure>
+
+    <h2>3. Physical Constraints & Tidal Modulation</h2>
+    <p>Applying Kepler’s Third Law to the system masses ($M_{ceph} = 3.41 \pm 0.08 M_{\odot}$, $M_{comp} = 1.89 \pm 0.04 M_{\odot}$), I determined an orbital separation of 117 $R_{\odot}$. Using the approximation $\Delta R / R \approx (M_{comp}/M_{ceph}) \cdot (R_{ceph}/a)^3$, I estimated a geometric tidal modulation of ~0.2%. Marginal signals were detected phase-locked with the orbit at a ~3$\sigma$ level, though these remain ambiguous due to potential photometric blending with the companion.</p>
+
+    <figure>
+      <img src="images/amplitude_modulation_orbital_phase.png" alt="Residual amplitude binned by orbital phase.">
+      <figcaption>Figure 4: Pulsation amplitude residuals binned by orbital phase ($P = 58.85d$). The marginal modulation motivated the transition to spectroscopic follow-up.</figcaption>
+    </figure>
+
+    <h2>4. Window Function Diagnostic: The "Null" Discovery</h2>
+    <p>The statistical favorability for the rotational model required a check against the sampling artifacts of the OGLE cadence (seasonal visibility $\approx$ 200 days). I modeled the spectral window using exact timestamps and unit weights. The result was definitive: the candidate splitting $\Delta f \approx 0.00718$ c/d aligned almost perfectly with an integer multiple of the $1/yr$ ($\approx 0.0027$ c/d) sampling alias.</p>
+
+    
+
+    <p>This "null result" demonstrated the fundamental photometric limit of ground-based observations for these systems. The 139-day "rotation" was an artifact of the Earth's orbit, not the Cepheid's physics. Identifying this alias before publication ensured the integrity of the merger-origin hypothesis was not diluted by a false rotational claim.</p>
+
+    <figure>
+      <img src="images/CEP-1347_alias_zoomed.png" alt="Spectral window overlay on residual periodogram.">
+      <figcaption>Figure 5: Direct comparison of the residual periodogram and the spectral window. The alignment with the 1/yr aliases proved the candidate signal was an observational artifact.</figcaption>
+    </figure>
+
+    <h2>5. Spectroscopic Follow-up and Future Work</h2>
+    <p>This photometric aliasing problem is the primary driver for our transition to high-resolution spectroscopy. As Co-I and lead author of the Science Justification, I am currently drafting a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki. Spectroscopy will allow us to bypass sampling aliases entirely to search for surface abundance patterns indicative of merger-driven rejuvenation.</p>
+    
+    <p>Moving forward, I intend to apply this battle-tested pipeline to a full search of the binary Cepheid catalog. By combining high-cadence photometry with a multimodal unsupervised CNN classifier—incorporating both light curve residuals and line profile vectors—I aim to identify the broader population of merger remnants that current ground-based aliases continue to mask.</p>
+
+    
+
+    <div class="code-note">
+      *Technical Note: Analysis performed via custom Python modules. Orbital separation and tidal approximations were integrated into the core reduction pipeline.*
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
