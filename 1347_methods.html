@@ -198,6 +198,28 @@
     </div>
   </div>
 </main>
+  
+<button id="back-to-top" aria-label="Back to top">
+    &uarr;
+</button>
 
+<script>
+    const backToTopBtn = document.getElementById('back-to-top');
+    
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 500) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    // Smooth scroll to top when clicked
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+</script>
+  
 </body>
 </html>
