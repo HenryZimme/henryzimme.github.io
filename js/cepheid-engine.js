@@ -1,9 +1,4 @@
 (function() {
-  /**
-   * Binary Cepheid Engine v1.7
-   * Fixes: Mode switching, speed normalization, and single-star pulsation.
-   */
-
   let data = null;
   let currentMode = 'orbital';
   let frameIdx = 0;
@@ -13,39 +8,41 @@
   const preview = document.getElementById('preview');
 
   const COLORS = {
-    cepheid: '#60a5fa',  // Blue (Pulsating)
-    companion: '#f87171', // Red (Static)
-    orbit: 'rgba(255, 255, 255, 0.15)'
+    cepheid: '#60a5fa', 
+    companion: '#f87171',
+    orbit: 'rgba(255, 255, 255, 0.2)'
   };
 
   async function init() {
     if (!starCanvas || !ctx) return;
     try {
       const response = await fetch('data/master_data.json');
-      if (!response.ok) throw new Error("Data not found");
+      if (!response.ok) throw new Error("Data fetch failed");
       data = await response.json();
       
-      // Clear "Synchronizing Data" / Preview
-      if (preview) preview.classList.add('hidden');
-      starCanvas.classList.remove('opacity-0');
-      starCanvas.classList.add('opacity-100');
+      // FORCE HIDE "Synchronizing Data"
+      if (preview) {
+        preview.style.display = 'none';
+        preview.classList.add('hidden');
+      }
+      starCanvas.classList.replace('opacity-0', 'opacity-100');
       
       window.addEventListener('resize', resize);
       resize();
+      renderPlot(); // Initialize the graph
       animate();
     } catch (e) {
-      console.error("Engine Error:", e);
+      console.error("Initialization Error:", e);
+      const hud = document.getElementById('hud-mag');
+      if (hud) hud.innerText = "ERROR LOADING DATA";
     }
   }
 
-  // GLOBAL MODE SWITCHER
   window.setMode = function(mode) {
     currentMode = mode;
     document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-    const activeBtn = document.getElementById(`btn-${mode}`);
-    if (activeBtn) activeBtn.classList.add('active');
-    
-    // Reset index on mode change to prevent array overflows
+    const btn = document.getElementById(`btn-${mode}`);
+    if (btn) btn.classList.add('active');
     frameIdx = 0; 
   };
 
@@ -55,6 +52,15 @@
     starCanvas.width = rect.width * dpr;
     starCanvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
+  }
+
+  // --- NEW: PLOT RENDERING ---
+  function renderPlot() {
+    const plotContainer = document.getElementById('lightcurve-plot');
+    if (!plotContainer) return;
+    // If you're using a library like Chart.js or Plotly, initialize it here.
+    // For now, ensuring the container isn't hidden by the sync message:
+    plotContainer.classList.remove('opacity-0');
   }
 
   function animate() {
@@ -70,60 +76,52 @@
 
     ctx.clearRect(0, 0, w, h);
 
-    // 1. SPEED & FRAME LOGIC
+    // Frame Speed & Selection Logic
     let i;
-    let current_x1, current_y1, current_z1, current_x2, current_y2, current_z2, current_r1, current_col1;
-    
-    // Orbital Focus: Run at normal speed
+    let x1, y1, z1, x2, y2, z2, r1, r2, col1;
+
     if (currentMode === 'orbital') {
-      i = frameIdx % p.t.length;
-      frameIdx += 1; // Increase for faster orbit
-      current_x1 = p.x1[i]; current_y1 = p.y1[i]; current_z1 = p.z1[i];
-      current_x2 = p.x2[i]; current_y2 = p.y2[i]; current_z2 = p.z2[i];
-      current_r1 = p.r1[i];
-      current_col1 = p.color1 ? p.color1[i] : COLORS.cepheid;
-    } 
-    // Composite Focus: Speed up pulsation relative to orbit
-    else if (currentMode === 'composite') {
+      i = frameIdx % p.x1.length;
+      frameIdx += 2; // Increased speed
+      x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
+      x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
+      r1 = p.r1[i]; r2 = 12.51;
+      col1 = p.color1 ? p.color1[i] : COLORS.cepheid;
+    } else if (currentMode === 'composite') {
       i = frameIdx % c.r1.length;
       frameIdx += 1;
-      current_x1 = p.x1[i % p.x1.length]; // Sync orbit with composite radius
-      current_y1 = p.y1[i % p.y1.length];
-      current_z1 = p.z1[i % p.z1.length];
-      current_x2 = p.x2[i % p.x2.length];
-      current_y2 = p.y2[i % p.y2.length];
-      current_z2 = p.z2[i % p.z2.length];
-      current_r1 = c.r1[i];
-      current_col1 = c.color1 ? c.color1[i] : COLORS.cepheid;
-    }
-    // Pulsation Focus: High speed zoom on the Cepheid
-    else {
+      const pIdx = i % p.x1.length;
+      x1 = p.x1[pIdx]; y1 = p.y1[pIdx]; z1 = p.z1[pIdx];
+      x2 = p.x2[pIdx]; y2 = p.y2[pIdx]; z2 = p.z2[pIdx];
+      r1 = c.r1[i]; r2 = 12.51;
+      col1 = c.color1 ? c.color1[i] : COLORS.cepheid;
+    } else { // Pulsation Focus
       i = frameIdx % p.t.length;
-      frameIdx += 2; 
-      current_x1 = 0; current_y1 = 0; current_z1 = 0; // Center the Cepheid
-      current_x2 = 5000; // Move companion off-screen
-      current_r1 = p.r1[i];
-      current_col1 = p.color1 ? p.color1[i] : COLORS.cepheid;
+      frameIdx += 1;
+      x1 = 0; y1 = 0; z1 = 0; // Lock Cepheid to center
+      x2 = 1000; // Move companion out of view
+      r1 = p.r1[i]; r2 = 12.51;
+      col1 = p.color1 ? p.color1[i] : COLORS.cepheid;
     }
 
-    // 2. SCALING
-    const zoom = (currentMode === 'pulsation') ? (Math.min(w, h) * 0.03) : (Math.min(w, h) * 0.4) / 150;
+    // Adjusted Zoom: Pulsation focus is now 5x rather than 100x
+    const zoom = (currentMode === 'pulsation') ? (Math.min(w, h) * 0.012) : (Math.min(w, h) * 0.4) / 160;
 
-    // 3. DRAW ORBIT (Only in Orbital/Composite)
+    // Draw Orbit Trail (Inclined 57 degrees)
     if (currentMode !== 'pulsation') {
       ctx.strokeStyle = COLORS.orbit;
-      ctx.setLineDash([5, 5]);
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.ellipse(cx, cy, 100 * zoom, 100 * zoom * 0.54, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, 110 * zoom, 110 * zoom * 0.54, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.setLineDash([]);
     }
 
-    // 4. DRAW STARS
-    const drawStar = (x, y, r, col, isCepheid) => {
+    // Draw Stars
+    const drawDisk = (x, y, r, col, glow) => {
       ctx.fillStyle = col;
-      if (isCepheid) {
-        ctx.shadowBlur = r * zoom * 1.5;
+      if (glow) {
+        ctx.shadowBlur = r * zoom * 1.2;
         ctx.shadowColor = col;
       }
       ctx.beginPath();
@@ -132,13 +130,12 @@
       ctx.shadowBlur = 0;
     };
 
-    // Z-Sort
-    if (current_z1 > current_z2) {
-      drawStar(current_x2, current_y2, 12.51, COLORS.companion, false);
-      drawStar(current_x1, current_y1, current_r1, current_col1, true);
+    if (z1 > z2) {
+      drawDisk(x2, y2, r2, COLORS.companion, false);
+      drawDisk(x1, y1, r1, col1, true);
     } else {
-      drawStar(current_x1, current_y1, current_r1, current_col1, true);
-      drawStar(current_x2, current_y2, 12.51, COLORS.companion, false);
+      drawDisk(x1, y1, r1, col1, true);
+      drawDisk(x2, y2, r2, COLORS.companion, false);
     }
 
     requestAnimationFrame(animate);
