@@ -34,16 +34,43 @@
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    nav { 
-      position: fixed; top: 0; left: 0; right: 0; 
-      padding: 22px 52px; 
-      background: linear-gradient(to bottom, rgba(7,9,26,0.95) 0%, transparent 100%); 
-      z-index: 50; 
-      display: flex; justify-content: space-between; align-items: center;
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
     }
-    .nav-name { font-family: 'EB Garamond', serif; font-size: 18px; color: var(--text); text-decoration: none; font-style: italic; }
-    .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: 0.14em; transition: color 0.18s; }
-    .back-link:hover { color: var(--text); }
+
+    .nav-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-style: italic;
+    }
+    .nav-name:hover { color: var(--gold); text-decoration: none; }
+
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-back:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+      text-decoration: none;
+    }
 
     .article-wrap {
       max-width: 65ch;
@@ -106,21 +133,7 @@
       margin: 2em 0 0.7em;
     }
 
-    .article-body blockquote {
-      border-left: 2px solid var(--gold-dim);
-      margin: 1.6em 0;
-      padding: 0.2em 0 0.2em 1.4em;
-      color: var(--text-dim);
-      font-style: italic;
-    }
-
-    .article-body ul,
-    .article-body ol {
-      padding-left: 1.8em;
-      margin-bottom: 1.4em;
-    }
-    .article-body li { margin-bottom: 0.4em; }
-
+    /* Figure & Image CSS */
     .article-body figure {
       margin: 2em 0;
       display: block;
@@ -130,6 +143,7 @@
       height: auto;
       display: block;
       border: 1px solid var(--panel-border);
+      background-color: white; /* Ensures GIF transparency displays correctly */
     }
     .article-body figcaption {
       font-family: 'JetBrains Mono', monospace;
@@ -141,79 +155,7 @@
       letter-spacing: 0.03em;
     }
 
-    .article-body h2.references-heading {
-      font-size: 20px;
-      color: var(--gold);
-      margin-top: 3em;
-    }
-
-    .article-body sup {
-      font-size: 0.72em;
-      line-height: 0;
-      vertical-align: super;
-    }
-    .article-body sup a {
-      color: var(--gold);
-      text-decoration: none;
-      padding: 0 1px;
-      border-bottom: 1px solid var(--gold-dim);
-      transition: color 0.12s, border-color 0.12s;
-    }
-    .article-body sup a:hover {
-      color: var(--text);
-      border-color: var(--text-dim);
-      text-decoration: none;
-    }
-
-    .article-body section.footnotes {
-      margin-top: 3.5em;
-      padding-top: 1.6em;
-      border-top: 1px solid var(--panel-border);
-    }
-    .article-body section.footnotes::before {
-      content: 'Notes';
-      display: block;
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      color: var(--gold);
-      letter-spacing: 0.02em;
-      margin-bottom: 1em;
-    }
-    .article-body section.footnotes ol {
-      padding-left: 1.6em;
-    }
-    .article-body section.footnotes li {
-      font-size: 14px;
-      color: var(--text-dim);
-      line-height: 1.6;
-      margin-bottom: 0.7em;
-    }
-    .article-body section.footnotes li p { margin-bottom: 0; }
-    .article-body section.footnotes a.footnote-back {
-      color: var(--gold);
-      margin-left: 4px;
-      font-size: 0.85em;
-      text-decoration: none;
-      border-bottom: none;
-    }
-    .article-body section.footnotes a.footnote-back:hover { color: var(--text); }
-
-    .article-back {
-      display: inline-block;
-      margin-top: 52px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .article-back:hover { color: var(--gold); border-color: var(--gold-dim); text-decoration: none; }
-    
+    /* Poster & Button CSS */
     .btn-download {
       display: inline-flex;
       align-items: center;
@@ -239,49 +181,80 @@
     }
 
     .poster-breakout {
-      /* Breaks out of the 65ch container */
       width: 100vw;
-      max-width: 1200px; /* Caps the maximum width on giant monitors */
+      max-width: 1200px;
       position: relative;
       left: 50%;
       transform: translateX(-50%);
       margin: 3em 0;
-      padding: 0 28px; /* Prevents it from touching the edges of the screen */
+      padding: 0 28px;
     }
 
     .poster-iframe {
       width: 100%;
-      /* 2.5 ratio width to 1 ratio height */
       aspect-ratio: 2.5 / 1; 
       border: 1px solid var(--panel-border);
       border-radius: 4px;
       background-color: #fff;
     }
 
+    /* Back to Top Button CSS */
+    #back-to-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 300;
+      width: 40px;
+      height: 40px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, border-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+      padding: 0;
+    }
+    #back-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #back-to-top:hover {
+      border-color: var(--gold);
+    }
+
     @media (max-width: 600px) {
       nav { padding: 18px 24px; }
       .article-wrap { padding: 90px 18px 72px; }
+      #back-to-top { bottom: 20px; right: 20px; }
       
-      /* Add this mobile fallback */
       .poster-breakout { padding: 0 18px; }
       .poster-iframe { 
         aspect-ratio: auto; 
         height: 400px; 
       }
     }
-
   </style>
 </head>
 <body>
 
+  <nav>
+    <a href="index.html" class="nav-name">Henry Zimmerman</a>
+    <a href="index.html#research" class="nav-back">← Back to Research</a>
+  </nav>
 
-  
-
-  <div class="article-wrap">
+  <article class="article-wrap">
+    <header>
+      <div class="article-meta">PHY 440 F25 • Phillips Academy Andover</div>
+      <h1 class="article-title">Characterizing Variability in Classical Cepheid U Sagitarii with Differential V<sub>c</sub> - I<sub>c</sub> Photometry</h1>
+      <div class="article-byline">Henry Zimmerman '27</div>
+    </header>
     
-    <div class="article-meta">PHY 440 F25 • Phillips Academy Andover</div>
-    <h1 class="article-title">Characterizing Variability in Classical Cepheid U Sagitarii with Differential V<sub>c</sub> - I<sub>c</sub> Photometry</h1>
-    <div class="article-byline">Henry Zimmerman '27</div>
     <hr class="article-divider">
 
     <div class="article-body">
@@ -289,9 +262,16 @@
       <p>
         U Sagitarii is a Classical Cepheid variable star located in the Messier 25 cluster. 11 observations were made in Cousins V and I bands from 2025-10-14 to 2025-11-15 using the Slooh Chile 2 Telescope. Photometric comparison stars were selected based on angular separation, SNR, and SIMBAD magnitude. 
       </p>
+
+      <figure>
+        <img src="cepheid.gif" alt="Animation showing the light curve and pulsation cycle of a Cepheid variable star">
+        <figcaption>Cepheid variable pulsation and magnitude change correlation. Source: Astronomy Club IITK.</figcaption>
+      </figure>
+
       <p>
         Sinusoidal light curves with the established period of 6.74 days were fit for Cousins V and I band data, with <em>R<sup>2</sup></em> values of 0.9301 and 0.7034 respectively. A strong correlation (<em>r</em> = 0.8450) was found between V<sub>c</sub> - I<sub>c</sub> color index and V<sub>c</sub> magnitude, supporting the existence of the Kappa-mechanism. 
       </p>
+
       <p>
         Distance calculation using Leavitt's law were accurate for I<sub>c</sub> but inaccurate for V<sub>c</sub> (δ = 40.77%). Future studies can further explore the Kappa-mechanism after adjusting for dust extinction.
       </p>
@@ -320,7 +300,27 @@
         <a href="USgrHSZPosterWeb.pdf" target="_blank" rel="noopener"><strong>Open Poster in New Tab (PDF) &rarr;</strong></a>
       </p>
     </div>
-  </div>
+  </article>
+
+  <button id="back-to-top" aria-label="Back to top">
+    &uarr;
+  </button>
+
+  <script>
+    const backToTopBtn = document.getElementById('back-to-top');
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 500) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
 
 </body>
 </html>
