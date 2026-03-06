@@ -34,43 +34,16 @@
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 50;
-      padding: 22px 52px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
+    nav { 
+      position: fixed; top: 0; left: 0; right: 0; 
+      padding: 22px 52px; 
+      background: linear-gradient(to bottom, rgba(7,9,26,0.95) 0%, transparent 100%); 
+      z-index: 50; 
+      display: flex; justify-content: space-between; align-items: center;
     }
-
-    .nav-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--text);
-      text-decoration: none;
-      font-style: italic;
-    }
-    .nav-name:hover { color: var(--gold); text-decoration: none; }
-
-    .nav-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .nav-back:hover {
-      color: var(--gold);
-      border-color: var(--gold-dim);
-      text-decoration: none;
-    }
+    .nav-name { font-family: 'EB Garamond', serif; font-size: 18px; color: var(--text); text-decoration: none; font-style: italic; }
+    .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: 0.14em; transition: color 0.18s; }
+    .back-link:hover { color: var(--text); }
 
     .article-wrap {
       max-width: 65ch;
