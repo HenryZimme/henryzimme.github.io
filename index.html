@@ -1103,8 +1103,11 @@
           </div>
 
           <a href="#cepheid-sim" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
-            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase; margin-bottom:7px;">Interactive Simulation ↓</div>
-            <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.65;">The orbital geometry shown here directly informs ESPRESSO scheduling: phases &#981;<sub>orb</sub> &#8776; 0.25 and 0.75 maximize the Cepheid&#8217;s radial-velocity signature, and targeting those windows lets us separate pulsation and orbital motion without aliasing.</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated ↓</div>
+            </div>
+            <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.80&ndash;0.90, where the Cepheid is at minimum radius and atmospheric turbulence is lowest (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where &Delta;RV&nbsp;&#8819;&nbsp;40&nbsp;km&thinsp;s<sup>&minus;1</sup> to cleanly separate the Cepheid and companion spectra. The simulation makes both constraints visible at once.</div>
           </a>
 
 
@@ -1220,7 +1223,7 @@ The project coordinates photometry across four observatories in the Canary Islan
     <!-- bottom: plot + mode buttons -->
     <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;">
       <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 820px; height: 160px; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); position: relative; overflow: hidden; transition: opacity 0.5s; border-radius: 3px;">
-        <div style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none; z-index: 10;">V-BAND LIGHT CURVE &middot; PULSATION PHASE</div>
+        <div data-plot-label style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none; z-index: 10; transition: opacity 0.3s;">ORBITAL RADIAL VELOCITIES · KM S⁻¹</div>
         <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(96,165,250,0.6); box-shadow: 0 0 8px #60a5fa; z-index: 10;"></div>
       </div>
 
@@ -1229,7 +1232,7 @@ The project coordinates photometry across four observatories in the Canary Islan
           <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">ORBITAL</button>
           <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">PULSATION</button>
         </div>
-        <p style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;· K&#8321; = 30.3 km/s · K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
       </div>
     </div>
   </div>
