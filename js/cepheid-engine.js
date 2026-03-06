@@ -245,6 +245,34 @@
       drawStar(x2, y2, COMPANION_RAD, '#f87171', false);
     }
 
+
+    // ── star labels (orbital/composite only) ────────────────────────────────
+    // Labels fade out when stars are within 2× the larger star's radius of each other
+    if (currentMode !== 'pulsation') {
+      const px1 = cx + x1 * zoom,  py1 = cy + y1 * zoom;
+      const px2 = cx + x2 * zoom,  py2 = cy + y2 * zoom;
+      const dist = Math.hypot(px1 - px2, py1 - py2);
+      const minDist = (r1 + COMPANION_RAD) * zoom * 2.2;
+      const labelAlpha = Math.min(1, Math.max(0, (dist - minDist) / (minDist * 0.6)));
+
+      if (labelAlpha > 0.01) {
+        ctx.save();
+        ctx.font = '11px \'JetBrains Mono\', monospace';
+        ctx.textBaseline = 'middle';
+
+        // Cepheid label — offset above and right of star
+        ctx.globalAlpha = labelAlpha * 0.85;
+        ctx.fillStyle = '#ffe4a0';
+        ctx.fillText('Cepheid', px1 + r1 * zoom + 8, py1 - r1 * zoom * 0.5);
+
+        // Companion label
+        ctx.fillStyle = '#f87171';
+        ctx.fillText('Companion', px2 + COMPANION_RAD * zoom + 8, py2 - COMPANION_RAD * zoom * 0.5);
+
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+    }
     // ── HUD ──────────────────────────────────────────────────────────────────
     if (hud.mag)   hud.mag.innerText   = mag.toFixed(1);
     if (hud.teff)  hud.teff.innerText  = teff !== null ? `${Math.round(teff)} K` : '~6490 K';
