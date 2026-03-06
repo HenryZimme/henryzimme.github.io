@@ -34,12 +34,24 @@ async function init() {
   }
 }
 
+// Define it directly on the window object so HTML 'onclick' can see it
 window.setMode = function(mode) {
+  console.log("Switching to mode:", mode); // Debugging line
   currentMode = mode;
-  document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+  
+  // Update button visuals
+  document.querySelectorAll('.btn-mode').forEach(b => {
+    b.classList.remove('active');
+  });
+  
   const activeBtn = document.getElementById(`btn-${mode}`);
-  if (activeBtn) activeBtn.classList.add('active');
-  frameIdx = 0; 
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+  } else {
+    console.error(`Button btn-${mode} not found in HTML.`);
+  }
+
+  frameIdx = 0; // Restart animation cycle for the new mode
 };
 
 function resize() {
