@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muerte al Invasor: Examining Siqueiros's Activist Muralism Through his Chillán Mural | Henry Zimmerman</title>
-  <meta name="description" content="">
+  <title>Muerte al Invasor: Siqueiros's Activist Muralism | Henry Zimmerman</title>
+  <meta name="description" content="An examination of David Alfaro Siqueiros's anti-colonial mural in Chillán, Chile.">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:           #07091a;
@@ -16,239 +16,135 @@
       --gold-dim:     rgba(196,162,88,0.25);
       --text:         #e2ddd4;
       --text-dim:     rgba(226,221,212,0.72);
-      --panel:        rgba(7,9,26,0.84);
-      --panel-border: rgba(196,162,88,0.18);
-      --blue:         #78a5d2;
+      --panel-border: rgba(196,162,88,0.2);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--bg);
+      background-color: var(--bg);
       color: var(--text);
-      font-family: 'Spectral', Georgia, serif;
-      font-size: 17px;
-      line-height: 1.75;
+      font-family: 'EB Garamond', serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
     }
-
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
 
     nav {
       position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 50;
-      padding: 22px 52px;
+      top: 0; width: 100%;
+      padding: 24px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
+      z-index: 100;
+      background: linear-gradient(to bottom, var(--bg) 80%, transparent 100%);
     }
 
     .nav-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      color: var(--gold);
       text-decoration: none;
-      font-style: italic;
     }
-    .nav-name:hover { color: var(--gold); text-decoration: none; }
 
     .nav-back {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.1em;
+      text-transform: uppercase;
       color: var(--text-dim);
       text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
     }
-    .nav-back:hover {
-      color: var(--gold);
-      border-color: var(--gold-dim);
-      text-decoration: none;
-    }
+    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
 
     .article-wrap {
-      max-width: 65ch;
+      max-width: 680px;
       margin: 0 auto;
-      padding: 120px 28px 100px;
+      padding: 160px 24px 100px;
     }
 
     .article-meta {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--gold);
       text-transform: uppercase;
-      margin-bottom: 18px;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-bottom: 12px;
     }
 
     .article-title {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(26px, 5vw, 40px);
+      font-size: clamp(30px, 5vw, 42px);
       font-weight: 400;
-      line-height: 1.2;
+      line-height: 1.1;
+      margin: 0 0 32px;
       color: var(--text);
-      margin-bottom: 10px;
-    }
-
-    .article-byline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      margin-bottom: 36px;
     }
 
     .article-divider {
-      border: none;
+      border: 0;
       border-top: 1px solid var(--panel-border);
-      margin-bottom: 40px;
+      margin: 40px 0;
     }
 
     .article-body p {
-      margin-bottom: 1.4em;
-      text-indent: 0;
-    }
-
-
-    .article-body h2 {
-      font-family: 'EB Garamond', serif;
-      font-size: 24px;
-      font-weight: 400;
-      color: var(--text);
-      margin: 2.4em 0 0.9em;
-      letter-spacing: 0.01em;
-    }
-
-    .article-body h3 {
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      font-style: italic;
-      color: var(--text-dim);
-      margin: 2em 0 0.7em;
+      font-size: 19px;
+      margin-bottom: 28px;
     }
 
     .article-body blockquote {
       border-left: 2px solid var(--gold-dim);
-      margin: 1.6em 0;
-      padding: 0.2em 0 0.2em 1.4em;
-      color: var(--text-dim);
+      margin: 40px 0;
+      padding: 8px 0 8px 28px;
       font-style: italic;
-    }
-
-
-    .article-body ul,
-    .article-body ol {
-      padding-left: 1.8em;
-      margin-bottom: 1.4em;
-    }
-    .article-body li { margin-bottom: 0.4em; }
-
-    .article-body figure {
-      margin: 2em 0;
-      display: block;
-    }
-    .article-body figure img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border: 1px solid var(--panel-border);
-    }
-    .article-body figcaption {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
       color: var(--text-dim);
-      opacity: 0.7;
-      margin-top: 8px;
-      line-height: 1.5;
-      letter-spacing: 0.03em;
     }
 
-    /* references heading injected by build script */
-    .article-body h2.references-heading {
-      font-size: 20px;
-      color: var(--gold);
-      margin-top: 3em;
+    .article-body figure { margin: 3em 0; }
+    .article-body figure img { width: 100%; height: auto; border: 1px solid var(--panel-border); }
+    .article-body figcaption { 
+      font-family: 'JetBrains Mono', monospace; 
+      font-size: 11px; 
+      color: var(--text-dim); 
+      margin-top: 12px; 
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    /* inline superscript footnote refs from pandoc */
-    .article-body sup {
-      font-size: 0.72em;
-      line-height: 0;
-      vertical-align: super;
-    }
-    .article-body sup a {
-      color: var(--gold);
-      text-decoration: none;
-      padding: 0 1px;
-      border-bottom: 1px solid var(--gold-dim);
-      transition: color 0.12s, border-color 0.12s;
-    }
-    .article-body sup a:hover {
-      color: var(--text);
-      border-color: var(--text-dim);
-      text-decoration: none;
-    }
-
-    /* pandoc footnote section */
-    .article-body section.footnotes {
-      margin-top: 3.5em;
-      padding-top: 1.6em;
+    .footnotes {
+      margin-top: 60px;
+      padding-top: 40px;
       border-top: 1px solid var(--panel-border);
     }
-    .article-body section.footnotes::before {
-      content: 'Notes';
-      display: block;
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      color: var(--gold);
-      letter-spacing: 0.02em;
-      margin-bottom: 1em;
-    }
-    .article-body section.footnotes ol {
-      padding-left: 1.6em;
-    }
-    .article-body section.footnotes li {
-      font-size: 14px;
-      color: var(--text-dim);
-      line-height: 1.6;
-      margin-bottom: 0.7em;
-    }
-    .article-body section.footnotes li p { margin-bottom: 0; }
-    .article-body section.footnotes a.footnote-back {
-      color: var(--gold);
-      margin-left: 4px;
-      font-size: 0.85em;
-      text-decoration: none;
-      border-bottom: none;
-    }
-    .article-body section.footnotes a.footnote-back:hover { color: var(--text); }
+    .footnotes ol { padding-left: 20px; color: var(--text-dim); font-size: 15px; }
+    .footnotes li { margin-bottom: 12px; }
 
-    .article-back {
-      display: inline-block;
-      margin-top: 52px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
     }
-    .article-back:hover { color: var(--gold); border-color: var(--gold-dim); text-decoration: none; }
+
+    #back-to-top {
+      position: fixed;
+      bottom: 40px; right: 40px;
+      background: none;
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      width: 44px; height: 44px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #back-to-top.visible { opacity: 1; }
 
     @media (max-width: 600px) {
-      nav { padding: 18px 24px; }
-      .article-wrap { padding: 90px 18px 72px; }
+      nav { padding: 20px; }
+      .article-wrap { padding-top: 120px; }
     }
   </style>
 </head>
@@ -256,311 +152,70 @@
 
   <nav>
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#writing" class="nav-back">&larr; Return to Portfolio</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
   </nav>
 
-  <div class="article-wrap">
-    <h1 class="article-title">Death to the Invader: Siqueiros, Anti-Colonialism, and Latin American Solidarity</h1>
-    <div class="article-body">
-      <p>In 1941, after serving 8 months in prison for an assault on Leon
-Trotsky’s compound, world-renowned muralist and Stalinist David Alfaro
-Siqueiros was exiled to Chile under the supervision of the Mexican
-ambassador to paint a mural.<a href="#fn1" class="footnote-ref"
-id="fnref1" role="doc-noteref"><sup>1</sup></a> His mural was to be
-created in the library of the Escuela Mexico, an elementary school
-gifted to the city of Chillán by Mexican president Cárdenas to aid with
-earthquake recovery.<a href="#fn2" class="footnote-ref" id="fnref2"
-role="doc-noteref"><sup>2</sup></a> Siqueiros was one of three prominent
-Mexican muralists who approached the subjects of national history,
-conflict, and class struggle to create a unified post-revolutionary
-national identity.<a href="#fn3" class="footnote-ref" id="fnref3"
-role="doc-noteref"><sup>3</sup></a> Upon viewing the long and narrow
-room, Siqueiros envisioned a mural bending perspective, with an unbroken
-canvas allowing images to cross the room through the ceiling,
-transcending the walls.<a href="#fn4" class="footnote-ref" id="fnref4"
-role="doc-noteref"><sup>4</sup></a> He applied rounded shapes to the
-corners and aesthetically heightened the ceiling, which allowed
-compositional forms to interact with each other from across the room,
-producing a cinematographic effect as the spectator’s perspective
-shifts.<a href="#fn5" class="footnote-ref" id="fnref5"
-role="doc-noteref"><sup>5</sup></a> Driven by ideas of Latin American
-solidarity ignited by the circumstances around his exile and artistic
-commission, Siqueiros’s mural, <em>Death to the Invader</em>, attempts
-to depict a shared Latin American history. Mexican revolutionaries and
-national symbolism line the south side of the room, while those of Chile
-adorn the north, with the common theme of resistance against the Spanish
-imperialism featuring prominently.<a href="#fn6" class="footnote-ref"
-id="fnref6" role="doc-noteref"><sup>6</sup></a> In his mural <em>Death
-to the Invader</em>, David Alfaro Siqueiros juxtaposed Mexican and
-Chilean revolutionary figures and iconography to portray Mexican history
-as part of a continuous Latin American struggle against European
-colonization and its legacies.</p>
-<figure class="article-figure">
-<img src="images/siqueiros-death-to-invader-south-wall.jpg" />
-<figcaption>A photograph of the south wall of Siqueiros’s mural <em>Death to the
-Invader</em>.<a href="#fn7" class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a></figcaption>
-</figure>
-<p>Siqueiros fills the Mexican wall with anti-colonial revolutionary
-thematic content, utilizing allegories and symbolic figures from the
-nation’s history. The setting of the wall is the steps of an Aztec
-temple, likely the great temple in Tenochtitlán, which was disassembled
-by the conquistadors stone by stone to build a church.<a href="#fn8"
-class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>
-Standing tall on the steps is the central figure, Aztec emperor
-Cuauhtémoc, who defended Tenochtitlán from the Spanish, refusing to
-surrender the location of the Aztec treasure when defeated.<a
-href="#fn9" class="footnote-ref" id="fnref9"
-role="doc-noteref"><sup>9</sup></a> Cuauhtémoc, wearing a mask, aims his
-bow at the cross-dagger above, a symbol of colonial oppression that was
-used by the Spanish to coerce gold from Indigenous people of Mexico.<a
-href="#fn10" class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a> Underneath him, a bearded
-conquistador lies on his back with a lance piercing his chest.<a
-href="#fn11" class="footnote-ref" id="fnref11"
-role="doc-noteref"><sup>11</sup></a> From the right and left, Hidalgo,
-Zapata, Morelos, La Adelita, Juárez, and Cárdenas, figures of revolution
-and reform, look on with fists clenched.<a href="#fn12"
-class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a></p>
-<figure class="article-figure">
-<img src="images/siqueiros-death-to-invader-north-wall.jpg" />
-<figcaption>A photograph of the north wall of Siqueiros’s mural <em>Death to the
-Invader</em><a href="#fn13" class="footnote-ref" id="fnref13"
-role="doc-noteref"><sup>13</sup></a></figcaption>
-</figure>
-<p>The physical and thematic nature of the mural is constructed to
-highlight the cohesive Latin American narrative of struggle. Siqueiros
-argues for a thematic viewing and depiction of history, remarking that
-“I did not want to paint some facts about the history of the two
-countries, as important as these were. I wanted to paint the entire
-history, or at least the fundamental motor drive of the entire history
-of both peoples.”<a href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a> Accordingly, Siqueiros rounded the
-corners of the room with inserts to create an uninterrupted canvas where
-each wall looked, in his own words, “as though it were coming over from
-the opposite side of the room.”<a href="#fn15" class="footnote-ref"
-id="fnref15" role="doc-noteref"><sup>15</sup></a> Upon entering the
-library, which measured 25 meters long by seven meters wide by six
-meters high, the two walls stand in parallel, with the longest distance
-between them. The volcano at the top of the Chilean wall and the fire
-atop the Mexican wall face each other across the abstract ceiling,
-symbolizing the nations’ respective national spirits. In the center of
-the Chilean wall, the figure of the Galvarino, arms mutilated by the
-Spanish, appears in motion, referencing his journey across the Andes to
-mobilize resistance against the colonial forces.<a href="#fn16"
-class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a>
-Phantom limbs stab the conquistadores who lie below. The Chilean
-revolutionaries and leaders O’Higgins, Bilbao, Balmaceda, Lautaro, and
-Recabarren appear throughout the chaotic scene.<a href="#fn17"
-class="footnote-ref" id="fnref17" role="doc-noteref"><sup>17</sup></a>
-The many motifs reflected across the room combined with the conceptual
-and compositional ‘oneness’ of the two different walls emphasize the
-thematic uniformity of the two walls despite difference in content.
-These elements together create the effect of a clear and resounding
-anti-imperial message present at any location in the room.</p>
-<p>While Siqueiros composed the painting as an expression the
-“historical simultaneity of [Chile and Mexico’s] struggle, for both are
-people of Latin America”, upon closer examination of the work and the
-context around its creation, the piece can be interpreted as an
-expression of communist activism against the capitalist and fascist
-legacies left behind by colonialism.<a href="#fn18" class="footnote-ref"
-id="fnref18" role="doc-noteref"><sup>18</sup></a> Siqueiros viewed his
-art as a subordinate didactic outlet of his political activism, stating
-that “with me my art is a personal thing, but my party is a duty.”<a
-href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a> However, the conditions for his
-exile from Mexico stipulated that he would not engage in political
-activism, directly contradicting his Marxist artistic philosophy of
-art’s social obligation.<a href="#fn20" class="footnote-ref"
-id="fnref20" role="doc-noteref"><sup>20</sup></a> <em>Death to the
-Invader</em> adheres to this agreement superficially, as he refrains
-from overtly using communist motifs seen in his other murals, instead
-focusing mainly on past figures of colonial resistance. This theme could
-be considered activism, as during the 1940s, Siqueiros was a subscriber
-of Popular Frontism, an ideology that argued for the employment of
-nationalist lexicon to build support for the Communist Party in the
-anti-fascist movement.<a href="#fn21" class="footnote-ref" id="fnref21"
-role="doc-noteref"><sup>21</sup></a> Despite his restraints on overt
-political expression, Siqueiros still includes subtle nods to the ideas
-of class revolution and communist reform in the mural. Of the figures
-included, Emiliano Zapata, a Mexican revolutionary and proponent of
-far-reaching land redistribution, and Manuel Recabarren, a labor
-organizer and founder of the Communist Party of Chile, stand out as
-representatives of radical collectivist reform.<a href="#fn22"
-class="footnote-ref" id="fnref22" role="doc-noteref"><sup>22</sup></a>
-While the subject matter depicted in the mural concerns history,
-Siqueiros notes that the mural is a “condemnation of <em>invaders of all
-times.</em>”<a href="#fn23" class="footnote-ref" id="fnref23"
-role="doc-noteref"><sup>23</sup></a> Thus, the mural can be seen as a
-Latin American history of the <em>continuing</em> revolutionary struggle
-against Spanish imperialism <em>and its legacies</em>, namely the evils
-of capitalism and fascism. Siqueiros engaged in a covert reframing
-through <em>Death to the Invader</em>, channeling animosity towards past
-colonization against contemporary facism and the bourgeoise.</p>
-<p>During his year of exile in Chillán, Siqueiros continued his
-political activism through his artwork. He maintained the revolutionary
-ethos of muralism long after others capitulated to their bourgeoise
-patrons, using his art to impel “the offensive spirit of the public
-through presentation of the real combative facts of its history… as a
-living example for present and future activities.”<a href="#fn24"
-class="footnote-ref" id="fnref24" role="doc-noteref"><sup>24</sup></a>
-Siqueiros not only united Chilean and Mexican history under the story of
-colonization, resistance, and reform, but also presented an exhortation
-to continue the march of progress into the future, following the example
-of Cuauhtémoc up the steps of the temple to strike the flaming sword
-pointed at him.</p>
-<h2 class="references-heading">Bibliography</h2>
-<p>Buhle, Mari Jo, Paul Buhle, and Dan Georgakas. <em>Encyclopedia of
-the American Left</em>. 2nd ed. New York: Oxford University Press,
-1998.</p>
-<p>Cull, Nicholas John, David Holbrook Culbert, and David Welch.
-<em>Propaganda and Mass Persuasion : a Historical Encyclopedia, 1500 to
-the Present</em>. Santa Barbara, Calif.: ABC-CLIO, 2003.</p>
-<p><em>David Alfaro Siqueiros</em>. Image. 2025. World History: The
-Modern Era.</p>
-<p>Fulton, Christopher. "Siqueiros's Experimental Landscapes."
-<em>Zeitschrift Für Kunstgeschichte</em> 75, no. 1 (2012): 93-130.
-JSTOR.</p>
-<p>———. "Siqueiros against the Myth: Paeans to Cuauhtémoc, Last of the
-Aztec Emperors." <em>Oxford Art Journal</em> 32, no. 1 (2009): 67-93.
-JSTOR.</p>
-<p>Garnett, W. "MURAL PAINTING HEART OF THE ARTISTIC REBIRTH OF MEXICO
-IN THE 20TH CENTURY." <em>Artes de México</em>, no. 5/6 (1954): 133-39.
-JSTOR.</p>
-<p>Kahng, Rachel. "David Alfaro Siqueiros: Communist Before Artist."
-Dartmouth Student Course Exhibits. Last modified Winter 2022. Accessed
-May 6, 2025.
-https://course-exhibits.library.dartmouth.edu/s/modernmexico/page/kahng.</p>
-<blockquote>
-<p>This source is a digital exhibit developed for the HIST 87 Culture
-and Identity in Modern Mexico class at Dartmouth University. The author,
-Rachel Kahng, is an undergraduate at Dartmouth University majoring in
-history. This source contained important information about the
-relationship between David Siqueiros's art and his political
-activism.</p>
-</blockquote>
-<p>Kilroy-Ewbank, Lauren. "The Templo Mayor and the Coyolxauhqui Stone."
-Smarthistory. Last modified August 9, 2015. Accessed May 6, 2025.
-https://smarthistory.org/templo-mayor-at-tenochtitlan-the-coyolxauhqui-stone-and-an-olmec-mask/.</p>
-<blockquote>
-<p>Dr. Lauren Kilroy-Ewbank is an Associate Professor of Art History at
-Pepperdine University. This source contained information about the fate
-of Aztec temples.</p>
-</blockquote>
-<p>Leonard, Thomas M. "Mexican Muralists." In <em>Encyclopedia of Modern
-Latin America (1900 to the Present)</em>. Facts On File, 2017. Modern
-World History.</p>
-<p>Patterson, Robert H. "An Art in Revolution: Antecedents of Mexican
-Mural Painting, 1900-1920." <em>Journal of Inter-American Studies</em>
-6, no. 3 (1964): 377-87. https://doi.org/10.2307/164913.</p>
-<p>Riedinger, Edward, A. "Siqueiros, David Alfaro." In <em>Encyclopedia
-of Mexico: History, Society and Culture</em>, edited by Michael S.
-Werner. London, UK: Routledge, 1998. Credo Reference.</p>
-<p>Rochfort, Desmond. <em>Mexican Muralists : Orozco, Rivera,
-Siqueiros</em>. New York: Universe, 1994.</p>
-<p>Rogo, Elsa. "David Alfaro Siqueiros." <em>Parnassus</em> 6, no. 4
-(1934): 5-7. https://doi.org/10.2307/771047.</p>
-<p>Shaw, Lisa, and Stephanie Dennison. <em>Pop Culture Latin America! :
-Media, Arts, and Lifestyle</em>. Santa Barbara, Calif.: ABC-CLIO,
-2005.</p>
-<p>Sifakis, Carl. "Leon Trotsky, Assassination of." In <em>Encyclopedia
-of Assassinations, Revised Edition</em>. Facts On File, 2001. Modern
-World History.</p>
-<p>Siqueiros, David Alfaro. <em>Death to the Invader</em>. 1942.
-Photograph. Accessed May 6, 2025.
-https://www.wikiart.org/en/david-alfaro-siqueiros/death-to-the-invader-1942.</p>
-<p>"Siqueiros David (1898 - 1974)." In <em>A Biographical Dictionary of
-Artists, Andromeda</em>, 2nd ed., edited by Lawrence Gowing. London, UK:
-Windmill Books (Andromeda International), 1995. Credo Reference.</p>
-<p>Smith, Bradley. <em>Mexico : a History in Art</em>. London: Phaidon
-Press, 1975.</p>
-<p>Stein, Philip. <em>Siqueiros : His Life and Works</em>. New York:
-International Publishers, 1994.</p>
-<h2 class="references-heading">Acknowledgements</h2>
-<blockquote>
-<p>I’m grateful for the help of Migyu Kim, Kate Rodgers, and Shloak Shah
-of the Writing Center. I’m also very appreciative of Ms. Frey’s
-responsiveness and assistance. I would like to thank Andrew Liu for
-amazing peer editing as well.</p>
-</blockquote>
-<aside id="footnotes" class="footnotes footnotes-end-of-document"
-role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Christopher Fulton, "Siqueiros against the Myth: Paeans
-to Cuauhtémoc, Last of the Aztec Emperors," Oxford Art Journal 32, no. 1
-(2009): 2, JSTOR.<a href="#fnref1" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Fulton, "Siqueiros against," 4; Philip Stein, Siqueiros
-: His Life and Works (New York: International Publishers, 1994), 133.<a
-href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>Thomas M. Leonard, "Mexican Muralists," in Encyclopedia
-of Modern Latin America (1900 to the Present) (Facts On File, 2017),
-Modern World History.<a href="#fnref3" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>Stein, Siqueiros : His Life, 133.<a href="#fnref4"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>Desmond Rochfort, Mexican Muralists : Orozco, Rivera,
-Siqueiros (New York: Universe, 1994), 187; Fulton, "Siqueiros against,"
-4; Stein, Siqueiros : His Life, 135.<a href="#fnref5"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>Stein, Siqueiros : His Life, 134-5.<a href="#fnref6"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>David Alfaro Siqueiros, Muerte al Invasor, 1942,
-photograph, accessed May 6, 2025,
-https://www.wikiart.org/en/david-alfaro-siqueiros/death-to-the-invader-1942.<a
-href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>Lauren Kilroy-Ewbank, "The Templo Mayor and the
-Coyolxauhqui Stone," Smarthistory, last modified August 9, 2015,
-accessed May 6, 2025,
-https://smarthistory.org/templo-mayor-at-tenochtitlan-the-coyolxauhqui-stone-and-an-olmec-mask/.<a
-href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>Fulton, "Siqueiros against," 3-4.<a href="#fnref9"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>Fulton, "Siqueiros against," 4; Stein, Siqueiros : His
-Life, 135.<a href="#fnref10" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>Rochfort, Mexican Muralists, 186.<a href="#fnref11"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>Rochfort, Mexican Muralists, 186; Fulton, "Siqueiros
-against," 5.<a href="#fnref12" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>Siqueiros, Death to the Invader.<a href="#fnref13"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>Stein, Siqueiros : His Life, 134.<a href="#fnref14"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>Rochfort, Mexican Muralists, 187.<a href="#fnref15"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>Stein, Siqueiros : His Life, 134.<a href="#fnref16"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>Rochfort, Mexican Muralists, 186-7.<a href="#fnref17"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>Rochfort, Mexican Muralists, 186.<a href="#fnref18"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p> Rachel Kahng, "David Alfaro Siqueiros: Communist
-Before Artist," Dartmouth Student Course Exhibits, last modified Winter
-2022, accessed May 6, 2025,
-https://course-exhibits.library.dartmouth.edu/s/modernmexico/page/kahng.<a
-href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn20"><p>Fulton, "Siqueiros against," 2.<a href="#fnref20"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn21"><p>Fulton, "Siqueiros against," 5-6.<a href="#fnref21"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn22"><p>Stein, Siqueiros : His Life, 134-135; Rochfort, Mexican
-Muralists, 187.<a href="#fnref22" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn23"><p>Fulton, "Siqueiros against," 5.<a href="#fnref23"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn24"><p>Fulton, "Siqueiros against," 7; Rochfort, Mexican
-Muralists, 185; Nicholas John Cull, David Holbrook Culbert, and David
-Welch, Propaganda and Mass Persuasion : a Historical Encyclopedia, 1500
-to the Present (Santa Barbara, Calif.: ABC-CLIO, 2003), 248.<a
-href="#fnref24" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</aside>
-    </div>
-    <a href="index.html#writing" class="article-back">&larr; Back to writing</a>
-  </div>
+  <article class="article-wrap">
+    <header>
+      <div class="article-meta">Art History & Politics</div>
+      <h1 class="article-title">Death to the Invader: Siqueiros, Anti-Colonialism, and Latin American Solidarity</h1>
+    </header>
+    
+    <hr class="article-divider">
 
+    <div class="article-body">
+      <p>In 1941, after serving 8 months in prison for an assault on Leon Trotsky’s compound, world-renowned muralist and Stalinist David Alfaro Siqueiros was exiled to Chile under the supervision of the Mexican ambassador to paint a mural. His mural was to be created in the library of the Escuela Mexico, an elementary school gifted to the city of Chillán by Mexican president Cárdenas to aid with earthquake recovery.</p>
+
+      
+
+      <p>Siqueiros was one of three prominent Mexican muralists who approached the subjects of national history, conflict, and class struggle to create a unified post-revolutionary national identity. Upon viewing the long and narrow room, Siqueiros envisioned a mural bending perspective, with an unbroken canvas allowing images to cross the room through the ceiling, transcending the walls. He applied rounded shapes to the corners and aesthetically heightened the ceiling, which allowed compositional forms to interact with each other from across the room, producing a cinematographic effect as the spectator’s perspective shifts.</p>
+
+      <figure>
+        <img src="images/siqueiros-death-to-invader-south-wall.jpg" alt="South Wall of Muerte al Invasor">
+        <figcaption>The south wall of Siqueiros’s mural Death to the Invader.</figcaption>
+      </figure>
+
+      <p>Siqueiros fills the Mexican wall with anti-colonial revolutionary thematic content, utilizing allegories and symbolic figures from the nation’s history. Standing tall on the steps of an Aztec temple is the central figure, emperor Cuauhtémoc, who defended Tenochtitlán from the Spanish. Cuauhtémoc aims his bow at the cross-dagger above, a symbol of colonial oppression. From the right and left, Hidalgo, Zapata, Morelos, and Juárez look on with fists clenched.</p>
+
+      
+
+      <figure>
+        <img src="images/siqueiros-death-to-invader-north-wall.jpg" alt="North Wall of Muerte al Invasor">
+        <figcaption>The north wall of Siqueiros’s mural Death to the Invader.</figcaption>
+      </figure>
+
+      
+
+      <p>The physical and thematic nature of the mural is constructed to highlight the cohesive Latin American narrative of struggle. Siqueiros rounded the corners of the room to create an uninterrupted canvas. The volcano at the top of the Chilean wall and the fire atop the Mexican wall face each other across the abstract ceiling, symbolizing the nations’ respective national spirits. In the center of the Chilean wall, the figure of Galvarino, arms mutilated by the Spanish, appears in motion, alongside revolutionaries like O’Higgins and Lautaro.</p>
+
+      <p>While the subject matter depicted concerns history, Siqueiros notes that the mural is a “condemnation of invaders of all times.” Thus, the mural can be seen as a Latin American history of the continuing revolutionary struggle against Spanish imperialism and its legacies. Siqueiros engaged in a covert reframing, channeling animosity towards past colonization against contemporary fascism and the bourgeoisie.</p>
+
+      <section class="footnotes">
+        <ol>
+          <li>Christopher Fulton, "Siqueiros against the Myth: Paeans to Cuauhtémoc," Oxford Art Journal.</li>
+          <li>Desmond Rochfort, Mexican Muralists: Orozco, Rivera, Siqueiros (New York: Universe, 1994).</li>
+          <li>Philip Stein, Siqueiros: His Life and Works (New York: International Publishers, 1994).</li>
+        </ol>
+      </section>
+
+      <footer class="footer-nav">
+        <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+        <a href="https://the-revere.com/2025/03/whats-at-stake-in-greenland/" target="_blank" rel="noopener">Next: Greenland Geopolitics →</a>
+      </footer>
+    </div>
+  </article>
+
+  <button id="back-to-top" aria-label="Back to top">↑</button>
+
+  <script>
+    const btt = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.pageYOffset > 300) btt.classList.add('visible');
+      else btt.classList.remove('visible');
+    });
+    btt.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
 </body>
 </html>
