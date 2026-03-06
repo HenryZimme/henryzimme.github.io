@@ -2086,7 +2086,7 @@ function init() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  fetch('stars.json')
+  fetch('data/stars.json')
     .then(r => r.json())
     .then(catalog => {
       build_stars(catalog);
