@@ -1,6 +1,7 @@
 (function() {
   /**
-   * Binary Cepheid Engine v1.2 - Physical Accuracy Update
+   * Binary Cepheid Engine v1.5
+   * Parameters: Cepheid (Star 1, Blue, 13.65 R_sun), Companion (Star 2, Red, 12.51 R_sun)
    */
 
   let data = null;
@@ -11,27 +12,29 @@
   const ctx = starCanvas ? starCanvas.getContext('2d') : null;
   const preview = document.getElementById('preview');
 
+  // PHYSICAL CONFIGURATION
   const COLORS = {
-    companion: '#60a5fa', 
-    orbit: 'rgba(255, 255, 255, 0.4)', // Higher visibility
-    defaultStar: '#fbbf24'
+    cepheid_default: '#60a5fa', // Blue
+    companion_default: '#f87171', // Red
+    orbit: 'rgba(255, 255, 255, 0.4)'
   };
 
   async function init() {
     if (!starCanvas || !ctx) return;
     try {
       const response = await fetch('data/master_data.json');
-      if (!response.ok) throw new Error("JSON path incorrect");
+      if (!response.ok) throw new Error("Could not find master_data.json");
       data = await response.json();
       
       if (preview) preview.classList.add('hidden');
-      starCanvas.classList.replace('opacity-0', 'opacity-100');
+      starCanvas.classList.remove('opacity-0');
+      starCanvas.classList.add('opacity-100');
       
       window.addEventListener('resize', resize);
       resize();
       animate();
     } catch (e) {
-      console.error("Cepheid Engine Error:", e);
+      console.error("Engine Load Error:", e);
     }
   }
 
@@ -52,93 +55,94 @@
     ctx.scale(dpr, dpr);
   }
 
-  const formatVal = (val) => {
+  const formatVal = (val, dec = 1) => {
     if (val == null || isNaN(val) || val === 0) return '---';
-    return val >= 100 ? Math.round(val).toLocaleString() : val.toFixed(2);
+    return val > 100 ? Math.round(val).toLocaleString() : Number(val).toFixed(dec);
   };
 
   function animate() {
     if (!data || !data.physics_frames) return;
 
+    const p = data.physics_frames;
+    const c = data.composite_frames;
+    const meta = data.metadata || {};
     const dpr = window.devicePixelRatio || 1;
     const w = starCanvas.width / dpr;
     const h = starCanvas.height / dpr;
     ctx.clearRect(0, 0, w, h);
 
-    const p = data.physics_frames;
-    const c = data.composite_frames;
-    
-    // Cycle through frames
-    const frameCount = p.t ? p.t.length : 120;
+    const frameCount = p.x1.length;
     let i = frameIdx % frameCount;
-    if (currentMode === 'pulsation') i = frameIdx % 120;
     frameIdx++;
 
-    // Dynamic Scaling: Center the system based on max orbital extent
-    const maxExtent = Math.max(...p.x2.map(Math.abs)) || 100; 
-    const zoom = (Math.min(w, h) * 0.45) / maxExtent; 
+    // 1. DYNAMIC SCALING (Based on orbital separation)
+    // Using x2 (Companion) to determine the orbit's width
+    let maxOrbitalDist = 0;
+    for (let j = 0; j < p.x2.length; j += 10) {
+        let d = Math.sqrt(p.x2[j]**2 + p.y2[j]**2);
+        if (d > maxOrbitalDist) maxOrbitalDist = d;
+    }
+    const zoom = (Math.min(w, h) * 0.4) / (maxOrbitalDist || 100);
     const cx = w / 2;
     const cy = h / 2;
 
-    // Data Extraction (Physics-based)
+    // 2. DATA EXTRACTION
     const isComp = currentMode === 'composite' && c;
-    const r1 = isComp ? (c.r1_composite[i] || 13.8) : (p.r1[i] || 13.8);
     
-    // Physical Fix: If r2 isn't in data, use the 0.88 ratio from your research
-    const r2 = p.r2 ? p.r2[i] : (r1 * 0.88); 
-    
-    const mag = isComp ? c.v_mag_composite[i] : p.v_mag[i];
-    
-    // Teff "Fuzzy" Match
-    const teff = p.teff ? p.teff[i] : (p.Teff ? p.Teff[i] : (p.temperature ? p.temperature[i] : null));
-    
-    const color = (p.colors && p.colors[i]) ? p.colors[i] : COLORS.defaultStar;
+    // Star 1 (Cepheid) - Pulsating Blue
+    const r1 = (isComp ? c.r1[i] : p.r1[i]) || 13.65;
+    const color1 = (isComp ? c.color1[i] : p.color1[i]) || COLORS.cepheid_default;
+    const mag = (isComp ? c.v_mag[i] : p.v_mag[i]);
 
-    // Update UI
-    const magEl = document.getElementById('hud-mag');
-    const teffEl = document.getElementById('hud-teff');
-    const radEl = document.getElementById('hud-rad');
-    if (magEl) magEl.innerText = `MAG: ${formatVal(mag)}`;
-    if (teffEl) teffEl.innerText = `TEFF: ${formatVal(teff)} K`;
-    if (radEl) radEl.innerText = `RAD: ${formatVal(r1)} R☉`;
+    // Star 2 (Companion) - Static Red
+    const r2 = meta.r2 || 12.51;
+    const color2 = meta.color2 || COLORS.companion_default;
 
-    // Draw Orbit Path
-    ctx.lineWidth = 2;
+    // Teff logic: Map to metadata or calculation if missing
+    const teff = p.teff ? p.teff[i] : 6450; 
+
+    // 3. UI UPDATES
+    document.getElementById('hud-mag').innerText = `MAG: ${formatVal(mag, 2)}`;
+    document.getElementById('hud-teff').innerText = `TEFF: ${formatVal(teff, 0)} K`;
+    document.getElementById('hud-rad').innerText = `RAD: ${formatVal(r1, 2)} R☉`;
+
+    // 4. DRAW ORBIT (Tilted Ellipse)
+    ctx.lineWidth = 1.5;
     ctx.strokeStyle = COLORS.orbit;
-    ctx.setLineDash([6, 4]);
+    ctx.setLineDash([5, 5]);
     ctx.beginPath();
-    // 0.5 inclination factor for 3D perspective
-    ctx.ellipse(cx, cy, maxExtent * zoom, maxExtent * zoom * 0.5, 0, 0, Math.PI * 2);
+    // Inclination from metadata (57 deg)
+    const incFactor = Math.cos(57 * Math.PI / 180);
+    ctx.ellipse(cx, cy, maxOrbitalDist * zoom, maxOrbitalDist * zoom * incFactor, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw Stars (Z-Sorted for Depth)
-    const drawStar = (x, y, radius, col, glow) => {
-      const screenX = cx + x * zoom;
-      const screenY = cy + y * zoom;
-      const visualRad = radius * zoom;
+    // 5. Z-SORTED RENDERING (Layering by Z-depth)
+    const drawStar = (x, y, radius, color, isCepheid) => {
+      const sx = cx + x * zoom;
+      const sy = cy + y * zoom;
+      const sr = radius * zoom;
 
-      if (glow) {
-        ctx.shadowBlur = visualRad * 1.2;
-        ctx.shadowColor = col;
+      if (isCepheid) {
+        ctx.shadowBlur = sr * 1.5;
+        ctx.shadowColor = color;
       }
       
-      ctx.fillStyle = col;
+      ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc(screenX, screenY, visualRad, 0, Math.PI * 2);
+      // Ensure stars don't become points; min size 5px
+      ctx.arc(sx, sy, Math.max(5, sr), 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
     };
 
-    const z1 = p.z1 ? p.z1[i] : 0;
-    const z2 = p.z2 ? p.z2[i] : 0;
-
-    if (z1 > z2) {
-      drawStar(p.x2[i], p.y2[i], r2, COLORS.companion, false);
-      drawStar(p.x1[i], p.y1[i], r1, color, true);
+    // Physics mapping: Star 1 (x1, y1, z1), Star 2 (x2, y2, z2)
+    if (p.z1[i] > p.z2[i]) {
+      drawStar(p.x2[i], p.y2[i], r2, color2, false);
+      drawStar(p.x1[i], p.y1[i], r1, color1, true);
     } else {
-      drawStar(p.x1[i], p.y1[i], r1, color, true);
-      drawStar(p.x2[i], p.y2[i], r2, COLORS.companion, false);
+      drawStar(p.x1[i], p.y1[i], r1, color1, true);
+      drawStar(p.x2[i], p.y2[i], r2, color2, false);
     }
 
     requestAnimationFrame(animate);
