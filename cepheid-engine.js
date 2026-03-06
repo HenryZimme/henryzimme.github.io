@@ -34,12 +34,13 @@ async function init() {
   }
 }
 
-function setMode(mode) {
+window.setMode = function(mode) {
   currentMode = mode;
   document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-  document.getElementById(`btn-${mode}`).classList.add('active');
-  frameIdx = 0; // Reset for clean transition
-}
+  const activeBtn = document.getElementById(`btn-${mode}`);
+  if (activeBtn) activeBtn.classList.add('active');
+  frameIdx = 0; 
+};
 
 function resize() {
   const dpr = window.devicePixelRatio || 1;
