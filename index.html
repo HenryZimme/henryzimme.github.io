@@ -1173,40 +1173,45 @@ The project coordinates photometry across four observatories in the Canary Islan
     </div>
   </section>
 
-  <section id="cepheid-sim" class="relative w-full h-screen bg-black overflow-hidden border-y border-white/5 z-10" style="isolation: isolate;">
-    <canvas id="simCanvas" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0"></canvas>
+  <section id="cepheid-sim" style="position: relative; width: 100vw; height: 100vh; background: #000; overflow: hidden; display: block; isolation: isolate; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
+    
+    <canvas id="simCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s;"></canvas>
 
-    <div id="ui-layer" class="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 md:p-12 z-20">
+    <div id="ui-layer" style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2rem; z-index: 20;">
       
-      <div class="flex justify-end w-full">
-        <div id="hud-table" class="pointer-events-auto bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-5 w-56 md:w-64 shadow-2xl transition-all duration-500">
-          <h3 class="text-[10px] font-bold text-blue-400 tracking-[0.2em] uppercase mb-4 border-b border-white/5 pb-2 text-left">System Telemetry</h3>
-          <div class="space-y-3 font-mono text-xs text-white">
-            <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-gray-500">V-MAG</span> <span id="hud-mag">--</span></div>
-            <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-gray-500">TEMP</span> <span id="hud-teff">-- K</span></div>
-            <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-gray-500">RADIUS</span> <span id="hud-rad">-- R☉</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">PHASE</span> <span id="hud-phase">--</span></div>
+      <div style="display: flex; justify-content: flex-end;">
+        <div id="hud-table" style="pointer-events: auto; background: rgba(0,0,0,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; width: 260px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+          <h3 style="margin: 0 0 1rem 0; font-size: 10px; font-weight: bold; color: #60a5fa; letter-spacing: 0.2em; uppercase; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; font-family: monospace;">TELEMETRY</h3>
+          <div style="font-family: monospace; font-size: 12px; color: #fff; line-height: 1.8;">
+            <div style="display: flex; justify-content: space-between;"> <span style="color: #666;">V-MAG</span> <span id="hud-mag">--</span> </div>
+            <div style="display: flex; justify-content: space-between;"> <span style="color: #666;">TEMP</span> <span id="hud-teff">-- K</span> </div>
+            <div style="display: flex; justify-content: space-between;"> <span style="color: #666;">RAD</span> <span id="hud-rad">-- R☉</span> </div>
+            <div style="display: flex; justify-content: space-between;"> <span style="color: #666;">PHASE</span> <span id="hud-phase">--</span> </div>
           </div>
         </div>
       </div>
 
-      <div class="w-full flex flex-col items-center gap-6 md:gap-10 mb-4">
-        <div id="hud-plot-container" class="opacity-0 w-full max-w-5xl h-24 md:h-32 bg-black/40 border-x border-white/10 relative overflow-hidden transition-all duration-700">
-          <div class="absolute top-0 left-0 px-3 py-1 text-[9px] text-blue-400 font-bold uppercase tracking-widest bg-black/60">Real-Time Photometry</div>
-          <div class="absolute left-1/2 top-0 bottom-0 w-px bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)] z-10"></div>
-          <div class="absolute left-1/2 bottom-1 -translate-x-1/2 text-[8px] text-blue-400/50 uppercase font-mono">Current</div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+        
+        <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 900px; height: 120px; background: rgba(0,0,0,0.3); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; transition: opacity 0.7s;">
+          <div style="position: absolute; top: 0; left: 0; padding: 0.5rem; font-size: 9px; color: #60a5fa; font-weight: bold; font-family: monospace;">PHOTOMETRY</div>
+          <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #60a5fa; box-shadow: 0 0 10px #60a5fa; z-index: 10;"></div>
         </div>
 
-        <div class="pointer-events-auto bg-black/80 backdrop-blur-2xl border border-white/10 rounded-full p-1.5 flex gap-1 shadow-2xl">
-          <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode active px-6 md:px-10 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-full text-white/40 hover:text-white transition-all bg-white/5">Orbital</button>
-          <button id="btn-composite" onclick="window.setMode('composite')" class="btn-mode px-6 md:px-10 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-full text-white/40 hover:text-white transition-all">Composite</button>
-          <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode px-6 md:px-10 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-full text-white/40 hover:text-white transition-all">Pulsation</button>
+        <div style="pointer-events: auto; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 0.4rem; display: flex; gap: 0.25rem;">
+          <style>
+            .btn-mode { border: none; background: transparent; color: rgba(255,255,255,0.4); padding: 0.75rem 1.5rem; font-size: 11px; font-weight: bold; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 999px; cursor: pointer; transition: 0.3s; }
+            .btn-mode.active { background: rgba(255,255,255,0.05); color: #fff; }
+          </style>
+          <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode active">Orbital</button>
+          <button id="btn-composite" onclick="window.setMode('composite')" class="btn-mode">Composite</button>
+          <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode">Pulsation</button>
         </div>
       </div>
     </div>
 
-    <div id="sim-preview" class="absolute inset-0 flex flex-col items-center justify-center bg-black z-50">
-      <div class="text-blue-400 font-mono text-xs tracking-[0.5em] uppercase animate-pulse">Syncing OGLE Data</div>
+    <div id="sim-preview" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; z-index: 50; color: #60a5fa; font-family: monospace; letter-spacing: 0.5em; font-size: 12px;">
+      SYNCING DATA...
     </div>
   </section>
 
