@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad | Henry Zimmerman</title>
-  <meta name="description" content="">
+  <meta name="description" content="An historical analysis of the Abbasid Caliphate's establishment of Baghdad as a center of power, trade, and learning.">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:           #07091a;
@@ -16,105 +16,93 @@
       --gold-dim:     rgba(196,162,88,0.25);
       --text:         #e2ddd4;
       --text-dim:     rgba(226,221,212,0.72);
-      --panel:        rgba(7,9,26,0.84);
-      --panel-border: rgba(196,162,88,0.18);
+      --panel-border: rgba(196,162,88,0.2);
       --blue:         #78a5d2;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--bg);
+      background-color: var(--bg);
       color: var(--text);
-      font-family: 'Spectral', Georgia, serif;
-      font-size: 17px;
-      line-height: 1.75;
+      font-family: 'EB Garamond', serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
     }
 
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; color: var(--text); }
 
     nav {
       position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 50;
-      padding: 22px 52px;
+      top: 0; width: 100%;
+      padding: 24px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
+      z-index: 100;
+      background: linear-gradient(to bottom, var(--bg) 80%, transparent 100%);
     }
 
     .nav-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      color: var(--gold);
       text-decoration: none;
-      font-style: italic;
     }
-    .nav-name:hover { color: var(--gold); text-decoration: none; }
 
     .nav-back {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.1em;
+      text-transform: uppercase;
       color: var(--text-dim);
       text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
     }
-    .nav-back:hover {
-      color: var(--gold);
-      border-color: var(--gold-dim);
-      text-decoration: none;
-    }
+    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); text-decoration: none; }
 
     .article-wrap {
-      max-width: 65ch;
+      max-width: 680px;
       margin: 0 auto;
-      padding: 120px 28px 100px;
+      padding: 160px 24px 100px;
     }
 
     .article-meta {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--gold);
       text-transform: uppercase;
-      margin-bottom: 18px;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-bottom: 12px;
     }
 
     .article-title {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(26px, 5vw, 40px);
+      font-size: clamp(32px, 5vw, 44px);
       font-weight: 400;
-      line-height: 1.2;
+      line-height: 1.1;
+      margin: 0 0 32px;
       color: var(--text);
-      margin-bottom: 10px;
     }
 
     .article-byline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.08em;
+      font-style: italic;
       color: var(--text-dim);
-      margin-bottom: 36px;
-    }
-
-    .article-divider {
-      border: none;
-      border-top: 1px solid var(--panel-border);
       margin-bottom: 40px;
     }
 
-    .article-body p {
-      margin-bottom: 1.4em;
-      text-indent: 0;
+    .article-divider {
+      border: 0;
+      border-top: 1px solid var(--panel-border);
+      margin: 40px 0;
     }
 
+    .article-body p {
+      font-size: 20px;
+      margin-bottom: 28px;
+    }
 
     .article-body h2 {
       font-family: 'EB Garamond', serif;
@@ -125,59 +113,34 @@
       letter-spacing: 0.01em;
     }
 
-    .article-body h3 {
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      font-style: italic;
-      color: var(--text-dim);
-      margin: 2em 0 0.7em;
-    }
-
-    .article-body blockquote {
-      border-left: 2px solid var(--gold-dim);
-      margin: 1.6em 0;
-      padding: 0.2em 0 0.2em 1.4em;
-      color: var(--text-dim);
-      font-style: italic;
-    }
-
-
-    .article-body ul,
-    .article-body ol {
-      padding-left: 1.8em;
-      margin-bottom: 1.4em;
-    }
-    .article-body li { margin-bottom: 0.4em; }
-
-    .article-body figure {
-      margin: 2em 0;
-      display: block;
-    }
-    .article-body figure img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border: 1px solid var(--panel-border);
-    }
-    .article-body figcaption {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
-      color: var(--text-dim);
-      opacity: 0.7;
-      margin-top: 8px;
-      line-height: 1.5;
-      letter-spacing: 0.03em;
-    }
-
-    /* references heading injected by build script */
     .article-body h2.references-heading {
       font-size: 20px;
       color: var(--gold);
       margin-top: 3em;
     }
 
-    /* inline superscript footnote refs from pandoc */
+    .article-figure {
+      margin: 2em 0;
+      display: block;
+    }
+    .article-figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid var(--panel-border);
+    }
+    .article-figure figcaption {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      opacity: 0.8;
+      margin-top: 12px;
+      line-height: 1.5;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* Footnotes and Citations */
     .article-body sup {
       font-size: 0.72em;
       line-height: 0;
@@ -196,59 +159,65 @@
       text-decoration: none;
     }
 
-    /* pandoc footnote section */
-    .article-body section.footnotes {
-      margin-top: 3.5em;
-      padding-top: 1.6em;
+    .footnotes {
+      margin-top: 60px;
+      padding-top: 40px;
       border-top: 1px solid var(--panel-border);
     }
-    .article-body section.footnotes::before {
-      content: 'Notes';
-      display: block;
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      color: var(--gold);
-      letter-spacing: 0.02em;
-      margin-bottom: 1em;
-    }
-    .article-body section.footnotes ol {
-      padding-left: 1.6em;
-    }
-    .article-body section.footnotes li {
-      font-size: 14px;
+    .footnotes hr { display: none; }
+    .footnotes ol {
+      padding-left: 20px;
       color: var(--text-dim);
-      line-height: 1.6;
-      margin-bottom: 0.7em;
+      font-size: 15px;
     }
-    .article-body section.footnotes li p { margin-bottom: 0; }
-    .article-body section.footnotes a.footnote-back {
+    .footnotes li {
+      margin-bottom: 12px;
+    }
+    .footnotes a.footnote-back {
       color: var(--gold);
-      margin-left: 4px;
-      font-size: 0.85em;
+      margin-left: 6px;
       text-decoration: none;
-      border-bottom: none;
-    }
-    .article-body section.footnotes a.footnote-back:hover { color: var(--text); }
-
-    .article-back {
-      display: inline-block;
-      margin-top: 52px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
     }
-    .article-back:hover { color: var(--gold); border-color: var(--gold-dim); text-decoration: none; }
+
+    .bibliography p {
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      padding-left: 2em;
+      text-indent: -2em;
+    }
+
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #back-to-top {
+      position: fixed;
+      bottom: 40px; right: 40px;
+      background: none;
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      width: 44px; height: 44px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+    #back-to-top:hover { border-color: var(--gold); }
 
     @media (max-width: 600px) {
-      nav { padding: 18px 24px; }
-      .article-wrap { padding: 90px 18px 72px; }
+      nav { padding: 20px; }
+      .article-wrap { padding-top: 120px; }
     }
   </style>
 </head>
@@ -256,235 +225,109 @@
 
   <nav>
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html" class="nav-back">&larr; Return to Portfolio</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
   </nav>
 
-  <div class="article-wrap">
-    <h1 class="article-title">Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad</h1>
-    <div class="article-body">
-      <p>Legend has it that the great city of al-Zawra’ would be erected by a
-king named Miqlas between the Tigris and the Diyala rivers.<a
-href="#fn1" class="footnote-ref" id="fnref1"
-role="doc-noteref"><sup>1</sup></a> No city stood there until 762 CE
-when caliph al-Mansour sought to move the caliphate.<a href="#fn2"
-class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
-Upon hearing the legend of al-Zawra’ from a doctor, caliph al-Mansour
-recalled that his childhood nickname was Miqlas and began constructing
-the new crown jewel of the Islamic world: Baghdad. Located at the
-confluence of two rivers and far away from the tumult of uprising
-against the Abbasid Empire in the west, Baghdad, or al-Zawra’, commanded
-authority, reverence, and plentiful trade.<a href="#fn3"
-class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> By
-establishing Baghdad as the capital of the Islamic world, caliph
-al-Mansour cemented the caliphate’s influence<u>.</u></p>
-<figure class="article-figure">
-<img src="images/baghdad-ancient-map.jpg" />
-<figcaption><em>A map of ancient Baghdad</em><a href="#fn4" class="footnote-ref"
-id="fnref4" role="doc-noteref"><sup>4</sup></a></figcaption>
-</figure>
-<p>The caliphate gave life to Baghdad. Al-Mansour brought in 100,000
-laborers, a city in themselves, to build the great stone and marble
-walls of Baghdad, the exterior of which measured 40 feet wide and 90
-feet high.<a href="#fn5" class="footnote-ref" id="fnref5"
-role="doc-noteref"><sup>5</sup></a> Inside the walls stood great
-mosques, administrative and military buildings, and al-Mansour’s palace,
-all filled with well-off denizens on the caliph’s payroll.<a href="#fn6"
-class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>
-Caliph al-Mansour built himself a circular palace with a magnificent
-dome in the center of his round city, which had a significantly higher
-building cost.<a href="#fn7" class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a> Caliph al-Mansour established the
-power and importance of the caliphate through Baghdad’s symbolism,
-luxury, and spontaneous erection.</p>
-<p>Due to its prime location along trade routes and the excesses of its
-bureaucracy, Baghdad soon grew to be a center of trade. Goods from
-across Afro-Eurasia poured into its markets, enriching merchants,
-outfitting Abbasid officials with indulgent goods, and supporting the
-economy of the surrounding area.<a href="#fn8" class="footnote-ref"
-id="fnref8" role="doc-noteref"><sup>8</sup></a> Consequently, news of
-the city’s magnificence reached far and wide, increasing the caliphate’s
-sway. The city soon expanded as immigrants arrived and the bazaar moved
-outside of its walls.<a href="#fn9" class="footnote-ref" id="fnref9"
-role="doc-noteref"><sup>9</sup></a> Within a few decades, Baghdad
-transformed into a metropolis home to an estimated million people.<a
-href="#fn10" class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a> The people of Baghdad constructed
-many mosques, with some historians claiming the existence of tens of
-thousands.<a href="#fn11" class="footnote-ref" id="fnref11"
-role="doc-noteref"><sup>11</sup></a> The city’s growth exceeded
-al-Mansour’s expectations, as no plans existed for dwellings beyond the
-walls. <a href="#fn12" class="footnote-ref" id="fnref12"
-role="doc-noteref"><sup>12</sup></a> The caliphate profited from the
-newfound growth, observing an increase in influence as Baghdad’s
-prosperity swelled.</p>
-<p>More significant than the city’s material wealth, however, was its
-curated cornucopia of knowledge. Baghdad’s distinctive wealth of
-libraries, books, and scholars differentiated it from other urban
-centers. In line with Islamic beliefs, the caliphs of the Abbasid Empire
-patronized astounding intellectual pursuits, recruiting scholars from
-around Afro-Eurasia to the great libraries of Baghdad.<a href="#fn13"
-class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>
-Tens of thousands of students studied in Baghdad at the largest
-university of the time.<a href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a> During the scholarly golden age in
-Baghdad, Caliph al-Mamun paid scholars in gold for the ancient works
-they painstakingly translated into distinctive Arabic scripts.<a
-href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a> He established the storied Darul
-Hukama, or the House of Wisdom, which housed a school, a library, and a
-translation center. <a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a> Scholarly institutions such as the
-House of Wisdom catalyzed the many scientific discoveries that emerged
-from Baghdad at the time.<a href="#fn17" class="footnote-ref"
-id="fnref17" role="doc-noteref"><sup>17</sup></a> Thus, the caliphate’s
-support and funding of scholars transformed Baghdad into the center of
-wisdom and learning in the Islamic world.</p>
-<p>Over the course of mere decades, the caliphate converted the land in
-between two rivers into the center of Islamic trade, learning, and
-symbolic power. The knowledge gained from Baghdad’s scholarly pursuits
-induced countless scientific discoveries and translations by Baghdadi
-scholars are still in use to this day. The movement of the Abbasid
-Caliphate to Baghdad brought about a period of prosperity renowned
-across the Islamic world. One could certainly say that Caliph al-Mansour
-fulfilled the legend of legend of al-Zawra’, positioning Baghdad and the
-caliphate as the true center of the Abbasid Empire.</p>
-<h2 class="references-heading">Bibliography</h2>
-<p>"Abbasid Dynasty." In <em>Britannica Concise Encyclopedia</em>, 0
-ed., edited by Encyclopaedia Britannica. Chicago, IL, USA: Britannica Digital
-Learning, 2017. Credo Reference.</p>
-<p>"Baghdad: City Plan." <em>JSTOR</em>.
-https://jstor.org/stable/community.13907678.</p>
-<p>Beckwith, Christopher I. "THE PLAN of THE CITY of PEACE: CENTRAL
-ASIAN IRANIAN FACTORS in EARLY 'ABBÂSID DESIGN." <em>Acta Orientalia Academiae
-Scientiarum</em> <em>Hungaricae</em> 38, no. 1/2 (1984): 143-64. JSTOR.</p>
-<p>"Caliph." In <em>Britannica Concise Encyclopedia</em>, 0 ed., edited
-by Encyclopaedia Britannica. Chicago, IL, USA: Britannica Digital Learning, 2017.
-Credo Reference.</p>
-<p>"Caliphate." In <em>Encyclopedia of World Religions: Encyclopedia of
-Islam</em>, 2nd ed., edited by Juan E. Campo. New York, NY, USA: Facts On File, 2016.
-Credo Reference.</p>
-<p>D. G. Tor. "The Political Revival of the Abbasid Caliphate:
-Al-Muqtafī And the Seljuqs." <em>Journal of the American Oriental Society</em> 137,
-no. 2 (2017): 301-14. https://doi.org/10.7817/jameroriesoci.137.2.0301.</p>
-<p>Goodwin, Jason. "The Glory That Was Baghdad." <em>The Wilson
-Quarterly (1976-)</em> 27, no. 2 (2003): 24-28. JSTOR.</p>
-<p>Grady, James, A. "Baghdad during the Middle Ages." In <em>World
-History: A</em> <em>Comprehensive Reference Set</em>, edited by Facts on File. New
-York, NY, USA: Facts On File, 2016. Credo Reference.</p>
-<p>Hassan, Mona. "Baghdad." In <em>Encyclopedia of Islam and the Muslim
-World</em>, edited by Richard C. Martin. Farmington, MI, USA: Gale, 2016. Credo
-Reference.</p>
-<p>"Islam in Baghdad." In <em>Encyclopedia of World Religions:
-Encyclopedia of Islam</em>, 2nd ed., edited by Juan E. Campo. New York, NY, USA: Facts On File,
-2016. Credo Reference.</p>
-<p>Lange, Christian, Vahid Behmardi, C. Edmund Bosworth, Massimo
-Campanini, David Durand-Guédy, Daphna Ephrat, Robert Gleave, Carole Hillenbrand,
-Robert Hillenbrand, Songül Mecit, Jürgen Paul, A. C. S. Peacock, Scott
-Redford, D. G. Tor, and Vanessa Van Renterghem. <em>The Seljuqs : Politics,
-Society and</em> <em>Culture</em>. Edinburgh, United Kingdom: Edinburgh University
-Press, 2022. ProQuest Ebook Central.</p>
-<p>Lassner, Jacob. "THE CALIPH'S PERSONAL DOMAIN: THE CITY PLAN of
-BAGHDAD REEXAMINED." <em>Kunst Des Orients</em> 5, no. 1 (1968): 24-36.
-JSTOR.</p>
-<p>"Libraries and Bookshops." In <em>1001 Inventions: The Enduring
-Legacy of Muslim</em> <em>Civilization</em>, 3rd ed., edited by Salim T. S Al-Hassani.
-Washington, DC, USA: National Geographic Society, 2012. Credo Reference.</p>
-<p>Mackensen, Ruth Stellhorn. "Four Great Libraries of Medieval
-Baghdad." <em>The</em> <em>Library Quarterly: Information, Community, Policy</em> 2, no. 3
-(1932): 279-99. JSTOR.</p>
-<p>Moore, Lyndon. "Baghdad." In <em>The Oxford Encyclopedia of Economic
-History</em>, edited by Joel Mokyr. Vol. 1. New York, NY: Oxford University Press,
-2003.</p>
-<p>Oleschuk, Samantha. "Architectural Site and Imagined Landscape: The
-Foundation Lore and Perpetuated Mythology of the Round City of
-Baghdad." <em>Aisthesis:</em> <em>The Interdisciplinary Honors Journal</em> 14, no. 1 (2023).
-Accessed April 25, 2024.
-https://pubs.lib.umn.edu/index.php/aisthesis/article/view/5304.   Samantha Oleschuk is an undergraduate at Appalachian University.
-This article informed me about the construction of Baghdad and its
-architectural significance.</p>
-<p>Salisbury, Joyce E. "Science in the Islamic World: Medieval
-World." <em>Daily Life</em> <em>through History</em>. Last modified 2024.
-https://dailylife2.abc-clio.com/Search/ Display/1425943.</p>
-<p>Salisbury, Joyce E. "Baghdad: Medieval World." <em>Daily Life through
-History</em>. Last modified 2024.
-https://dailylife2.abc-clio.com/Search/Display/1426155.</p>
-<p>Unknown. "Map of the the Islamic World, 1250-1500." <em>JSTOR</em>.
-https://jstor.org/ stable/community.12186762.</p>
-<p>Wani, Zahid Ashraf, and Tabasum Maqbol. "The Islamic Era and Its
-Importance to Knowledge and the Development of Libraries." <em>Library Philosophy
-and</em> <em>Practice</em>, April 2012. Gale Academic OneFile Select.</p>
-<h2 class="references-heading">Acknowledgments</h2>
-<p>With the help of Rhine Peng and Chloe Rhee from the writing center.
-I’m also grateful for the advice and counsel of Ms. Frey. I’m thankful
-for the help with peer editing from Aimee Qi and Maxwell Langhorst.</p>
-<aside id="footnotes" class="footnotes footnotes-end-of-document"
-role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Samantha Oleschuk, "Architectural Site and Imagined
-Landscape: The Foundation Lore and Perpetuated Mythology of the Round
-City of Baghdad," <em>Aisthesis: The Interdisciplinary Honors
-Journal</em> 14, no. 1 (2023): 4, accessed April 25, 2024,
-https://pubs.lib.umn.edu/index.php/aisthesis/article/view/5304.<a
-href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Oleschuk, "Architectural Site." 4<a href="#fnref2"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>Mona Hassan, "Baghdad," in <em>Encyclopedia of Islam and
-the Muslim World</em>, ed. Richard C. Martin (Farmington, MI, USA: Gale,
-2016), Credo Reference.<a href="#fnref3" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>"Baghdad: City Plan," <em>JSTOR</em>,
-https://jstor.org/stable/community.13907678.<a href="#fnref4"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>2. Hassan, "Baghdad"; Jason Goodwin, "The Glory That Was
-Baghdad," <em>The Wilson Quarterly (1976-)</em> 27, no. 2 (2003): 2,
-JSTOR.<a href="#fnref5" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>"Baghdad: City Plan," JSTOR,
-https://jstor.org/stable/community.13907678; Goodwin, "The Glory," 3.<a
-href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>Oleschuk, "Architectural Site," 2.<a href="#fnref7"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>Goodwin, "The Glory," 3; Joyce E. Salisbury, "Baghdad:
-Medieval World," <em>Daily Life through History</em>, last modified
-2024, https://dailylife2.abc-clio.com/Search/Display/1426155.<a
-href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>Goodwin, "The Glory," 1; Salisbury, "Baghdad:
-Medieval."<a href="#fnref9" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p><em>The Oxford Encyclopedia of Economic History</em>,
-ed. Joel Mokyr (New York, NY: Oxford University Press, 2003), s.v.
-"Baghdad," by Lyndon Moore.<a href="#fnref10" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>Salisbury, "Baghdad: Medieval."<a href="#fnref11"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>Salisbury, "Baghdad: Medieval."<a href="#fnref12"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>Zahid Ashraf Wani and Tabasum Maqbol, "The Islamic Era
-and Its Importance to Knowledge and the Development of
-Libraries," <em>Library Philosophy and Practice</em>, April 2012, Gale
-Academic OneFile Select.<a href="#fnref13" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>"Islam in Baghdad," in <em>Encyclopedia of World
-Religions: Encyclopedia of Islam</em>, 2nd ed., ed. Juan E. Campo (New
-York, NY, USA: Facts On File, 2016), [Credo Reference.<a href="#fnref14"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>"Libraries and Bookshops," in 1001 Inventions: The
-Enduring Legacy of Muslim Civilization, 3rd ed., ed. Salim T. S
-Al-Hassani (Washington, DC, USA: National Geographic Society, 2012),
-Credo Reference.<a href="#fnref15" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>Joyce E. Salisbury, "Science in the Islamic World:
-Medieval World," <em>Daily Life through History</em>, last modified
-2024, https://dailylife2.abc-clio.com/Search/Display/1425943.<a
-href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>Salisbury, "Science in the Islamic."<a href="#fnref17"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</aside>
-    </div>
-    <a href="index.html#writing" class="article-back">&larr; Back to writing</a>
-  </div>
+  <article class="article-wrap">
+    <header>
+      <div class="article-meta">History & Global Trade</div>
+      <h1 class="article-title">Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad</h1>
+      <div class="article-byline">By Henry Zimmerman</div>
+    </header>
+    
+    <hr class="article-divider">
 
+    <div class="article-body">
+      <p>Legend has it that the great city of al-Zawra’ would be erected by a king named Miqlas between the Tigris and the Diyala rivers.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> No city stood there until 762 CE when caliph al-Mansour sought to move the caliphate.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Upon hearing the legend of al-Zawra’ from a doctor, caliph al-Mansour recalled that his childhood nickname was Miqlas and began constructing the new crown jewel of the Islamic world: Baghdad. Located at the confluence of two rivers and far away from the tumult of uprising against the Abbasid Empire in the west, Baghdad, or al-Zawra’, commanded authority, reverence, and plentiful trade.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> By establishing Baghdad as the capital of the Islamic world, caliph al-Mansour cemented the caliphate’s influence<u>.</u></p>
+
+      
+
+      <figure class="article-figure">
+        <img src="images/baghdad-ancient-map.jpg" alt="Map of ancient Baghdad" />
+        <figcaption><em>A map of ancient Baghdad</em><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></figcaption>
+      </figure>
+
+      <p>The caliphate gave life to Baghdad. Al-Mansour brought in 100,000 laborers, a city in themselves, to build the great stone and marble walls of Baghdad, the exterior of which measured 40 feet wide and 90 feet high.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> Inside the walls stood great mosques, administrative and military buildings, and al-Mansour’s palace, all filled with well-off denizens on the caliph’s payroll.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> Caliph al-Mansour built himself a circular palace with a magnificent dome in the center of his round city, which had a significantly higher building cost.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> Caliph al-Mansour established the power and importance of the caliphate through Baghdad’s symbolism, luxury, and spontaneous erection.</p>
+
+      <p>Due to its prime location along trade routes and the excesses of its bureaucracy, Baghdad soon grew to be a center of trade. Goods from across Afro-Eurasia poured into its markets, enriching merchants, outfitting Abbasid officials with indulgent goods, and supporting the economy of the surrounding area.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> Consequently, news of the city’s magnificence reached far and wide, increasing the caliphate’s sway. The city soon expanded as immigrants arrived and the bazaar moved outside of its walls.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> Within a few decades, Baghdad transformed into a metropolis home to an estimated million people.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a> The people of Baghdad constructed many mosques, with some historians claiming the existence of tens of thousands.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a> The city’s growth exceeded al-Mansour’s expectations, as no plans existed for dwellings beyond the walls. <a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a> The caliphate profited from the newfound growth, observing an increase in influence as Baghdad’s prosperity swelled.</p>
+
+      
+
+      <p>More significant than the city’s material wealth, however, was its curated cornucopia of knowledge. Baghdad’s distinctive wealth of libraries, books, and scholars differentiated it from other urban centers. In line with Islamic beliefs, the caliphs of the Abbasid Empire patronized astounding intellectual pursuits, recruiting scholars from around Afro-Eurasia to the great libraries of Baghdad.<a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a> Tens of thousands of students studied in Baghdad at the largest university of the time.<a href="#fn14" class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a> During the scholarly golden age in Baghdad, Caliph al-Mamun paid scholars in gold for the ancient works they painstakingly translated into distinctive Arabic scripts.<a href="#fn15" class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a> He established the storied Darul Hukama, or the House of Wisdom, which housed a school, a library, and a translation center. <a href="#fn16" class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a> Scholarly institutions such as the House of Wisdom catalyzed the many scientific discoveries that emerged from Baghdad at the time.<a href="#fn17" class="footnote-ref" id="fnref17" role="doc-noteref"><sup>17</sup></a> Thus, the caliphate’s support and funding of scholars transformed Baghdad into the center of wisdom and learning in the Islamic world.</p>
+
+      <p>Over the course of mere decades, the caliphate converted the land in between two rivers into the center of Islamic trade, learning, and symbolic power. The knowledge gained from Baghdad’s scholarly pursuits induced countless scientific discoveries and translations by Baghdadi scholars are still in use to this day. The movement of the Abbasid Caliphate to Baghdad brought about a period of prosperity renowned across the Islamic world. One could certainly say that Caliph al-Mansour fulfilled the legend of legend of al-Zawra’, positioning Baghdad and the caliphate as the true center of the Abbasid Empire.</p>
+
+      <h2 class="references-heading">Bibliography</h2>
+      <div class="bibliography">
+        <p>"Abbasid Dynasty." In <em>Britannica Concise Encyclopedia</em>, 0 ed., edited by Encyclopaedia Britannica. Chicago, IL, USA: Britannica Digital Learning, 2017. Credo Reference.</p>
+        <p>"Baghdad: City Plan." <em>JSTOR</em>. https://jstor.org/stable/community.13907678.</p>
+        <p>Beckwith, Christopher I. "THE PLAN of THE CITY of PEACE: CENTRAL ASIAN IRANIAN FACTORS in EARLY 'ABBÂSID DESIGN." <em>Acta Orientalia Academiae Scientiarum</em> <em>Hungaricae</em> 38, no. 1/2 (1984): 143-64. JSTOR.</p>
+        <p>"Caliph." In <em>Britannica Concise Encyclopedia</em>, 0 ed., edited by Encyclopaedia Britannica. Chicago, IL, USA: Britannica Digital Learning, 2017. Credo Reference.</p>
+        <p>"Caliphate." In <em>Encyclopedia of World Religions: Encyclopedia of Islam</em>, 2nd ed., edited by Juan E. Campo. New York, NY, USA: Facts On File, 2016. Credo Reference.</p>
+        <p>D. G. Tor. "The Political Revival of the Abbasid Caliphate: Al-Muqtafī And the Seljuqs." <em>Journal of the American Oriental Society</em> 137, no. 2 (2017): 301-14. https://doi.org/10.7817/jameroriesoci.137.2.0301.</p>
+        <p>Goodwin, Jason. "The Glory That Was Baghdad." <em>The Wilson Quarterly (1976-)</em> 27, no. 2 (2003): 24-28. JSTOR.</p>
+        <p>Grady, James, A. "Baghdad during the Middle Ages." In <em>World History: A</em> <em>Comprehensive Reference Set</em>, edited by Facts on File. New York, NY, USA: Facts On File, 2016. Credo Reference.</p>
+        <p>Hassan, Mona. "Baghdad." In <em>Encyclopedia of Islam and the Muslim World</em>, edited by Richard C. Martin. Farmington, MI, USA: Gale, 2016. Credo Reference.</p>
+        <p>"Islam in Baghdad." In <em>Encyclopedia of World Religions: Encyclopedia of Islam</em>, 2nd ed., edited by Juan E. Campo. New York, NY, USA: Facts On File, 2016. Credo Reference.</p>
+        <p>Lange, Christian, Vahid Behmardi, C. Edmund Bosworth, Massimo Campanini, David Durand-Guédy, Daphna Ephrat, Robert Gleave, Carole Hillenbrand, Robert Hillenbrand, Songül Mecit, Jürgen Paul, A. C. S. Peacock, Scott Redford, D. G. Tor, and Vanessa Van Renterghem. <em>The Seljuqs : Politics, Society and</em> <em>Culture</em>. Edinburgh, United Kingdom: Edinburgh University Press, 2022. ProQuest Ebook Central.</p>
+        <p>Lassner, Jacob. "THE CALIPH'S PERSONAL DOMAIN: THE CITY PLAN of BAGHDAD REEXAMINED." <em>Kunst Des Orients</em> 5, no. 1 (1968): 24-36. JSTOR.</p>
+        <p>"Libraries and Bookshops." In <em>1001 Inventions: The Enduring Legacy of Muslim</em> <em>Civilization</em>, 3rd ed., edited by Salim T. S Al-Hassani. Washington, DC, USA: National Geographic Society, 2012. Credo Reference.</p>
+        <p>Mackensen, Ruth Stellhorn. "Four Great Libraries of Medieval Baghdad." <em>The</em> <em>Library Quarterly: Information, Community, Policy</em> 2, no. 3 (1932): 279-99. JSTOR.</p>
+        <p>Moore, Lyndon. "Baghdad." In <em>The Oxford Encyclopedia of Economic History</em>, edited by Joel Mokyr. Vol. 1. New York, NY: Oxford University Press, 2003.</p>
+        <p>Oleschuk, Samantha. "Architectural Site and Imagined Landscape: The Foundation Lore and Perpetuated Mythology of the Round City of Baghdad." <em>Aisthesis:</em> <em>The Interdisciplinary Honors Journal</em> 14, no. 1 (2023). Accessed April 25, 2024. https://pubs.lib.umn.edu/index.php/aisthesis/article/view/5304.   Samantha Oleschuk is an undergraduate at Appalachian University. This article informed me about the construction of Baghdad and its architectural significance.</p>
+        <p>Salisbury, Joyce E. "Science in the Islamic World: Medieval World." <em>Daily Life</em> <em>through History</em>. Last modified 2024. https://dailylife2.abc-clio.com/Search/ Display/1425943.</p>
+        <p>Salisbury, Joyce E. "Baghdad: Medieval World." <em>Daily Life through History</em>. Last modified 2024. https://dailylife2.abc-clio.com/Search/Display/1426155.</p>
+        <p>Unknown. "Map of the the Islamic World, 1250-1500." <em>JSTOR</em>. https://jstor.org/ stable/community.12186762.</p>
+        <p>Wani, Zahid Ashraf, and Tabasum Maqbol. "The Islamic Era and Its Importance to Knowledge and the Development of Libraries." <em>Library Philosophy and</em> <em>Practice</em>, April 2012. Gale Academic OneFile Select.</p>
+      </div>
+
+      <h2 class="references-heading">Acknowledgments</h2>
+      <p>With the help of Rhine Peng and Chloe Rhee from the writing center. I’m also grateful for the advice and counsel of Ms. Frey. I’m thankful for the help with peer editing from Aimee Qi and Maxwell Langhorst.</p>
+
+      <aside id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+        <hr />
+        <ol>
+          <li id="fn1"><p>Samantha Oleschuk, "Architectural Site and Imagined Landscape: The Foundation Lore and Perpetuated Mythology of the Round City of Baghdad," <em>Aisthesis: The Interdisciplinary Honors Journal</em> 14, no. 1 (2023): 4, accessed April 25, 2024, https://pubs.lib.umn.edu/index.php/aisthesis/article/view/5304.<a href="#fnref1" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn2"><p>Oleschuk, "Architectural Site." 4<a href="#fnref2" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn3"><p>Mona Hassan, "Baghdad," in <em>Encyclopedia of Islam and the Muslim World</em>, ed. Richard C. Martin (Farmington, MI, USA: Gale, 2016), Credo Reference.<a href="#fnref3" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn4"><p>"Baghdad: City Plan," <em>JSTOR</em>, https://jstor.org/stable/community.13907678.<a href="#fnref4" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn5"><p>2. Hassan, "Baghdad"; Jason Goodwin, "The Glory That Was Baghdad," <em>The Wilson Quarterly (1976-)</em> 27, no. 2 (2003): 2, JSTOR.<a href="#fnref5" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn6"><p>"Baghdad: City Plan," JSTOR, https://jstor.org/stable/community.13907678; Goodwin, "The Glory," 3.<a href="#fnref6" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn7"><p>Oleschuk, "Architectural Site," 2.<a href="#fnref7" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn8"><p>Goodwin, "The Glory," 3; Joyce E. Salisbury, "Baghdad: Medieval World," <em>Daily Life through History</em>, last modified 2024, https://dailylife2.abc-clio.com/Search/Display/1426155.<a href="#fnref8" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn9"><p>Goodwin, "The Glory," 1; Salisbury, "Baghdad: Medieval."<a href="#fnref9" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn10"><p><em>The Oxford Encyclopedia of Economic History</em>, ed. Joel Mokyr (New York, NY: Oxford University Press, 2003), s.v. "Baghdad," by Lyndon Moore.<a href="#fnref10" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn11"><p>Salisbury, "Baghdad: Medieval."<a href="#fnref11" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn12"><p>Salisbury, "Baghdad: Medieval."<a href="#fnref12" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn13"><p>Zahid Ashraf Wani and Tabasum Maqbol, "The Islamic Era and Its Importance to Knowledge and the Development of Libraries," <em>Library Philosophy and Practice</em>, April 2012, Gale Academic OneFile Select.<a href="#fnref13" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn14"><p>"Islam in Baghdad," in <em>Encyclopedia of World Religions: Encyclopedia of Islam</em>, 2nd ed., ed. Juan E. Campo (New York, NY, USA: Facts On File, 2016), [Credo Reference.<a href="#fnref14" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn15"><p>"Libraries and Bookshops," in 1001 Inventions: The Enduring Legacy of Muslim Civilization, 3rd ed., ed. Salim T. S Al-Hassani (Washington, DC, USA: National Geographic Society, 2012), Credo Reference.<a href="#fnref15" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn16"><p>Joyce E. Salisbury, "Science in the Islamic World: Medieval World," <em>Daily Life through History</em>, last modified 2024, https://dailylife2.abc-clio.com/Search/Display/1425943.<a href="#fnref16" class="footnote-back" role="doc-backlink">↑</a></p></li>
+          <li id="fn17"><p>Salisbury, "Science in the Islamic."<a href="#fnref17" class="footnote-back" role="doc-backlink">↑</a></p></li>
+        </ol>
+      </aside>
+
+    </div>
+
+    <footer class="footer-nav">
+      <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+      <a href="muralism.html" class="nav-back">Next: Activist Muralism →</a>
+    </footer>
+  </article>
+
+  <button id="back-to-top" aria-label="Back to top">
+    &uarr;
+  </button>
+
+  <script>
+    const btt = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.pageYOffset > 300) btt.classList.add('visible');
+      else btt.classList.remove('visible');
+    });
+    btt.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
 </body>
 </html>
