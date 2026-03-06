@@ -22,7 +22,15 @@
   let maxR1       = 1;
 
   // Precomputed RV arrays
+  // rv1/rv2/rvDelta: analytic circular-orbit model (K1, K2)
+  // rvPos1/rvPos2: derived from dz/dt on the position arrays in master_data.json
+  //   These encode the same circular model but computed directly from the projected
+  //   positions, and would diverge from the analytic curves if the orbit were eccentric
+  //   or if the inclination used in the notebook differed from 57°.
+  //   NOTE: Proprietary spectroscopic RVs from Pilecki et al. (in prep.) are not
+  //   shown here; the curves below are model-extrapolated, not observational.
   let rv1 = [], rv2 = [], rvDelta = [];
+  let rvPos1 = [], rvPos2 = [];  // position-derived RVs
 
   // ── DOM ───────────────────────────────────────────────────────────────────
   const simCanvas = document.getElementById('simCanvas');
@@ -56,6 +64,36 @@
     }
   }
 
+  // ── RV from z-positions (dz/dt via central finite differences) ─────────────
+  // z is the line-of-sight depth in R☉; positive = farther from viewer.
+  // Velocity sign convention: positive z-velocity = receding = positive RV.
+  // dt comes from metadata if available, otherwise inferred from t array spacing.
+  function buildRVFromPositions() {
+    const p  = data.physics_frames;
+    const n  = p.z1.length;
+    // dt in days — try metadata first, fall back to t-array diff, then hardcode
+    let dt = (data.metadata && data.metadata.dt)
+      ? data.metadata.dt
+      : (Array.isArray(p.t) && p.t.length > 1 ? p.t[1] - p.t[0] : null);
+    if (!dt) {
+      // Last resort: P_puls / 120 frames per cycle — matches notebook default
+      dt = 0.6900 / 120;
+    }
+    // Convert R☉/day → km/s
+    const convFactor = R_SUN_KM / 86400;  // 1 R☉/day in km/s ≈ 8.048 km/s
+
+    rvPos1 = []; rvPos2 = [];
+    for (let i = 0; i < n; i++) {
+      const prev = (i - 1 + n) % n;
+      const next = (i + 1) % n;
+      // Central difference; dz positive = moving away = positive RV
+      const vz1 = (p.z1[next] - p.z1[prev]) / (2 * dt) * convFactor;
+      const vz2 = (p.z2[next] - p.z2[prev]) / (2 * dt) * convFactor;
+      rvPos1.push(vz1);
+      rvPos2.push(vz2);
+    }
+  }
+
   // ── init ──────────────────────────────────────────────────────────────────
   async function init() {
     if (!simCanvas || !ctx) return;
@@ -75,6 +113,7 @@
       maxR1     = Math.max(...p.r1);
 
       buildRV();
+      buildRVFromPositions();
 
       if (preview) preview.style.display = 'none';
       simCanvas.style.opacity = '1';
@@ -230,13 +269,48 @@
       }
     }
 
+    // Position-derived RV overlay — dotted, same colors, lower opacity
+    // These are computed from dz/dt on the notebook's position arrays.
+    // They match the analytic curves for a circular orbit; any divergence
+    // would indicate eccentricity or inclination inconsistency in the model.
+    if (rvPos1.length) {
+      const N = data.physics_frames.z1.length;
+      const drawPosCurve = (posArr, color) => {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth   = 1.5;
+        ctx.globalAlpha = 0.45;
+        ctx.setLineDash([2, 5]);
+        for (let k = -nPts / 2; k <= nPts / 2; k++) {
+          const phiFrac = ((rvI + Math.round(k) + RV_N) % RV_N) / RV_N;
+          const posIdx  = Math.round(phiFrac * N) % N;
+          const x = px + pw / 2 + k * step;
+          const y = midY - posArr[posIdx] * yScale;
+          k === -nPts / 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+      };
+      drawPosCurve(rvPos1, '#ffe4a0');
+      drawPosCurve(rvPos2, '#f87171');
+    }
+
+    // Bottom annotations
+    ctx.font      = '8.5px \'JetBrains Mono\', monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillText('model prediction — no observational RVs shown', px + inset, py + ph - 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.13)';
+    ctx.fillText('circular orbit, i = 57° — Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35', px + inset, py + ph - 19);
+
     // Legend
     ctx.textAlign = 'right';
     ctx.font      = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = '#ffe4a0'; ctx.fillText('Cepheid',         px + pw - inset, py + padTop + 10);
-    ctx.fillStyle = '#f87171'; ctx.fillText('Companion',       px + pw - inset, py + padTop + 22);
-    ctx.fillStyle = 'rgba(134,239,172,0.7)';
-    ctx.fillText('\u0394RV \u2265 40 km/s', px + pw - inset,  py + padTop + 34);
+    ctx.fillStyle = '#ffe4a0';              ctx.fillText('Cepheid',            px + pw - inset, py + padTop + 10);
+    ctx.fillStyle = '#f87171';              ctx.fillText('Companion',          px + pw - inset, py + padTop + 22);
+    ctx.fillStyle = 'rgba(134,239,172,0.7)'; ctx.fillText('\u0394RV \u2265 40 km/s', px + pw - inset, py + padTop + 34);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillText('\u22ef pos-derived',       px + pw - inset, py + padTop + 46);
 
     ctx.restore();
   }
