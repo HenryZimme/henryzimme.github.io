@@ -1,47 +1,29 @@
 (function() {
   /**
-   * Binary Cepheid Engine v1.0
-   * Handles 60FPS rendering of precomputed physics data.
+   * Binary Cepheid Engine v1.2 - Physical Accuracy Update
    */
 
   let data = null;
   let currentMode = 'orbital';
   let frameIdx = 0;
 
-  // Grab DOM elements - Matched to index.html IDs
   const starCanvas = document.getElementById('starCanvas'); 
   const ctx = starCanvas ? starCanvas.getContext('2d') : null;
   const preview = document.getElementById('preview');
 
   const COLORS = {
-    companion: '#3b82f6',
-    orbit: 'rgba(255, 255, 255, 0.08)',
-    label: '#94a3b8',
+    companion: '#60a5fa', 
+    orbit: 'rgba(255, 255, 255, 0.4)', // Higher visibility
     defaultStar: '#fbbf24'
   };
 
-  /**
-   * Robust Initialization
-   * Fetches data as text first to verify content before parsing.
-   */
   async function init() {
     if (!starCanvas || !ctx) return;
-
     try {
       const response = await fetch('data/master_data.json');
+      if (!response.ok) throw new Error("JSON path incorrect");
+      data = await response.json();
       
-      if (!response.ok) {
-        throw new Error(`File not found (Status: ${response.status})`);
-      }
-
-      const text = await response.text(); 
-      if (!text || text.trim().length === 0) {
-        throw new Error("The JSON file is empty.");
-      }
-
-      data = JSON.parse(text); 
-      
-      // Update UI state
       if (preview) preview.classList.add('hidden');
       starCanvas.classList.replace('opacity-0', 'opacity-100');
       
@@ -49,21 +31,15 @@
       resize();
       animate();
     } catch (e) {
-      console.error("Cepheid Engine Error:", e.message);
-      const magEl = document.getElementById('hud-mag');
-      if (magEl) magEl.innerText = "DATA ERROR";
+      console.error("Cepheid Engine Error:", e);
     }
   }
 
   window.setMode = function(mode) {
     currentMode = mode;
-    document.querySelectorAll('.btn-mode').forEach(b => {
-      b.classList.remove('active');
-    });
+    document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(`btn-${mode}`);
-    if (activeBtn) {
-      activeBtn.classList.add('active');
-    }
+    if (activeBtn) activeBtn.classList.add('active');
     frameIdx = 0; 
   };
 
@@ -77,19 +53,9 @@
   }
 
   const formatVal = (val) => {
-    if (val == null || isNaN(val)) return 'N/A';
-    if (val >= 100) return Math.round(val).toString();
-    return Number(val.toPrecision(2)).toString();
+    if (val == null || isNaN(val) || val === 0) return '---';
+    return val >= 100 ? Math.round(val).toLocaleString() : val.toFixed(2);
   };
-
-  function updateHUD(mag, teff, rad) {
-    const magEl = document.getElementById('hud-mag');
-    const teffEl = document.getElementById('hud-teff');
-    const radEl = document.getElementById('hud-rad');
-    if (magEl) magEl.innerText = `MAG: ${formatVal(mag)}`;
-    if (teffEl) teffEl.innerText = `TEFF: ${formatVal(teff)} K`;
-    if (radEl) radEl.innerText = `RAD: ${formatVal(rad)} R☉`;
-  }
 
   function animate() {
     if (!data || !data.physics_frames) return;
@@ -99,76 +65,84 @@
     const h = starCanvas.height / dpr;
     ctx.clearRect(0, 0, w, h);
 
-    const physics = data.physics_frames;
-    const comp = data.composite_frames;
-    const meta = data.metadata || {};
-
-    // Mode Indexing
-    let i = (currentMode === 'pulsation') ? (frameIdx % 120) : (frameIdx % (physics.t ? physics.t.length : 1));
+    const p = data.physics_frames;
+    const c = data.composite_frames;
+    
+    // Cycle through frames
+    const frameCount = p.t ? p.t.length : 120;
+    let i = frameIdx % frameCount;
+    if (currentMode === 'pulsation') i = frameIdx % 120;
     frameIdx++;
 
-    // Adaptive Zoom
-    let maxExtent = 1;
-    if (physics.x2 && physics.x2.length > 0) {
-      maxExtent = Math.max(...physics.x2.map(Math.abs)) * 1.5 || 1; 
-    }
-    
-    const zoom = Math.min(w, h) / (maxExtent * 2);
+    // Dynamic Scaling: Center the system based on max orbital extent
+    const maxExtent = Math.max(...p.x2.map(Math.abs)) || 100; 
+    const zoom = (Math.min(w, h) * 0.45) / maxExtent; 
     const cx = w / 2;
     const cy = h / 2;
 
-    const isComp = currentMode === 'composite' && comp;
-    const r1 = isComp ? (comp.r1_composite[i] || 1) : (physics.r1[i] || 1);
-    const mag = isComp ? comp.v_mag_composite[i] : physics.v_mag[i];
-    const teff = physics.teff ? physics.teff[i] : null;
-    const color = (physics.colors && physics.colors[i]) ? physics.colors[i] : COLORS.defaultStar;
+    // Data Extraction (Physics-based)
+    const isComp = currentMode === 'composite' && c;
+    const r1 = isComp ? (c.r1_composite[i] || 13.8) : (p.r1[i] || 13.8);
+    
+    // Physical Fix: If r2 isn't in data, use the 0.88 ratio from your research
+    const r2 = p.r2 ? p.r2[i] : (r1 * 0.88); 
+    
+    const mag = isComp ? c.v_mag_composite[i] : p.v_mag[i];
+    
+    // Teff "Fuzzy" Match
+    const teff = p.teff ? p.teff[i] : (p.Teff ? p.Teff[i] : (p.temperature ? p.temperature[i] : null));
+    
+    const color = (p.colors && p.colors[i]) ? p.colors[i] : COLORS.defaultStar;
 
-    updateHUD(mag, teff, r1);
+    // Update UI
+    const magEl = document.getElementById('hud-mag');
+    const teffEl = document.getElementById('hud-teff');
+    const radEl = document.getElementById('hud-rad');
+    if (magEl) magEl.innerText = `MAG: ${formatVal(mag)}`;
+    if (teffEl) teffEl.innerText = `TEFF: ${formatVal(teff)} K`;
+    if (radEl) radEl.innerText = `RAD: ${formatVal(r1)} R☉`;
 
-    // Draw Orbit Trail
+    // Draw Orbit Path
+    ctx.lineWidth = 2;
     ctx.strokeStyle = COLORS.orbit;
-    ctx.setLineDash([5, 5]);
+    ctx.setLineDash([6, 4]);
     ctx.beginPath();
-    ctx.ellipse(cx, cy, (maxExtent / 1.5) * zoom, (maxExtent / 1.5) * zoom * Math.cos(57 * Math.PI / 180), 0, 0, Math.PI * 2);
+    // 0.5 inclination factor for 3D perspective
+    ctx.ellipse(cx, cy, maxExtent * zoom, maxExtent * zoom * 0.5, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    const drawCepheid = () => {
-      const x = cx + (physics.x1[i] || 0) * zoom;
-      const y = cy + (physics.y1[i] || 0) * zoom;
-      const rad = r1 * zoom;
-      ctx.shadowBlur = rad * 1.5;
-      ctx.shadowColor = color;
-      ctx.fillStyle = color;
+    // Draw Stars (Z-Sorted for Depth)
+    const drawStar = (x, y, radius, col, glow) => {
+      const screenX = cx + x * zoom;
+      const screenY = cy + y * zoom;
+      const visualRad = radius * zoom;
+
+      if (glow) {
+        ctx.shadowBlur = visualRad * 1.2;
+        ctx.shadowColor = col;
+      }
+      
+      ctx.fillStyle = col;
       ctx.beginPath();
-      ctx.arc(x, y, Math.max(0.1, rad), 0, Math.PI * 2);
+      ctx.arc(screenX, screenY, visualRad, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
     };
 
-    const drawCompanion = () => {
-      const x = cx + (physics.x2[i] || 0) * zoom;
-      const y = cy + (physics.y2[i] || 0) * zoom;
-      const rad = (meta.r2_scaled || 0.5) * zoom;
-      ctx.fillStyle = COLORS.companion;
-      ctx.beginPath();
-      ctx.arc(x, y, Math.max(0.1, rad), 0, Math.PI * 2);
-      ctx.fill();
-    };
+    const z1 = p.z1 ? p.z1[i] : 0;
+    const z2 = p.z2 ? p.z2[i] : 0;
 
-    // Depth Sorting
-    if ((physics.z1 ? physics.z1[i] : 0) > (physics.z2 ? physics.z2[i] : 0)) {
-      drawCompanion(); 
-      drawCepheid();
+    if (z1 > z2) {
+      drawStar(p.x2[i], p.y2[i], r2, COLORS.companion, false);
+      drawStar(p.x1[i], p.y1[i], r1, color, true);
     } else {
-      drawCepheid(); 
-      drawCompanion();
+      drawStar(p.x1[i], p.y1[i], r1, color, true);
+      drawStar(p.x2[i], p.y2[i], r2, COLORS.companion, false);
     }
 
     requestAnimationFrame(animate);
   }
 
-  // Start the engine
   init();
-
 })();
