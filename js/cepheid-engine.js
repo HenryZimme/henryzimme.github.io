@@ -6,8 +6,8 @@
 let data = null;
 let currentMode = 'orbital';
 let frameIdx = 0;
-const canvas = document.getElementById('starCanvas');
-const ctx = canvas.getContext('2d');
+const starCanvas = document.getElementById('starstarCanvas');
+const ctx = starCanvas.getContext('2d');
 const preview = document.getElementById('preview');
 
 // Configuration
@@ -22,9 +22,9 @@ async function init() {
     const response = await fetch('data/master_data.json');
     data = await response.json();
     
-    // Hide preview, show canvas
+    // Hide preview, show starCanvas
     preview.classList.add('hidden');
-    canvas.classList.replace('opacity-0', 'opacity-100');
+    starCanvas.classList.replace('opacity-0', 'opacity-100');
     
     window.addEventListener('resize', resize);
     resize();
@@ -56,9 +56,9 @@ window.setMode = function(mode) {
 
 function resize() {
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
+  const rect = starCanvas.getBoundingClientRect();
+  starCanvas.width = rect.width * dpr;
+  starCanvas.height = rect.height * dpr;
   ctx.scale(dpr, dpr);
 }
 
@@ -71,8 +71,8 @@ const formatVal = (val) => {
 function animate() {
   if (!data) return;
 
-  const w = canvas.width / (window.devicePixelRatio || 1);
-  const h = canvas.height / (window.devicePixelRatio || 1);
+  const w = starCanvas.width / (window.devicePixelRatio || 1);
+  const h = starCanvas.height / (window.devicePixelRatio || 1);
   ctx.clearRect(0, 0, w, h);
 
   const physics = data.physics_frames;
