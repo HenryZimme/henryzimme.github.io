@@ -1179,25 +1179,34 @@ The project coordinates photometry across four observatories in the Canary Islan
   <div id="ui-layer" style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2rem; z-index: 20;">
     
     <div style="display: flex; justify-content: flex-end;">
-      <div id="hud-table" style="pointer-events: auto; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; width: 240px;">
-        <h3 style="margin: 0 0 1rem 0; font-size: 10px; color: #60a5fa; letter-spacing: 0.2em; font-family: monospace;">TELEMETRY</h3>
-        <div style="font-family: monospace; font-size: 11px; color: #fff; line-height: 2;">
-          <div style="display: flex; justify-content: space-between;"><span>V-MAG</span><span id="hud-mag">--</span></div>
-          <div style="display: flex; justify-content: space-between;"><span>TEMP</span><span id="hud-teff">-- K</span></div>
-          <div style="display: flex; justify-content: space-between;"><span>RAD</span><span id="hud-rad">-- R☉</span></div>
-          <div style="display: flex; justify-content: space-between;"><span>PHASE</span><span id="hud-phase">--</span></div>
+      <div id="hud-table" style="pointer-events: auto; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; width: 260px;">
+        <h3 style="margin: 0 0 0.75rem 0; font-size: 10px; color: #60a5fa; letter-spacing: 0.2em; font-family: monospace;">OGLE-LMC-CEP-1347</h3>
+        <div style="font-family: monospace; font-size: 11px; color: #fff; line-height: 1;">
+          <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <span style="color:rgba(255,255,255,0.5);">V-band mag</span><span id="hud-mag" style="color:#e2e8f0;">--</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <span style="color:rgba(255,255,255,0.5);">T<sub>eff</sub> (Cepheid)</span><span id="hud-teff" style="color:#fca5a5;">-- K</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <span style="color:rgba(255,255,255,0.5);">R₁ (Cepheid)</span><span id="hud-rad" style="color:#86efac;">-- R☉</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 0.4rem 0;">
+            <span style="color:rgba(255,255,255,0.5);">φ<sub>orb</sub> (orbital)</span><span id="hud-phase" style="color:#c4b5fd;">--</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
-      <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 800px; height: 100px; background: rgba(0,0,0,0.4); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; transition: opacity 0.5s;">
-        <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #60a5fa; box-shadow: 0 0 10px #60a5fa; z-index: 10;"></div>
+      <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 820px; height: 160px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; transition: opacity 0.5s; border-radius: 4px;">
+        <div style="position: absolute; top: 6px; left: 12px; font-family: monospace; font-size: 9px; letter-spacing: 0.15em; color: rgba(96,165,250,0.6); pointer-events: none; z-index: 10;">V-BAND LIGHT CURVE</div>
+        <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(96,165,250,0.7); box-shadow: 0 0 8px #60a5fa; z-index: 10;"></div>
       </div>
 
-      <div style="pointer-events: auto; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 0.25rem; display: flex;">
-        <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode active" style="background: rgba(255,255,255,0.1); color: #fff; border: none; padding: 0.5rem 1.5rem; border-radius: 999px; font-size: 11px; cursor: pointer;">ORBITAL</button>
-        <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.4); border: none; padding: 0.5rem 1.5rem; border-radius: 999px; font-size: 11px; cursor: pointer;">PULSATION</button>
+      <div style="pointer-events: auto; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 0.25rem; display: flex; gap: 2px;">
+        <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.5rem 1.5rem; border-radius: 999px; font-size: 11px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.08em; font-family: monospace;">ORBITAL</button>
+        <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.4); border: none; padding: 0.5rem 1.5rem; border-radius: 999px; font-size: 11px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.08em; font-family: monospace;">PULSATION</button>
       </div>
     </div>
   </div>
