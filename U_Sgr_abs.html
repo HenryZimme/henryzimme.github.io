@@ -240,7 +240,29 @@
       transition: color 0.15s, border-color 0.15s;
     }
     .article-back:hover { color: var(--gold); border-color: var(--gold-dim); text-decoration: none; }
-
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1.5em;
+      padding: 12px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--gold);
+      background-color: transparent;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .btn-download:hover {
+      background-color: var(--gold);
+      color: var(--bg);
+      text-decoration: none;
+    }
     @media (max-width: 600px) {
       nav { padding: 18px 24px; }
       .article-wrap { padding: 90px 18px 72px; }
