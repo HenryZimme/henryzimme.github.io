@@ -80,20 +80,38 @@
     }
     #star-tooltip.visible { opacity: 1; }
 
-    /* star popover: confirmation step before simbad redirect */
+   /* star popover: confirmation step before simbad redirect */
     #star-popover {
       position: fixed;
       background: rgba(7, 9, 26, 0.96);
       border: 1px solid var(--panel-border);
       padding: 12px 16px;
       z-index: 150;
-      pointer-events: all;
-      opacity: 0;
-      transition: opacity 0.15s;
       min-width: 180px;
       max-width: 260px;
+      
+      /* 1. When hidden, it shouldn't block clicks */
+      opacity: 0;
+      pointer-events: none; 
+      
+      /* 2. Wait 0.4 seconds before fading out and disabling clicks */
+      transition: opacity 0.2s ease 0.4s, pointer-events 0s linear 0.4s;
     }
-    #star-popover.visible { opacity: 1; }
+
+    #star-popover.visible { 
+      /* 3. Appear instantly with NO delay when the class is added */
+      opacity: 1; 
+      pointer-events: all;
+      transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s;
+    }
+    
+    /* 4. The Magic Trick: Keep it visible if the mouse makes it to the popover! */
+    #star-popover:hover {
+      opacity: 1;
+      pointer-events: all;
+      transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s;
+    }
+
     #star-popover-name {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
@@ -104,6 +122,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     #star-popover-btn {
       display: block;
       font-family: 'JetBrains Mono', monospace;
@@ -116,6 +135,7 @@
       text-align: center;
       transition: background 0.15s, border-color 0.15s;
     }
+
     #star-popover-btn:hover {
       background: rgba(196, 162, 88, 0.1);
       border-color: rgba(196, 162, 88, 0.5);
