@@ -31,7 +31,7 @@
       window.addEventListener('resize', resize);
       resize();
       animate();
-    } catch (e) { console.error("Load Error:", e); }
+    } catch (e) { console.error("Engine failed to load data:", e); }
   }
 
   window.setMode = function(mode) {
@@ -43,8 +43,7 @@
       b.classList.remove('bg-white/5', 'text-white');
       b.classList.add('text-white/40');
     });
-    const activeBtn = document.getElementById(`btn-${mode}`);
-    activeBtn.classList.add('bg-white/5', 'text-white');
+    document.getElementById(`btn-${mode}`).classList.add('bg-white/5', 'text-white');
   };
 
   function resize() {
@@ -55,10 +54,10 @@
     ctx.scale(dpr, dpr);
   }
 
-  function drawWidePlot(w, h, pData, currentIdx) {
+  function drawLightCurve(w, h, pData, currentIdx) {
     const rect = plotUI.getBoundingClientRect();
-    // Offset relative to the actual simulation canvas
     const simRect = starCanvas.getBoundingClientRect();
+    // Calculate position relative to the simulation section
     const px = rect.left - simRect.left;
     const py = rect.top - simRect.top;
     const pw = rect.width;
@@ -68,16 +67,15 @@
     ctx.beginPath();
     ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 2;
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = 'rgba(96, 165, 250, 0.5)';
 
-    const points = (w < 768) ? 80 : 150; // Fewer points on mobile for performance
+    const points = (w < 768) ? 100 : 200; 
     const step = pw / points;
     const magRange = bounds.maxV - bounds.minV;
 
     for (let k = -points/2; k < points/2; k++) {
       const idx = (currentIdx + k + pData.length) % pData.length;
       const val = pData[idx];
+      // X is centered on the current phase
       const x = px + (pw/2) + (k * step);
       const y = py + (ph/2) + ((val - ((bounds.minV + bounds.maxV)/2)) * (ph / magRange) * 0.7);
       
@@ -100,13 +98,12 @@
 
     let i, x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
     
-    // 1. SELECT DATA
     if (currentMode === 'pulsation') {
       i = Math.floor(frameIdx) % p.x1.length;
-      frameIdx += 0.4; // Fixed cinematic speed
-      x1 = 0; y1 = 0; z1 = 0; x2 = 5000;
+      frameIdx += 0.35; // Cinematic slow pulsation
+      x1 = 0; y1 = 0; z1 = 0; x2 = 9999;
       r1 = p.r1[i]; mag = p.v_mag[i]; teff = p.teff[i]; col1 = p.color1[i];
-      drawWidePlot(w, h, p.v_mag, i);
+      drawLightCurve(w, h, p.v_mag, i);
     } else {
       i = Math.floor(frameIdx) % p.x1.length;
       frameIdx += (currentMode === 'composite' ? 0.7 : 1.2);
@@ -119,24 +116,20 @@
       teff = p.teff ? p.teff[i] : 6490;
     }
 
-    // 2. DYNAMIC SCALING
-    // Orbital Zoom adapts to screen width
-    const baseZoom = (w < 768) ? (w * 0.45) : (w * 0.3);
-    const zoom = (currentMode === 'pulsation') ? (w * 0.025) : baseZoom / bounds.a2;
+    // Dynamic Scaling: Zoom adjusted for screen width
+    const responsiveZoom = (w < 768) ? (w * 0.4) : (w * 0.28);
+    const zoom = (currentMode === 'pulsation') ? (w * 0.022) : responsiveZoom / bounds.a2;
 
-    // 3. DRAW ORBITS
     if (currentMode !== 'pulsation') {
-      const orbitScale = 0.54;
       ctx.lineWidth = 1;
       ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a2*zoom, bounds.a2*zoom*orbitScale, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a1*zoom, bounds.a1*zoom*orbitScale, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a2*zoom, bounds.a2*zoom*0.54, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a1*zoom, bounds.a1*zoom*0.54, 0, 0, Math.PI*2); ctx.stroke();
     }
 
-    // 4. DRAW STARS
     const draw = (x, y, r, col, glow) => {
       ctx.fillStyle = col;
-      if(glow) { ctx.shadowBlur = r*zoom*1.2; ctx.shadowColor = col; }
+      if(glow) { ctx.shadowBlur = r*zoom*1.5; ctx.shadowColor = col; }
       ctx.beginPath(); ctx.arc(cx+x*zoom, cy+y*zoom, Math.max(1, r*zoom), 0, Math.PI*2); ctx.fill();
       ctx.shadowBlur = 0;
     }
@@ -149,10 +142,10 @@
       draw(x2, y2, 12.51, '#f87171', false); 
     }
 
-    // 5. UPDATE UI
+    // UI Updates
     document.getElementById('hud-mag').innerText = mag.toFixed(2);
     document.getElementById('hud-teff').innerText = `${Math.round(teff)} K`;
-    document.getElementById('hud-rad').innerText = `${r1.toFixed(2)}`;
+    document.getElementById('hud-rad').innerText = r1.toFixed(2);
     document.getElementById('hud-phase').innerText = (i / p.x1.length).toFixed(2);
 
     requestAnimationFrame(animate);
