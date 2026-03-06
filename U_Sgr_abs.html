@@ -263,10 +263,37 @@
       color: var(--bg);
       text-decoration: none;
     }
+    .poster-breakout {
+      /* Breaks out of the 65ch container */
+      width: 100vw;
+      max-width: 1200px; /* Caps the maximum         width on giant monitors */
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 3em 0;
+      padding: 0 28px; /* Prevents it from touching the edges of the screen */
+    }
+
+    .poster-iframe {
+      width: 100%;
+      /* 2.5 ratio width to 1 ratio height */
+      aspect-ratio: 2.5 / 1; 
+      border: 1px solid var(--panel-border);
+      border-radius: 4px;
+      background-color: #fff;
+    }
     @media (max-width: 600px) {
       nav { padding: 18px 24px; }
       .article-wrap { padding: 90px 18px 72px; }
+      
+      /* Add this mobile fallback */
+      .poster-breakout { padding: 0 18px; }
+      .poster-iframe { 
+        aspect-ratio: auto; 
+        height: 400px; 
+      }
     }
+
   </style>
 </head>
 <body>
@@ -297,22 +324,18 @@
 
 <h3>View the Poster</h3>
       
-      <div style="margin: 2em 0;">
+<h3>View the Poster</h3>
+      
+      <div class="poster-breakout">
         <iframe 
           src="USgrHSZPosterWeb.pdf" 
-          width="100%" 
-          height="700px" 
-          style="border: 1px solid var(--panel-border); background-color: #fff;"
+          class="poster-iframe"
           title="U Sagitarii Poster PDF"
         >
           <p>Your browser doesn't support embedded PDFs.</p>
         </iframe>
       </div>
-      
-      <p>
-        <a href="USgrHSZPosterWeb.pdf" target="_blank" rel="noopener"><strong>Open Poster in New Tab (PDF) &rarr;</strong></a>
-      </p>
-      
+
       <div style="text-align: center;">
         <a href="USgrHSZPosterWeb.pdf" download="USgrHSZPosterWeb.pdf" class="btn-download">
           &darr; Download Poster PDF
@@ -320,7 +343,9 @@
       </div>
       <br>
       </br>
-
+      <p>
+        <a href="USgrHSZPosterWeb.pdf" target="_blank" rel="noopener"><strong>Open Poster in New Tab (PDF) &rarr;</strong></a>
+      </p>
     </div>
     
     <a href="index.html" class="article-back">&larr; Back to research</a>
