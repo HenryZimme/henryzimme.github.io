@@ -1,49 +1,47 @@
 (function() {
+  /**
+   * Binary Cepheid Engine v1.9
+   * Fixes: ID Mismatch, Dual-Barycentric Orbits, and Pulsation Focus Zoom.
+   */
+
   let data = null;
   let currentMode = 'orbital';
   let frameIdx = 0;
 
-  const starCanvas = document.getElementById('starCanvas'); 
+  // FIXED: IDs now match index.html ('star-canvas' and 'preview')
+  const starCanvas = document.getElementById('star-canvas'); 
   const ctx = starCanvas ? starCanvas.getContext('2d') : null;
   const preview = document.getElementById('preview');
 
   const COLORS = {
-    cepheid: '#60a5fa', 
-    companion: '#f87171',
-    orbit: 'rgba(255, 255, 255, 0.2)'
+    cepheid: '#60a5fa',   // Pulsating Blue
+    companion: '#f87171', // Static Red
+    orbit1: 'rgba(96, 165, 250, 0.15)', // Orbit for Star 1
+    orbit2: 'rgba(248, 113, 113, 0.15)'  // Orbit for Star 2
   };
 
   async function init() {
     if (!starCanvas || !ctx) return;
     try {
       const response = await fetch('data/master_data.json');
-      if (!response.ok) throw new Error("Data fetch failed");
       data = await response.json();
       
-      // FORCE HIDE "Synchronizing Data"
-      if (preview) {
-        preview.style.display = 'none';
-        preview.classList.add('hidden');
-      }
-      starCanvas.classList.replace('opacity-0', 'opacity-100');
+      // Force hide the sync message
+      if (preview) preview.style.display = 'none';
+      starCanvas.style.opacity = '1';
       
       window.addEventListener('resize', resize);
       resize();
-      renderPlot(); // Initialize the graph
       animate();
-    } catch (e) {
-      console.error("Initialization Error:", e);
-      const hud = document.getElementById('hud-mag');
-      if (hud) hud.innerText = "ERROR LOADING DATA";
-    }
+    } catch (e) { console.error("Load Error:", e); }
   }
 
   window.setMode = function(mode) {
     currentMode = mode;
+    frameIdx = 0; // Reset sync
     document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
     const btn = document.getElementById(`btn-${mode}`);
     if (btn) btn.classList.add('active');
-    frameIdx = 0; 
   };
 
   function resize() {
@@ -52,15 +50,6 @@
     starCanvas.width = rect.width * dpr;
     starCanvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
-  }
-
-  // --- NEW: PLOT RENDERING ---
-  function renderPlot() {
-    const plotContainer = document.getElementById('lightcurve-plot');
-    if (!plotContainer) return;
-    // If you're using a library like Chart.js or Plotly, initialize it here.
-    // For now, ensuring the container isn't hidden by the sync message:
-    plotContainer.classList.remove('opacity-0');
   }
 
   function animate() {
@@ -76,52 +65,63 @@
 
     ctx.clearRect(0, 0, w, h);
 
-    // Frame Speed & Selection Logic
-    let i;
-    let x1, y1, z1, x2, y2, z2, r1, r2, col1;
+    // 1. Data Selection & Speed
+    let i, x1, y1, z1, x2, y2, z2, r1, col1;
+    const orbitScale = 0.54; // Matches the 57-degree inclination
 
     if (currentMode === 'orbital') {
       i = frameIdx % p.x1.length;
-      frameIdx += 2; // Increased speed
+      frameIdx += 2; 
       x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
       x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
-      r1 = p.r1[i]; r2 = 12.51;
+      r1 = p.r1[i];
       col1 = p.color1 ? p.color1[i] : COLORS.cepheid;
     } else if (currentMode === 'composite') {
       i = frameIdx % c.r1.length;
       frameIdx += 1;
-      const pIdx = i % p.x1.length;
-      x1 = p.x1[pIdx]; y1 = p.y1[pIdx]; z1 = p.z1[pIdx];
-      x2 = p.x2[pIdx]; y2 = p.y2[pIdx]; z2 = p.z2[pIdx];
-      r1 = c.r1[i]; r2 = 12.51;
+      const pi = i % p.x1.length;
+      x1 = p.x1[pi]; y1 = p.y1[pi]; z1 = p.z1[pi];
+      x2 = p.x2[pi]; y2 = p.y2[pi]; z2 = p.z2[pi];
+      r1 = c.r1[i];
       col1 = c.color1 ? c.color1[i] : COLORS.cepheid;
     } else { // Pulsation Focus
-      i = frameIdx % p.t.length;
+      i = frameIdx % p.x1.length;
       frameIdx += 1;
-      x1 = 0; y1 = 0; z1 = 0; // Lock Cepheid to center
-      x2 = 1000; // Move companion out of view
-      r1 = p.r1[i]; r2 = 12.51;
+      x1 = 0; y1 = 0; z1 = 0; // Center Cepheid
+      x2 = 2000; // Hide Companion
+      r1 = p.r1[i];
       col1 = p.color1 ? p.color1[i] : COLORS.cepheid;
     }
 
-    // Adjusted Zoom: Pulsation focus is now 5x rather than 100x
-    const zoom = (currentMode === 'pulsation') ? (Math.min(w, h) * 0.012) : (Math.min(w, h) * 0.4) / 160;
+    // 2. Zoom Logic
+    const zoom = (currentMode === 'pulsation') 
+      ? (Math.min(w, h) * 0.015)  // 5x zoom (reasonable)
+      : (Math.min(w, h) * 0.4) / 160;
 
-    // Draw Orbit Trail (Inclined 57 degrees)
+    // 3. Dual Barycentric Orbits (Static Paths)
     if (currentMode !== 'pulsation') {
-      ctx.strokeStyle = COLORS.orbit;
-      ctx.setLineDash([4, 4]);
+      ctx.setLineDash([3, 6]);
+      
+      // Larger Orbit (Companion)
+      ctx.strokeStyle = COLORS.orbit2;
       ctx.beginPath();
-      ctx.ellipse(cx, cy, 110 * zoom, 110 * zoom * 0.54, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, 120 * zoom, 120 * zoom * orbitScale, 0, 0, Math.PI * 2);
       ctx.stroke();
+
+      // Smaller Orbit (Massive Cepheid)
+      ctx.strokeStyle = COLORS.orbit1;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 35 * zoom, 35 * zoom * orbitScale, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      
       ctx.setLineDash([]);
     }
 
-    // Draw Stars
-    const drawDisk = (x, y, r, col, glow) => {
+    // 4. Render Stars
+    const drawStar = (x, y, r, col, glow) => {
       ctx.fillStyle = col;
       if (glow) {
-        ctx.shadowBlur = r * zoom * 1.2;
+        ctx.shadowBlur = r * zoom * 1.5;
         ctx.shadowColor = col;
       }
       ctx.beginPath();
@@ -131,11 +131,17 @@
     };
 
     if (z1 > z2) {
-      drawDisk(x2, y2, r2, COLORS.companion, false);
-      drawDisk(x1, y1, r1, col1, true);
+      drawStar(x2, y2, 12.51, COLORS.companion, false);
+      drawStar(x1, y1, r1, col1, true);
     } else {
-      drawDisk(x1, y1, r1, col1, true);
-      drawDisk(x2, y2, r2, COLORS.companion, false);
+      drawStar(x1, y1, r1, col1, true);
+      drawStar(x2, y2, 12.51, COLORS.companion, false);
+    }
+
+    // 5. Update UI Stats
+    if (document.getElementById('hud-mag')) {
+      document.getElementById('hud-mag').innerText = `MAG: ${data.physics_frames.v_mag[i].toFixed(2)}`;
+      document.getElementById('hud-rad').innerText = `RAD: ${r1.toFixed(2)} R☉`;
     }
 
     requestAnimationFrame(animate);
