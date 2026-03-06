@@ -26,7 +26,7 @@
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'EB Garamond', serif; /* Matching Jane Eyre template preference */
+      font-family: 'EB Garamond', serif;
       font-size: 19px;
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
@@ -54,12 +54,14 @@
 
     .nav-back {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
       color: var(--text-dim);
       text-decoration: none;
-      transition: color 0.2s ease;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
     }
-    .nav-back:hover { color: var(--gold); }
+    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
 
     .article-wrap {
       max-width: 720px;
@@ -131,20 +133,14 @@
       margin-bottom: 12px;
     }
 
-    .article-back-link {
-      display: inline-block;
-      margin-top: 52px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .article-back-link:hover { color: var(--gold); border-color: var(--gold-dim); }
 
     #back-to-top {
       position: fixed;
@@ -209,10 +205,13 @@
         <p>Descartes, René. <em>Meditations on First Philosophy</em>. Translated by Ronald Rubin. Arete Press, 1985.</p>
         <p>Bennett, Jonathan. <em>Objections to the Meditations and Descartes’s Replies</em>. 2017.</p>
       </div>
-
-      <a href="index.html#writing" class="article-back-link">← Back to writing</a>
-      <a href="https://the-revere.com/2025/02/germanys-far-right-comeback-why-you-should-be-worried-about-the-afd/" class="article-back-link">Next: The German Right</a>
     </div>
+
+    <footer class="footer-nav">
+      <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+      <a href="https://the-revere.com/2025/02/germanys-far-right-comeback-why-you-should-be-worried-about-the-afd/" class="nav-back" target="_blank" rel="noopener">Next: The German Right →</a>
+    </footer>
+
   </article>
 
   <button id="back-to-top" aria-label="Back to top">↑</button>
