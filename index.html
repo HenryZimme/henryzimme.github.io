@@ -2130,25 +2130,35 @@ document.querySelectorAll('.book-spine').forEach(spine => {
   });
 })();
 
-// -- scroll-spy --
+// -- scroll-spy & url updater --
 const nav_sections = ['about', 'research', 'writing', 'highlights', 'bookshelf'];
-const nav_link_map = {};
-nav_sections.forEach(id => {
-  const a = document.querySelector('.nav-links a[href="#' + id + '"]');
-  if (a) nav_link_map[id] = a;
-});
-const spy_observer = new IntersectionObserver((entries) => {
+const nav_links_array = Array.from(document.querySelectorAll('.nav-links a'));
+
+const observerOptions = {
+  root: null,
+  rootMargin: '-20% 0px -60% 0px', // Triggers when the section reaches the upper-middle of screen
+  threshold: 0
+};
+
+const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      Object.values(nav_link_map).forEach(a => a.classList.remove('active'));
-      const link = nav_link_map[entry.target.id];
-      if (link) link.classList.add('active');
+      const id = entry.target.id;
+      
+      // 1. Update the active class in the navigation
+      nav_links_array.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+      });
+      
+      // 2. Silently update the browser's URL bar without jumping the page
+      history.replaceState(null, null, '#' + id);
     }
   });
-}, { threshold: 0.25 });
+}, observerOptions);
+
 nav_sections.forEach(id => {
   const el = document.getElementById(id);
-  if (el) spy_observer.observe(el);
+  if (el) observer.observe(el);
 });
 
 // -- hamburger --
