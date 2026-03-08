@@ -151,7 +151,7 @@
           <a href="#cepheid-sim" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated ↓</div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated ↓</div>
             </div>
             <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.50&ndash;0.70, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where &Delta;RV&nbsp;&#8819;&nbsp;40&nbsp;km&thinsp;s<sup>&minus;1</sup> to cleanly separate the Cepheid and companion spectra. The simulation makes both constraints visible at once.</div>
           </a>
@@ -195,6 +195,7 @@ The project coordinates photometry across four observatories in the Canary Islan
               Asteroid Statistics on GitHub
             </a>
           </div>
+          <div class="card-tags">
             <span class="tag">Photometry</span>
             <span class="tag">Minor Planets</span>
             <span class="tag">Machine Learning</span>
@@ -239,7 +240,7 @@ The project coordinates photometry across four observatories in the Canary Islan
 
       <!-- left: section header in site design language -->
       <div style="max-width: 420px;">
-        <p style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 10px 0;">Live Simulation</p>
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 10px 0;">Live Simulation</p>
         <h2 style="font-family: 'EB Garamond', serif; font-size: clamp(22px, 3vw, 34px); font-weight: 400; color: var(--text); margin: 0 0 10px 0; line-height: 1.15;">OGLE-LMC-CEP-1347</h2>
         <div style="height: 1px; background: var(--panel-border); margin-bottom: 14px;"></div>
         <p style="font-family: 'Spectral', serif; font-style: italic; font-size: 14.5px; color: var(--text-dim); line-height: 1.72; margin: 0;">
@@ -249,7 +250,7 @@ The project coordinates photometry across four observatories in the Canary Islan
 
       <!-- right: telemetry HUD -->
       <div id="hud-table" style="pointer-events: auto; flex-shrink: 0; background: rgba(7,9,26,0.82); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: 0.75rem; padding: 1.25rem 1.5rem; width: 250px;">
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10.5px; line-height: 1;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1;">
           <div style="display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
             <span style="color:rgba(255,255,255,0.45);">V-band mag</span><span id="hud-mag" style="color:var(--text);">--</span>
           </div>
@@ -278,7 +279,7 @@ The project coordinates photometry across four observatories in the Canary Islan
           <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">ORBITAL</button>
           <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">PULSATION</button>
         </div>
-        <p style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;· K&#8321; = 30.3 km/s · K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;· K&#8321; = 30.3 km/s · K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
       </div>
     </div>
   </div>
@@ -322,7 +323,7 @@ The project coordinates photometry across four observatories in the Canary Islan
             <div class="writing-date">Spring 2025</div>
           </div>
           <div class="writing-content">
-            <h3><a href="muralism.html">Muerte al Invasor: Examining Siqueiros's Activist Muralism Through his Chillán Mural</a></h3>
+            <h3><a href="muralism.html" target="_blank" rel="noopener">Muerte al Invasor: Examining Siqueiros's Activist Muralism Through his Chillán Mural</a></h3>
             <p>How David Alfaro Siqueiros's mural in Chillán, Chile reframes a shared Latin American history of colonial resistance while covertly advancing a Marxist critique of capitalism's imperial legacies.</p>
           </div>
         </div>
@@ -344,7 +345,7 @@ The project coordinates photometry across four observatories in the Canary Islan
             <div class="writing-date">February 2025</div>
           </div>
           <div class="writing-content">
-            <h3><a href="descartes.html">Disproving Descartes&#8217; Divine Definition Divination</a></h3>
+            <h3><a href="descartes.html" target="_blank" rel="noopener">Disproving Descartes&#8217; Divine Definition Divination</a></h3>
             <p>A close reading of the <em>Meditations</em> showing Descartes cannot prove God's existence because he lacks comprehensive knowledge of God's essence to define it.</p>
           </div>
         </div>
@@ -366,7 +367,7 @@ The project coordinates photometry across four observatories in the Canary Islan
             <div class="writing-date">Fall 2024</div>
           </div>
           <div class="writing-content">
-            <h3><a href="japan.html">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</a></h3>
+            <h3><a href="japan.html" target="_blank" rel="noopener">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</a></h3>
             <p>Japan's demographic crisis through the lens of its historically restrictive immigration framework: what the recent policy shifts signal, and whether they go far enough.</p>
           </div>
         </div>
@@ -377,7 +378,7 @@ The project coordinates photometry across four observatories in the Canary Islan
             <div class="writing-date">Spring 2024</div>
           </div>
           <div class="writing-content">
-            <h3><a href="baghdad.html">Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad</a></h3>
+            <h3><a href="baghdad.html" target="_blank" rel="noopener">Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad</a></h3>
             <p>How caliph al-Mansour transformed an ancient legend into the center of Islamic trade, symbolic power, and intellectual life in under a century.</p>
           </div>
         </div>
@@ -684,14 +685,13 @@ The project coordinates photometry across four observatories in the Canary Islan
   const simObserver = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {
       const s = document.createElement('script');
-      s.src = 'js/cepheid-engine-test.js';
+      s.src = 'js/cepheid-engine.js';
       document.body.appendChild(s);
       simObserver.disconnect();
     }
   }, { rootMargin: '200px' });
   simObserver.observe(document.getElementById('cepheid-sim'));
 </script>
-</body>
 <script>
   new IntersectionObserver((entries) => {
     if (!entries[0].isIntersecting) return;
@@ -701,4 +701,5 @@ The project coordinates photometry across four observatories in the Canary Islan
     document.head.appendChild(s);
   }, { rootMargin: '300px' }).observe(document.getElementById('research'));
 </script>
+</body>
 </html>
