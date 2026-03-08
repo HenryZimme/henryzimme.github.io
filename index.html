@@ -691,5 +691,15 @@ The project coordinates photometry across four observatories in the Canary Islan
 
 <button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
 <script src="js/main.js" defer></script>
-<script src="js/cepheid-engine.js"></script></body>
+<script>
+  const simObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      const s = document.createElement('script');
+      s.src = 'js/cepheid-engine.js';
+      document.body.appendChild(s);
+      simObserver.disconnect();
+    }
+  }, { rootMargin: '200px' });
+  simObserver.observe(document.getElementById('cepheid-sim'));
+</script>
 </html>
