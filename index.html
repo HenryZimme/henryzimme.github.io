@@ -17,14 +17,6 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
-  <script>
-    MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']]
-      }
-    };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   <link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="css/style.css"></noscript></head>
 <body>
@@ -700,4 +692,13 @@ The project coordinates photometry across four observatories in the Canary Islan
   simObserver.observe(document.getElementById('cepheid-sim'));
 </script>
 </body>
+<script>
+  new IntersectionObserver((entries) => {
+    if (!entries[0].isIntersecting) return;
+    window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']] } };
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
+    document.head.appendChild(s);
+  }, { rootMargin: '300px' }).observe(document.getElementById('research'));
+</script>
 </html>
