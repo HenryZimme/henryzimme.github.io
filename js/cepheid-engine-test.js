@@ -11,8 +11,12 @@
   const SIN_I     = Math.sin(57 * Math.PI / 180);
   const K1        = (2 * Math.PI * 42 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~30.3 km/s
   const K2        = (2 * Math.PI * 76 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~54.8 km/s
-  const RV_THRESH = 40;    // km/s — ESPRESSO ΔRV separation requirement
-  const RV_N      = 2400;
+  const RV_THRESH    = 40;    // km/s — ESPRESSO ΔRV separation requirement
+  const RV_N         = 2400;
+  // Pulsation cycles per orbit: 58.85 d / 0.690 d ≈ 85.3.
+  // Converts frame index i (0…N-1, one full orbit) to pulsation phase:
+  //   φ_puls(i) = (i / N × PULS_PER_ORB) % 1
+  const PULS_PER_ORB = P_ORB_S / (P_PULS_D * 86400);   // ≈ 85.3
 
   // ESPRESSO pulsation quiescence window [Pilecki et al. 2022 + VLT proposal]
   const PULS_MIN = 0.50;
@@ -73,10 +77,11 @@
                      || (simCanvas && simCanvas.parentElement);
 
   const hud = {
-    mag:   document.getElementById('hud-mag'),
-    teff:  document.getElementById('hud-teff'),
-    rad:   document.getElementById('hud-rad'),
-    phase: document.getElementById('hud-phase'),
+    mag:        document.getElementById('hud-mag'),
+    teff:       document.getElementById('hud-teff'),
+    rad:        document.getElementById('hud-rad'),
+    phase:      document.getElementById('hud-phase'),
+    phaseLabel: document.getElementById('hud-phase-label'),
   };
 
   let bounds = { a1: 0, a2: 0, minV: 99, maxV: -99 };
@@ -180,17 +185,26 @@
   function buildRV() {
     rv1_orb = []; rv2 = []; rvDelta = [];
 
-    // Pure orbital sinusoids — correct basis for rvDelta / constraint shading.
-    // (Old code mixed pulsation into rv1, which inflated rvDelta near nodes →
-    //  "always-green" bug. Using pure sinusoids gives rvDelta = (K1+K2)|sin φ|,
-    //  which correctly reaches zero at the ascending/descending nodes.)
+    // ── Correct RV phase convention ───────────────────────────────────────
+    // Position: x1(φ) = a1·cos(2πφ),  z1(φ) = −a1·sin(2πφ)·sin(i)
+    // Radial velocity = dz/dt:
+    //   dz1/dt = −a1·(2π/P)·sin(i)·cos(2πφ)  = −K1·cos(2πφ)
+    //   dz2/dt = +K2·cos(2πφ)                  (companion, opposite sign)
+    //
+    // Consequence: at φ=0 (stars on opposite sides of screen, max x-separation)
+    //   rv1 = −K1 (Cepheid approaching), rv2 = +K2 (Companion receding)  → largest |ΔRV|
+    // At φ=0.25 (stars at conjunction/opposition along line of sight):
+    //   rv1 = rv2 = 0  (moving perpendicular to line of sight)
+    //
+    // The old sin formula gave rv=0 at φ=0, which contradicted the on-screen
+    // positions and produced "same point" dots whenever stars were side-by-side.
     for (let k = 0; k < RV_N; k++) {
       const phi = k / RV_N;
-      const v1  =  K1 * Math.sin(2 * Math.PI * phi);
-      const v2  = -K2 * Math.sin(2 * Math.PI * phi);
+      const v1  = -K1 * Math.cos(2 * Math.PI * phi);   // Cepheid
+      const v2  = +K2 * Math.cos(2 * Math.PI * phi);   // Companion
       rv1_orb.push(v1);
       rv2.push(v2);
-      rvDelta.push(Math.abs(v1 - v2));   // = (K1+K2)|sin φ|, zero at nodes ✓
+      rvDelta.push(Math.abs(v1 - v2));  // = (K1+K2)|cos φ|, max when stars face each other ✓
     }
 
     // Pulsation velocity per frame (breathing glow + σ envelope)
@@ -249,6 +263,10 @@
     if (plotLabel) plotLabel.textContent = (mode === 'orbital')
       ? 'ORBITAL RADIAL VELOCITIES · KM S\u207B\u00B9'
       : 'V-BAND LIGHT CURVE · PULSATION PHASE';
+    // Update HUD phase row label to match the phase being displayed
+    if (hud.phaseLabel) hud.phaseLabel.textContent = (mode === 'orbital')
+      ? '\u03c6\u1d52\u1d3f\u1d47 orbital'
+      : '\u03c6\u2081 pulsation';
 
     document.querySelectorAll('.btn-mode').forEach(b => {
       if (b.id === 'btn-constraints') return;
@@ -505,33 +523,40 @@
     const N        = magArr.length;
     const mobile   = isMobile();
 
+    // Helper: pulsation phase for a given frame index
+    const pulsP = idx => (idx / N * PULS_PER_ORB) % 1;
+
     ctx.save();
 
     if (showConstraints) {
+      // Shade each column by whether its pulsation phase is in the quiescent window
       for (let k = -nPts / 2; k < nPts / 2; k++) {
         const idx   = (frameI + Math.round(k) + N) % N;
-        const phase = idx / N;
-        const inWin = phase >= PULS_MIN && phase <= PULS_MAX;
+        const inWin = pulsP(idx) >= PULS_MIN && pulsP(idx) <= PULS_MAX;
         ctx.fillStyle = inWin ? 'rgba(134,239,172,0.13)' : 'rgba(239,68,68,0.06)';
         ctx.fillRect(px + pw / 2 + k * step, py, step + 0.5, ph);
       }
 
-      // Boundary markers at φ₁ = 0.50 and 0.70
-      [PULS_MIN, PULS_MAX].forEach(tp => {
-        const kOff = ((Math.round(tp * N) - frameI + N) % N);
-        const kC   = kOff > N / 2 ? kOff - N : kOff;
-        if (Math.abs(kC) > nPts / 2) return;
-        const x = px + pw / 2 + kC * step;
-        ctx.strokeStyle = 'rgba(134,239,172,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
-        ctx.beginPath(); ctx.moveTo(x, py + 14); ctx.lineTo(x, py + ph - 2); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = 'rgba(134,239,172,0.75)'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-        ctx.font = '8px \'JetBrains Mono\', monospace';
-        ctx.fillText(`\u03c6=${tp.toFixed(2)}`, x, py + 16);
-      });
+      // Boundary markers: scan visible window for φ-crossings at 0.50 and 0.70.
+      // Because there are ~85 pulsation cycles per orbit, each ~42-frame span
+      // of the visible window (120 frames wide) covers ~1.4 pulsation cycles
+      // and may contain 2–4 boundary crossings.
+      let prevInWin = pulsP((frameI - nPts / 2 + N) % N) >= PULS_MIN
+                   && pulsP((frameI - nPts / 2 + N) % N) <= PULS_MAX;
+      for (let k = -nPts / 2 + 1; k <= nPts / 2; k++) {
+        const idx   = (frameI + Math.round(k) + N) % N;
+        const inWin = pulsP(idx) >= PULS_MIN && pulsP(idx) <= PULS_MAX;
+        if (inWin !== prevInWin) {
+          const x = px + pw / 2 + k * step;
+          ctx.strokeStyle = 'rgba(134,239,172,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+          ctx.beginPath(); ctx.moveTo(x, py + 14); ctx.lineTo(x, py + ph - 2); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        prevInWin = inWin;
+      }
 
-      // Phase status
-      const cp    = frameI / N;
+      // Phase status — use real pulsation phase of the current frame
+      const cp    = pulsP(frameI);
       const inWin = cp >= PULS_MIN && cp <= PULS_MAX;
       ctx.font = `${mobile ? 8 : 9}px 'JetBrains Mono', monospace`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
@@ -602,7 +627,9 @@
     // ── Constraint evaluation ─────────────────────────────────────────────
     const rvI        = Math.round(i / N * RV_N) % RV_N;
     const orbOk      = rvDelta[rvI] >= RV_THRESH;
-    const pulsPhase  = i / p.r1.length;
+    // Real pulsation phase: the data spans one full orbit containing ~85.3
+    // pulsation cycles.  i/N gives orbital phase (0–1), not pulsation phase.
+    const pulsPhase  = (i / N * PULS_PER_ORB) % 1;
     const pulsOk     = pulsPhase >= PULS_MIN && pulsPhase <= PULS_MAX;
     const constraintOk = currentMode === 'orbital' ? orbOk : pulsOk;
 
@@ -714,7 +741,12 @@
     if (hud.rad)  hud.rad.innerText  = `${r1.toFixed(1)} R\u2609`;
 
     if (hud.phase) {
-      hud.phase.innerText   = (i / p.x1.length).toFixed(3);
+      // Show pulsation phase in pulsation mode (cycles ~85× per orbit),
+      // orbital phase in orbital mode.
+      const phaseVal = currentMode === 'pulsation'
+        ? pulsPhase          // already computed as (i/N × PULS_PER_ORB) % 1
+        : (i / N);
+      hud.phase.innerText   = phaseVal.toFixed(3);
       hud.phase.style.color = showConstraints
         ? (constraintOk ? COL_OK : COL_WARN)
         : COL_PHASE_DEFAULT;
