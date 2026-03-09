@@ -15,17 +15,35 @@
   const RV_N      = 2400;
 
   // ESPRESSO pulsation quiescence window [Pilecki et al. 2022 + VLT proposal]
-  // φ₁ ∈ [0.50, 0.70]: minimum-radius phase, v_turb ~ 3 km/s
   const PULS_MIN = 0.50;
   const PULS_MAX = 0.70;
 
-  // HUD value colors — each spectrally distinct from the others and from
-  // constraint green/red. Phase is dynamic (changes with constraint state).
-  const COL_TEFF    = '#fdba74';   // warm amber
-  const COL_RAD     = '#67e8f9';   // cyan
-  const COL_OK      = '#86efac';   // constraint-met green
-  const COL_WARN    = '#f87171';   // constraint-not-met red
-  const COL_PHASE_DEFAULT = '#c4b5fd';  // soft violet when ESPRESSO off
+  // HUD value colors
+  const COL_TEFF          = '#fdba74';
+  const COL_RAD           = '#67e8f9';
+  const COL_OK            = '#86efac';
+  const COL_WARN          = '#f87171';
+  const COL_PHASE_DEFAULT = '#c4b5fd';
+
+  // ── Observational RV data — Pilecki et al. 2022 (ApJ 940 L48), Table B3 ─
+  // Columns: [HJD − 2450000, RVel1_abs, e_RVel1, RVel2_abs, e_RVel2]
+  // Systemic velocity γ = 237.0 km/s; orbital T₀ = HJD 2459549.0 (phase=0 ascending node)
+  // These are absolute heliocentric RVs from UVES and MIKE spectrographs.
+  const OBS_P_ORB  = 58.85;      // days
+  const OBS_T0     = 9549.0;     // HJD − 2450000 at φ = 0 (ascending node)
+  const OBS_GAM    = 237.0;      // km/s systemic (barycentric) velocity
+  const OBS_DATA = [
+    // [hjd_m2450000, rv1_abs, e_rv1, rv2_abs, e_rv2]
+    [9510.80498, 271.408, 0.148, 195.142, 0.397],
+    [9541.61089, 222.409, 0.113, 281.004, 0.479],
+    [9556.62074, 246.214, 0.124, 207.792, 0.542],
+    [9558.63776, 251.270, 0.128, 200.067, 0.553],
+    [9563.71814, 280.680, 0.128, 188.181, 0.397],
+    [9566.72085, 261.271, 0.183, 189.594, 0.514],
+    [9579.64289, 255.698, 0.292, 239.801, 0.335],
+    [9589.71976, 206.661, 0.109, 285.529, 0.421],
+    [9604.62569, 231.395, 0.159, 263.152, 0.546],
+  ];
 
   let data           = null;
   let currentMode    = 'orbital';
@@ -34,11 +52,9 @@
   let showConstraints = false;
 
   // ── RV arrays ─────────────────────────────────────────────────────────────
-  // rv1_orb, rv2: pure orbital sinusoids.  rvDelta uses these (not rv1+puls)
-  // because the ESPRESSO ΔRV criterion reflects mean stellar separation, not
-  // the pulsation-perturbed snapshot.  The previous code folded one pulsation
-  // cycle uniformly onto the full orbit (posIdx = round(φ·N)), wrong by factor
-  // P_orb/P_puls ≈ 85, inflating rvDelta near orbital nodes → always-green bug.
+  // rv1_orb, rv2: pure orbital sinusoids.
+  // rvDelta uses pure orbital (not rv1+puls) because the ESPRESSO ΔRV criterion
+  // reflects mean stellar separation, not the pulsation-perturbed snapshot.
   // vpuls_arr: per-frame dr1/dt (km/s), used for Cepheid breathing glow.
   let rv1_orb   = [];
   let rv2       = [];
@@ -52,7 +68,6 @@
   const preview    = document.getElementById('sim-preview');
   const plotUI     = document.getElementById('hud-plot-container');
   const plotLabel  = plotUI ? plotUI.querySelector('[data-plot-label]') : null;
-  // The outer section element whose border we'll animate for constraint status
   const simSection = document.getElementById('cepheid-sim')
                      || (simCanvas && simCanvas.closest('section'))
                      || (simCanvas && simCanvas.parentElement);
@@ -72,19 +87,14 @@
 
   function isMobile() { return window.innerWidth <= 700; }
 
-  // ── Simulation border: reflects constraint status ─────────────────────────
-  // Instead of a ring on the star, the entire section border transitions
-  // between green (constraint met) and red (not met) when overlay is active.
+  // ── Simulation border: reflects ESPRESSO constraint status ────────────────
   let _lastBorderState = null;
   function updateSimBorder(constraintOk) {
     if (!simSection) return;
     const next = showConstraints ? (constraintOk ? 'ok' : 'warn') : 'off';
-    if (next === _lastBorderState) return;   // skip redundant DOM writes
+    if (next === _lastBorderState) return;
     _lastBorderState = next;
-    if (!showConstraints) {
-      simSection.style.boxShadow = '';
-      return;
-    }
+    if (!showConstraints) { simSection.style.boxShadow = ''; return; }
     simSection.style.transition = 'box-shadow 0.35s ease';
     simSection.style.boxShadow  = constraintOk
       ? 'inset 0 0 0 2px rgba(134,239,172,0.55), 0 0 32px rgba(134,239,172,0.07)'
@@ -105,11 +115,9 @@
 
     if (isMobile()) {
       uiLayer.style.padding = '1rem 1rem 0.75rem';
-      if (topRow) topRow.style.gap = '0.5rem';
-      if (leftPanel) {
-        leftPanel.style.maxWidth = '55%';
-        verboseEls.forEach(el => { el.style.display = 'none'; });
-      }
+      if (topRow)     topRow.style.gap    = '0.5rem';
+      if (leftPanel)  leftPanel.style.maxWidth = '55%';
+      verboseEls.forEach(el => { el.style.display = 'none'; });
       if (hudTable) {
         hudTable.style.width    = 'auto';
         hudTable.style.minWidth = '120px';
@@ -118,21 +126,17 @@
       if (plotCont) plotCont.style.height = '90px';
     } else {
       uiLayer.style.padding = '2.5rem 2.5rem 2rem';
-      if (topRow) topRow.style.gap = '1.5rem';
-      if (leftPanel) {
-        leftPanel.style.maxWidth = '420px';
-        verboseEls.forEach(el => { el.style.display = ''; });
-      }
+      if (topRow)     topRow.style.gap   = '1.5rem';
+      if (leftPanel)  leftPanel.style.maxWidth = '420px';
+      verboseEls.forEach(el => { el.style.display = ''; });
       if (hudTable) {
         hudTable.style.width    = '250px';
         hudTable.style.minWidth = '';
         hudTable.style.padding  = '1.25rem 1.5rem';
       }
-      // Reduced from 160 → 120px: gives more vertical space to the orbital canvas
       if (plotCont) plotCont.style.height = '120px';
     }
 
-    // Static HUD colors (set once, survive re-renders)
     if (hud.teff) hud.teff.style.color = COL_TEFF;
     if (hud.rad)  hud.rad.style.color  = COL_RAD;
   }
@@ -159,7 +163,7 @@
       if (!showConstraints) {
         _lastBorderState = null;
         if (simSection) simSection.style.boxShadow = '';
-        if (hud.phase) hud.phase.style.color = COL_PHASE_DEFAULT;
+        if (hud.phase)  hud.phase.style.color = COL_PHASE_DEFAULT;
       }
     };
     Object.assign(btn.style, {
@@ -176,17 +180,20 @@
   function buildRV() {
     rv1_orb = []; rv2 = []; rvDelta = [];
 
-    // Pure orbital sinusoids — correct basis for rvDelta / constraint shading
+    // Pure orbital sinusoids — correct basis for rvDelta / constraint shading.
+    // (Old code mixed pulsation into rv1, which inflated rvDelta near nodes →
+    //  "always-green" bug. Using pure sinusoids gives rvDelta = (K1+K2)|sin φ|,
+    //  which correctly reaches zero at the ascending/descending nodes.)
     for (let k = 0; k < RV_N; k++) {
       const phi = k / RV_N;
       const v1  =  K1 * Math.sin(2 * Math.PI * phi);
       const v2  = -K2 * Math.sin(2 * Math.PI * phi);
       rv1_orb.push(v1);
       rv2.push(v2);
-      rvDelta.push(Math.abs(v1 - v2));   // = (K1+K2)|sin φ|, zero at nodes
+      rvDelta.push(Math.abs(v1 - v2));   // = (K1+K2)|sin φ|, zero at nodes ✓
     }
 
-    // Pulsation velocity per frame (breathing glow)
+    // Pulsation velocity per frame (breathing glow + σ envelope)
     const r1arr = data.physics_frames.r1;
     const N     = r1arr.length;
     const dt    = (data.metadata && data.metadata.dt)
@@ -238,7 +245,7 @@
   window.setMode = function (mode) {
     if (!MODES.has(mode)) return;
     currentMode = mode;
-    if (plotUI) plotUI.style.opacity = '1';
+    if (plotUI)    plotUI.style.opacity = '1';
     if (plotLabel) plotLabel.textContent = (mode === 'orbital')
       ? 'ORBITAL RADIAL VELOCITIES · KM S\u207B\u00B9'
       : 'V-BAND LIGHT CURVE · PULSATION PHASE';
@@ -275,6 +282,16 @@
     return { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height };
   }
 
+  // ── Wrap-safe moveTo/lineTo helper ────────────────────────────────────────
+  // When iterating a circular array of length N centered on some offset,
+  // the index wraps from N-1 back to 0. If the data is not exactly periodic
+  // at that boundary, a raw ctx.lineTo draws a spurious diagonal slash.
+  // Use this helper: call moveTo at the first point AND at every wrap.
+  function circPt(ctx, x, y, isFirst, idx, prevIdx) {
+    const isWrap = !isFirst && idx < prevIdx;
+    isFirst || isWrap ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+
   // ── RV plot (orbital mode) ────────────────────────────────────────────────
   function drawRVPlot(frameI) {
     const box = getPlotRect();
@@ -294,7 +311,7 @@
 
     ctx.save();
 
-    // Background constraint shading
+    // ── Background constraint shading ─────────────────────────────────────
     if (showConstraints) {
       ctx.fillStyle = 'rgba(239,68,68,0.07)';
       ctx.fillRect(px + inset, py + padTop, pw - inset * 2, drawH);
@@ -315,14 +332,14 @@
       }
     }
 
-    // Zero line
+    // ── Zero line ─────────────────────────────────────────────────────────
     ctx.strokeStyle = 'rgba(255,255,255,0.10)';
     ctx.lineWidth = 1; ctx.setLineDash([4, 7]);
     ctx.beginPath();
     ctx.moveTo(px + inset, midY); ctx.lineTo(px + pw - inset, midY);
     ctx.stroke();
 
-    // ΔRV threshold lines
+    // ── ΔRV threshold lines ───────────────────────────────────────────────
     ctx.strokeStyle = showConstraints ? 'rgba(134,239,172,0.55)' : 'rgba(134,239,172,0.28)';
     ctx.lineWidth = 1; ctx.setLineDash([3, 6]);
     const half = (RV_THRESH / 2) * yScale;
@@ -331,40 +348,49 @@
     }
     ctx.setLineDash([]);
 
-    // ±σ_puls envelope (shaded band around orbital curve)
+    // ── ±σ_puls envelope (shaded band around orbital Cepheid curve) ───────
+    // FIX: added wrap detection (circPt) so the band closure doesn't slash
     if (vpuls_rms > 0.5) {
       ctx.fillStyle = 'rgba(255,228,160,0.07)';
       ctx.beginPath();
       for (let k = -nPts / 2; k <= nPts / 2; k++) {
-        const idx = (rvI + Math.round(k) + RV_N) % RV_N;
+        const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
+        const prev = (rvI + Math.round(k) - 1 + RV_N) % RV_N;
         const x = px + pw / 2 + k * step;
         const y = midY - (rv1_orb[idx] + vpuls_rms) * yScale;
-        k === -nPts / 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        circPt(ctx, x, y, k === -nPts / 2, idx, prev);
       }
       for (let k = nPts / 2; k >= -nPts / 2; k--) {
-        const idx = (rvI + Math.round(k) + RV_N) % RV_N;
+        const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
+        const prev = (rvI + Math.round(k) + 1 + RV_N) % RV_N;  // reversed direction
         const x = px + pw / 2 + k * step;
         const y = midY - (rv1_orb[idx] - vpuls_rms) * yScale;
-        ctx.lineTo(x, y);
+        circPt(ctx, x, y, k === nPts / 2, idx, prev);
       }
       ctx.closePath(); ctx.fill();
     }
 
-    // RV curves
+    // ── RV curves — wrap-safe ─────────────────────────────────────────────
+    // FIX: use circPt so that when the circular buffer index wraps from
+    // RV_N-1 back to 0, a moveTo is used instead of a lineTo. Without this,
+    // any discontinuity at the boundary (even a fraction of a km/s for
+    // the pure sinusoids near φ=0 due to floating-point rounding) draws a
+    // spurious diagonal line across the entire plot width.
     const drawCurve = (arr, color, width) => {
       ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = 'round';
       for (let k = -nPts / 2; k <= nPts / 2; k++) {
-        const idx = (rvI + Math.round(k) + RV_N) % RV_N;
-        const x = px + pw / 2 + k * step;
-        const y = midY - arr[idx] * yScale;
-        k === -nPts / 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
+        const prev = (rvI + Math.round(k) - 1 + RV_N) % RV_N;
+        const x    = px + pw / 2 + k * step;
+        const y    = midY - arr[idx] * yScale;
+        circPt(ctx, x, y, k === -nPts / 2, idx, prev);
       }
       ctx.stroke();
     };
     drawCurve(rv1_orb, '#ffe4a0', 2.5);
     drawCurve(rv2,     '#f87171', 2.5);
 
-    // Current-phase dots
+    // ── Current-phase dots ────────────────────────────────────────────────
     const curX = px + pw / 2;
     [[rv1_orb[rvI], '#ffe4a0'], [rv2[rvI], '#f87171']].forEach(([v, col]) => {
       ctx.beginPath(); ctx.arc(curX, midY - v * yScale, 4, 0, Math.PI * 2);
@@ -372,7 +398,45 @@
       ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 1; ctx.stroke();
     });
 
-    // Constraint status readout
+    // ── Observational RV data points (Pilecki et al. 2022) ────────────────
+    // Each observation is placed at its orbital phase relative to the current
+    // animation phase (rvI). Points within the visible window scroll with
+    // the animation, showing where on the orbit each measurement was taken.
+    OBS_DATA.forEach(([hjd, rv1_abs, e1, rv2_abs, e2]) => {
+      const phi    = ((hjd - OBS_T0) % OBS_P_ORB + OBS_P_ORB) % OBS_P_ORB / OBS_P_ORB;
+      const obsIdx = Math.round(phi * RV_N) % RV_N;
+      // kOff: how many steps this observation is from the center of the display
+      let kOff = (obsIdx - rvI + RV_N) % RV_N;
+      if (kOff > RV_N / 2) kOff -= RV_N;
+      if (Math.abs(kOff) > nPts / 2) return;   // off screen, skip
+
+      const ox = px + pw / 2 + kOff * step;
+      const v1r = rv1_abs - OBS_GAM;
+      const v2r = rv2_abs - OBS_GAM;
+
+      // Draw pairs: Cepheid (gold circle) and Companion (red circle)
+      const drawObsPt = (vRel, eV, col) => {
+        const oy  = midY - vRel * yScale;
+        const ey  = eV * yScale;
+        // Error bar (too small to see for these tiny formal errors, but drawn for rigor)
+        ctx.save();
+        ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.65;
+        ctx.beginPath();
+        ctx.moveTo(ox, oy - ey); ctx.lineTo(ox, oy + ey);
+        ctx.stroke();
+        // Data point dot
+        ctx.beginPath(); ctx.arc(ox, oy, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle   = col;
+        ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 0.8;
+        ctx.globalAlpha = 0.85;
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      };
+      drawObsPt(v1r, e1, '#ffe4a0');
+      drawObsPt(v2r, e2, '#f87171');
+    });
+
+    // ── Constraint status readout ─────────────────────────────────────────
     if (showConstraints) {
       const meetsRV  = rvDelta[rvI] >= RV_THRESH;
       const deltaVal = rvDelta[rvI].toFixed(0);
@@ -387,7 +451,7 @@
       );
     }
 
-    // Y-axis ticks
+    // ── Y-axis ticks ──────────────────────────────────────────────────────
     const tickVals = mobile
       ? [Math.round(K1 + K2), 0, -Math.round(K1 + K2)]
       : [Math.round(K1 + K2), Math.round((K1 + K2) / 2), 0,
@@ -401,24 +465,25 @@
         ctx.fillText((v > 0 ? '+' : '') + v, px + inset, ly);
     }
 
-    // Legend + attribution (desktop only)
+    // ── Legend + attribution (desktop only) ───────────────────────────────
     if (!mobile) {
       const lr = px + pw - inset;
       let   lt = py + padTop + 2;
       if (showConstraints) lt += 14;
       ctx.textAlign = 'right'; ctx.textBaseline = 'top';
       ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = '#ffe4a0';                ctx.fillText('Cepheid (orbital)', lr, lt);
+      ctx.fillStyle = '#ffe4a0';                ctx.fillText('Cepheid (orbital model)', lr, lt);
       ctx.fillStyle = 'rgba(255,228,160,0.38)'; ctx.fillText(`\u00b1\u03c3 puls \u2248 ${vpuls_rms.toFixed(0)} km/s`, lr, lt + 12);
-      ctx.fillStyle = '#f87171';                ctx.fillText('Companion', lr, lt + 24);
+      ctx.fillStyle = '#f87171';                ctx.fillText('Companion (orbital model)', lr, lt + 24);
       ctx.fillStyle = showConstraints ? 'rgba(134,239,172,0.9)' : 'rgba(134,239,172,0.6)';
                                                 ctx.fillText('\u0394RV \u2265 40 km/s', lr, lt + 36);
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillText('\u2022 obs. RVs — Pilecki et al. 2022', lr, lt + 48);
       ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
       ctx.font = '8px \'JetBrains Mono\', monospace';
       ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.fillText('model — no observational RVs shown', px + inset, py + ph - 8);
+      ctx.fillText('model — circular orbit, i=57°, K\u2081\u224830.3 km/s, K\u2082\u224854.8 km/s', px + inset, py + ph - 8);
       ctx.fillStyle = 'rgba(255,255,255,0.10)';
-      ctx.fillText('circular orbit, i=57°, K\u2081\u224830.3 km/s, K\u2082\u224854.8 km/s — Espinoza-Arancibia & Pilecki 2025', px + inset, py + ph - 19);
+      ctx.fillText('Espinoza-Arancibia & Pilecki 2025 · Pilecki et al. 2022', px + inset, py + ph - 19);
     }
 
     ctx.restore();
@@ -451,7 +516,7 @@
         ctx.fillRect(px + pw / 2 + k * step, py, step + 0.5, ph);
       }
 
-      // Boundary markers
+      // Boundary markers at φ₁ = 0.50 and 0.70
       [PULS_MIN, PULS_MAX].forEach(tp => {
         const kOff = ((Math.round(tp * N) - frameI + N) % N);
         const kC   = kOff > N / 2 ? kOff - N : kOff;
@@ -479,13 +544,15 @@
       );
     }
 
-    // Light curve
+    // Light curve — FIX: wrap detection so Fourier-fit periodicity seam
+    // (frame N-1 → frame 0) doesn't produce a spurious diagonal stroke.
     ctx.beginPath(); ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
     for (let k = -nPts / 2; k <= nPts / 2; k++) {
-      const idx = (frameI + k + N) % N;
-      const x   = px + pw / 2 + k * step;
-      const y   = py + padTop + drawH / 2 - ((magArr[idx] - midMag) * (drawH / magRange) * 0.72);
-      k === -nPts / 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      const idx  = (frameI + Math.round(k)     + N) % N;
+      const prev = (frameI + Math.round(k) - 1 + N) % N;
+      const x    = px + pw / 2 + k * step;
+      const y    = py + padTop + drawH / 2 - ((magArr[idx] - midMag) * (drawH / magRange) * 0.72);
+      circPt(ctx, x, y, k === -nPts / 2, idx, prev);
     }
     ctx.stroke();
 
@@ -509,6 +576,7 @@
     ctx.clearRect(0, 0, w, h);
 
     const i      = Math.floor(frameIdx) % p.x1.length;
+    const N      = p.x1.length;
     const mobile = isMobile();
     frameIdx += (currentMode === 'pulsation' ? 0.4 : 0.8);
 
@@ -532,31 +600,32 @@
     }
 
     // ── Constraint evaluation ─────────────────────────────────────────────
-    const rvI       = Math.round(i / p.x1.length * RV_N) % RV_N;
-    const orbOk     = rvDelta[rvI] >= RV_THRESH;
-    const pulsPhase = i / p.r1.length;
-    const pulsOk    = pulsPhase >= PULS_MIN && pulsPhase <= PULS_MAX;
+    const rvI        = Math.round(i / N * RV_N) % RV_N;
+    const orbOk      = rvDelta[rvI] >= RV_THRESH;
+    const pulsPhase  = i / p.r1.length;
+    const pulsOk     = pulsPhase >= PULS_MIN && pulsPhase <= PULS_MAX;
     const constraintOk = currentMode === 'orbital' ? orbOk : pulsOk;
 
-    // ── Border ────────────────────────────────────────────────────────────
     updateSimBorder(constraintOk);
 
     // ── Zoom + center ─────────────────────────────────────────────────────
-    // Increased zoom factors + adjusted cy to use space freed by shorter plot panel.
+    // On mobile the section is now 180vh (CSS), giving much more vertical room.
+    // cy values are calibrated so stars sit in the clear middle band between
+    // the top UI stack and the bottom plot+buttons stack.
     let zoom, cx, cy;
     if (currentMode === 'pulsation') {
       zoom = (Math.min(w, h) * (mobile ? 0.11 : 0.17)) / maxR1;
       cx   = w / 2;
-      cy   = mobile ? h * 0.22 : h * 0.30;
+      cy   = mobile ? h * 0.50 : h * 0.30;
     } else {
       zoom = (Math.min(w, h) * (mobile ? 0.23 : 0.40)) / bounds.a2;
       cx   = mobile ? w * 0.44 : w / 2;
-      cy   = mobile ? h * 0.36 : h * 0.43;
+      cy   = mobile ? h * 0.52 : h * 0.43;
     }
 
     // ── Orbital ellipses ──────────────────────────────────────────────────
     if (currentMode !== 'pulsation') {
-      const inc = 0.545;
+      const inc = 0.545; // cos 57°
       ctx.save();
       ctx.lineWidth = mobile ? 1.5 : 2; ctx.setLineDash([7, 9]);
       ctx.strokeStyle = 'rgba(248,113,113,0.65)';
@@ -571,18 +640,24 @@
       ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5);
       ctx.stroke(); ctx.restore();
 
-      // ESPRESSO: color the Cepheid orbit arc green/red per ΔRV
+      // ── ESPRESSO orbit arc: colored by actual ΔRV per orbital phase ──────
+      // FIX: the previous code colored arc segments by VISUAL ANGLE (k/360),
+      // which doesn't match the RV phase because inclination projects y ≠ z.
+      // The correct approach: iterate the actual position-frame data and draw
+      // each segment colored by the corresponding rvDelta. Frame j maps to
+      // rvDelta[round(j/N * RV_N)] — the same mapping used everywhere else,
+      // so the coloring is consistent with the RV plot and constraint readout.
       if (showConstraints) {
-        const a1px = bounds.a1 * zoom;
-        const b1px = bounds.a1 * zoom * inc;
         ctx.save(); ctx.lineWidth = 3.5;
-        for (let k = 0; k < 360; k++) {
-          const phi1 = (k     / 360) * Math.PI * 2;
-          const phi2 = ((k+1) / 360) * Math.PI * 2;
-          const idx  = Math.round((k / 360) * RV_N) % RV_N;
+        for (let j = 0; j < N; j++) {
+          const jNext = (j + 1) % N;
+          const rvIdx = Math.round(j / N * RV_N) % RV_N;
           ctx.beginPath();
-          ctx.strokeStyle = rvDelta[idx] >= RV_THRESH ? 'rgba(134,239,172,0.65)' : 'rgba(239,68,68,0.30)';
-          ctx.ellipse(cx, cy, a1px, b1px, 0, phi1, phi2);
+          ctx.strokeStyle = rvDelta[rvIdx] >= RV_THRESH
+            ? 'rgba(134,239,172,0.65)'
+            : 'rgba(239,68,68,0.30)';
+          ctx.moveTo(cx + p.x1[j]     * zoom, cy + p.y1[j]     * zoom);
+          ctx.lineTo(cx + p.x1[jNext] * zoom, cy + p.y1[jNext] * zoom);
           ctx.stroke();
         }
         ctx.restore();
@@ -590,19 +665,16 @@
     }
 
     // ── Draw stars ────────────────────────────────────────────────────────
-    // PULSATION VISUALIZATION: breathing glow.
-    // shadowBlur scales with |vpuls| so the star visually "breathes" —
-    // glow is strongest at peak expansion/contraction velocity, minimal
-    // at the turning points. No extra geometry needed.
-    const vpNow     = vpuls_arr[i % Math.max(1, vpuls_arr.length)] || 0;
-    const vpNorm    = vpuls_rms > 0 ? Math.min(1, Math.abs(vpNow) / (vpuls_rms * 2)) : 0;
+    // Breathing glow: shadowBlur scales with |vpuls| so the Cepheid visually
+    // "breathes" — glow peaks at max expansion/contraction velocity.
+    const vpNow  = vpuls_arr[i % Math.max(1, vpuls_arr.length)] || 0;
+    const vpNorm = vpuls_rms > 0 ? Math.min(1, Math.abs(vpNow) / (vpuls_rms * 2)) : 0;
 
     const drawStar = (sx, sy, r, col, isPulsating) => {
       const spx = cx + sx * zoom, spy = cy + sy * zoom;
       const pr  = Math.max(2, r * zoom);
       ctx.save();
-      ctx.fillStyle = col || FALLBACK_COL;
-      // Base glow always on; pulsation adds up to 2× extra blur
+      ctx.fillStyle  = col || FALLBACK_COL;
       ctx.shadowBlur  = pr * (isPulsating ? (1.2 + vpNorm * 2.2) : 1.0);
       ctx.shadowColor = col;
       ctx.beginPath(); ctx.arc(spx, spy, pr, 0, Math.PI*2); ctx.fill();
@@ -617,13 +689,12 @@
       drawStar(x2, y2, COMPANION_RAD, '#f87171', false);
     }
 
-    // ── Star labels — brighter, hidden on mobile ──────────────────────────
+    // ── Star labels — desktop only ────────────────────────────────────────
     if (currentMode !== 'pulsation' && !mobile) {
       const lx1  = cx + x1 * zoom, ly1 = cy + y1 * zoom;
       const lx2  = cx + x2 * zoom, ly2 = cy + y2 * zoom;
       const dist = Math.hypot(lx1 - lx2, ly1 - ly2);
       const minD = (r1 + COMPANION_RAD) * zoom * 2.2;
-      // Minimum alpha 0.72 — labels are always legible when stars are separated
       const alpha = Math.min(1, Math.max(0.72, (dist - minD) / (minD * 0.6)));
       if (dist > minD * 0.4) {
         ctx.save();
@@ -642,9 +713,8 @@
     if (hud.teff) hud.teff.innerText = teff !== null ? `${Math.round(teff)} K` : '~6490 K';
     if (hud.rad)  hud.rad.innerText  = `${r1.toFixed(1)} R\u2609`;
 
-    // φ_orb: color shifts green↔red with constraint state when overlay is on
     if (hud.phase) {
-      hud.phase.innerText  = (i / p.x1.length).toFixed(3);
+      hud.phase.innerText   = (i / p.x1.length).toFixed(3);
       hud.phase.style.color = showConstraints
         ? (constraintOk ? COL_OK : COL_WARN)
         : COL_PHASE_DEFAULT;
