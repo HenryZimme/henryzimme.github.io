@@ -4,17 +4,6 @@
   const COMPANION_RAD = 12.51;   // R☉  (Espinoza-Arancibia & Pilecki 2025)
   const FALLBACK_COL  = '#ffe066';
 
-  // teff -> hex color: maps 4000K (orange #ff8c00) to 8000K (near-white #f4f6ff)
-  // used as fallback when physics_frames.color1 is absent or non-string
-  function teff_to_js_color(teff) {
-    const t = Math.max(3000, Math.min(teff || 6490, 10000));
-    const f = Math.max(0, Math.min(1, (t - 4000) / 4000));
-    const r = Math.round(0xff + (0xf4 - 0xff) * f);
-    const g = Math.round(0x8c + (0xf6 - 0x8c) * f);
-    const b = Math.round(0x00 + (0xff - 0x00) * f);
-    return `rgb(${r},${g},${b})`;
-  }
-
   // Orbital RV amplitudes — circular orbit, i = 57°
   const R_SUN_KM  = 695700;
   const P_ORB_S   = 58.85 * 86400;
@@ -97,6 +86,15 @@
     phase:      document.getElementById('hud-phase'),
     phaseLabel: document.getElementById('hud-phase-label'),
   };
+  // mobile HUD elements (separate DOM nodes — no overlap possible)
+  const mob = {
+    mag:        document.getElementById('mob-hud-mag'),
+    teff:       document.getElementById('mob-hud-teff'),
+    rad:        document.getElementById('mob-hud-rad'),
+    phase:      document.getElementById('mob-hud-phase'),
+    phaseLabel: document.getElementById('mob-hud-phase-label'),
+    espressoBtn:document.getElementById('mob-espresso-btn'),
+  };
 
   let bounds = { a1: 0, a2: 0, minV: 99, maxV: -99 };
 
@@ -120,210 +118,69 @@
       : 'inset 0 0 0 2px rgba(239,68,68,0.40),  0 0 24px rgba(239,68,68,0.06)';
   }
 
-  // ── Layout: apply mobile or desktop styles by directly overriding inline styles ──
-  // CSS !important battles with inline styles are unreliable; JS wins by writing
-  // element.style.* which IS the inline style.  This runs on init and on resize.
-  function applyLayout() {
-    const mob     = isMobile();
-    const uiLayer = document.getElementById('ui-layer');
-    const simTop  = document.getElementById('sim-top');
-    const simBot  = document.getElementById('sim-bottom');
-    const zone    = document.getElementById('sim-canvas-zone');
-    const hudTbl  = document.getElementById('hud-table');
-    const plotCnt = document.getElementById('hud-plot-container');
-    const descDiv = simTop ? simTop.querySelector('div') : null;
-    const italicP = descDiv  ? descDiv.querySelector('.sim-desc-italic') : null;
-
-    if (mob) {
-      // ── MOBILE: full HTML-restructure approach ──────────────────────────
-      // canvas moves into document flow as a flex item inside #ui-layer.
-      // section height is driven by stacked content — no overlap possible.
-
-      if (simSection) {
-        simSection.style.height   = 'auto';
-        simSection.style.overflow = 'visible';
-      }
-
-      // ui-layer: relative, flex column, stacks children top-to-bottom
-      if (uiLayer) {
-        uiLayer.style.position       = 'relative';
-        uiLayer.style.top            = 'auto';
-        uiLayer.style.right          = 'auto';
-        uiLayer.style.bottom         = 'auto';
-        uiLayer.style.left           = 'auto';
-        uiLayer.style.justifyContent = 'flex-start';
-        uiLayer.style.gap            = '0';
-        uiLayer.style.padding        = '1.1rem 0.9rem 1.25rem';
-        uiLayer.style.width          = '100%';
-        uiLayer.style.boxSizing      = 'border-box';
-      }
-
-      // canvas: pulled into flex flow as a block item (not absolute).
-      // height:65vw gives the star area explicit dimension.
-      if (simCanvas) {
-        simCanvas.style.position   = 'relative';
-        simCanvas.style.width      = '100%';
-        simCanvas.style.height     = '65vw';
-        simCanvas.style.flexShrink = '0';
-        simCanvas.style.inset      = '';
-        simCanvas.style.margin     = '0.5rem 0';
-      }
-
-      // zone spacer is irrelevant on mobile (canvas is the star area now)
-      if (zone) zone.style.display = 'none';
-
-      // sim-top: column layout, description over HUD
-      if (simTop) {
-        simTop.style.flexDirection  = 'column';
-        simTop.style.alignItems     = 'stretch';
-        simTop.style.gap            = '0.6rem';
-        simTop.style.justifyContent = '';
-        simTop.style.marginBottom   = '0';
-      }
-
-      // hide long italic paragraph on mobile — too much text
-      if (italicP) italicP.style.display = 'none';
-      if (descDiv) descDiv.style.maxWidth = '100%';
-
-      // HUD table: full width
-      if (hudTbl) {
-        hudTbl.style.width      = '100%';
-        hudTbl.style.flexShrink = '0';
-        hudTbl.style.boxSizing  = 'border-box';
-        hudTbl.style.padding    = '0.7rem 0.9rem';
-      }
-
-      // bottom block: full width
-      if (simBot) {
-        simBot.style.width      = '100%';
-        simBot.style.alignItems = 'stretch';
-        simBot.style.marginTop  = '0';
-      }
-
-      // plot shorter on mobile
-      if (plotCnt) {
-        plotCnt.style.maxWidth = '100%';
-        plotCnt.style.height   = '110px';
-      }
-
-    } else {
-      // ── DESKTOP: restore inline defaults ───────────────────────────────
-
-      if (simSection) {
-        simSection.style.height   = '100vh';
-        simSection.style.overflow = 'hidden';
-      }
-
-      // canvas: back to position:absolute filling the section
-      if (simCanvas) {
-        simCanvas.style.position   = 'absolute';
-        simCanvas.style.inset      = '0';
-        simCanvas.style.width      = '100%';
-        simCanvas.style.height     = '100%';
-        simCanvas.style.flexShrink = '';
-        simCanvas.style.margin     = '';
-      }
-
-      // restore zone spacer (desktop flex grow between sim-top and sim-bottom)
-      if (zone) zone.style.display = '';
-
-      if (uiLayer) {
-        uiLayer.style.position       = 'absolute';
-        uiLayer.style.top            = '0';
-        uiLayer.style.right          = '0';
-        uiLayer.style.bottom         = '0';
-        uiLayer.style.left           = '0';
-        uiLayer.style.justifyContent = 'space-between';
-        uiLayer.style.gap            = '';
-        uiLayer.style.padding        = '2.5rem 2.5rem 2rem';
-        uiLayer.style.width          = '';
-        uiLayer.style.boxSizing      = '';
-      }
-
-      if (simTop) {
-        simTop.style.flexDirection  = '';
-        simTop.style.alignItems     = 'flex-start';
-        simTop.style.gap            = '1.5rem';
-        simTop.style.justifyContent = 'space-between';
-        simTop.style.marginBottom   = '';
-      }
-
-      if (italicP) italicP.style.display = '';
-      if (descDiv) descDiv.style.maxWidth = '420px';
-
-      if (hudTbl) {
-        hudTbl.style.width      = '250px';
-        hudTbl.style.flexShrink = '0';
-        hudTbl.style.boxSizing  = '';
-        hudTbl.style.padding    = '1.25rem 1.5rem';
-      }
-
-      if (simBot) {
-        simBot.style.width      = '';
-        simBot.style.alignItems = 'center';
-        simBot.style.marginTop  = '';
-      }
-
-      if (plotCnt) {
-        plotCnt.style.maxWidth = '820px';
-        plotCnt.style.height   = '160px';
-      }
-    }
-
-    // HUD colors — always
-    if (hud.teff) hud.teff.style.color = COL_TEFF;
-    if (hud.rad)  hud.rad.style.color  = COL_RAD;
-  }
+  // applyLayout() removed — layout is now fully CSS-driven.
+  // Desktop: section=100vh, #ui-layer position:absolute inset:0.
+  // Mobile: section=height:auto driven by #sim-mobile-ui in-flow content; #ui-layer display:none.
 
   // ── ESPRESSO constraint toggle ────────────────────────────────────────────
+  function sync_constraint_buttons() {
+    // desktop injected button
+    const btn = document.getElementById('btn-constraints');
+    if (btn) {
+      btn.style.background = showConstraints ? 'rgba(134,239,172,0.18)' : 'transparent';
+      btn.style.color      = showConstraints ? '#86efac' : 'rgba(255,255,255,0.38)';
+      btn.style.boxShadow  = showConstraints ? 'inset 0 0 0 1px rgba(134,239,172,0.5)' : 'none';
+    }
+    // mobile static button
+    if (mob.espressoBtn) {
+      mob.espressoBtn.textContent = showConstraints ? 'ESPRESSO WINDOWS ON' : 'ESPRESSO WINDOWS OFF';
+      mob.espressoBtn.style.borderColor = showConstraints ? 'rgba(134,239,172,0.5)' : 'rgba(255,255,255,0.15)';
+      mob.espressoBtn.style.color       = showConstraints ? '#86efac' : 'rgba(255,255,255,0.45)';
+    }
+  }
+
+  window.toggleConstraints = function () {
+    showConstraints = !showConstraints;
+    sync_constraint_buttons();
+    if (showConstraints && data && pulsPhaseArr.length) {
+      // jump to first frame where pulsPhase ∈ [PULS_MIN, PULS_MAX]
+      // AND (in orbital mode) ΔRV ≥ RV_THRESH using position-derived orbital phase.
+      const N = data.physics_frames.r1.length;
+      let jumpIdx = -1;
+      for (let j = 0; j < N; j++) {
+        const ph = pulsPhaseArr[j];
+        if (ph >= PULS_MIN && ph <= PULS_MAX) {
+          if (currentMode !== 'orbital') { jumpIdx = j; break; }
+          const ri = Math.round(get_orb_phase(j) * RV_N + RV_N) % RV_N;
+          if (rvDelta[ri] >= RV_THRESH) { jumpIdx = j; break; }
+        }
+      }
+      if (jumpIdx >= 0) { frameIdx = jumpIdx; _lastBorderState = null; }
+    }
+    if (!showConstraints) {
+      _lastBorderState = null;
+      if (simSection) simSection.style.boxShadow = '';
+      if (hud.phase) hud.phase.style.color = COL_PHASE_DEFAULT;
+      if (mob.phase) mob.phase.style.color  = COL_PHASE_DEFAULT;
+    }
+  };
+
   function injectConstraintToggle() {
     if (document.getElementById('btn-constraints')) return;
     const pill = document.querySelector('#ui-layer .btn-mode')?.parentElement;
     if (!pill) return;
-
     const btn = document.createElement('button');
     btn.id        = 'btn-constraints';
     btn.className = 'btn-mode';
     btn.textContent = 'ESPRESSO';
-
-    const applyBtnStyle = () => {
-      btn.style.background = showConstraints ? 'rgba(134,239,172,0.18)' : 'transparent';
-      btn.style.color      = showConstraints ? '#86efac'                : 'rgba(255,255,255,0.38)';
-      btn.style.boxShadow  = showConstraints ? 'inset 0 0 0 1px rgba(134,239,172,0.5)' : 'none';
-    };
-    btn.onclick = () => {
-      showConstraints = !showConstraints;
-      applyBtnStyle();
-      if (showConstraints && data && pulsPhaseArr.length) {
-        // jump to first frame where pulsPhase in quiescent window AND (orbital) ΔRV ≥ threshold
-        const N = data.physics_frames.r1.length;
-        let jumpIdx = -1;
-        for (let j = 0; j < N; j++) {
-          const ph = pulsPhaseArr[j];
-          if (ph >= PULS_MIN && ph <= PULS_MAX) {
-            if (currentMode !== 'orbital') { jumpIdx = j; break; }
-            const ri = Math.round(j / N * RV_N) % RV_N;
-            if (rvDelta[ri] >= RV_THRESH) { jumpIdx = j; break; }
-          }
-        }
-        if (jumpIdx >= 0) {
-          frameIdx = jumpIdx;
-          _lastBorderState = null;   // force border repaint on next frame
-        }
-      }
-      if (!showConstraints) {
-        _lastBorderState = null;
-        if (simSection) simSection.style.boxShadow = '';
-        if (hud.phase)  hud.phase.style.color = COL_PHASE_DEFAULT;
-      }
-    };
+    btn.onclick = window.toggleConstraints;
     Object.assign(btn.style, {
+      background: 'transparent', color: 'rgba(255,255,255,0.38)', boxShadow: 'none',
       border: 'none', padding: '0.45rem 1.4rem', borderRadius: '999px',
       fontSize: '10.5px', cursor: 'pointer',
       transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
       letterSpacing: '0.1em', fontFamily: '\'JetBrains Mono\', monospace',
     });
-    applyBtnStyle();
     pill.appendChild(btn);
   }
 
@@ -393,7 +250,6 @@
 
       buildRV();
       injectConstraintToggle();
-      applyLayout();
 
       if (preview) preview.style.display = 'none';
       simCanvas.style.opacity = '1';
@@ -418,25 +274,43 @@
       ? '\u03c6\u1d52\u1d3f\u1d47 orbital'
       : '\u03c6\u2081 pulsation';
 
+    // update desktop + mobile buttons
     document.querySelectorAll('.btn-mode').forEach(b => {
       if (b.id === 'btn-constraints') return;
       b.style.background = 'transparent';
       b.style.color      = 'rgba(255,255,255,0.38)';
       b.style.boxShadow  = 'none';
     });
+    // active desktop button
     const btn = document.getElementById(`btn-${mode}`);
     if (btn) {
       btn.style.background = 'rgba(255,255,255,0.18)';
       btn.style.color      = '#ffffff';
       btn.style.boxShadow  = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
     }
+    // active mobile button (mirror)
+    const mob_btn = document.getElementById(`mob-btn-${mode}`);
+    if (mob_btn) {
+      mob_btn.style.background = 'rgba(255,255,255,0.18)';
+      mob_btn.style.color      = '#ffffff';
+      mob_btn.style.boxShadow  = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
+    }
+    // mobile phase label
+    const mpl = document.getElementById('mob-hud-phase-label');
+    if (mpl) mpl.textContent = (mode === 'orbital')
+      ? '\u03c6\u1d52\u1d3f\u1d47 orbital'
+      : '\u03c6\u2081 pulsation';
+    // mobile plot label
+    const mplotL = document.getElementById('mob-plot-label');
+    if (mplotL) mplotL.textContent = (mode === 'orbital')
+      ? 'ORBITAL RADIAL VELOCITIES \u00b7 KM S\u207B\u00B9'
+      : 'V-BAND LIGHT CURVE \u00b7 PULSATION PHASE';
   };
 
   // ── resize ────────────────────────────────────────────────────────────────
   function resize() {
-    applyLayout();
-    void simCanvas.offsetHeight; // force layout reflow before measuring
-    const dpr  = window.devicePixelRatio || 1;
+    const dpr = window.devicePixelRatio || 1;
+    void simCanvas.offsetHeight;  // force reflow before measuring (mobile: section height is auto)
     const rect = simCanvas.getBoundingClientRect();
     simCanvas.width  = rect.width  * dpr;
     simCanvas.height = rect.height * dpr;
@@ -444,25 +318,23 @@
   }
 
   // ── plot box in canvas-space pixels ──────────────────────────────────────
+  // on mobile, use the in-flow #mob-plot-zone placeholder; on desktop use #hud-plot-container.
   function getPlotRect() {
-    if (!plotUI) return null;
-    const pr = plotUI.getBoundingClientRect();
+    const el = isMobile()
+      ? document.getElementById('mob-plot-zone')
+      : plotUI;
+    if (!el) return null;
+    const pr = el.getBoundingClientRect();
     const sr = simCanvas.getBoundingClientRect();
     return { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height };
   }
 
   // ── star-zone center in canvas pixels ────────────────────────────────────
-  // On mobile, canvas is a flex item — use its own dimensions directly.
-  // On desktop, #sim-canvas-zone is the transparent spacer in the absolute layout;
-  // reading its bounding rect gives the correct star-area center.
+  // on mobile, reads #mob-canvas-zone (in-flow, between HUD and plot).
+  // on desktop, reads #sim-canvas-zone (transparent flex-grow spacer).
   function getStarZone() {
-    if (isMobile()) {
-      const dpr = window.devicePixelRatio || 1;
-      const w   = simCanvas.width  / dpr;
-      const h   = simCanvas.height / dpr;
-      return { cx: w / 2, cy: h / 2, w, h };
-    }
-    const zone = document.getElementById('sim-canvas-zone');
+    const zoneId = isMobile() ? 'mob-canvas-zone' : 'sim-canvas-zone';
+    const zone = document.getElementById(zoneId);
     if (!zone) return null;
     const zr = zone.getBoundingClientRect();
     const sr = simCanvas.getBoundingClientRect();
@@ -472,6 +344,18 @@
       w:  zr.width,
       h:  zr.height,
     };
+  }
+
+  // ── orbital phase derived from actual position data ───────────────────────
+  // Avoids assuming frame 0 = orbital phi=0 (which may not hold).
+  // Derivation: x1 = a1·cos(θ), z1 = a1·sin(θ)·sin(i)
+  //   → θ = atan2(z1/sin_i, x1) → phi = θ/(2π) mod 1
+  // At phi=0 (θ=0): x1=+a1, z1=0 → rv1=+K1 (receding), rv2=-K2 (approaching) ✓
+  // At phi=0.25 (θ=π/2): x1=0, z1≈a1·sin_i → rv1=rv2=0 ✓
+  function get_orb_phase(i) {
+    const p = data.physics_frames;
+    const theta = Math.atan2(p.z1[i] / SIN_I, p.x1[i]);
+    return ((theta / (2 * Math.PI)) + 1) % 1;
   }
 
   // ── Wrap-safe moveTo/lineTo helper ────────────────────────────────────────
@@ -500,7 +384,8 @@
     const { px, py, pw, ph } = box;
 
     const N      = data.physics_frames.x1.length;
-    const rvI    = Math.round(frameI / N * RV_N) % RV_N;
+    // use position-derived orbital phase so rvI=0 when stars are at same z (x1=+a1)
+    const rvI    = Math.round(get_orb_phase(frameI) * RV_N + RV_N) % RV_N;
     const inset  = 18;
     const padTop = 22;
     const drawH  = ph - padTop - 8;
@@ -593,10 +478,10 @@
     drawCurve(rv1_orb, '#ffe4a0', 2.5);
     drawCurve(rv2,     '#f87171', 2.5);
 
-    // 6. current-phase indicator dots on model curves at center line
+    // 6. Current-phase indicator dots (4 px) — on model curves at center line
     ctx.setLineDash([]);
     [[rv1_orb[rvI], '#ffe4a0'], [rv2[rvI], '#f87171']].forEach(([v, col]) => {
-      ctx.beginPath(); ctx.arc(curX, rvY(v), 7, 0, Math.PI * 2);
+      ctx.beginPath(); ctx.arc(curX, rvY(v), 4, 0, Math.PI * 2);
       ctx.fillStyle = col; ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
     });
@@ -617,10 +502,10 @@
         const ey = Math.max(3, eV * yScale);
         ctx.save();
         ctx.setLineDash([]);
-        ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.85;
         ctx.beginPath(); ctx.moveTo(ox, oy - ey); ctx.lineTo(ox, oy + ey); ctx.stroke();
         ctx.globalAlpha = 1.0;
-        ctx.beginPath(); ctx.arc(ox, oy, 9, 0, Math.PI * 2);
+        ctx.beginPath(); ctx.arc(ox, oy, 6, 0, Math.PI * 2);
         ctx.fillStyle = col; ctx.fill();
         ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.lineWidth = 1.3; ctx.stroke();
         ctx.restore();
@@ -839,7 +724,7 @@
       r1   = p.r1[i];
       mag  = p.v_mag[i];
       teff = safeGet(p.teff, i, null);
-      col1 = (typeof safeGet(p.color1, i, null) === 'string') ? p.color1[i] : teff_to_js_color(teff || 6490);
+      col1 = safeGet(p.color1, i, FALLBACK_COL);
       drawLightCurve(p.v_mag, i);
     } else {
       x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
@@ -847,12 +732,14 @@
       r1   = p.r1[i];
       mag  = p.v_mag[i];
       teff = safeGet(p.teff, i, null);
-      col1 = (typeof safeGet(p.color1, i, null) === 'string') ? p.color1[i] : teff_to_js_color(teff || 6490);
+      col1 = safeGet(p.color1, i, FALLBACK_COL);
       drawRVPlot(i);
     }
 
     // ── Constraint evaluation ─────────────────────────────────────────────
-    const rvI  = Math.round(i / N * RV_N) % RV_N;
+    // rvI derived from actual orbital position (not frame index fraction).
+    // at phi=0 (x1=+a1, z1=0): rv1=+K1, rv2=-K2 — opposite signs, different magnitudes.
+    const rvI  = Math.round(get_orb_phase(i) * RV_N + RV_N) % RV_N;
     const orbOk = rvDelta[rvI] >= RV_THRESH;
     // TRUE pulsation phase from precomputed array: (t[i] % p_puls) / p_puls
     // This cycles ~85.3× per orbit — exactly as the Python export script computes it.
@@ -863,8 +750,9 @@
     updateSimBorder(constraintOk);
 
     // ── Zoom + center ─────────────────────────────────────────────────────
-    // On mobile, canvas is a flow element with its own bounding rect — getStarZone()
-    // returns canvas center directly (w/2, h/2). On desktop use zone bounding rect.
+    // On mobile, #sim-canvas-zone is an actual DOM element (position:relative
+    // layout).  Read its center directly via getStarZone() — no percentage
+    // guessing needed.  On desktop, use the conventional fraction of canvas h.
     let zoom, cx, cy;
     if (isMobile()) {
       const zone = getStarZone();
@@ -908,10 +796,13 @@
       // rvDelta[round(j/N * RV_N)] — the same mapping used everywhere else,
       // so the coloring is consistent with the RV plot and constraint readout.
       if (showConstraints) {
+        // color each arc segment by actual orbital phase (position-derived, not frame fraction).
+        // green when rvDelta ≥ RV_THRESH — i.e. |cos(θ)| ≥ 40/85 ≈ 0.47
+        // (roughly the two 23%-wide windows centered at θ=0 and θ=π).
         ctx.save(); ctx.lineWidth = 3.5;
         for (let j = 0; j < N; j++) {
           const jNext = (j + 1) % N;
-          const rvIdx = Math.round(j / N * RV_N) % RV_N;
+          const rvIdx = Math.round(get_orb_phase(j) * RV_N + RV_N) % RV_N;
           ctx.beginPath();
           ctx.strokeStyle = rvDelta[rvIdx] >= RV_THRESH
             ? 'rgba(134,239,172,0.65)'
@@ -974,20 +865,25 @@
       drawConstraintBadge(cx, cy, constraintOk, orbOk, pulsOk, pulsPhase, rvDeltaVal);
     }
 
-    // ── HUD ───────────────────────────────────────────────────────────────
-    if (hud.mag)  hud.mag.innerText  = mag.toFixed(1);
-    if (hud.teff) hud.teff.innerText = teff !== null ? `${Math.round(teff)} K` : '~6490 K';
-    if (hud.rad)  hud.rad.innerText  = `${r1.toFixed(1)} R\u2609`;
+    // ── HUD — update both desktop and mobile nodes ───────────────────────
+    const teffStr  = teff !== null ? `${Math.round(teff)} K` : '~6490 K';
+    const radStr   = `${r1.toFixed(1)} R\u2609`;
+    const magStr   = mag.toFixed(1);
+    // orbital mode: show phi_orb = position-derived phase (same as rvI/RV_N)
+    // pulsation mode: show true pulsation phase
+    const displayPhase = currentMode === 'orbital' ? get_orb_phase(i) : pulsPhase;
+    const phaseStr = displayPhase.toFixed(3);
+    const phaseCol = showConstraints ? (constraintOk ? COL_OK : COL_WARN) : COL_PHASE_DEFAULT;
 
-    if (hud.phase) {
-      // Orbital mode: show orbital phase (i/N, 0→1 per orbit)
-      // Pulsation mode: show true pulsation phase from pulsPhaseArr
-      const displayPhase = currentMode === 'orbital' ? (i / N) : pulsPhase;
-      hud.phase.innerText   = displayPhase.toFixed(3);
-      hud.phase.style.color = showConstraints
-        ? (constraintOk ? COL_OK : COL_WARN)
-        : COL_PHASE_DEFAULT;
-    }
+    if (hud.mag)   hud.mag.innerText  = magStr;
+    if (hud.teff)  hud.teff.innerText = teffStr;
+    if (hud.rad)   hud.rad.innerText  = radStr;
+    if (hud.phase) { hud.phase.innerText = phaseStr; hud.phase.style.color = phaseCol; }
+
+    if (mob.mag)   mob.mag.innerText  = magStr;
+    if (mob.teff)  mob.teff.innerText = teffStr;
+    if (mob.rad)   mob.rad.innerText  = radStr;
+    if (mob.phase) { mob.phase.innerText = phaseStr; mob.phase.style.color = phaseCol; }
 
     requestAnimationFrame(animate);
   }
