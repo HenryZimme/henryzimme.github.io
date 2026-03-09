@@ -880,48 +880,78 @@
 
     /* ── #cepheid-sim mobile responsive ─────────────────────────────────────── */
     @media (max-width: 740px) {
-      /* Give the sim section much more vertical room so every element has space */
+      /* Give the sim section enough height so each zone has its own vertical room:
+         ┌─────────────────────┐  ← top: description + HUD (~35%)
+         │  Live Simulation    │
+         │  OGLE-LMC-CEP-1347 │
+         │  [HUD table]        │
+         ├─────────────────────┤  ← middle: star animation canvas (~30%)
+         │  ·  ·  ·  ★  ·  ·  │
+         │       ●  ·  ·  ·    │
+         ├─────────────────────┤  ← bottom: RV/light-curve plot + buttons (~35%)
+         │  [plot]             │
+         │  ORBITAL  PULSATION │
+         └─────────────────────┘
+         260vw ≈ 975px on a 375px screen, giving comfortable room for all three zones.
+      */
       #cepheid-sim {
         height: auto !important;
         min-height: 260vw !important;
       }
-      /* ui-layer: stack all content top-to-bottom */
+
+      /* ui-layer spans the full section; space-between places the top-row group
+         at the top and the bottom-row group at the bottom.  Stars animate in the
+         clear space in between. */
       #ui-layer {
         position: absolute !important;
         inset: 0 !important;
-        justify-content: flex-start !important;
-        padding: 1.25rem 1rem 2rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding: 1.25rem 1rem 1.75rem !important;
         gap: 0 !important;
       }
-      /* Top header row: stack description + HUD vertically */
+
+      /* Top header row: stack description + HUD vertically, no side-by-side */
       #ui-layer > div:first-child {
+        display: flex !important;
         flex-direction: column !important;
         gap: 0.75rem !important;
         align-items: stretch !important;
         flex-shrink: 0 !important;
       }
-      /* Description block: full width */
+
+      /* Description block: full width; truncate the long italic paragraph to
+         keep the top zone short enough to leave the star zone clear */
       #ui-layer > div:first-child > div:first-child {
         max-width: 100% !important;
       }
-      /* HUD table: full width, lose fixed 250px */
+      /* Hide the long italic paragraph on mobile — it's a lot of text in a tiny space */
+      #ui-layer > div:first-child > div:first-child > p[style*="italic"] {
+        display: none !important;
+      }
+
+      /* HUD table: full width, no fixed 250px */
       #hud-table {
         width: 100% !important;
         flex-shrink: 0 !important;
         box-sizing: border-box !important;
       }
-      /* Plot + buttons pushed to bottom of tall section */
+
+      /* Bottom row: plot + buttons sit at the bottom; no margin-top:auto needed
+         because space-between already handles the gap */
       #ui-layer > div:last-child {
-        margin-top: auto !important;
         flex-shrink: 0 !important;
         width: 100% !important;
         align-items: stretch !important;
       }
-      /* RV plot shorter on mobile */
+
+      /* RV / light-curve plot: adequate height on mobile */
       #hud-plot-container {
         height: 110px !important;
         max-width: 100% !important;
       }
+
       /* Section heading: push below mobile nav (~54px tall) */
       .section-heading { top: 56px; }
     }
