@@ -36,6 +36,21 @@
       z-index: 0;
     }
 
+    /* sim-canvas-zone: transparent spacer div between the top UI and bottom UI
+       inside #ui-layer. The canvas (position:absolute; inset:0) shows through
+       this zone. flex: 1 1 auto lets it absorb all remaining height so the
+       bottom-row is pushed to the bottom of the section. */
+    #sim-canvas-zone {
+      flex: 1 1 auto;
+      min-height: 80px;
+      pointer-events: none;
+    }
+
+    /* Override the inline justify-content: space-between on #ui-layer.
+       With a flex-grow spacer (#sim-canvas-zone) we want flex-start so the
+       spacer drives the layout, not space-between's equal-gap algorithm. */
+    #ui-layer { justify-content: flex-start !important; }
+
     /* tooltip */
     #star-tooltip {
       position: fixed;
@@ -878,81 +893,82 @@
       .book-spine.active { width: 150px; }
     }
 
-    /* ── #cepheid-sim mobile responsive ─────────────────────────────────────── */
+    /* ── #cepheid-sim mobile: document-flow layout ──────────────────────────
+       On mobile we switch #ui-layer from position:absolute to position:relative
+       so the section's height is driven by content (not a fixed 100vh/260vw).
+       The canvas (position:absolute; inset:0 within the section) expands to fill
+       whatever height the content demands — exactly matching the layout.
+       Zones:
+         #sim-top        — description + HUD  (~natural height)
+         #sim-canvas-zone — explicit star-animation zone (65vw tall)
+         #sim-bottom     — RV plot + buttons  (~natural height)
+    ──────────────────────────────────────────────────────────────────────── */
     @media (max-width: 740px) {
-      /* Give the sim section enough height so each zone has its own vertical room:
-         ┌─────────────────────┐  ← top: description + HUD (~35%)
-         │  Live Simulation    │
-         │  OGLE-LMC-CEP-1347 │
-         │  [HUD table]        │
-         ├─────────────────────┤  ← middle: star animation canvas (~30%)
-         │  ·  ·  ·  ★  ·  ·  │
-         │       ●  ·  ·  ·    │
-         ├─────────────────────┤  ← bottom: RV/light-curve plot + buttons (~35%)
-         │  [plot]             │
-         │  ORBITAL  PULSATION │
-         └─────────────────────┘
-         260vw ≈ 975px on a 375px screen, giving comfortable room for all three zones.
-      */
+      /* Section: let content determine height; canvas will fill it */
       #cepheid-sim {
         height: auto !important;
-        min-height: 260vw !important;
+        overflow: hidden !important;
       }
 
-      /* ui-layer spans the full section; space-between places the top-row group
-         at the top and the bottom-row group at the bottom.  Stars animate in the
-         clear space in between. */
+      /* ui-layer: leave the absolute flow, use flex column with natural heights.
+         Override every part of `inset: 0` individually so nothing stretches. */
       #ui-layer {
-        position: absolute !important;
-        inset: 0 !important;
+        position: relative !important;
+        top: auto !important; right: auto !important;
+        bottom: auto !important; left: auto !important;
+        width: 100% !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: space-between !important;
-        padding: 1.25rem 1rem 1.75rem !important;
-        gap: 0 !important;
+        justify-content: flex-start !important;
+        padding: 1.25rem 1rem 1.25rem !important;
+        gap: 0.75rem !important;
+        pointer-events: none !important;
+        z-index: 20 !important;
+        box-sizing: border-box !important;
       }
 
-      /* Top header row: stack description + HUD vertically, no side-by-side */
-      #ui-layer > div:first-child {
+      /* Top block: stack description + HUD vertically */
+      #sim-top {
         display: flex !important;
         flex-direction: column !important;
         gap: 0.75rem !important;
         align-items: stretch !important;
         flex-shrink: 0 !important;
       }
+      /* Description block: full width */
+      #sim-top > div:first-child { max-width: 100% !important; }
+      /* Hide the long italic paragraph — keeps top zone compact */
+      #sim-top > div:first-child > p { display: none !important; }
 
-      /* Description block: full width; truncate the long italic paragraph to
-         keep the top zone short enough to leave the star zone clear */
-      #ui-layer > div:first-child > div:first-child {
-        max-width: 100% !important;
-      }
-      /* Hide the long italic paragraph on mobile — it's a lot of text in a tiny space */
-      #ui-layer > div:first-child > div:first-child > p[style*="italic"] {
-        display: none !important;
-      }
-
-      /* HUD table: full width, no fixed 250px */
+      /* HUD table: full width */
       #hud-table {
         width: 100% !important;
         flex-shrink: 0 !important;
         box-sizing: border-box !important;
       }
 
-      /* Bottom row: plot + buttons sit at the bottom; no margin-top:auto needed
-         because space-between already handles the gap */
-      #ui-layer > div:last-child {
+      /* Star zone: explicit 65 vw height — canvas shows through since it's
+         position:absolute covering the whole section behind #ui-layer */
+      #sim-canvas-zone {
+        height: 65vw !important;
+        flex-shrink: 0 !important;
+        pointer-events: none !important;
+      }
+
+      /* Bottom block: plot + buttons */
+      #sim-bottom {
         flex-shrink: 0 !important;
         width: 100% !important;
         align-items: stretch !important;
       }
 
-      /* RV / light-curve plot: adequate height on mobile */
+      /* RV / light-curve plot */
       #hud-plot-container {
         height: 110px !important;
         max-width: 100% !important;
       }
 
-      /* Section heading: push below mobile nav (~54px tall) */
+      /* Section heading: below mobile nav */
       .section-heading { top: 56px; }
     }
 
