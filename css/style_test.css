@@ -893,83 +893,42 @@
       .book-spine.active { width: 150px; }
     }
 
-    /* ── #cepheid-sim mobile: document-flow layout ──────────────────────────
-       On mobile we switch #ui-layer from position:absolute to position:relative
-       so the section's height is driven by content (not a fixed 100vh/260vw).
-       The canvas (position:absolute; inset:0 within the section) expands to fill
-       whatever height the content demands — exactly matching the layout.
-       Zones:
-         #sim-top        — description + HUD  (~natural height)
-         #sim-canvas-zone — explicit star-animation zone (65vw tall)
-         #sim-bottom     — RV plot + buttons  (~natural height)
+    /* ── #cepheid-sim mobile layout ─────────────────────────────────────────
+       The desktop UI (#ui-layer) is hidden on mobile.
+       A separate #sim-mobile-ui div with fully stacked, in-flow elements is
+       shown instead — canvas stays position:absolute and fills section height,
+       which is driven by #sim-mobile-ui content (no JS override needed).
     ──────────────────────────────────────────────────────────────────────── */
-    @media (max-width: 740px) {
-      /* Section: let content determine height; canvas will fill it */
-      #cepheid-sim {
-        height: auto !important;
-        overflow: hidden !important;
-      }
-
-      /* ui-layer: leave the absolute flow, use flex column with natural heights.
-         Override every part of `inset: 0` individually so nothing stretches. */
-      #ui-layer {
-        position: relative !important;
-        top: auto !important; right: auto !important;
-        bottom: auto !important; left: auto !important;
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: flex-start !important;
-        padding: 1.25rem 1rem 1.25rem !important;
-        gap: 0.75rem !important;
-        pointer-events: none !important;
-        z-index: 20 !important;
-        box-sizing: border-box !important;
-      }
-
-      /* Top block: stack description + HUD vertically */
-      #sim-top {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-        align-items: stretch !important;
-        flex-shrink: 0 !important;
-      }
-      /* Description block: full width */
-      #sim-top > div:first-child { max-width: 100% !important; }
-      /* Hide the long italic paragraph — keeps top zone compact */
-      #sim-top > div:first-child > p { display: none !important; }
-
-      /* HUD table: full width */
-      #hud-table {
-        width: 100% !important;
-        flex-shrink: 0 !important;
-        box-sizing: border-box !important;
-      }
-
-      /* Star zone: explicit 65 vw height — canvas shows through since it's
-         position:absolute covering the whole section behind #ui-layer */
-      #sim-canvas-zone {
-        height: 65vw !important;
-        flex-shrink: 0 !important;
-        pointer-events: none !important;
-      }
-
-      /* Bottom block: plot + buttons */
-      #sim-bottom {
-        flex-shrink: 0 !important;
-        width: 100% !important;
-        align-items: stretch !important;
-      }
-
-      /* RV / light-curve plot */
-      #hud-plot-container {
-        height: 110px !important;
-        max-width: 100% !important;
-      }
-
-      /* Section heading: below mobile nav */
+    @media (max-width: 700px) {
       .section-heading { top: 56px; }
+
+      #cepheid-sim { height: auto !important; overflow: visible !important; }
+
+      /* hide desktop overlay entirely */
+      #ui-layer { display: none !important; }
+
+      /* show and stack the mobile UI */
+      #sim-mobile-ui {
+        display: flex !important;
+        flex-direction: column;
+        position: relative;
+        z-index: 20;
+        pointer-events: none;
+        padding: 1rem 1rem 1.5rem;
+        box-sizing: border-box;
+        gap: 0.65rem;
+        width: 100%;
+      }
+
+      /* re-enable pointer events on interactive children */
+      #mob-hud,
+      #mob-mode-pill,
+      #mob-mode-pill button,
+      #sim-mobile-ui a { pointer-events: auto; }
+    }
+
+    @media (min-width: 701px) {
+      #sim-mobile-ui { display: none !important; }
     }
 
     /* animations */
