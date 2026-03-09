@@ -10,7 +10,9 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    /* overflow-x on both html AND body: html alone propagates to viewport on some browsers,
+       body alone doesn't prevent fixed-element bleed on Android (Galaxy S8+ canvas sliver fix) */
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       background: var(--bg);
