@@ -264,15 +264,45 @@
       ctx.lineWidth   = 2.5;
       ctx.lineJoin    = 'round';
       for (let k = -nPts / 2; k <= nPts / 2; k++) {
-        const idx = (rvI + Math.round(k) + RV_N) % RV_N;
-        const x   = px + pw / 2 + k * step;
-        const y   = midY - arr[idx] * yScale;
-        k === -nPts / 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
+        const prev = (rvI + Math.round(k) - 1 + RV_N) % RV_N;
+        const x    = px + pw / 2 + k * step;
+        const y    = midY - arr[idx] * yScale;
+        // Use moveTo at the first point OR whenever the circular buffer wraps
+        // (idx suddenly less than prev). Without this guard, lineTo draws a
+        // spurious diagonal line across the plot at the 0/RV_N boundary.
+        const isFirst = k === -nPts / 2;
+        const isWrap  = !isFirst && idx < prev;
+        isFirst || isWrap ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
     };
-    drawCurve(rv1, '#ffe4a0');  // Cepheid — gold
-    drawCurve(rv2, '#f87171');  // Companion — red
+    drawCurve(rv1, '#ffe4a0');  // Cepheid — orbital + pulsation (gold)
+    drawCurve(rv2, '#f87171');  // Companion — orbital only (red)
+
+    // ── Pure orbital reference: K₁·sin(φ) — dashed, lighter gold ────────────
+    // rv1 mixes orbital + pulsation sawtooth; drawing the orbital-only component
+    // as a reference makes the sinusoidal orbital trend visible under the noise.
+    ctx.beginPath();
+    ctx.strokeStyle = '#ffe4a0';
+    ctx.lineWidth   = 1.2;
+    ctx.lineJoin    = 'round';
+    ctx.globalAlpha = 0.42;
+    ctx.setLineDash([4, 6]);
+    for (let k = -nPts / 2; k <= nPts / 2; k++) {
+      const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
+      const prev = (rvI + Math.round(k) - 1 + RV_N) % RV_N;
+      const phi  = idx / RV_N;
+      const v    = K1 * Math.sin(2 * Math.PI * phi);
+      const x    = px + pw / 2 + k * step;
+      const y    = midY - v * yScale;
+      const isFirst = k === -nPts / 2;
+      const isWrap  = !isFirst && idx < prev;
+      isFirst || isWrap ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
 
     // Current-phase dots on cursor
     const curX = px + pw / 2;
@@ -312,11 +342,15 @@
         ctx.globalAlpha = 0.45;
         ctx.setLineDash([2, 5]);
         for (let k = -nPts / 2; k <= nPts / 2; k++) {
-          const phiFrac = ((rvI + Math.round(k) + RV_N) % RV_N) / RV_N;
+          const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
+          const prev = (rvI + Math.round(k) - 1 + RV_N) % RV_N;
+          const phiFrac = idx / RV_N;
           const posIdx  = Math.round(phiFrac * N) % N;
           const x = px + pw / 2 + k * step;
           const y = midY - posArr[posIdx] * yScale;
-          k === -nPts / 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          const isFirst = k === -nPts / 2;
+          const isWrap  = !isFirst && idx < prev;
+          isFirst || isWrap ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
         ctx.stroke();
         ctx.setLineDash([]);
@@ -337,10 +371,11 @@
     // Legend
     ctx.textAlign = 'right';
     ctx.font      = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = '#ffe4a0';              ctx.fillText('Cepheid',            px + pw - inset, py + padTop + 10);
-    ctx.fillStyle = '#f87171';              ctx.fillText('Companion',          px + pw - inset, py + padTop + 22);
+    ctx.fillStyle = '#ffe4a0';               ctx.fillText('Cepheid (orb+puls)',     px + pw - inset, py + padTop + 10);
+    ctx.fillStyle = '#f87171';               ctx.fillText('Companion orbital',      px + pw - inset, py + padTop + 22);
     ctx.fillStyle = 'rgba(134,239,172,0.7)'; ctx.fillText('\u0394RV \u2265 40 km/s', px + pw - inset, py + padTop + 34);
-    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillText('\u22ef pos-derived',       px + pw - inset, py + padTop + 46);
+    ctx.fillStyle = 'rgba(255,228,160,0.5)'; ctx.fillText('- - K\u2081 orbital ref', px + pw - inset, py + padTop + 46);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillText('\u22ef pos-derived',      px + pw - inset, py + padTop + 58);
 
     ctx.restore();
   }
@@ -364,11 +399,15 @@
     ctx.lineJoin    = 'round';
 
     for (let k = -nPts / 2; k <= nPts / 2; k++) {
-      const idx = (frameI + k + magArr.length) % magArr.length;
-      const x   = px + pw / 2 + k * step;
+      const idx  = (frameI + k     + magArr.length) % magArr.length;
+      const prev = (frameI + k - 1 + magArr.length) % magArr.length;
+      const x    = px + pw / 2 + k * step;
       // Inverted: lower mag (brighter) = higher on screen
-      const y   = py + ph / 2 - ((magArr[idx] - midMag) * (ph / magRange) * 0.72);
-      k === -nPts / 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      const y    = py + ph / 2 - ((magArr[idx] - midMag) * (ph / magRange) * 0.72);
+      // moveTo at first point or at circular wrap to avoid spurious diagonal line
+      const isFirst = k === -nPts / 2;
+      const isWrap  = !isFirst && idx < prev;
+      isFirst || isWrap ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.stroke();
     ctx.restore();
@@ -414,14 +453,21 @@
 
     // ── zoom + center ─────────────────────────────────────────────────────
     let zoom, cx, cy;
+    // On mobile (w < 600), the top UI row (description + stacked HUD) occupies
+    // roughly the top 40–45% of the canvas height.  Shift the star centre down
+    // so neither the pulsating Cepheid nor the orbiting pair are hidden under it.
+    const isMobileCanvas = w < 600;
     if (currentMode === 'pulsation') {
       zoom = (Math.min(w, h) * 0.14) / maxR1;
       cx   = w / 2;
-      cy   = h * 0.28;
+      // Mobile: push below stacked description text (~35% from top)
+      cy   = isMobileCanvas ? h * 0.62 : h * 0.28;
     } else {
       zoom = (Math.min(w, h) * 0.32) / bounds.a2;
       cx   = w / 2;
-      cy   = h / 2;
+      // Mobile: push below stacked HUD; orbit radius ≈ 0.32·min(w,h),
+      // so top of orbit clears the HUD panel at ~40% canvas height.
+      cy   = isMobileCanvas ? h * 0.65 : h / 2;
     }
 
     // ── orbital ellipses ─────────────────────────────────────────────────
