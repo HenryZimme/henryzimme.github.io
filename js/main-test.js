@@ -565,15 +565,18 @@ document.addEventListener('click', (e) => {
 // ── resize ───────────────────────────────────────────────────────────────────
 
 function on_resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  // Use clientWidth/Height (excludes scrollbar) rather than innerWidth/Height.
+  // On some Android browsers (e.g. Galaxy S8+) window.innerWidth can slightly exceed
+  // the CSS viewport, causing a 1–2px star-canvas sliver to appear at the right edge.
+  canvas.width  = document.documentElement.clientWidth;
+  canvas.height = document.documentElement.clientHeight;
   reproject();
 }
 
 // ── init: fetch catalog, build stars, start loop ───────────────
 function init() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width  = document.documentElement.clientWidth;
+  canvas.height = document.documentElement.clientHeight;
 
   fetch('data/stars.json')
     .then(r => r.json())
