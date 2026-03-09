@@ -565,9 +565,10 @@ document.addEventListener('click', (e) => {
 // ── resize ───────────────────────────────────────────────────────────────────
 
 function on_resize() {
-  // Use clientWidth/Height (excludes scrollbar) rather than innerWidth/Height.
-  // On some Android browsers (e.g. Galaxy S8+) window.innerWidth can slightly exceed
-  // the CSS viewport, causing a 1–2px star-canvas sliver to appear at the right edge.
+  // offsetWidth/Height reflects the actual CSS-rendered size of the canvas element.
+  // The canvas has `position:fixed; width:100vw; height:100%` so offsetWidth = viewport
+  // width. More reliable than window.innerWidth on Samsung Android (S8+ etc.) where
+  // innerWidth can include a phantom gutter causing a 1–2px star-canvas sliver.
   canvas.width  = document.documentElement.clientWidth;
   canvas.height = document.documentElement.clientHeight;
   reproject();
@@ -612,15 +613,29 @@ document.querySelectorAll('.book-spine').forEach(spine => {
   const spines = Array.from(pool.children);
 
   function layout_shelves() {
+    // Step 1: Move all spines back to pool BEFORE clearing rows_el.
+    // If we call rows_el.innerHTML = '' while spines are grandchildren of rows_el
+    // (spine > shelf-div > rows_el), some browsers destroy the spine nodes even
+    // though `spines` holds external references. Parking spines in pool first makes
+    // them direct children of a stable element, so innerHTML='' only destroys the
+    // now-empty shelf divs we created — never the spine nodes we care about.
+    spines.forEach(s => pool.appendChild(s));
+
     const is_mobile = window.innerWidth <= 740;
     const w_col = is_mobile ? 40 : 46;
     const w_exp = is_mobile ? 150 : 172;
     const gap = 5;
-    const container_w = rows_el.parentElement.clientWidth;
+    // Read width from the section-inner element directly (pool and rows_el share
+    // the same parent). Using offsetWidth avoids any clientWidth quirks caused by
+    // ancestor overflow:hidden.
+    const container_w = rows_el.parentElement.offsetWidth || rows_el.parentElement.clientWidth;
 
-    // max books per row: 1 expanded + (n-1) collapsed + n gaps <= container_w
-    // n*(w_col + gap) <= container_w - w_exp + w_col
-    const n_per_row = Math.max(2, Math.floor((container_w - w_exp + w_col) / (w_col + gap)));
+    // Max books per row: 1 expanded + (n-1) collapsed + n gaps ≤ container_w
+    // n*(w_col + gap) ≤ container_w - w_exp + w_col
+    // Also cap so we always get at least 2 rows; on wide screens the uncapped
+    // formula can fit all books on one shelf.
+    const n_per_row_max_fit = Math.max(2, Math.floor((container_w - w_exp + w_col) / (w_col + gap)));
+    const n_per_row = Math.min(n_per_row_max_fit, Math.max(2, Math.ceil(total / 2)));
 
     const total = spines.length;
     const n_rows = Math.ceil(total / n_per_row);
@@ -644,7 +659,19 @@ document.querySelectorAll('.book-spine').forEach(spine => {
     }
   }
 
-  layout_shelves();
+  // Run layout after a rAF so the CSS layout pass has completed, giving accurate
+  // offsetWidth values. Falls back to 'load' if DOMContentLoaded hasn't fired yet.
+  function run_layout() {
+    requestAnimationFrame(() => {
+      layout_shelves();
+      pool.style.display = 'none';
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run_layout, { once: true });
+  } else {
+    run_layout();
+  }
 
   let resize_timer;
   window.addEventListener('resize', () => {
