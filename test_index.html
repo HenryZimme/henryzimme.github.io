@@ -236,7 +236,7 @@ The project coordinates photometry across four observatories in the Canary Islan
   <div id="ui-layer" style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2.5rem 2.5rem 2rem; z-index: 20;">
 
     <!-- top row: context header left, telemetry right -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;">
+    <div id="sim-top" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;">
 
       <!-- left: section header in site design language -->
       <div style="max-width: 420px;">
@@ -267,8 +267,11 @@ The project coordinates photometry across four observatories in the Canary Islan
       </div>
     </div>
 
+    <!-- transparent spacer: canvas shows through here; grows to push bottom-row down -->
+    <div id="sim-canvas-zone" aria-hidden="true"></div>
+
     <!-- bottom: plot + mode buttons -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;">
+    <div id="sim-bottom" style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;">
       <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 820px; height: 160px; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); position: relative; overflow: hidden; transition: opacity 0.5s; border-radius: 3px;">
         <div data-plot-label style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none; z-index: 10; transition: opacity 0.3s;">ORBITAL RADIAL VELOCITIES · KM S⁻¹</div>
         <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(96,165,250,0.6); box-shadow: 0 0 8px #60a5fa; z-index: 10;"></div>
