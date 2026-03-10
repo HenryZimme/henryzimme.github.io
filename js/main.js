@@ -256,7 +256,7 @@ function draw_background_stars_batched() {
       const twinkle = star_twinkle(s);
       const alpha   = 0.32 + 0.24 * twinkle;
       const b = Math.min(BG_ALPHA_BUCKETS - 1,
-                  Math.floor((alpha - BG_ALPHA_MIN) / BG_ALPHA_RANGE * BG_ALPHA_BUCKETS));
+                  Math.max(0, Math.floor((alpha - BG_ALPHA_MIN) / BG_ALPHA_RANGE * BG_ALPHA_BUCKETS)));
       _bg_buckets[b].push(s);
     }
     // One compound path + one fill() per non-empty (color, alpha-bucket) pair
