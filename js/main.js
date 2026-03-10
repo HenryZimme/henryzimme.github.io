@@ -63,6 +63,9 @@ let time_s = 0;
 let catalog_loaded = false;
 let raf_id = null;
 let hero_visible = true;
+let cursor_is_pointer = false; // track to avoid per-frame style writes
+let last_frame_ts = 0;
+const FRAME_INTERVAL = 1000 / 30; // target 30fps — star field needs no more
 
 // deterministic rng, used only for per-star twinkle phase assignment
 function make_rng(seed) {
@@ -306,6 +309,14 @@ function draw_canvas_legend() {
 // ── main render loop ──────────────────────────────────────────────────────────
 
 function draw(ts) {
+  // throttle to ~30fps — star field doesn't benefit from 60fps
+  if (ts - last_frame_ts < FRAME_INTERVAL) {
+    if (hero_visible) raf_id = requestAnimationFrame(draw);
+    else raf_id = null;
+    return;
+  }
+  last_frame_ts = ts;
+
   time_s = ts * 0.001;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -344,9 +355,9 @@ function draw(ts) {
 
   if (hover_star) {
     draw_hover_ring(hover_star);
-    canvas.style.cursor = 'pointer';
+    if (!cursor_is_pointer) { canvas.style.cursor = 'pointer'; cursor_is_pointer = true; }
   } else {
-    canvas.style.cursor = 'default';
+    if (cursor_is_pointer) { canvas.style.cursor = 'default'; cursor_is_pointer = false; }
   }
 
   draw_canvas_legend();
