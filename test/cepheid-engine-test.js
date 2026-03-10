@@ -764,6 +764,7 @@
     if (!simCanvas || !ctx) return;
     try {
       var r = await fetch('https://www.henryzimmerman.net/data/master_data.json');
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' loading master_data.json');
       data = await r.json();
       var p = data.physics_frames;
       var req = ['v_mag', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'r1'];
