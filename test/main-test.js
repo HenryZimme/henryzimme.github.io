@@ -506,7 +506,7 @@ function init() {
   // start render loop immediately — draw() guards on catalog_loaded internally
   requestAnimationFrame(draw);
 
-  fetch('https://www.henryzimmerman.net/data/stars.json')
+  fetch('/data/stars.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(catalog => {
       build_stars(catalog);
