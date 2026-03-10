@@ -15,7 +15,7 @@
   var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
   var RV_THRESH     = 40;
   var RV_N          = 2400;
-  var TRAIL_LEN     = 80;
+  var TRAIL_LEN     = 200;
   var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
 
   // ── embedded observational data ────────────────────────────────────────────
@@ -116,8 +116,7 @@
   var captionStartTime = null;
   var CAPTIONS = [
     { t: 0,    dur: 4500, text: 'A Cepheid variable — pulsating giant, thermometer of the universe' },
-    { t: 5000, dur: 4500, text: 'Its companion orbits every 58.85 days, tugging the Cepheid\'s spectrum' },
-    { t: 10000,dur: 5000, text: 'The radial velocity curves below encode both stars\' motion — measured from Earth' },
+    { t: 6000, dur: 5000, text: 'The radial velocity curves below encode both stars\' motion — measured from Earth' },
   ];
 
   var ogle_phased    = [];
@@ -335,8 +334,9 @@
     if (!box || !rv1.length) return;
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-    // apply phase_offset so cursor aligns with Pilecki data points
-    var cursor_phi = (orbitPhi + phase_offset) % 1;
+    // apply phase_offset + 0.25 geometric correction (cos parameterization puts phi=0 at quadrature,
+    // but rv model is K·sin(2πφ) which is zero at phi=0; the 0.25 aligns the two conventions)
+    var cursor_phi = (orbitPhi + phase_offset + 0.25) % 1;
     var rvI = Math.round(cursor_phi * RV_N) % RV_N;
 
     var inset = 28, padTop = 26, padBottom = 36;
@@ -466,18 +466,25 @@
     ctx.setLineDash([]);
     ctx.restore();
 
-    // ── tracking dots on cursor ──
-    // Companion: orbital model only
+    // ── tracking dots on cursor — target-sight: outer ring + bright center ──
+    // companion: orbital model only
     var compY = rvToY(rv2[rvI] + GAMMA_SYS);
+    ctx.save();
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#f87171';
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(curX, compY, 5.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#f87171';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-    ctx.lineWidth = 1.2;
+    ctx.arc(curX, compY, 7, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath();
+    ctx.arc(curX, compY, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
-    // Cepheid: orbital model + pulsation RV from Fourier model at current pulsation phase
+    // cepheid: orbital model + pulsation RV at current pulsation phase
     var puls_ph = puls_phi;
     var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
     var v_puls_now = PULS_C[0]
@@ -486,35 +493,45 @@
       + PULS_C[3] * Math.cos(4 * Math.PI * puls_ph)
       + PULS_C[4] * Math.sin(4 * Math.PI * puls_ph);
     var cepY = rvToY(rv1[rvI] + GAMMA_SYS + v_puls_now);
-    ctx.beginPath();
-    ctx.arc(curX, cepY, 5.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffe4a0';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-
-    // y-axis label — rotated "km s⁻¹"
     ctx.save();
-    ctx.translate(px + 10, py + padTop + drawH / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('km s\u207B\u00B9', 0, 0);
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#ffe4a0';
+    ctx.strokeStyle = '#ffe4a0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(curX, cepY, 7, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffe4a0';
+    ctx.beginPath();
+    ctx.arc(curX, cepY, 2.5, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
 
-    // y-axis ticks — brighter, larger font
-    ctx.font = '10px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'right';
-    var ts = 20;
-    for (var tv = Math.ceil(rv_abs_min / ts) * ts; tv <= Math.floor(rv_abs_max / ts) * ts; tv += ts) {
-      var tly = rvToY(tv);
-      if (tly > py + padTop + 6 && tly < py + ph - padBottom - 4)
-        ctx.fillText(tv.toFixed(0), px + inset - 4, tly);
+    // y-axis label and ticks — hidden on mobile to prevent overlap with plot
+    if (!getStarArea().mobile) {
+      // y-axis label — rotated "km s⁻¹"
+      ctx.save();
+      ctx.translate(px + 10, py + padTop + drawH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.font = '9px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('km s\u207B\u00B9', 0, 0);
+      ctx.restore();
+
+      // y-axis ticks — brighter, larger font
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      var ts = 20;
+      for (var tv = Math.ceil(rv_abs_min / ts) * ts; tv <= Math.floor(rv_abs_max / ts) * ts; tv += ts) {
+        var tly = rvToY(tv);
+        if (tly > py + padTop + 6 && tly < py + ph - padBottom - 4)
+          ctx.fillText(tv.toFixed(0), px + inset - 4, tly);
+      }
     }
 
     // x-axis phase labels
@@ -712,7 +729,7 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  var ORBIT_DURATION_S  = 40.0; // wall-clock seconds per simulated orbit
+  var ORBIT_DURATION_S  = 120.0; // wall-clock seconds per simulated orbit
   var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
   // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
   // P_puls/P_orb = 0.69001/58.85 ≈ 0.01172 → cycle takes 40 * 0.01172 ≈ 0.469s
@@ -1067,7 +1084,7 @@
         if (!el) return;
         var t0 = idx * 3000; // each line starts 3s after the previous
         loadTimers.push(setTimeout(function() { el.style.opacity = '1'; }, t0));
-        loadTimers.push(setTimeout(function() { el.style.opacity = '0'; }, t0 + 800));
+        loadTimers.push(setTimeout(function() { el.style.opacity = '0'; }, t0 + 2400));
       });
 
       var scriptEl = document.querySelector('script[data-boot-json]');
