@@ -102,7 +102,8 @@
   // ── state ──────────────────────────────────────────────────────────────────
   var data        = null;
   var currentMode = 'orbital';
-  var frameIdx    = 0;
+  var frameIdx    = 0;      // orbital frame index
+  var pulsTime    = 0;      // pulsation elapsed time in days
   var maxR1       = 1;
 
   var rv1 = [], rv2 = [], rvDelta = [];
@@ -604,8 +605,8 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  var ORBIT_DURATION_S  = 20.0; // seconds per simulated orbit (wall clock)
-  var PULS_DURATION_S   = 10.0; // seconds per simulated orbit in pulsation mode
+  var ORBIT_DURATION_S = 20.0; // wall-clock seconds per simulated orbit
+  var PULS_DURATION_S  = 8.0;  // wall-clock seconds per simulated pulsation cycle
 
   function animate(now) {
     if (!data || !data.physics_frames) return;
@@ -621,10 +622,18 @@
     var dt_ms = Math.min(now - lastTime, 100);
     lastTime = now;
 
-    var duration_s = currentMode === 'pulsation' ? PULS_DURATION_S : ORBIT_DURATION_S;
-    frameIdx += (dt_ms / 1000) / duration_s * p.x1.length;
-
-    var i = Math.floor(frameIdx) % p.x1.length;
+    var i;
+    if (currentMode === 'pulsation') {
+      // advance pulsTime in days: one pulsation cycle per PULS_DURATION_S seconds
+      pulsTime += (dt_ms / 1000) / PULS_DURATION_S * P_PULS;
+      // map pulsation time to frame index: one pulsation cycle = Np frames
+      var Np = Math.round(P_PULS / ((data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120));
+      i = Math.floor((pulsTime / P_PULS) * Np) % p.x1.length;
+    } else {
+      // advance frameIdx: one full orbit (N frames) per ORBIT_DURATION_S seconds
+      frameIdx += (dt_ms / 1000) / ORBIT_DURATION_S * p.x1.length;
+      i = Math.floor(frameIdx) % p.x1.length;
+    }
 
     var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
 
@@ -795,8 +804,7 @@
 
     if (currentMode === 'pulsation') {
       if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> Pulsation phase';
-      var pdt = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
-      var pp = ((i * pdt) % P_PULS) / P_PULS;
+      var pp = (pulsTime % P_PULS) / P_PULS;
       if (hud.phase) hud.phase.innerText = pp.toFixed(3);
     } else {
       if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>orb</sub> Orbital phase';
@@ -813,6 +821,7 @@
     currentMode = mode;
     trail1 = []; trail2 = [];
     lastTime = null; // reset clock to prevent delta spike on mode switch
+    pulsTime = 0;   // restart pulsation phase from zero
 
     document.querySelectorAll('.btn-mode').forEach(function(b) {
       b.style.background = 'transparent';
