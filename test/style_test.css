@@ -206,6 +206,17 @@
       justify-content: space-between;
       align-items: center;
       background: linear-gradient(to bottom, rgba(7,9,26,0.65) 0%, transparent 100%);
+      transition: background 0.3s ease;
+    }
+
+    /* on mobile only: go fully opaque once the user scrolls past the hero */
+    @media (max-width: 740px) {
+      nav.nav--scrolled {
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--panel-border);
+      }
     }
 
     .nav-name {
@@ -553,6 +564,11 @@
 
     @media (max-width: 740px) {
       .writing-item { grid-template-columns: 1fr; gap: 8px; }
+    }
+
+    /* mobile sticky heading must clear the fixed nav bar (~57px) */
+    @media (max-width: 740px) {
+      .section-heading { top: 60px; }
     }
 
     /* highlights */
@@ -951,7 +967,7 @@
       border-radius: 1px;
     }
     
-    /* individual book spine */
+    /* individual book spine — base height; JS overrides per content length */
     .book-spine {
       position: relative;
       flex-shrink: 0;
@@ -977,28 +993,6 @@
       transform: translateY(-8px);
       z-index: 2;
     }
-
-    /* vary heights per book for shelf realism */
-    .book-spine:nth-child(1)  { height: 230px; }
-    .book-spine:nth-child(2)  { height: 210px; }
-    .book-spine:nth-child(3)  { height: 225px; }
-    .book-spine:nth-child(4)  { height: 215px; }
-    .book-spine:nth-child(5)  { height: 238px; }
-    .book-spine:nth-child(6)  { height: 208px; }
-    .book-spine:nth-child(7)  { height: 228px; }
-    .book-spine:nth-child(8)  { height: 203px; }
-    .book-spine:nth-child(9)  { height: 212px; }
-    .book-spine:nth-child(10) { height: 232px; }
-    .book-spine:nth-child(11)  { height: 240px; }
-    .book-spine:nth-child(12)  { height: 202px; }
-    .book-spine:nth-child(13)  { height: 235px; }
-    .book-spine:nth-child(14)  { height: 205px; }
-    .book-spine:nth-child(15)  { height: 238px; }
-    .book-spine:nth-child(16)  { height: 208px; }
-    .book-spine:nth-child(17)  { height: 228px; }
-    .book-spine:nth-child(18)  { height: 215px; }
-    .book-spine:nth-child(19)  { height: 212px; }
-    .book-spine:nth-child(20) { height: 222px; }
 
     /* subtle tint variation per book */
     .book-spine:nth-child(odd)  { background: rgba(196,162,88,0.04); }
