@@ -7,14 +7,15 @@
   var P_ORB_D       = 58.85;
   var P_ORB_S       = P_ORB_D * 86400;
   var P_PULS        = 0.69001; // days
-  var T0_ORB        = 2459000.0; // orbital reference epoch HJD
+  var T0_ORB        = 2459050.0; // orbital reference epoch HJD (Pilecki+ 2022 Table 1)
+  var T0_PULS       = 2459510.39765; // pulsation reference epoch HJD (chi2 fit to Pilecki RVs)
   var SIN_I         = Math.sin(57 * Math.PI / 180);
-  var K1            = (2 * Math.PI * 42 * R_SUN_KM * SIN_I) / P_ORB_S;
-  var K2            = (2 * Math.PI * 76 * R_SUN_KM * SIN_I) / P_ORB_S;
+  var K1            = 28.5;   // km/s (Pilecki+ 2022 Table 1)
+  var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
   var RV_THRESH     = 40;
   var RV_N          = 2400;
   var TRAIL_LEN     = 40;
-  var GAMMA_SYS     = 240.4; // km/s systemic velocity
+  var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
 
   // ── embedded observational data ────────────────────────────────────────────
   // 187 OGLE-IV V-band observations [hjd-2450000, v_mag, err]
@@ -106,6 +107,7 @@
 
   var rv1 = [], rv2 = [], rvDelta = [];
   var rv_abs_min = 0, rv_abs_max = 0;
+  var v_puls_cycle = [];
 
   var ogle_phased    = [];
   var pilecki_phased = [];
@@ -166,36 +168,38 @@
   function buildRV() {
     rv1 = []; rv2 = []; rvDelta = [];
 
+    // one pulsation cycle of v_puls via central finite differences on r1
     var r1arr = data.physics_frames.r1;
-    var N = r1arr.length;
     var dt = (data.metadata && data.metadata.dt)
       ? data.metadata.dt
       : (Array.isArray(data.physics_frames.t) && data.physics_frames.t.length > 1
           ? data.physics_frames.t[1] - data.physics_frames.t[0]
           : P_PULS / 120);
     var conv = R_SUN_KM / 86400;
+    var Np = Math.round(P_PULS / dt); // frames per pulsation cycle
 
-    // pulsation velocity from r1 finite differences
-    var v_puls = [];
-    for (var i = 0; i < N; i++) {
-      var prev = (i - 1 + N) % N;
-      var next = (i + 1) % N;
-      v_puls.push(((r1arr[next] - r1arr[prev]) / (2 * dt)) * conv);
+    // build v_puls over one cycle, scaled to 15 km/s peak (Pilecki+ right panel)
+    var v_raw = [];
+    for (var i = 0; i < Np; i++) {
+      var prev = (i - 1 + Np) % Np;
+      var next = (i + 1) % Np;
+      v_raw.push(((r1arr[next] - r1arr[prev]) / (2 * dt)) * conv);
     }
+    var vmax = 0;
+    for (var vi = 0; vi < Np; vi++) if (Math.abs(v_raw[vi]) > vmax) vmax = Math.abs(v_raw[vi]);
+    v_puls_cycle = v_raw.map(function(v) { return vmax > 0 ? v * 15.0 / vmax : 0; });
 
-    // combined rv on RV_N orbital-phase grid
+    // orbital-only model curves (no pulsation in model lines)
     for (var k = 0; k < RV_N; k++) {
       var phi = k / RV_N;
-      var v_orb = K1 * Math.sin(2 * Math.PI * phi);
-      var pi2 = Math.round(phi * N) % N;
-      var v1 = v_orb + v_puls[pi2];
+      var v1 = K1 * Math.sin(2 * Math.PI * phi);
       var v2 = -K2 * Math.sin(2 * Math.PI * phi);
       rv1.push(v1);
       rv2.push(v2);
       rvDelta.push(Math.abs(v1 - v2));
     }
 
-    // absolute-frame bounds for y-axis
+    // y-axis bounds from model + pulsation-corrected Pilecki points
     rv_abs_min = Infinity; rv_abs_max = -Infinity;
     for (var j = 0; j < RV_N; j++) {
       var a1 = rv1[j] + GAMMA_SYS;
@@ -207,8 +211,13 @@
     }
     for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
       var row = PILECKI_RV_RAW[pi];
-      if (row[1] < rv_abs_min) rv_abs_min = row[1];
-      if (row[1] > rv_abs_max) rv_abs_max = row[1];
+      // pulsation-corrected Cepheid RV for bounds check
+      var hjd_pi = row[0] + 2450000.0;
+      var pp = (((hjd_pi - T0_PULS) % P_PULS) / P_PULS + 1) % 1;
+      var pidx = Math.round(pp * Np) % Np;
+      var rv1_corr = row[1] - v_puls_cycle[pidx];
+      if (rv1_corr < rv_abs_min) rv_abs_min = rv1_corr;
+      if (rv1_corr > rv_abs_max) rv_abs_max = rv1_corr;
       if (row[3] < rv_abs_min) rv_abs_min = row[3];
       if (row[3] > rv_abs_max) rv_abs_max = row[3];
     }
@@ -219,14 +228,13 @@
   // ── phase-fold observational data ──────────────────────────────────────────
 
   function prepareObservationalData() {
-    // 1. raw orbital phases for Pilecki data
+    // 1. phase-fold Pilecki data on orbital period, fine-tune offset from companion
     var raw_phases = [];
     for (var i = 0; i < PILECKI_RV_RAW.length; i++) {
       var hjd = PILECKI_RV_RAW[i][0] + 2450000.0;
       raw_phases.push((((hjd - T0_ORB) % P_ORB_D) / P_ORB_D + 1) % 1);
     }
 
-    // grid search: find offset minimizing companion rv residuals
     var best_d = 0, best_sse = Infinity;
     for (var d = 0; d < 1000; d++) {
       var delta = d / 1000;
@@ -241,17 +249,24 @@
     }
     phase_offset = best_d;
 
-    // store corrected Pilecki data
+    // 2. store pulsation-corrected Cepheid RVs and raw companion RVs
+    var Np = v_puls_cycle.length;
     pilecki_phased = [];
     for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
+      var row = PILECKI_RV_RAW[pi];
+      var hjd_pi = row[0] + 2450000.0;
+      // pulsation phase at this observation using fitted T0_PULS
+      var pp = (((hjd_pi - T0_PULS) % P_PULS) / P_PULS + 1) % 1;
+      var pidx = Math.round(pp * Np) % Np;
+      var rv1_corrected = row[1] - v_puls_cycle[pidx];
       pilecki_phased.push({
         display_phase: (raw_phases[pi] + phase_offset) % 1,
-        rv1: PILECKI_RV_RAW[pi][1],
-        rv2: PILECKI_RV_RAW[pi][3]
+        rv1: rv1_corrected,  // pulsation-subtracted Cepheid RV
+        rv2: row[3]          // companion unchanged
       });
     }
 
-    // 2. OGLE V-band scatter: phase-fold at P_puls, weight by 1/err^2
+    // 3. OGLE V-band scatter phase-folded at P_puls
     var weights = [];
     var max_w = 0;
     for (var oi = 0; oi < OGLE_V_RAW.length; oi++) {
@@ -415,7 +430,7 @@
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = 'rgba(255,255,255,0.14)';
-    ctx.fillText('circular orbit + pulsation, i=57\u00B0 \u00B7 Espinoza-Arancibia & Pilecki 2025', px + inset, py + ph - 8);
+    ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 8);
 
     // legend
     ctx.textAlign = 'right';
@@ -715,12 +730,12 @@
     if (hud.rad) hud.rad.innerText = r1.toFixed(1) + ' R\u2609';
 
     if (currentMode === 'pulsation') {
-      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> pulsation';
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> Pulsation phase';
       var pdt = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
       var pp = ((i * pdt) % P_PULS) / P_PULS;
       if (hud.phase) hud.phase.innerText = pp.toFixed(3);
     } else {
-      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>orb</sub> orbital';
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>orb</sub> Orbital phase';
       if (hud.phase) hud.phase.innerText = (i / p.x1.length).toFixed(3);
     }
 
@@ -763,8 +778,13 @@
   async function init() {
     if (!simCanvas || !ctx) return;
     try {
-      var r = await fetch('/data/master_data.json');
-      if (!r.ok) throw new Error('HTTP ' + r.status + ' loading master_data.json');
+      // stage 1: boot JSON — starts sim immediately
+      var scriptEl = document.querySelector('script[data-boot-json]');
+      var bootUrl  = (scriptEl && scriptEl.dataset.bootJson) || '/data/master_data_boot.json';
+      var fullUrl  = (scriptEl && scriptEl.dataset.fullJson) || '/data/master_data.json';
+
+      var r = await fetch(bootUrl);
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' loading boot JSON');
       data = await r.json();
       var p = data.physics_frames;
       var req = ['v_mag', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'r1'];
@@ -791,6 +811,29 @@
       resize();
       setMode('orbital');
       animate();
+
+      // stage 2: fetch full JSON in background, swap seamlessly
+      fetch(fullUrl).then(function(r2) {
+        if (!r2.ok) return;
+        return r2.json();
+      }).then(function(fullData) {
+        if (!fullData) return;
+        data = fullData;
+        var p2 = data.physics_frames;
+        bounds.minV = 99; bounds.maxV = -99;
+        for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
+          if (p2.v_mag[mi2] < bounds.minV) bounds.minV = p2.v_mag[mi2];
+          if (p2.v_mag[mi2] > bounds.maxV) bounds.maxV = p2.v_mag[mi2];
+        }
+        bounds.a1 = Math.max.apply(null, p2.x1.map(Math.abs));
+        bounds.a2 = Math.max.apply(null, p2.x2.map(Math.abs));
+        maxR1 = Math.max.apply(null, p2.r1);
+        buildRV();
+        prepareObservationalData();
+      }).catch(function(e) {
+        console.warn('Full data load failed, running on boot data:', e);
+      });
+
     } catch (e) {
       console.error('Cepheid sim init error:', e);
     }
