@@ -930,6 +930,7 @@
         pointer-events: auto;
       }
       .sim-params { font-size: 8px; }
+      #rv-legend  { display: none; }
     }
 
     /* bookshelf */
