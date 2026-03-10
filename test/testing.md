@@ -12,7 +12,7 @@ Use the `testing` folder to safely preview website changes before promoting to p
 
 1. Clone repo, navigate to `testing` folder
 2. Upload modified code as test files
-3. Make sure files are hardcoded at [https://www.henryzimmerman.net](https://www.henryzimmerman.net)
+3. Make sure files are referenced with /folder/filename.filetype
 4. Commit/push to view at `https://henryzimmerman.net/test/`
 5. Verify: console errors, responsiveness, links, features
 6. Run local tests (e.g., `python filename_test.py`, `npm test`)
