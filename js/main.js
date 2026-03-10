@@ -100,13 +100,26 @@ function build_stars(catalog) {
   star_data = [];
   const rng = make_rng(31415);
 
-  for (const [ra_deg, dec_deg, vmag, color, name] of catalog) {
+  // sort: named stars first (interactive layer loads first), then by magnitude
+  // ascending (brightest = lowest vmag first) within each group.
+  // O(n log n) once at load time — zero runtime cost.
+  const sorted = catalog.slice().sort((a, b) => {
+    const a_named = a[4] !== null ? 0 : 1;
+    const b_named = b[4] !== null ? 0 : 1;
+    if (a_named !== b_named) return a_named - b_named;
+    return a[2] - b[2]; // vmag ascending (brighter first)
+  });
+
+  for (const [ra_deg, dec_deg, vmag, color, name] of sorted) {
     const pos = project(ra_deg, dec_deg);
     const size = Math.max(0.4, (7.2 - vmag) * 0.38);
     const is_named = name !== null;
     const phase = rng() * Math.PI * 2;
     const freq  = 0.3 + rng() * 1.4;
-    const freq_bucket = Math.round((freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1));
+    // floor bucket + fractional remainder for LUT interpolation
+    const bucket_f = (freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
+    const freq_bucket = Math.min(TWINKLE_BUCKETS - 2, Math.floor(bucket_f)); // -2 so bucket+1 is always valid
+    const freq_lerp   = bucket_f - freq_bucket;
 
     star_data.push({
       x: pos.x,
@@ -118,6 +131,7 @@ function build_stars(catalog) {
       name: is_named ? name : null,
       simbad_id: is_named ? name : null,
       freq_bucket,
+      freq_lerp,
       sin_phase: Math.sin(phase),
       cos_phase: Math.cos(phase),
       featured: false,
@@ -133,9 +147,11 @@ function build_stars(catalog) {
     const obj = featured_objects[fi];
     const pos = project(obj.ra_deg, obj.dec_deg);
     const rng2 = make_rng(99999 + fi * 7);
-    const f_phase = rng2() * Math.PI * 2;
-    const f_freq  = 1.2 + fi * 0.2;
-    const f_bucket = Math.round((f_freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1));
+    const f_phase  = rng2() * Math.PI * 2;
+    const f_freq   = 1.2 + fi * 0.2;
+    const f_bucket_f = (f_freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
+    const f_bucket   = Math.min(TWINKLE_BUCKETS - 2, Math.max(0, Math.floor(f_bucket_f)));
+    const f_lerp     = f_bucket_f - f_bucket;
     star_data.push({
       x: pos.x,
       y: pos.y,
@@ -145,7 +161,8 @@ function build_stars(catalog) {
       mag: 0,
       name: obj.name,
       simbad_id: obj.simbad_id,
-      freq_bucket: Math.min(TWINKLE_BUCKETS - 1, Math.max(0, f_bucket)),
+      freq_bucket: f_bucket,
+      freq_lerp:   f_lerp,
       sin_phase: Math.sin(f_phase),
       cos_phase: Math.cos(f_phase),
       featured: true,
@@ -185,10 +202,15 @@ function update_twinkle_lut() {
   }
 }
 
-// inline twinkle value for a star: uses LUT + pre-stored sin_phase/cos_phase
+// twinkle value for a star: lerps between adjacent LUT buckets using freq_lerp.
+// Each star gets a unique effective frequency within its bin — full variation,
+// zero per-star trig. Cost: 2 LUT lookups + 1 lerp (3 multiplies, 2 adds).
 function star_twinkle(s) {
   const i = s.freq_bucket;
-  return 0.78 + 0.22 * (twinkle_sin_lut[i] * s.cos_phase + twinkle_cos_lut[i] * s.sin_phase);
+  const t = s.freq_lerp;
+  const sin_f = twinkle_sin_lut[i] + t * (twinkle_sin_lut[i + 1] - twinkle_sin_lut[i]);
+  const cos_f = twinkle_cos_lut[i] + t * (twinkle_cos_lut[i + 1] - twinkle_cos_lut[i]);
+  return 0.78 + 0.22 * (sin_f * s.cos_phase + cos_f * s.sin_phase);
 }
 
 
