@@ -58,6 +58,8 @@ const featured_objects = [
 // rendering state
 let star_data = [];
 let bg_stars_by_color = {}; // pre-grouped background stars, built once in build_stars
+let named_stars   = []; // Opt 4: pre-filtered; avoids full scan on touch events
+let featured_stars = []; // Opt 4: pre-filtered; avoids full scan on touch events
 let mouse = { x: -9999, y: -9999 };
 let hover_star = null;
 let time_s = 0;
@@ -180,6 +182,10 @@ function build_stars(catalog) {
     if (!bg_stars_by_color[s.color]) bg_stars_by_color[s.color] = [];
     bg_stars_by_color[s.color].push(s);
   }
+
+  // Opt 4: pre-filtered views — avoids full star_data scan on every touch event
+  featured_stars = star_data.filter(s => s.featured);
+  named_stars    = star_data.filter(s => s.name && !s.featured);
 }
 
 // ── twinkle lookup table ──────────────────────────────────────────────────────
@@ -193,10 +199,15 @@ const FREQ_MIN = 0.3, FREQ_MAX = 1.7;
 const twinkle_sin_lut = new Float32Array(TWINKLE_BUCKETS); // sin(time_s * bucket_freq)
 const twinkle_cos_lut = new Float32Array(TWINKLE_BUCKETS); // cos(time_s * bucket_freq)
 
+// Opt 5: pre-computed per-bucket frequencies — eliminates 64 multiply-adds every frame
+const twinkle_bucket_freqs = new Float32Array(TWINKLE_BUCKETS);
+for (let i = 0; i < TWINKLE_BUCKETS; i++) {
+  twinkle_bucket_freqs[i] = FREQ_MIN + (i / (TWINKLE_BUCKETS - 1)) * (FREQ_MAX - FREQ_MIN);
+}
+
 function update_twinkle_lut() {
   for (let i = 0; i < TWINKLE_BUCKETS; i++) {
-    const f = FREQ_MIN + (i / (TWINKLE_BUCKETS - 1)) * (FREQ_MAX - FREQ_MIN);
-    const a = time_s * f;
+    const a = time_s * twinkle_bucket_freqs[i]; // Opt 5: freq is pre-computed, no multiply-add
     twinkle_sin_lut[i] = Math.sin(a);
     twinkle_cos_lut[i] = Math.cos(a);
   }
@@ -223,17 +234,42 @@ function hex_to_rgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+// Opt 1: alpha-bucket batching — star_twinkle() returns [0.56, 1.0], so
+// alpha = 0.32 + 0.24 * t ∈ [BG_ALPHA_MIN, BG_ALPHA_MAX].
+// Quantising into BG_ALPHA_BUCKETS steps lets us batch all stars at the same
+// (color, alpha) into one compound path, reducing fill() calls 9000 → ~40.
+const BG_ALPHA_BUCKETS = 8;
+const BG_ALPHA_MIN   = 0.32 + 0.24 * 0.56; // ≈ 0.4544
+const BG_ALPHA_MAX   = 0.32 + 0.24 * 1.00; // = 0.56
+const BG_ALPHA_RANGE = BG_ALPHA_MAX - BG_ALPHA_MIN;
+// Pre-allocated bucket arrays — cleared each frame with .length = 0, no GC churn
+const _bg_buckets = Array.from({ length: BG_ALPHA_BUCKETS }, () => []);
+
 // batched background star drawing — uses pre-grouped color buckets built at catalog load.
 // Sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
 function draw_background_stars_batched() {
   const TWO_PI = Math.PI * 2;
   for (const color in bg_stars_by_color) {
-    ctx.fillStyle = color;
+    // Distribute this color's stars into alpha buckets
+    for (let b = 0; b < BG_ALPHA_BUCKETS; b++) _bg_buckets[b].length = 0;
     for (const s of bg_stars_by_color[color]) {
       const twinkle = star_twinkle(s);
-      ctx.globalAlpha = 0.32 + 0.24 * twinkle;
+      const alpha   = 0.32 + 0.24 * twinkle;
+      const b = Math.min(BG_ALPHA_BUCKETS - 1,
+                  Math.floor((alpha - BG_ALPHA_MIN) / BG_ALPHA_RANGE * BG_ALPHA_BUCKETS));
+      _bg_buckets[b].push(s);
+    }
+    // One compound path + one fill() per non-empty (color, alpha-bucket) pair
+    ctx.fillStyle = color;
+    for (let b = 0; b < BG_ALPHA_BUCKETS; b++) {
+      const group = _bg_buckets[b];
+      if (!group.length) continue;
+      ctx.globalAlpha = BG_ALPHA_MIN + (b + 0.5) / BG_ALPHA_BUCKETS * BG_ALPHA_RANGE;
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.size, 0, TWO_PI);
+      for (const s of group) {
+        ctx.moveTo(s.x + s.size, s.y); // moveTo avoids connecting lines between arcs
+        ctx.arc(s.x, s.y, s.size, 0, TWO_PI);
+      }
       ctx.fill();
     }
   }
@@ -264,8 +300,8 @@ function draw_named_star(s) {
 
 function draw_featured_star(s) {
   const is_pipeline = s.obj_data && s.obj_data.pipeline;
-  // featured stars use the LUT-based twinkle as their pulse
-  const pulse = star_twinkle(s);
+  // Bug 1: star_twinkle returns [0.56, 1.0]; remap to [0, 1] for correct pulse range
+  const pulse = (star_twinkle(s) - 0.56) / 0.44;
   const glow_r = 16 + pulse * 5;
   const c = s.color;
   const glow_alpha = is_pipeline ? 0.22 : 0.45;
@@ -440,11 +476,25 @@ function draw(ts) {
 
 // ── interaction ───────────────────────────────────────────────────────────────
 
+// Bug 2 / Opt 7: cache hero element + derived measurements so neither
+// getElementById nor getBoundingClientRect runs on every mousemove or scroll.
+// hero_rect_cache is refreshed on scroll (layout already dirty) and resize.
+// hero_scroll_bottom is stable between resizes — uses offsetTop + offsetHeight.
+let hero_el         = null;
+let hero_rect_cache = null;  // viewport-relative rect for canvas_exposed_at
+let hero_scroll_bottom = 0;  // doc-absolute bottom edge for scroll spy
+const nav_el = document.querySelector('nav');
+
+function refresh_hero_cache() {
+  if (!hero_el) hero_el = document.getElementById('hero');
+  hero_rect_cache    = hero_el.getBoundingClientRect();
+  hero_scroll_bottom = hero_el.offsetTop + hero_el.offsetHeight; // stable until resize
+}
+
 function canvas_exposed_at(x, y) {
-  // canvas is only interactable when the cursor is over #hero,
-  // the only section without an opaque background panel
-  const rect = document.getElementById('hero').getBoundingClientRect();
-  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  // Bug 2: use cached rect — no forced reflow on every mousemove
+  const r = hero_rect_cache;
+  return r !== null && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
 
 function on_mouse_move(e) {
@@ -502,11 +552,10 @@ function on_touch_start(e) {
   mouse.x = tx;
   mouse.y = ty;
 
-  // check featured stars first (larger tap target)
+  // check featured stars first (larger tap target) — Opt 4: use pre-built array
   let best = null;
   let best_d = 38;
-  for (const s of star_data) {
-    if (!s.featured) continue;
+  for (const s of featured_stars) {
     const dx = tx - s.x, dy = ty - s.y;
     const d = Math.sqrt(dx * dx + dy * dy);
     if (d < best_d) { best_d = d; best = s; }
@@ -518,11 +567,10 @@ function on_touch_start(e) {
     return;
   }
 
-  // fallback: named catalog stars with slightly wider radius than mouse
+  // fallback: named catalog stars with slightly wider radius than mouse — Opt 4: pre-built array
   let best_named = null;
   let best_nd = 22;
-  for (const s of star_data) {
-    if (!s.name || s.featured) continue;
+  for (const s of named_stars) {
     const dx = tx - s.x, dy = ty - s.y;
     const d = Math.sqrt(dx * dx + dy * dy);
     if (d < best_nd) { best_nd = d; best_named = s; }
@@ -595,12 +643,15 @@ function on_resize() {
   canvas.height = window.innerHeight;
   legend_col_w = 0; // remeasure legend on next draw
   reproject();
+  refresh_hero_cache(); // Bug 2 / Opt 7: re-measure after layout change
 }
 
 // ── init: fetch catalog, build stars, start loop ───────────────
 function init() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
+
+  refresh_hero_cache(); // Bug 2 / Opt 7: seed cache before first mousemove or scroll
 
   // pause render loop when hero is off-screen, resume when it returns
   const hero_observer = new IntersectionObserver((entries) => {
@@ -770,9 +821,12 @@ const back_to_top_btn = document.getElementById('back-to-top');
 window.addEventListener('scroll', () => {
   back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
 
-  // mobile only: make nav opaque once user scrolls past the hero section
-  const hero_bottom = document.getElementById('hero').getBoundingClientRect().bottom;
-  document.querySelector('nav').classList.toggle('nav--scrolled', hero_bottom <= 0);
+  // Opt 7: compare scrollY against cached doc-absolute bottom — no getElementById or getBoundingClientRect
+  nav_el.classList.toggle('nav--scrolled', window.scrollY >= hero_scroll_bottom);
+
+  // Bug 2: refresh viewport rect on scroll (layout is already dirty here) so
+  // canvas_exposed_at never calls getBoundingClientRect on mousemove
+  if (hero_el) hero_rect_cache = hero_el.getBoundingClientRect();
 }, { passive: true });
 back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
