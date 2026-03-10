@@ -11,22 +11,22 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:       #050510;
-    --grid:     #10102a;
-    --border:   #1a1a3e;
-    --text:     #b0c0e0;
-    --text-dim: #606090;
-    --cover:    #00efc0;
-    --gap:      #ff1855;
-    --ast:      #ffee00;
-    --earth:    #3a7fd4;
-    --mono:     'JetBrains Mono', monospace;
+    /* site palette — matches index.html chrome */
+    --bg:           #07091a;
+    --gold:         #c4a258;
+    --gold-dim:     rgba(196,162,88,0.25);
+    --text:         #e2ddd4;
+    --text-dim:     rgba(226,221,212,0.72);
+    --panel:        rgba(7,9,26,0.84);
+    --panel-border: rgba(196,162,88,0.18);
+    --blue:         #78a5d2;
+    /* canvas drawing constants (also mirrored as JS vars) */
+    --grid:         #0d0f20;
+    --divider:      rgba(196,162,88,0.12);
+    --mono:         'JetBrains Mono', monospace;
   }
 
-  html {
-    height: 100%;
-    background: var(--bg);
-  }
+  html { height: 100%; background: var(--bg); }
   body {
     width: 100%; height: 100%;
     background: var(--bg);
@@ -35,6 +35,91 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+
+  /* ── site nav ──────────────────────────────────────────────────────────── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    padding: 18px 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(7,9,26,0.96) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  nav a { pointer-events: auto; }
+  .nav-name {
+    font-family: 'EB Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .nav-name:hover { color: var(--gold); }
+  .nav-back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.10em;
+    color: var(--text-dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 2px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-back:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+  /* ── info panel — grid: subtitle full-width, then body | note ──────────── */
+  #info-panel {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    grid-template-rows: auto auto;
+    column-gap: 32px;
+    row-gap: 10px;
+    padding: 68px 44px 18px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--panel-border);
+  }
+  #info-subtitle {
+    grid-column: 1 / -1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.09em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  #info-body {
+    grid-column: 1;
+    grid-row: 2;
+    font-family: 'Spectral', serif;
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  #info-note {
+    grid-column: 2;
+    grid-row: 2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.03em;
+    line-height: 1.65;
+    color: var(--text-dim);
+    opacity: 0.7;
+    align-self: end;
+  }
+
+  /* ── sim wrapper ───────────────────────────────────────────────────────── */
+  #sim-wrap {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
   }
 
   #canvas {
@@ -49,35 +134,37 @@
     position: absolute;
     top: 0;
     width: 1px;
-    background: var(--border);
+    background: var(--divider);
     pointer-events: none;
   }
 
-  /* ── header strip ─────────────────────────────────────────────────────── */
+  /* ── sim header strip (asteroid id + coordinate label) ─────────────────── */
   #header {
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 36px;
+    height: 44px;
     display: flex;
     align-items: center;
-    padding: 0 16px;
-    background: rgba(5,5,16,0.85);
-    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    background: rgba(7,9,26,0.7);
+    border-bottom: 1px solid var(--panel-border);
     pointer-events: none;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
     z-index: 10;
   }
   #header-title {
-    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
     font-weight: 500;
-    color: var(--text);
+    color: var(--text-dim);
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   #header-right {
     margin-left: auto;
-    font-size: 10px;
-    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: rgba(226,221,212,0.40);
     letter-spacing: 0.08em;
   }
 
@@ -85,14 +172,14 @@
   #controls {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 48px;
+    height: 46px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 0 14px;
-    background: rgba(5,5,16,0.92);
-    border-top: 1px solid var(--border);
-    backdrop-filter: blur(4px);
+    gap: 5px;
+    padding: 0 16px;
+    background: rgba(7,9,26,0.92);
+    border-top: 1px solid var(--panel-border);
+    backdrop-filter: blur(6px);
     z-index: 10;
   }
 
@@ -102,147 +189,113 @@
     font-weight: 400;
     color: var(--text-dim);
     background: transparent;
-    border: 1px solid var(--border);
-    padding: 4px 9px;
+    border: 1px solid rgba(226,221,212,0.12);
+    padding: 4px 10px;
     cursor: pointer;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     transition: color 0.12s, border-color 0.12s, background 0.12s;
     white-space: nowrap;
     user-select: none;
   }
-  .spd-btn:hover { color: var(--text); border-color: #2a2a5a; background: rgba(255,255,255,0.03); }
-  .spd-btn.active { color: var(--cover); border-color: rgba(0,239,192,0.35); }
-  .spd-btn.pause-btn { color: var(--gap); border-color: rgba(255,24,85,0.3); }
-  .spd-btn.pause-btn:hover { color: #ff4466; }
+  .spd-btn:hover { color: var(--text); border-color: var(--panel-border); background: rgba(196,162,88,0.04); }
+  .spd-btn.active { color: var(--gold); border-color: var(--gold-dim); }
+  .spd-btn.pause-btn { color: rgba(226,221,212,0.45); border-color: rgba(226,221,212,0.10); }
+  .spd-btn.pause-btn.active { color: #ff6b7a; border-color: rgba(255,24,85,0.3); }
+  .spd-btn.step-btn { color: rgba(226,221,212,0.50); padding: 4px 8px; }
+  .spd-btn.step-btn:hover { color: var(--gold); border-color: var(--gold-dim); background: rgba(196,162,88,0.04); }
 
-  .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+  .sep { width: 1px; height: 18px; background: var(--panel-border); flex-shrink: 0; }
 
+  /* scrubber group: step buttons flank the slider */
   #scrub-wrap {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     padding: 0 4px;
+    min-width: 0;
   }
   #scrub {
     flex: 1;
-    height: 3px;
+    height: 2px;
     appearance: none;
-    background: var(--grid);
+    background: rgba(196,162,88,0.18);
     outline: none;
     cursor: pointer;
     border-radius: 1px;
+    min-width: 0;
   }
   #scrub::-webkit-slider-thumb {
     appearance: none;
-    width: 11px; height: 11px;
-    background: var(--cover);
+    width: 10px; height: 10px;
+    background: var(--gold);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 6px rgba(0,239,192,0.5);
+    box-shadow: 0 0 6px var(--gold-dim);
   }
   #scrub::-moz-range-thumb {
-    width: 11px; height: 11px;
-    background: var(--cover);
+    width: 10px; height: 10px;
+    background: var(--gold);
     border: none;
     border-radius: 50%;
     cursor: pointer;
   }
 
   #date-label {
+    font-family: var(--mono);
     font-size: 10px;
-    color: var(--cover);
+    color: var(--gold);
     letter-spacing: 0.06em;
-    min-width: 130px;
+    min-width: 136px;
     text-align: right;
     white-space: nowrap;
+    opacity: 0.85;
   }
 
-  /* ── sim wrapper — fills remaining height below info panel ────────────── */
-  #sim-wrap {
-    position: relative;
-    flex: 1;
-    overflow: hidden;
-    min-height: 0;
-  }
-
-  /* ── info panel — normal flow block at top of page ─────────────────────── */
-  #info-panel {
-    flex-shrink: 0;
-    padding: 14px 22px 13px;
-    background: var(--bg);
-    border-bottom: 1px solid rgba(0,239,192,0.13);
-    display: flex;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 0;
-    flex-wrap: wrap;
-    row-gap: 4px;
-  }
-  #info-back {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.10em;
-    color: var(--cover);
-    text-decoration: none;
-    text-transform: uppercase;
-    opacity: 0.7;
-    transition: opacity 0.15s;
-    flex-shrink: 0;
-    margin-right: 16px;
-    white-space: nowrap;
-  }
-  #info-back:hover { opacity: 1; }
-  #info-subtitle {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.07em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    flex-shrink: 0;
-    margin-right: 18px;
-    white-space: nowrap;
-  }
-  #info-body {
-    font-family: 'Spectral', serif;
-    font-size: 12px;
-    font-weight: 300;
-    line-height: 1.5;
-    color: var(--text);
-    flex: 1;
-    min-width: 220px;
-    margin-right: 18px;
-  }
-  #info-note {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.03em;
-    line-height: 1.55;
-    color: var(--text-dim);
-    opacity: 0.65;
-    flex-shrink: 0;
-    max-width: 200px;
-  }
-
-  /* ── mobile portrait layout ────────────────────────────────────────────── */
+  /* ── mobile ────────────────────────────────────────────────────────────── */
   @media (max-width: 600px) {
+    /* tighter nav */
+    nav { padding: 13px 18px; }
+
+    /* single-column info panel, note hidden to save space */
     #info-panel {
-      padding: 10px 14px 10px;
-      flex-direction: column;
-      row-gap: 5px;
+      grid-template-columns: 1fr;
+      padding: 52px 18px 14px;
+      row-gap: 7px;
     }
-    #info-body { margin-right: 0; }
-    #info-note  { max-width: none; }
+    #info-subtitle { grid-column: 1; grid-row: 1; }
+    #info-body     { grid-column: 1; grid-row: 2; font-size: 12px; }
+    #info-note     { display: none; }
+
+    /* sim header: hide coordinate label */
     #header-right { display: none; }
+
+    /* controls: remove step buttons, remove Faster/Max speed buttons,
+       tighten padding so Slow/Med/Fast/pause + scrubber + date fits at 390px */
+    #controls {
+      padding: 0 10px;
+      gap: 4px;
+    }
+    .spd-btn.hide-mobile { display: none; }
+    .spd-btn.step-btn    { display: none; }
+    #date-label {
+      min-width: 96px;
+      font-size: 9px;
+    }
   }
+
 
 </style>
 </head>
 <body>
 
+<nav>
+  <a href="index.html" class="nav-name">Henry Zimmerman</a>
+  <a href="index.html#research" class="nav-back">← Back to Research</a>
+</nav>
+
 <div id="info-panel">
-  <a id="info-back" href="/index.html#research">← Back to Research</a>
-  <div id="info-subtitle">Phase Angle &amp; Illumination Geometry</div>
+  <div id="info-subtitle">Phase Angle &middot; Illumination Geometry</div>
   <p id="info-body">To better understand how phase relationships evolve over time, I built this visualization of the asteroid's orbit and illumination geometry. The goal was to see how the mathematical relationships in my analysis functioned spatially — how observational cadence and viewing angle interact in practice, not just on paper. The dial tracks instantaneous phase angle; the lower panel shows nightly observability across a rolling ±7-day window.</p>
   <div id="info-note">Orbital geometry from JPL Horizons ephemeris. Phase angle is the Sun–asteroid–observer angle; values near zero correspond to high brightness and favorable observing conditions.</div>
 </div>
@@ -257,21 +310,19 @@
   <div id="divider"></div>
 
   <div id="controls">
-    <button class="spd-btn step-btn" id="btn-minus-1d">◄◄ 1d</button>
-    <button class="spd-btn step-btn" id="btn-minus-1h">◄ 1h</button>
-    <div class="sep"></div>
     <button class="spd-btn" data-dur="500">Slow</button>
     <button class="spd-btn active" data-dur="100">Med</button>
     <button class="spd-btn" data-dur="20">Fast</button>
-    <button class="spd-btn" data-dur="4">Faster</button>
-    <button class="spd-btn" data-dur="0">Max</button>
+    <button class="spd-btn hide-mobile" data-dur="4">Faster</button>
+    <button class="spd-btn hide-mobile" data-dur="0">Max</button>
     <button class="spd-btn pause-btn" data-dur="-1">⏸</button>
     <div class="sep"></div>
-    <button class="spd-btn step-btn" id="btn-plus-1h">1h ►</button>
-    <button class="spd-btn step-btn" id="btn-plus-1d">1d ►►</button>
-    <div class="sep"></div>
     <div id="scrub-wrap">
+      <button class="spd-btn step-btn" id="btn-minus-1d">◄◄ 1d</button>
+      <button class="spd-btn step-btn" id="btn-minus-1h">◄ 1h</button>
       <input type="range" id="scrub" min="0" step="1" value="0">
+      <button class="spd-btn step-btn" id="btn-plus-1h">1h ►</button>
+      <button class="spd-btn step-btn" id="btn-plus-1d">1d ►►</button>
     </div>
     <span id="date-label">—</span>
   </div>
@@ -297,14 +348,14 @@
   var N       = meta.n_frames;
 
   // ── palette ────────────────────────────────────────────────────────────────
-  var C_BG     = '#050510';
+  var C_BG     = '#07091a';
   var C_COVER  = '#00efc0';
   var C_GAP    = '#ff1855';
   var C_AST    = '#ffee00';
   var C_EARTH  = '#3a7fd4';
-  var C_TEXT   = '#b0c0e0';
-  var C_DIM    = '#606090';
-  var C_GRID   = '#10102a';
+  var C_TEXT   = '#e2ddd4';
+  var C_DIM    = 'rgba(226,221,212,0.45)';
+  var C_GRID   = '#0d0f20';
 
   // ── projection: az=200°, el=28° oblique orthographic ──────────────────────
   // right  = [-sin(az), cos(az), 0]
@@ -330,8 +381,8 @@
   }
 
   // ── layout dimensions (updated on resize) ─────────────────────────────────
-  var HEADER_H  = 36;
-  var CTRL_H    = 48;
+  var HEADER_H  = 44;
+  var CTRL_H    = 46;
   var SCENE_W   = 0;   // left panel width (= W on mobile portrait)
   var SCENE_H   = 0;   // scene panel height (< CONTENT_H on mobile portrait)
   var RIGHT_X   = 0;   // start of right panel
