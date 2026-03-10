@@ -545,7 +545,10 @@ document.querySelectorAll('.book-spine').forEach(spine => {
 
     // max books per row: 2 expanded + (n-2) collapsed + n gaps <= container_w
     // n*(w_col + gap) <= container_w - 2(w_exp + w_col)
-    const n_per_row = Math.max(2, Math.floor(container_w / (w_col + gap * 1.3)));
+    const n_per_row = is_mobile 
+      ? Math.max(2, Math.floor(container_w / (w_col + gap * 1.15)))  // mobile: 5 per row
+      
+      : Math.max(2, Math.floor(container_w / (w_col + gap * 1.05))); // desktop: more generous
 
     const total = spines.length;
     const n_rows = Math.ceil(total / n_per_row);
