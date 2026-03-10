@@ -232,19 +232,18 @@ The project coordinates photometry across four observatories in the Canary Islan
 
   <section id="cepheid-sim" style="position: relative; width: 100%; height: 100vh; background: #000; overflow: hidden; display: block; isolation: isolate;">
 
-  <!-- canvas: always position:absolute. on desktop fills 100vh section.
-       on mobile, section height:auto is driven by #sim-mobile-ui in-flow content. -->
+  <!-- canvas: position:absolute always. desktop: fills 100vh. mobile: fills height driven by #sim-mobile-ui. -->
   <canvas id="simCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s;"></canvas>
 
-  <!-- ── DESKTOP UI (hidden on mobile via CSS) ──────────────────────────── -->
-  <div id="ui-layer" style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; padding: 2.5rem 2.5rem 2rem; z-index: 20;">
+  <!-- ── DESKTOP UI (hidden ≤700px via CSS) ─────────────────────────────── -->
+  <div id="ui-layer" style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2.5rem 2.5rem 2rem; z-index: 20;">
     <div id="sim-top" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;">
       <div style="max-width: 420px;">
         <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 10px 0;">Live Simulation</p>
         <h2 style="font-family: 'EB Garamond', serif; font-size: clamp(22px, 3vw, 34px); font-weight: 400; color: var(--text); margin: 0 0 10px 0; line-height: 1.15;">OGLE-LMC-CEP-1347</h2>
         <div style="height: 1px; background: var(--panel-border); margin-bottom: 14px;"></div>
         <p class="sim-desc-italic" style="font-family: 'Spectral', serif; font-style: italic; font-size: 14.5px; color: var(--text-dim); line-height: 1.72; margin: 0;">
-          The binary Cepheid I spent the past year studying. Built from real Fourier fits to six years of OGLE photometry — the same light curve I used to search for non-radial modes and orbital aliases. Orbital and physical parameters from <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Espinoza-Arancibia &amp; Pilecki (2025, ApJ 981 L35)</a> and <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Pilecki et al. (2022, ApJ 940 L48)</a>.
+          The binary Cepheid I spent the past year studying. Built from real Fourier fits to six years of OGLE photometry &mdash; the same light curve I used to search for non-radial modes and orbital aliases. Orbital and physical parameters from <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Espinoza-Arancibia &amp; Pilecki (2025, ApJ 981 L35)</a> and <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Pilecki et al. (2022, ApJ 940 L48)</a>.
         </p>
       </div>
       <div id="hud-table" style="pointer-events: auto; flex-shrink: 0; background: rgba(7,9,26,0.82); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: 0.75rem; padding: 1.25rem 1.5rem; width: 250px;">
@@ -264,39 +263,35 @@ The project coordinates photometry across four observatories in the Canary Islan
         </div>
       </div>
     </div>
-    <div id="sim-canvas-zone" aria-hidden="true"></div>
+    <!-- transparent flex-grow spacer: JS reads getBoundingClientRect() to center stars here -->
+    <div id="sim-canvas-zone" aria-hidden="true" style="flex: 1 1 auto; min-height: 80px;"></div>
     <div id="sim-bottom" style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;">
       <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 820px; height: 160px; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); position: relative; overflow: hidden; transition: opacity 0.5s; border-radius: 3px;">
-        <div data-plot-label style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none; z-index: 10; transition: opacity 0.3s;">ORBITAL RADIAL VELOCITIES · KM S⁻¹</div>
-        <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(96,165,250,0.6); box-shadow: 0 0 8px #60a5fa; z-index: 10; display: none;"></div>
+        <div data-plot-label style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none; z-index: 10; transition: opacity 0.3s;">ORBITAL RADIAL VELOCITIES &middot; KM S&#x207B;&#xB9;</div>
       </div>
       <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
         <div style="pointer-events: auto; background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 0.2rem; display: flex; gap: 2px;">
           <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">ORBITAL</button>
           <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">PULSATION</button>
         </div>
-        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;· K&#8321; = 30.3 km/s · K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;&middot; K&#8321; = 30.3 km/s &middot; K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
       </div>
     </div>
   </div>
 
-  <!-- ── MOBILE UI (hidden on desktop via CSS) ───────────────────────────────
-       All elements are position:relative in-flow flex children — no overlap.
-       The canvas (position:absolute) fills the section height, which is driven
-       by the total stacked height of this div on mobile.
-       JS draws stars at mob-canvas-zone bounding rect,
-       and RV plot at mob-plot-zone bounding rect.
+  <!-- ── MOBILE UI (hidden >700px via CSS) ──────────────────────────────────
+       All elements are in-flow flex children — structurally impossible to overlap.
+       Canvas (position:absolute; inset:0) fills the section whose height is driven
+       by this block. JS reads mob-canvas-zone and mob-plot-zone bounding rects.
   ──────────────────────────────────────────────────────────────────────── -->
   <div id="sim-mobile-ui" style="display: none;">
-
     <!-- header -->
     <div>
       <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 5px 0;">Live Simulation</p>
       <h2 style="font-family: 'EB Garamond', serif; font-size: clamp(20px, 6vw, 28px); font-weight: 400; color: var(--text); margin: 0; line-height: 1.15;">OGLE-LMC-CEP-1347</h2>
       <div style="height: 1px; background: var(--panel-border); margin-top: 8px;"></div>
     </div>
-
-    <!-- telemetry HUD: separate IDs from desktop -->
+    <!-- HUD: separate IDs from desktop -->
     <div id="mob-hud" style="background: rgba(7,9,26,0.88); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: 0.65rem; padding: 0.7rem 1rem; flex-shrink: 0;">
       <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1;">
         <div style="display: flex; justify-content: space-between; padding: 0.32rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
@@ -313,25 +308,20 @@ The project coordinates photometry across four observatories in the Canary Islan
         </div>
       </div>
     </div>
-
-    <!-- star zone: transparent placeholder, canvas draws here.
-         getStarZone() on mobile reads this bounding rect. -->
+    <!-- star zone: transparent placeholder, canvas draws binary system here -->
     <div id="mob-canvas-zone" style="height: 65vw; width: 100%; flex-shrink: 0;" aria-hidden="true"></div>
-
-    <!-- RV plot zone: transparent placeholder, canvas draws here.
-         getPlotRect() on mobile reads this bounding rect. -->
+    <!-- plot zone: transparent placeholder, canvas draws RV/LC here -->
     <div id="mob-plot-zone" style="height: 120px; width: 100%; flex-shrink: 0; position: relative; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden;">
-      <span id="mob-plot-label" style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none;">ORBITAL RADIAL VELOCITIES · KM S⁻¹</span>
+      <span id="mob-plot-label" style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none;">ORBITAL RADIAL VELOCITIES &middot; KM S&#x207B;&#xB9;</span>
     </div>
-
-    <!-- mode buttons + parameters -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex-shrink: 0;">
-      <div id="mob-mode-pill" style="background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 0.2rem; display: flex; gap: 2px; width: 100%;">
+    <!-- mode buttons -->
+    <div style="display: flex; flex-direction: column; align-items: stretch; gap: 0.4rem; flex-shrink: 0;">
+      <div id="mob-mode-pill" style="background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 0.2rem; display: flex; gap: 2px;">
         <button id="mob-btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.4rem 0; border-radius: 999px; font-size: 10px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; flex: 1;">ORBITAL</button>
         <button id="mob-btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.4rem 0; border-radius: 999px; font-size: 10px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; flex: 1;">PULSATION</button>
       </div>
-      <p style="font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.07em; color: rgba(255,255,255,0.18); margin: 0; text-align: center; text-transform: uppercase;">P&#8338;&#7523;&#7495; = 58.85 d &nbsp;·&nbsp; K&#8321; = 30.3 · K&#8322; = 54.8 km/s &nbsp;·&nbsp; P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
-      <button id="mob-espresso-btn" onclick="window.toggleConstraints()" style="pointer-events: auto; background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 0.5rem 1.8rem; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: rgba(255,255,255,0.45); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; text-transform: uppercase; width: 100%;">ESPRESSO WINDOWS OFF</button>
+      <p style="font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.06em; color: rgba(255,255,255,0.18); margin: 0; text-align: center; text-transform: uppercase;">P&#8338;&#7523;&#7495; = 58.85 d &nbsp;&middot;&nbsp; K&#8321; = 30.3 &middot; K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
+      <button id="mob-espresso-btn" onclick="window.toggleConstraints()" style="background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 0.5rem 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: rgba(255,255,255,0.45); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; text-transform: uppercase; width: 100%;">ESPRESSO WINDOWS OFF</button>
     </div>
   </div>
 
