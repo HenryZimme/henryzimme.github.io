@@ -6,7 +6,7 @@
 <title id="page-title">Asteroid · Heliocentric Orbit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=EB+Garamond:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -23,12 +23,18 @@
     --mono:     'JetBrains Mono', monospace;
   }
 
-  html, body {
+  html {
+    height: 100%;
+    background: var(--bg);
+  }
+  body {
     width: 100%; height: 100%;
     background: var(--bg);
-    overflow: hidden;
     font-family: var(--mono);
     color: var(--text);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   #canvas {
@@ -151,30 +157,124 @@
     text-align: right;
     white-space: nowrap;
   }
+
+  /* ── sim wrapper — fills remaining height below info panel ────────────── */
+  #sim-wrap {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ── info panel — normal flow block at top of page ─────────────────────── */
+  #info-panel {
+    flex-shrink: 0;
+    padding: 14px 22px 13px;
+    background: var(--bg);
+    border-bottom: 1px solid rgba(0,239,192,0.13);
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  #info-back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.10em;
+    color: var(--cover);
+    text-decoration: none;
+    text-transform: uppercase;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+  #info-back:hover { opacity: 1; }
+  #info-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.07em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 18px;
+    white-space: nowrap;
+  }
+  #info-body {
+    font-family: 'Spectral', serif;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--text);
+    flex: 1;
+    min-width: 220px;
+    margin-right: 18px;
+  }
+  #info-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.03em;
+    line-height: 1.55;
+    color: var(--text-dim);
+    opacity: 0.65;
+    flex-shrink: 0;
+    max-width: 200px;
+  }
+
+  /* ── mobile portrait layout ────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    #info-panel {
+      padding: 10px 14px 10px;
+      flex-direction: column;
+      row-gap: 5px;
+    }
+    #info-body { margin-right: 0; }
+    #info-note  { max-width: none; }
+    #header-right { display: none; }
+  }
+
 </style>
 </head>
 <body>
 
-<div id="header">
-  <span id="header-title">— —</span>
-  <span id="header-right">heliocentric orbit · ecliptic j2000</span>
+<div id="info-panel">
+  <a id="info-back" href="/index.html#research">← Back to Research</a>
+  <div id="info-subtitle">Phase Angle &amp; Illumination Geometry</div>
+  <p id="info-body">To better understand how phase relationships evolve over time, I built this visualization of the asteroid's orbit and illumination geometry. The goal was to see how the mathematical relationships in my analysis functioned spatially — how observational cadence and viewing angle interact in practice, not just on paper. The dial tracks instantaneous phase angle; the lower panel shows nightly observability across a rolling ±7-day window.</p>
+  <div id="info-note">Orbital geometry from JPL Horizons ephemeris. Phase angle is the Sun–asteroid–observer angle; values near zero correspond to high brightness and favorable observing conditions.</div>
 </div>
 
-<canvas id="canvas"></canvas>
-<div id="divider"></div>
-
-<div id="controls">
-  <button class="spd-btn" data-dur="500">Slow</button>
-  <button class="spd-btn active" data-dur="100">Medium</button>
-  <button class="spd-btn" data-dur="20">Fast</button>
-  <button class="spd-btn" data-dur="4">Faster</button>
-  <button class="spd-btn" data-dur="0">Max</button>
-  <button class="spd-btn pause-btn" data-dur="-1">⏸</button>
-  <div class="sep"></div>
-  <div id="scrub-wrap">
-    <input type="range" id="scrub" min="0" step="1" value="0">
+<div id="sim-wrap">
+  <div id="header">
+    <span id="header-title">— —</span>
+    <span id="header-right">heliocentric orbit · ecliptic j2000</span>
   </div>
-  <span id="date-label">—</span>
+
+  <canvas id="canvas"></canvas>
+  <div id="divider"></div>
+
+  <div id="controls">
+    <button class="spd-btn step-btn" id="btn-minus-1d">◄◄ 1d</button>
+    <button class="spd-btn step-btn" id="btn-minus-1h">◄ 1h</button>
+    <div class="sep"></div>
+    <button class="spd-btn" data-dur="500">Slow</button>
+    <button class="spd-btn active" data-dur="100">Med</button>
+    <button class="spd-btn" data-dur="20">Fast</button>
+    <button class="spd-btn" data-dur="4">Faster</button>
+    <button class="spd-btn" data-dur="0">Max</button>
+    <button class="spd-btn pause-btn" data-dur="-1">⏸</button>
+    <div class="sep"></div>
+    <button class="spd-btn step-btn" id="btn-plus-1h">1h ►</button>
+    <button class="spd-btn step-btn" id="btn-plus-1d">1d ►►</button>
+    <div class="sep"></div>
+    <div id="scrub-wrap">
+      <input type="range" id="scrub" min="0" step="1" value="0">
+    </div>
+    <span id="date-label">—</span>
+  </div>
 </div>
 
 <!-- data injected by python -->
@@ -232,10 +332,12 @@
   // ── layout dimensions (updated on resize) ─────────────────────────────────
   var HEADER_H  = 36;
   var CTRL_H    = 48;
-  var SCENE_W   = 0;   // left panel width
+  var SCENE_W   = 0;   // left panel width (= W on mobile portrait)
+  var SCENE_H   = 0;   // scene panel height (< CONTENT_H on mobile portrait)
   var RIGHT_X   = 0;   // start of right panel
   var RIGHT_W   = 0;
   var CONTENT_H = 0;   // total canvas height minus header and controls
+  var MOBILE_PORTRAIT = false;
 
   var DIAL_R    = 0;   // phase dial radius in px
   var DIAL_CX   = 0;   // dial center x
@@ -247,6 +349,7 @@
   var TIME_X0   = 0;   // left edge of timeline drawing area
 
   // ── canvas setup ──────────────────────────────────────────────────────────
+  var sim_wrap = document.getElementById('sim-wrap');
   var canvas = document.getElementById('canvas');
   var ctx    = canvas.getContext('2d');
   var dpr    = window.devicePixelRatio || 1;
@@ -279,54 +382,94 @@
   }
 
   function resize() {
-    var W = window.innerWidth;
-    var H = window.innerHeight;
+    var W = sim_wrap.offsetWidth  || window.innerWidth;
+    var H = sim_wrap.offsetHeight || window.innerHeight;
+
+    // re-read dpr so moves between retina/non-retina screens are handled
+    dpr = window.devicePixelRatio || 1;
+
     canvas.width  = W * dpr;
     canvas.height = H * dpr;
     canvas.style.width  = W + 'px';
     canvas.style.height = H + 'px';
-    ctx.scale(dpr, dpr);
+    // setTransform prevents scale from stacking on repeated resize calls
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     CONTENT_H = H - HEADER_H - CTRL_H;
-    SCENE_W   = Math.floor(W * 0.635);
-    RIGHT_X   = SCENE_W + 1;
-    RIGHT_W   = W - RIGHT_X;
+    MOBILE_PORTRAIT = W < 600 && H > W;
 
-    // fit scale to actual projected orbit bounding box with 10% padding
+    var dial_area_h, hud_area_h, time_area_h, time_pad, div;
+
+    if (MOBILE_PORTRAIT) {
+      // portrait: scene on top half, right panel on bottom half
+      SCENE_W   = W;
+      SCENE_H   = Math.floor(CONTENT_H * 0.50);
+      RIGHT_X   = 0;
+      RIGHT_W   = W;
+
+      var rp_h     = CONTENT_H - SCENE_H;
+      dial_area_h  = Math.floor(rp_h * 0.52);
+      hud_area_h   = Math.floor(rp_h * 0.12);
+      time_area_h  = rp_h - dial_area_h - hud_area_h;
+
+      DIAL_R  = Math.min(RIGHT_W * 0.30, dial_area_h * 0.42);
+      DIAL_CX = RIGHT_X + RIGHT_W / 2;
+      DIAL_CY = HEADER_H + SCENE_H + dial_area_h / 2;
+      HUD_Y   = HEADER_H + SCENE_H + dial_area_h;
+      TIME_Y  = HUD_Y + hud_area_h;
+      TIME_H_PX = time_area_h - 8;
+      time_pad  = Math.floor(RIGHT_W * 0.05);
+      TIME_X0   = RIGHT_X + time_pad;
+      TIME_W_PX = RIGHT_W - 2 * time_pad;
+
+      // horizontal divider between scene and right panel
+      div = document.getElementById('divider');
+      div.style.left   = '0';
+      div.style.top    = (HEADER_H + SCENE_H) + 'px';
+      div.style.width  = W + 'px';
+      div.style.height = '1px';
+    } else {
+      SCENE_W   = Math.floor(W * 0.635);
+      SCENE_H   = CONTENT_H;
+      RIGHT_X   = SCENE_W + 1;
+      RIGHT_W   = W - RIGHT_X;
+
+      dial_area_h  = Math.floor(CONTENT_H * 0.48);
+      hud_area_h   = Math.floor(CONTENT_H * 0.10);
+      time_area_h  = CONTENT_H - dial_area_h - hud_area_h;
+
+      DIAL_R  = Math.min(RIGHT_W * 0.38, dial_area_h * 0.42);
+      DIAL_CX = RIGHT_X + RIGHT_W / 2;
+      DIAL_CY = HEADER_H + dial_area_h / 2;
+      HUD_Y   = HEADER_H + dial_area_h;
+      TIME_Y  = HUD_Y + hud_area_h;
+      TIME_H_PX = time_area_h - 12;
+      time_pad  = Math.floor(RIGHT_W * 0.07);
+      TIME_X0   = RIGHT_X + time_pad;
+      TIME_W_PX = RIGHT_W - 2 * time_pad;
+
+      // vertical divider between scene and right panel
+      div = document.getElementById('divider');
+      div.style.left   = SCENE_W + 'px';
+      div.style.top    = HEADER_H + 'px';
+      div.style.width  = '1px';
+      div.style.height = CONTENT_H + 'px';
+    }
+
+    // fit orbit scale: use SCENE_H (not CONTENT_H) so it fits within scene bounds
     var PAD   = 0.90;
     var ob    = compute_orbit_screen_bounds();
     var span_x = ob.max_sx - ob.min_sx;
     var span_y = ob.max_sy - ob.min_sy;
     var scale_x = (SCENE_W  * PAD) / span_x;
-    var scale_y = (CONTENT_H * PAD) / span_y;
+    var scale_y = (SCENE_H  * PAD) / span_y;
     scale = Math.min(scale_x, scale_y);
 
-    // center: map the orbit centroid to the center of the scene panel
+    // center orbit in scene panel
     var ctr_sx = (ob.min_sx + ob.max_sx) / 2;
     var ctr_sy = (ob.min_sy + ob.max_sy) / 2;
     scene_cx = SCENE_W  / 2 - ctr_sx * scale;
-    scene_cy = HEADER_H + CONTENT_H / 2 - ctr_sy * scale;
-
-    // right panel layout
-    var dial_area_h = Math.floor(CONTENT_H * 0.48);
-    var hud_area_h  = Math.floor(CONTENT_H * 0.10);
-    var time_area_h = CONTENT_H - dial_area_h - hud_area_h;
-
-    DIAL_R  = Math.min(RIGHT_W * 0.38, dial_area_h * 0.42);
-    DIAL_CX = RIGHT_X + RIGHT_W / 2;
-    DIAL_CY = HEADER_H + dial_area_h / 2;
-    HUD_Y   = HEADER_H + dial_area_h;
-    TIME_Y  = HUD_Y + hud_area_h;
-    TIME_H_PX = time_area_h - 12;
-    var time_pad = Math.floor(RIGHT_W * 0.07);
-    TIME_X0   = RIGHT_X + time_pad;
-    TIME_W_PX = RIGHT_W - 2 * time_pad;
-
-    // update divider line
-    var div = document.getElementById('divider');
-    div.style.left   = SCENE_W + 'px';
-    div.style.top    = HEADER_H + 'px';
-    div.style.height = CONTENT_H + 'px';
+    scene_cy = HEADER_H + SCENE_H / 2 - ctr_sy * scale;
 
     // update scrub max
     document.getElementById('scrub').max = N - 1;
@@ -378,7 +521,7 @@
       var s = RAW_STARS[i];
       var p = proj_px(s.x, s.y, s.z);
       if (p[0] > -pad && p[0] < SCENE_W + pad &&
-          p[1] > HEADER_H - pad && p[1] < HEADER_H + CONTENT_H + pad) {
+          p[1] > HEADER_H - pad && p[1] < HEADER_H + SCENE_H + pad) {
         star_cache.push({ sx: p[0], sy: p[1], a: s.a });
       }
     }
@@ -463,74 +606,9 @@
   }
 
   function build_timeline_cache() {
-    var W = TIME_W_PX, H = TIME_H_PX;
-    if (W < 4 || H < 4) return;
-
-    timeline_oc = document.createElement('canvas');
-    timeline_oc.width  = W;
-    timeline_oc.height = H;
-    var tc = timeline_oc.getContext('2d');
-
-    // background
-    tc.fillStyle = 'rgba(5,5,20,0.8)';
-    tc.fillRect(0, 0, W, H);
-
-    // layout within the offscreen canvas
-    var PHASE_H = Math.floor(H * 0.40);
-    var NIGHT_H = Math.floor(H * 0.14);
-    var PHASE_Y = Math.floor(H * 0.20);
-    var NIGHT_Y = Math.floor(H * 0.68);
-
-    var gs  = meta.gap_start_ph;
-    var ge  = meta.gap_end_ph;
-
-    for (var fi = 0; fi < N; fi++) {
-      var px      = Math.floor(fi * (W - 1) / (N - 1));
-      var rot_ph  = frm.rot_ph[fi];
-      var in_gap  = rot_ph >= gs && rot_ph < ge;
-      var night   = compute_is_night(fi);
-
-      // phase band: bright if night, dimmed if daytime
-      var a_phase = night ? (in_gap ? 0.88 : 0.60) : (in_gap ? 0.30 : 0.22);
-      if (in_gap) {
-        tc.fillStyle = 'rgba(255,24,85,' + a_phase + ')';
-      } else {
-        tc.fillStyle = 'rgba(0,239,192,' + a_phase + ')';
-      }
-      tc.fillRect(px, PHASE_Y, 1, PHASE_H);
-
-      // night observing band
-      if (night) {
-        tc.fillStyle = 'rgba(0,255,136,0.35)';
-        tc.fillRect(px, NIGHT_Y, 1, NIGHT_H);
-      }
-    }
-
-    // date tick marks — every 15 days, start at d=7 to avoid left-edge clip
-    var date_start  = new Date(meta.date_start + 'T00:00:00Z');
-    var tick_step   = 15;
-    tc.font          = '9px JetBrains Mono, monospace';
-    tc.textAlign     = 'center';
-    tc.fillStyle     = C_DIM;
-    tc.strokeStyle   = 'rgba(96,96,144,0.4)';
-    tc.lineWidth     = 0.7;
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    for (var d = 7; d < meta.n_days - 3; d += tick_step) {
-      var tx = Math.floor(d / (meta.n_days - 1) * (W - 1));
-      tc.beginPath(); tc.moveTo(tx, PHASE_Y - 3); tc.lineTo(tx, PHASE_Y + PHASE_H + 3); tc.stroke();
-      var dt = new Date(date_start.getTime() + d * 86400000);
-      var lbl = months[dt.getUTCMonth()] + ' ' + dt.getUTCDate();
-      tc.fillStyle = C_DIM;
-      tc.fillText(lbl, tx, H - 3);
-    }
-
-    // legend labels
-    tc.textAlign   = 'left';
-    tc.fillStyle   = C_COVER;
-    tc.font = '8px JetBrains Mono, monospace';
-    tc.fillText('coverage', 2, PHASE_Y + PHASE_H + 9);
-    tc.fillStyle = 'rgba(0,255,136,0.7)';
-    tc.fillText('night', 2, NIGHT_Y + NIGHT_H + 9);
+    // timeline_oc is not used for drawing anymore (rolling window is live)
+    // kept as a no-op so resize() calls remain valid
+    timeline_oc = null;
   }
 
   // ── vector helpers ─────────────────────────────────────────────────────────
@@ -688,12 +766,12 @@
     // clip to scene panel
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, HEADER_H, SCENE_W, CONTENT_H);
+    ctx.rect(0, HEADER_H, SCENE_W, SCENE_H);
     ctx.clip();
 
     // background
     ctx.fillStyle = C_BG;
-    ctx.fillRect(0, HEADER_H, SCENE_W, CONTENT_H);
+    ctx.fillRect(0, HEADER_H, SCENE_W, SCENE_H);
 
     // stars
     draw_stars();
@@ -956,7 +1034,7 @@
   // ── timeline drawing ───────────────────────────────────────────────────────
   function draw_timeline(fi) {
     var x0 = TIME_X0;
-    var y0 = TIME_Y + 18;   // push content down to make room for single title
+    var y0 = TIME_Y + 18;
     var W  = TIME_W_PX;
     var H  = TIME_H_PX - 18;
 
@@ -966,22 +1044,82 @@
     ctx.fillRect(RIGHT_X, TIME_Y, RIGHT_W, H + 30);
     ctx.restore();
 
-    // single title
+    // title
     ctx.save();
-    ctx.font      = '9px JetBrains Mono, monospace';
+    ctx.font = '9px JetBrains Mono, monospace';
     ctx.fillStyle = C_DIM; ctx.textAlign = 'left';
-    ctx.fillText('CAMPAIGN COVERAGE \u00b7 OBSERVABILITY', x0, TIME_Y + 12);
+    ctx.fillText('OBSERVABILITY \u00b7 \u00b17 DAYS', x0, TIME_Y + 12);
     ctx.restore();
 
-    // draw precomputed timeline image
-    if (timeline_oc) {
-      ctx.save(); ctx.globalAlpha = 1;
-      ctx.drawImage(timeline_oc, x0, y0, W, H);
-      ctx.restore();
-    }
+    // rolling window: ±7 days in frames (frame_stride_h hours/frame)
+    var W_FRAMES = Math.round(7 * 24 / meta.frame_stride_h);
+    var fi_min   = fi - W_FRAMES;
+    var fi_max   = fi + W_FRAMES;
 
-    // cursor line
-    var cx_t = x0 + Math.floor(fi / (N - 1) * (W - 1));
+    var gs = meta.gap_start_ph;
+    var ge = meta.gap_end_ph;
+
+    var PHASE_H = Math.floor(H * 0.38);
+    var NIGHT_H = Math.floor(H * 0.14);
+    var PHASE_Y = y0 + Math.floor(H * 0.18);
+    var NIGHT_Y = y0 + Math.floor(H * 0.66);
+
+    // draw pixel columns
+    ctx.save();
+    for (var px = 0; px < W; px++) {
+      var fi_f   = fi_min + px * (fi_max - fi_min) / Math.max(W - 1, 1);
+      var fi_i   = Math.round(fi_f);
+      if (fi_i < 0 || fi_i >= N) {
+        ctx.fillStyle = 'rgba(255,255,255,0.02)';
+        ctx.fillRect(x0 + px, PHASE_Y, 1, PHASE_H);
+        continue;
+      }
+      var rot_ph  = frm.rot_ph[fi_i];
+      var in_gap  = rot_ph >= gs && rot_ph < ge;
+      var night   = night_cache[fi_i];
+      var a_phase = night ? (in_gap ? 0.88 : 0.60) : (in_gap ? 0.30 : 0.22);
+      ctx.fillStyle = in_gap ? 'rgba(255,24,85,' + a_phase + ')' : 'rgba(0,239,192,' + a_phase + ')';
+      ctx.fillRect(x0 + px, PHASE_Y, 1, PHASE_H);
+      if (night) {
+        ctx.fillStyle = 'rgba(0,255,136,0.35)';
+        ctx.fillRect(x0 + px, NIGHT_Y, 1, NIGHT_H);
+      }
+    }
+    ctx.restore();
+
+    // date ticks: mark day boundaries that fall in the window
+    ctx.save();
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillStyle = C_DIM;
+    ctx.strokeStyle = 'rgba(96,96,144,0.4)';
+    ctx.lineWidth = 0.7;
+    ctx.textAlign = 'center';
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var date_start = new Date(meta.date_start + 'T00:00:00Z');
+    var frames_per_day = 24 / meta.frame_stride_h;
+    for (var d = 0; d <= meta.n_days; d++) {
+      var fi_d = Math.round(d * frames_per_day);
+      if (fi_d < fi_min || fi_d > fi_max) continue;
+      var tx = Math.round(x0 + (fi_d - fi_min) / (fi_max - fi_min) * (W - 1));
+      ctx.beginPath(); ctx.moveTo(tx, PHASE_Y - 3); ctx.lineTo(tx, PHASE_Y + PHASE_H + 3); ctx.stroke();
+      var dt = new Date(date_start.getTime() + d * 86400000);
+      var lbl = months[dt.getUTCMonth()] + ' ' + dt.getUTCDate();
+      ctx.fillText(lbl, tx, y0 + H - 3);
+    }
+    ctx.restore();
+
+    // legend
+    ctx.save();
+    ctx.font = '8px JetBrains Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = C_COVER;
+    ctx.fillText('coverage', x0 + 2, PHASE_Y + PHASE_H + 9);
+    ctx.fillStyle = 'rgba(0,255,136,0.7)';
+    ctx.fillText('night', x0 + 2, NIGHT_Y + NIGHT_H + 9);
+    ctx.restore();
+
+    // cursor always at center
+    var cx_t = x0 + Math.floor(W / 2);
     ctx.save();
     ctx.strokeStyle = C_AST; ctx.lineWidth = 1.5; ctx.setLineDash([]);
     ctx.beginPath(); ctx.moveTo(cx_t, y0); ctx.lineTo(cx_t, y0 + H); ctx.stroke();
@@ -1065,7 +1203,7 @@
   }
 
   // ── controls ──────────────────────────────────────────────────────────────
-  var btns = document.querySelectorAll('.spd-btn');
+  var btns = document.querySelectorAll('.spd-btn[data-dur]');
   btns.forEach(function (btn) {
     btn.addEventListener('click', function () {
       var dur = parseInt(btn.dataset.dur);
@@ -1075,6 +1213,19 @@
       btn.classList.add('active');
     });
   });
+
+  // step buttons: advance/rewind by 1h or 1d without affecting play state
+  function step_by(delta_frames) {
+    cur_fi = Math.max(0, Math.min(N - 1, cur_fi + delta_frames));
+    hand_angle = -Math.PI/2 + frm.cum_ph[cur_fi] * 2 * Math.PI;
+    draw_frame(cur_fi);
+  }
+  var frames_per_hour = Math.round(1 / meta.frame_stride_h);
+  var frames_per_day  = Math.round(24 / meta.frame_stride_h);
+  document.getElementById('btn-minus-1d').addEventListener('click', function () { step_by(-frames_per_day); });
+  document.getElementById('btn-minus-1h').addEventListener('click', function () { step_by(-frames_per_hour); });
+  document.getElementById('btn-plus-1h').addEventListener('click',  function () { step_by(frames_per_hour); });
+  document.getElementById('btn-plus-1d').addEventListener('click',  function () { step_by(frames_per_day); });
 
   var scrub = document.getElementById('scrub');
   var scrubbing = false;
@@ -1089,6 +1240,10 @@
     draw_frame(fi);
   });
 
+  // precomputed night flag per frame (avoids trig in the hot draw_timeline path)
+  var night_cache = new Uint8Array(N);
+  for (var _ni = 0; _ni < N; _ni++) night_cache[_ni] = compute_is_night(_ni) ? 1 : 0;
+
   // ── init ───────────────────────────────────────────────────────────────────
   function init() {
     // set page title
@@ -1098,6 +1253,10 @@
       meta.asteroid_id + '\u202f' + meta.asteroid_name.toUpperCase() +
       '\u202f\u00b7\u202f' +
       meta.date_start + '\u202f\u2013\u202f' + meta.date_end;
+
+    // update info panel subtitle with actual date range
+    var sub = document.getElementById('info-subtitle');
+    if (sub) sub.textContent = 'Phase Angle \u00b7 Illumination Geometry \u00b7 ' + meta.date_start + ' \u2013 ' + meta.date_end;
 
     // init hand angle from first frame
     hand_angle = -Math.PI/2 + frm.cum_ph[0] * 2 * Math.PI;
