@@ -503,13 +503,16 @@ function init() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  fetch('data/stars.json')
-    .then(r => r.json())
+  // start render loop immediately — draw() guards on catalog_loaded internally
+  requestAnimationFrame(draw);
+
+  fetch('/data/stars.json')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(catalog => {
       build_stars(catalog);
       catalog_loaded = true;
-      requestAnimationFrame(draw);
-    });
+    })
+    .catch(err => console.error('Star catalog load error:', err));
 }
 
 window.addEventListener('mousemove', on_mouse_move);
@@ -536,26 +539,39 @@ document.querySelectorAll('.book-spine').forEach(spine => {
   // grab all spines once; moving a node preserves its event listeners
   const spines = Array.from(pool.children);
 
+  // content-driven heights: measure text length across title + author + impact,
+  // map linearly to 190–250px range. Applied as inline style so nth-child
+  // scope doesn't matter (nth-child resets per parent row, not pool).
+  spines.forEach(spine => {
+    const title  = spine.querySelector('.spine-book-title');
+    const author = spine.querySelector('.spine-author');
+    const impact = spine.querySelector('.spine-impact');
+    const len = (title  ? title.textContent.length  : 0)
+              + (author ? author.textContent.length : 0)
+              + (impact ? impact.textContent.length : 0);
+    // clamp to 190–250px: shorter books are shorter spines
+    const MIN_H = 190, MAX_H = 250, MIN_L = 30, MAX_L = 160;
+    const clamped = Math.max(MIN_L, Math.min(MAX_L, len));
+    const h = Math.round(MIN_H + (clamped - MIN_L) / (MAX_L - MIN_L) * (MAX_H - MIN_H));
+    spine.style.height = h + 'px';
+  });
+
   function layout_shelves() {
     const is_mobile = window.innerWidth <= 740;
     const w_col = is_mobile ? 40 : 46;
     const w_exp = is_mobile ? 150 : 172;
     const gap = 5;
-    const container_w = rows_el.parentElement.clientWidth;
 
-    // max books per row: 2 expanded + (n-2) collapsed + n gaps <= container_w
-    // n*(w_col + gap) <= container_w - 2(w_exp + w_col)
     const container_rect = rows_el.parentElement.getBoundingClientRect();
     const computed_style = window.getComputedStyle(rows_el.parentElement);
     const padding_left = parseFloat(computed_style.paddingLeft);
     const padding_right = parseFloat(computed_style.paddingRight);
     const container_inner_w = container_rect.width - padding_left - padding_right;
 
-    const n_per_row = is_mobile 
-  
-      ? Math.max(2, Math.floor(container_inner_w / (w_col + gap * 1.3))) // more generous for mobile
-  
-      : Math.max(2, Math.floor(container_inner_w / (w_col + gap * 1.05))); // more conservative for desktop
+    // n_per_row: fit 1 expanded + (n-1) collapsed + (n-1) gaps within the container.
+    // On mobile we subtract a small extra margin so books aren't flush to the edge.
+    const effective_w = is_mobile ? container_inner_w - 20 : container_inner_w;
+    const n_per_row = Math.max(2, 1 + Math.floor((effective_w - w_exp) / (w_col + gap)));
 
     const total = spines.length;
     const n_rows = Math.ceil(total / n_per_row);
@@ -645,6 +661,10 @@ mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
 const back_to_top_btn = document.getElementById('back-to-top');
 window.addEventListener('scroll', () => {
   back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
+
+  // mobile only: make nav opaque once user scrolls past the hero section
+  const hero_bottom = document.getElementById('hero').getBoundingClientRect().bottom;
+  document.querySelector('nav').classList.toggle('nav--scrolled', hero_bottom <= 0);
 }, { passive: true });
 back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
