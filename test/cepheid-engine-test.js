@@ -491,41 +491,12 @@
       ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 5);
     }
 
-    // attribution
+    // attribution only
     ctx.font = '9px \'JetBrains Mono\', monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 8);
-
-    // legend — bottom left above attribution, dark pill background
-    var legends = [
-      { label: 'Cepheid',        col: '#ffe4a0' },
-      { label: 'Companion',      col: '#f87171' },
-      { label: '\u2022 Pilecki+ 2022', col: 'rgba(255,255,255,0.5)' },
-    ];
-    ctx.font = '10px \'JetBrains Mono\', monospace';
-    ctx.textBaseline = 'middle';
-    var legX = px + inset;
-    var legY = py + padTop + 12;
-    var legSpacing = 18;
-    for (var li = 0; li < legends.length; li++) {
-      var leg = legends[li];
-      var lw = ctx.measureText(leg.label).width + 10;
-      ctx.fillStyle = 'rgba(7,9,26,0.65)';
-      ctx.beginPath();
-      ctx.roundRect(legX - 2, legY + li*legSpacing - 8, lw, 16, 2);
-      ctx.fill();
-      ctx.fillStyle = leg.col;
-      ctx.fillText(leg.label, legX + 3, legY + li * legSpacing);
-    }
-
-    // title
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.font = '10px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(96,165,250,0.65)';
-    ctx.fillText('ORBITAL RADIAL VELOCITIES \u00B7 KM S\u207B\u00B9', px + inset, py + 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
 
     ctx.restore();
   }
@@ -697,7 +668,7 @@
   // ── main loop ──────────────────────────────────────────────────────────────
 
   var ORBIT_DURATION_S = 20.0; // wall-clock seconds per simulated orbit
-  var PULS_DURATION_S  = 8.0;  // wall-clock seconds per simulated pulsation cycle
+  var PULS_DURATION_S  = 4.0;  // wall-clock seconds per simulated pulsation cycle
 
   function animate(now) {
     if (!data || !data.physics_frames) return;
@@ -1007,6 +978,8 @@
       if (preview) preview.style.display = 'none';
       simCanvas.style.opacity = '1';
       if (plotUI) plotUI.style.opacity = '1';
+      var rvLegend = document.getElementById('rv-legend');
+      if (rvLegend) rvLegend.style.opacity = '1';
 
       window.addEventListener('resize', resize);
       resize();
@@ -1025,6 +998,8 @@
         var currentPhase = (frameIdx % oldN) / oldN;
         data = fullData;
         frameIdx = currentPhase * newN;
+        lastTime = null;        // reset clock — prevents delta spike on swap
+        captionStartTime = null; // restart captions with full-quality data
         var p2 = data.physics_frames;
         bounds.minV = 99; bounds.maxV = -99;
         for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
