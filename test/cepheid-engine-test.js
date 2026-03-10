@@ -534,21 +534,23 @@
       }
     }
 
-    // x-axis phase labels
-    ctx.textBaseline = 'top';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = '10px \'JetBrains Mono\', monospace';
-    for (var xp = 0; xp <= 1; xp += 0.25) {
-      ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 5);
-    }
+    // x-axis phase labels and attribution — hidden on mobile to prevent overlap
+    if (!getStarArea().mobile) {
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      for (var xp = 0; xp <= 1; xp += 0.25) {
+        ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 5);
+      }
 
-    // attribution only
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = 'rgba(255,255,255,0.14)';
-    ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
+      // attribution
+      ctx.font = '9px \'JetBrains Mono\', monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = 'rgba(255,255,255,0.14)';
+      ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
+    }
 
     ctx.restore();
   }
@@ -732,8 +734,8 @@
   var ORBIT_DURATION_S  = 120.0; // wall-clock seconds per simulated orbit
   var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
   // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
-  // P_puls/P_orb = 0.69001/58.85 ≈ 0.01172 → cycle takes 40 * 0.01172 ≈ 0.469s
-  var REALTIME_PULS_S   = ORBIT_DURATION_S * P_PULS / P_ORB_D;
+  // decoupled from ORBIT_DURATION_S so slowing the orbit doesn't also slow pulsation
+  var REALTIME_PULS_S   = 0.35; // wall-clock seconds per pulsation cycle in realtime mode
 
   function animate(now) {
     if (!data || !data.physics_frames) { requestAnimationFrame(animate); return; }
