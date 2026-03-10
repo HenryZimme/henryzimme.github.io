@@ -414,7 +414,7 @@
     ctx.globalAlpha = 1;
 
     // cursor line at current orbital phase
-    var curX = px + inset + currentPhi * plotW;
+    var curX = px + inset + orbitPhi * plotW;
     ctx.save();
     ctx.strokeStyle = 'rgba(96,165,250,0.65)';
     ctx.shadowBlur = 6;
@@ -1005,6 +1005,23 @@
     if (!simCanvas || !ctx) return;
     try {
       // stage 1: boot JSON — starts sim immediately
+
+      // sequence loading lines: each fades in, holds, fades out, then next starts
+      // fade-in 0.4s → hold 0.8s → fade-out 0.4s = 1.6s per line, 1s between starts
+      var loadLines = [
+        document.getElementById('sll-0'),
+        document.getElementById('sll-1'),
+        document.getElementById('sll-2'),
+        document.getElementById('sll-3')
+      ];
+      var loadTimers = [];
+      loadLines.forEach(function(el, idx) {
+        if (!el) return;
+        var t0 = idx * 1000; // each line starts 1s after the previous
+        loadTimers.push(setTimeout(function() { el.style.opacity = '1'; }, t0));
+        loadTimers.push(setTimeout(function() { el.style.opacity = '0'; }, t0 + 800));
+      });
+
       var scriptEl = document.querySelector('script[data-boot-json]');
       var bootUrl  = (scriptEl && scriptEl.dataset.bootJson) || '/data/master_data_boot.json';
       var fullUrl  = (scriptEl && scriptEl.dataset.fullJson) || '/data/master_data.json';
@@ -1033,6 +1050,9 @@
       orbitPhase = 0.25;
 
       if (preview) {
+        // cancel any pending line timers and clear all lines immediately
+        loadTimers.forEach(function(t) { clearTimeout(t); });
+        loadLines.forEach(function(el) { if (el) el.style.opacity = '0'; });
         preview.style.opacity = '0';
         setTimeout(function() { preview.style.display = 'none'; }, 650);
       }
