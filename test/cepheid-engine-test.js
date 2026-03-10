@@ -287,8 +287,9 @@
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
     var N = data.physics_frames.x1.length;
-    var rvI = Math.round(frameI / N * RV_N) % RV_N;
-    var currentPhi = rvI / RV_N;
+    var rawPhi = frameI / N;
+    var currentPhi = (rawPhi + phase_offset) % 1;
+    var rvI = Math.round(currentPhi * RV_N) % RV_N;
 
     var inset = 28, padTop = 26, padBottom = 36;
     var drawH = ph - padTop - padBottom;
