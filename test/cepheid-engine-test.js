@@ -1007,7 +1007,7 @@
       // stage 1: boot JSON — starts sim immediately
 
       // sequence loading lines: each fades in, holds, fades out, then next starts
-      // fade-in 0.4s → hold 0.8s → fade-out 0.4s = 1.6s per line, 1s between starts
+      // fade-in 0.4s → hold 0.8s → fade-out 0.4s, 3s between line starts
       var loadLines = [
         document.getElementById('sll-0'),
         document.getElementById('sll-1'),
@@ -1017,7 +1017,7 @@
       var loadTimers = [];
       loadLines.forEach(function(el, idx) {
         if (!el) return;
-        var t0 = idx * 1000; // each line starts 1s after the previous
+        var t0 = idx * 3000; // each line starts 3s after the previous
         loadTimers.push(setTimeout(function() { el.style.opacity = '1'; }, t0));
         loadTimers.push(setTimeout(function() { el.style.opacity = '0'; }, t0 + 800));
       });
@@ -1046,8 +1046,9 @@
       buildRV();
       prepareObservationalData();
 
-      // start at orbital quadrature (phi=0.25) so RVs show maximum separation on load
-      orbitPhase = 0.25;
+      // start at phase 0 — boot JSON only covers phases 0-0.1, so starting anywhere
+      // else would desync stars from the RV cursor (stars drawn from wrong frame index)
+      orbitPhase = 0;
 
       if (preview) {
         // cancel any pending line timers and clear all lines immediately
