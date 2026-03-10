@@ -677,14 +677,20 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  var ORBIT_DURATION_S  = 20.0; // wall-clock seconds per simulated orbit
+  var ORBIT_DURATION_S  = 40.0; // wall-clock seconds per simulated orbit
   var PULS_DURATION_S   = 4.0;  // wall-clock seconds per simulated pulsation cycle
   // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
-  // P_puls/P_orb = 0.69001/58.85 ≈ 0.01172 → cycle takes 20 * 0.01172 ≈ 0.234s
+  // P_puls/P_orb = 0.69001/58.85 ≈ 0.01172 → cycle takes 40 * 0.01172 ≈ 0.469s
   var REALTIME_PULS_S   = ORBIT_DURATION_S * P_PULS / P_ORB_D;
 
   function animate(now) {
-    if (!data || !data.physics_frames) return;
+    if (!data || !data.physics_frames) { requestAnimationFrame(animate); return; }
+    // if canvas has no size yet (element not laid out), resize and wait one frame
+    if (simCanvas.width === 0 || simCanvas.height === 0) {
+      resize();
+      requestAnimationFrame(animate);
+      return;
+    }
     var p = data.physics_frames;
     var dpr = window.devicePixelRatio || 1;
     var cw = simCanvas.width / dpr;
@@ -697,32 +703,32 @@
     var dt_ms = Math.min(now - lastTime, 100);
     lastTime = now;
 
-    var i;
-    if (currentMode === 'pulsation' || currentMode === 'realtime') {
-      var dur_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
-      pulsTime += (dt_ms / 1000) / dur_s * P_PULS;
-      var Np = Math.round(P_PULS / ((data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120));
-      i = Math.floor((pulsTime / P_PULS) * Np) % p.x1.length;
-    } else {
-      frameIdx += (dt_ms / 1000) / ORBIT_DURATION_S * p.x1.length;
-      i = Math.floor(frameIdx) % p.x1.length;
-    }
+    // always advance orbital clock
+    frameIdx += (dt_ms / 1000) / ORBIT_DURATION_S * p.x1.length;
+    var i = Math.floor(frameIdx) % p.x1.length;
+
+    // always advance pulsation clock — rate depends on mode
+    var puls_rate_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
+    pulsTime += (dt_ms / 1000) / puls_rate_s * P_PULS;
+    var Np = Math.round(P_PULS / ((data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120));
+    var pulsI = Math.floor((pulsTime / P_PULS) * Np) % Np;
 
     var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
 
-    if (currentMode === 'pulsation' || currentMode === 'realtime') {
+    if (currentMode === 'pulsation') {
+      // pulsation view: freeze orbital positions, use pulsI for star state
       x1 = 0; y1 = 0; z1 = 0;
       x2 = 99999; y2 = 0; z2 = -1;
-      r1 = p.r1[i]; mag = p.v_mag[i];
-      teff = safeGet(p.teff, i, null);
-      col1 = safeGet(p.color1, i, FALLBACK_COL);
     } else {
+      // orbital / realtime: live orbital positions
       x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
       x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
-      r1 = p.r1[i]; mag = p.v_mag[i];
-      teff = safeGet(p.teff, i, null);
-      col1 = safeGet(p.color1, i, FALLBACK_COL);
     }
+    // star state always driven by pulsation clock
+    r1   = p.r1[pulsI];
+    mag  = p.v_mag[pulsI];
+    teff = safeGet(p.teff,   pulsI, null);
+    col1 = safeGet(p.color1, pulsI, FALLBACK_COL);
 
     // brightness for bloom
     var mag_range = bounds.maxV - bounds.minV;
@@ -733,7 +739,7 @@
     var sw = star.w, sh = star.h;
 
     var zoom, cx, cy;
-    if (currentMode === 'pulsation' || currentMode === 'realtime') {
+    if (currentMode === 'pulsation') {
       zoom = (Math.min(sw, sh) * 0.14) / maxR1;
       cx = sw / 2;
       cy = sh * 0.35;
@@ -750,7 +756,7 @@
     var pr2 = Math.max(2, COMPANION_RAD * zoom);
 
     // ── orbital ellipses ──
-    if (currentMode !== 'pulsation' && currentMode !== 'realtime') {
+    if (currentMode !== 'pulsation') {
       ctx.save();
       ctx.lineWidth = 2;
       ctx.setLineDash([7, 9]);
@@ -777,17 +783,14 @@
     }
 
     // ── plots ──
-    if (currentMode === 'pulsation' || currentMode === 'realtime') {
-      var dt_meta = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
-      var Np_lc = Math.round(P_PULS / dt_meta);
-      var pulsI = Math.floor((pulsTime / P_PULS) * Np_lc) % Np_lc;
+    if (currentMode === 'pulsation') {
       drawLightCurve(p.v_mag, pulsI);
     } else {
       drawRVPlot(i);
     }
 
     // ── trails: cinematic tapered lines ──
-    if (currentMode !== 'pulsation' && currentMode !== 'realtime') {
+    if (currentMode !== 'pulsation') {
       trail1.push({ x: s1x, y: s1y, col: col1 || FALLBACK_COL });
       trail2.push({ x: s2x, y: s2y });
       if (trail1.length > TRAIL_LEN) trail1.shift();
@@ -837,7 +840,7 @@
     }
 
     // ── star labels: always-on, dark pill background ──
-    if (currentMode !== 'pulsation' && currentMode !== 'realtime') {
+    if (currentMode !== 'pulsation') {
       ctx.save();
       ctx.font = '12px \'JetBrains Mono\', monospace';
       ctx.textBaseline = 'middle';
@@ -879,18 +882,20 @@
     if (swatch && col1) swatch.style.background = col1;
     if (hud.rad) hud.rad.innerText = r1.toFixed(1) + ' R\u2609';
 
-    if (currentMode === 'pulsation' || currentMode === 'realtime') {
-      var modeLabel = currentMode === 'realtime' ? '\u03C6<sub>puls</sub> Pulsation phase \u00B7 \u00D785' : '\u03C6<sub>puls</sub> Pulsation phase';
-      if (hud.phaseLabel) hud.phaseLabel.innerHTML = modeLabel;
+    if (currentMode === 'pulsation') {
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> Pulsation phase';
       var pp = (pulsTime % P_PULS) / P_PULS;
       if (hud.phase) hud.phase.innerText = pp.toFixed(3);
     } else {
-      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>orb</sub> Orbital phase';
+      var orbLabel = currentMode === 'realtime'
+        ? '\u03C6<sub>orb</sub> Orbital phase \u00B7 puls \u00D785'
+        : '\u03C6<sub>orb</sub> Orbital phase';
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = orbLabel;
       if (hud.phase) hud.phase.innerText = (i / p.x1.length).toFixed(3);
     }
 
     // ── guided first-loop captions ──
-    if (currentMode === 'orbital') {
+    if (currentMode === 'orbital' || currentMode === 'realtime') {
       if (captionStartTime === null) captionStartTime = now;
       var elapsed = now - captionStartTime;
       var starArea = getStarArea();
@@ -944,9 +949,9 @@
       btn.style.color = '#ffffff';
       btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
     }
-    // show legend only in orbital mode
+    // show legend in orbital and realtime modes (both show RV plot)
     var rvLegend = document.getElementById('rv-legend');
-    if (rvLegend) rvLegend.style.opacity = (mode === 'orbital') ? '1' : '0';
+    if (rvLegend) rvLegend.style.opacity = (mode === 'pulsation') ? '0' : '1';
   };
 
   // ── resize ─────────────────────────────────────────────────────────────────
@@ -1016,8 +1021,7 @@
         var currentPhase = (frameIdx % oldN) / oldN;
         data = fullData;
         frameIdx = currentPhase * newN;
-        lastTime = null;        // reset clock — prevents delta spike on swap
-        captionStartTime = null; // restart captions with full-quality data
+        lastTime = null; // reset clock — prevents delta spike on swap
         var p2 = data.physics_frames;
         bounds.minV = 99; bounds.maxV = -99;
         for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
