@@ -1,892 +1,746 @@
-(function () {
-  // ── Config ────────────────────────────────────────────────────────────────
-  const MODES         = new Set(['orbital', 'pulsation']);
-  const COMPANION_RAD = 12.51;   // R☉  (Espinoza-Arancibia & Pilecki 2025)
-  const FALLBACK_COL  = '#ffe066';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Henry Zimmerman</title>
+  <meta name="description" content="Henry Zimmerman, junior at Phillips Academy Andover. Astrophysics researcher, writer, and cross-country captain.">
+  <meta property="og:title" content="Henry Zimmerman">
+  <meta property="og:description" content="Astrophysicist, writer, and runner. I love using logic to tease out the truth from imperfect information, whether analyzing binary Cepheids or examining Cartesian reasoning.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://www.henryzimmerman.net/">
+  <meta property="og:image" content="https://www.henryzimmerman.net/og-preview.jpg">
+  <meta name="twitter:image" content="https://www.henryzimmerman.net/og-preview.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
+  <link rel="preload" href="css/style_test.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="css/style_test.css"></noscript></head>
+<body>
 
-  // Orbital RV amplitudes — circular orbit, i = 57°
-  const R_SUN_KM  = 695700;
-  const P_ORB_S   = 58.85 * 86400;
-  const P_PULS_D  = 0.6900;
-  const SIN_I     = Math.sin(57 * Math.PI / 180);
-  const K1        = (2 * Math.PI * 42 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~30.3 km/s
-  const K2        = (2 * Math.PI * 76 * R_SUN_KM * SIN_I) / P_ORB_S;  // ~54.8 km/s
-  const RV_THRESH    = 40;    // km/s — ESPRESSO ΔRV separation requirement
-  const RV_N         = 2400;
+<canvas id="star-canvas"></canvas>
+<div id="star-tooltip"></div>
 
-  // ESPRESSO pulsation quiescence window [Pilecki et al. 2022 + VLT proposal]
-  // φ₁ ∈ [0.50, 0.70]: minimum-radius phase, v_turb ~ 3 km/s.
-  // We use i/N as the pulsation phase (0→1 per animation loop); this is
-  // the same convention used in master_data.json and the original engine.
-  const PULS_MIN = 0.50;
-  const PULS_MAX = 0.70;
+<div id="star-popover">
+  <div id="star-popover-name"></div>
+  <a id="star-popover-btn" href="#" target="_blank" rel="noopener">View on SIMBAD ↗</a>
+</div>
 
-  // HUD value colors
-  const COL_TEFF          = '#fdba74';
-  const COL_RAD           = '#67e8f9';
-  const COL_OK            = '#86efac';
-  const COL_WARN          = '#f87171';
-  const COL_PHASE_DEFAULT = '#c4b5fd';
+<div id="object-modal">
+  <div class="modal-inner">
+    <button class="modal-close" id="modal-close-btn">&#x2715;</button>
+    <div class="modal-type" id="modal-type">Featured Object</div>
+    <h2 class="modal-name" id="modal-name"></h2>
+    <p class="modal-body" id="modal-body"></p>
+    <a class="modal-simbad" id="modal-simbad" href="#" target="_blank" rel="noopener">View on SIMBAD</a>
+  </div>
+</div>
 
-  // ── Observational RV data — Pilecki et al. 2022 (ApJ 940 L48), Table B3 ─
-  // Columns: [HJD − 2450000, RVel1_abs, e_RVel1, RVel2_abs, e_RVel2]
-  // Systemic velocity γ = 237.0 km/s; orbital T₀ = HJD 2459549.0 (phase=0 ascending node)
-  // These are absolute heliocentric RVs from UVES and MIKE spectrographs.
-  const OBS_P_ORB  = 58.85;      // days
-  const OBS_T0     = 9549.0;     // HJD − 2450000 at φ = 0 (ascending node)
-  const OBS_GAM    = 237.0;      // km/s systemic (barycentric) velocity
-  const OBS_DATA = [
-    // [hjd_m2450000, rv1_abs, e_rv1, rv2_abs, e_rv2]
-    [9510.80498, 271.408, 0.148, 195.142, 0.397],
-    [9541.61089, 222.409, 0.113, 281.004, 0.479],
-    [9556.62074, 246.214, 0.124, 207.792, 0.542],
-    [9558.63776, 251.270, 0.128, 200.067, 0.553],
-    [9563.71814, 280.680, 0.128, 188.181, 0.397],
-    [9566.72085, 261.271, 0.183, 189.594, 0.514],
-    [9579.64289, 255.698, 0.292, 239.801, 0.335],
-    [9589.71976, 206.661, 0.109, 285.529, 0.421],
-    [9604.62569, 231.395, 0.159, 263.152, 0.546],
-  ];
+<nav>
+  <a href="#hero" class="nav-name">Henry Zimmerman</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#cepheid-sim">Simulation</a></li>
+    <li><a href="#writing">Writing</a></li>
+    <li><a href="#highlights">Highlights</a></li>
+    <li><a href="#bookshelf">Reading</a></li>
+  </ul>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
 
-  let data           = null;
-  let currentMode    = 'orbital';
-  let frameIdx       = 0;
-  let maxR1          = 1;
-  let showConstraints = false;
+<nav class="nav-mobile" id="nav-mobile">
+  <a href="#about" class="mobile-link">About</a>
+  <a href="#research" class="mobile-link">Research</a>
+  <a href="#cepheid-sim" class="mobile-link">Simulation</a>
+  <a href="#writing" class="mobile-link">Writing</a>
+  <a href="#highlights" class="mobile-link">Highlights</a>
+  <a href="#bookshelf" class="mobile-link">Reading</a>
+  <a href="https://github.com/HenryZimme" target="_blank" rel="noopener">GitHub</a>
+</nav>
 
-  // ── RV arrays ─────────────────────────────────────────────────────────────
-  // rv1_orb, rv2: pure orbital sinusoids.
-  // rvDelta uses pure orbital (not rv1+puls) because the ESPRESSO ΔRV criterion
-  // reflects mean stellar separation, not the pulsation-perturbed snapshot.
-  // vpuls_arr: per-frame dr1/dt (km/s), used for Cepheid breathing glow.
-  let rv1_orb     = [];
-  let rv2         = [];
-  let rvDelta     = [];
-  let vpuls_arr   = [];
-  let vpuls_rms   = 0;
-  // Pulsation phase per animation frame — precomputed from master_data.json t[] array.
-  // Python: puls_phase_real = (times % p_puls) / p_puls  — cycles ~85× per orbit.
-  // NOT i/N (which cycles once per orbit and is the wrong physical quantity).
-  let pulsPhaseArr = [];
+<main>
+  <!-- hero -->
+  <a id="stars" style="position: absolute; top: 0;"></a>
+  <section id="hero">
+    <p class="hero-eyebrow">Phillips Academy Andover, Class of 2027</p>
+    <h1 class="hero-name">Henry<br>Zimmerman</h1>
+    <p class="hero-tagline">I follow questions wherever they lead.</p>
+    <div class="hero-arrow">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 7l6 6 6-6" stroke="rgba(196,162,88,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
 
-  // ── DOM ───────────────────────────────────────────────────────────────────
-  const simCanvas  = document.getElementById('simCanvas');
-  const ctx        = simCanvas ? simCanvas.getContext('2d') : null;
-  const preview    = document.getElementById('sim-preview');
-  const plotUI     = document.getElementById('hud-plot-container');
-  const plotLabel  = plotUI ? plotUI.querySelector('[data-plot-label]') : null;
-  const simSection = document.getElementById('cepheid-sim')
-                     || (simCanvas && simCanvas.closest('section'))
-                     || (simCanvas && simCanvas.parentElement);
+  <!-- about -->
+  <section id="about" class="section">
+    <div class="section-inner">
+      <h2 class="section-heading" data-label="About"><span class="sr-only">About</span></h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p class="about-lead">I'm an astrophysicist, writer, and runner. I love using logic to tease out the truth from imperfect information. I'm always looking for the ideas that challenge my perspective, whether I'm doing asteroseismology on merger-origin Cepheids or examining Cartesian constructs.</p>
+          <p>My main scientific work is in time-domain astronomy. While investigating OGLE-LMC-CEP-1347, I identified candidate non-radial modes suggesting a merger-origin; however, my subsequent analysis of the spectral window revealed these signals as yearly aliases. Rather than accepting an ambiguous result, I am now leading a VLT/ESPRESSO proposal to resolve the system's history through high-resolution spectroscopy.</p>
+          <p>A parallel thread is asteroid rotation: I am determining the first confirmed synodic period for main-belt asteroid 7605 Cindygraber, coordinating multi-site observations across Chile, Australia, and the Canary Islands using an open-source scheduler I built for the project.</p>
+          <p>I co-created <a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, a philosophical website and podcast series examining theodicy, divine perfection, and the epistemology of religious faith, developed alongside a classmate for PHR380: Faith and Doubt at Andover. The same instinct that pulls me toward hard scientific questions pulls me toward hard philosophical ones.</p>
+          <p>Outside research, I captain the cross-country team, play jazz guitar, and founded RenewBlue, a campus sustainability initiative. I am drawn to problems that require patience, precision, and a willingness to tear down a model when the data demands it.</p>
+        </div>
 
-  const hud = {
-    mag:        document.getElementById('hud-mag'),
-    teff:       document.getElementById('hud-teff'),
-    rad:        document.getElementById('hud-rad'),
-    phase:      document.getElementById('hud-phase'),
-    phaseLabel: document.getElementById('hud-phase-label'),
-  };
-  // mobile HUD elements (separate DOM nodes — no overlap possible)
-  const mob = {
-    mag:        document.getElementById('mob-hud-mag'),
-    teff:       document.getElementById('mob-hud-teff'),
-    rad:        document.getElementById('mob-hud-rad'),
-    phase:      document.getElementById('mob-hud-phase'),
-    phaseLabel: document.getElementById('mob-hud-phase-label'),
-    espressoBtn:document.getElementById('mob-espresso-btn'),
-  };
+        <div class="about-meta">
+          <div class="profile-frame">
+            <img src="images/HSZ_Headshot_BW.jpeg" width="613" height="661" alt="Henry Zimmerman headshot">
+          </div>
 
-  let bounds = { a1: 0, a2: 0, minV: 99, maxV: -99 };
+          <div class="meta-item">
+            <div class="meta-label">Affiliation</div>
+            <div class="meta-value">Phillips Academy Andover<br>Class of 2027</div>
+          </div>
 
-  function safeGet(arr, idx, fb) {
-    return (arr && arr[idx] !== undefined) ? arr[idx] : fb;
-  }
+          <div class="meta-item">
+            <div class="meta-label">Research Interests</div>
+            <div class="meta-value">Asteroseismology<br>Binary Cepheids<br>Stellar mergers<br>Cosmic distance scale<br>Minor planet dynamics</div>
+          </div>
 
-  function isMobile() { return window.innerWidth <= 700; }
+          <div class="meta-item">
+            <div class="meta-label">Collaborator</div>
+            <div class="meta-value">Dr. Bogumił Pilecki (CAMK Warsaw)</div>
+          </div>
 
-  // ── Simulation border: reflects ESPRESSO constraint status ────────────────
-  let _lastBorderState = null;
-  function updateSimBorder(constraintOk) {
-    if (!simSection) return;
-    const next = showConstraints ? (constraintOk ? 'ok' : 'warn') : 'off';
-    if (next === _lastBorderState) return;
-    _lastBorderState = next;
-    if (!showConstraints) { simSection.style.boxShadow = ''; return; }
-    simSection.style.transition = 'box-shadow 0.35s ease';
-    simSection.style.boxShadow  = constraintOk
-      ? 'inset 0 0 0 2px rgba(134,239,172,0.55), 0 0 32px rgba(134,239,172,0.07)'
-      : 'inset 0 0 0 2px rgba(239,68,68,0.40),  0 0 24px rgba(239,68,68,0.06)';
-  }
+          <div class="meta-item">
+            <div class="meta-label">Contact</div>
+            <div class="meta-value" id="contact-email"></div>
+          </div>
+        </div>
 
-  // applyLayout() removed — layout is now fully CSS-driven.
-  // Desktop: section=100vh, #ui-layer position:absolute inset:0.
-  // Mobile: section=height:auto driven by #sim-mobile-ui in-flow content; #ui-layer display:none.
+      </div>
+      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. For an interactive simulation of OGLE-LMC-CEP-1347 — the binary Cepheid at the center of my primary research — scroll to the Simulation section below.</p>
+    </div>
+  </section>
 
-  // ── ESPRESSO constraint toggle ────────────────────────────────────────────
-  function sync_constraint_buttons() {
-    // desktop injected button
-    const btn = document.getElementById('btn-constraints');
-    if (btn) {
-      btn.style.background = showConstraints ? 'rgba(134,239,172,0.18)' : 'transparent';
-      btn.style.color      = showConstraints ? '#86efac' : 'rgba(255,255,255,0.38)';
-      btn.style.boxShadow  = showConstraints ? 'inset 0 0 0 1px rgba(134,239,172,0.5)' : 'none';
+  <!-- research -->
+  <section id="research" class="section">
+    <div class="section-inner">
+      <h2 class="section-heading" data-label="Research"><span class="sr-only">Research</span></h2>
+      <div class="research-cards">
+
+        <div class="research-card">
+          <div class="card-id">Primary Research, In Preparation</div>
+          <h3 class="card-title">First Asteroseismic Evidence of Merger Origin in a Binary Cepheid → VLT Spectroscopic Follow-Up
+</h3>
+          <p class="card-body">
+            I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary Cepheid in the Large Magellanic Cloud with the shortest known orbital period for a Cepheid (58.85 ± 0.08 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I recovered a non-radial frequency triplet with spacing $\Delta$f ≈ 0.0074 c/d. I validated this with dual-domain frequency and time-evolution $O-C$ Monte Carlo simulations, finding Prot ≈ 135 ± 15 days. This is over five σ longer than the 58.85 day orbit. Since tidal theory predicts synchronization precedes circularization by $>10$x, this asynchronous rotation in a circular orbit suggests recent merger spindown.
+          </p>
+
+          <p class = "card-body">
+          Update (March 2026): My window function analysis revealed a &Delta; f degeneracy with the 1-year OGLE sampling aliases. The sampling limits of the ground-based photometry prompted a methodological pivot. As Co-I and primary author of the Science Justification, I am drafting a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki to obtain phase-constrained chemical abundances. Spectroscopy bypasses these aliases to provide the definitive test of the merger scenario.
+          </p>
+          
+          <p class = "card-body">
+          For readers interested in the full analysis pipeline, including the alias diagnostic that invalidated the candidate rotational signal, see the Methodological Appendix.
+          </p>
+          
+          <div class="card-links">
+            <a class="card-link" href="1347_methods.html" target="_blank" rel="noopener">
+              View Methods and Diagnostic Analysis →
+            </a>
+          </div>
+
+          <a href="#cepheid-sim" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated ↓</div>
+            </div>
+            <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.50&ndash;0.70, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where &Delta;RV&nbsp;&#8819;&nbsp;40&nbsp;km&thinsp;s<sup>&minus;1</sup> to cleanly separate the Cepheid and companion spectra. The simulation makes both constraints visible at once.</div>
+          </a>
+
+
+          <div class="card-tags">
+            <span class="tag">Asteroseismology</span>
+            <span class="tag">Binary Cepheids</span>
+            <span class="tag">OGLE</span>
+            <span class="tag">Fourier Analysis</span>
+            <span class="tag">Stellar Mergers</span>
+            <span class="tag">LMC</span>
+          </div>
+        </div>
+
+        <div class="research-card">
+          <div class="card-id">Ongoing</div>
+          <h3 class="card-title">Rotation Period and Taxonomy of 7605 Cindygraber</h3>
+
+          <p class="card-body">
+            I am studying the rotation state of main-belt asteroid 7605 Cindygraber. Using photometric measurements from the ALCDEF Light Curve Database, I developed statistical models to estimate period convergence requirements and used those results to design a multi-site observing strategy.
+          </p>
+
+          <p class="card-body">
+The project coordinates photometry across four observatories in the Canary Islands, Chile, Australia, and Andover to improve phase sampling of the asteroid’s light curve. I am also analyzing diffraction grating images to extract spectral information that may help constrain its taxonomic classification.
+          </p>
+
+          <p class="card-body">
+          To improve observational efficiency under variable viewing conditions, I built an open-source scheduling tool that integrates orbital ephemerides, lunar sky brightness models, and site visibility constraints to prioritize high-quality observing windows. The goal is to reduce wasted telescope time and improve cadence reliability. I am preparing the results for submission to the Minor Planet Bulletin.
+          </p>
+          
+          <div class="card-links">
+            <a class="card-link" href="docs/asteroid_3d.html" target="_blank" rel="noopener">
+              View Interactive Asteroid Orbital Model →
+            </a>
+            <br>
+            <a class="card-link" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">
+              Observing Scheduler on GitHub
+            </a> |
+            <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">
+              Asteroid Statistics on GitHub
+            </a>
+          </div>
+          <div class="card-tags">
+            <span class="tag">Photometry</span>
+            <span class="tag">Minor Planets</span>
+            <span class="tag">Machine Learning</span>
+            <span class="tag">ALCDEF</span>
+            <span class="tag">Spectroscopy</span>
+            <span class="tag">Python</span>
+          </div>
+        </div>
+
+        <div class="research-card">
+          <div class="card-id">Completed, with Dr. José Zorrilla</div>
+          <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
+          <p class="card-body">
+            My first independent research target. I remotely operated the Slooh Chile 432mm telescope for two months, performing multi-band (V&minus;I) differential photometry of the classical Cepheid U Sgr in open cluster M25. Sinusoidal light curve fits confirmed the 6.74-day period (R&sup2; = 0.93 V-band, 0.70 I-band). V-band distance calculations yielded 40.8% error versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths and why accurate extinction corrections are critical for Cepheid distance work. Strong color index correlation (r = 0.85) provided independent evidence for the kappa-mechanism. The project expanded into an investigation of metallicity-dependent corrections to the period-luminosity relation.
+          </p>
+          <div class="card-links">
+            <a class="card-link" href="U_Sgr_abs.html" target="_blank" rel="noopener">
+              View Abstract & Poster →
+            </a>
+          </div>
+          
+          <div class="card-tags">
+            <span class="tag">Cepheid Variables</span>
+            <span class="tag">Differential Photometry</span>
+            <span class="tag">Distance Scale</span>
+            <span class="tag">Dust Extinction</span>
+            <span class="tag">Period-Luminosity</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="cepheid-sim" style="position: relative; width: 100%; height: 100vh; background: #000; overflow: hidden; display: block; isolation: isolate;">
+
+  <!-- canvas: position:absolute always. desktop: fills 100vh. mobile: fills height driven by #sim-mobile-ui. -->
+  <canvas id="simCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s;"></canvas>
+
+  <!-- ── DESKTOP UI (hidden ≤700px via CSS) ─────────────────────────────── -->
+  <div id="ui-layer" style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2.5rem 2.5rem 2rem; z-index: 20;">
+    <div id="sim-top" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;">
+      <div style="max-width: 420px;">
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 10px 0;">Live Simulation</p>
+        <h2 style="font-family: 'EB Garamond', serif; font-size: clamp(22px, 3vw, 34px); font-weight: 400; color: var(--text); margin: 0 0 10px 0; line-height: 1.15;">OGLE-LMC-CEP-1347</h2>
+        <div style="height: 1px; background: var(--panel-border); margin-bottom: 14px;"></div>
+        <p class="sim-desc-italic" style="font-family: 'Spectral', serif; font-style: italic; font-size: 14.5px; color: var(--text-dim); line-height: 1.72; margin: 0;">
+          The binary Cepheid I spent the past year studying. Built from real Fourier fits to six years of OGLE photometry &mdash; the same light curve I used to search for non-radial modes and orbital aliases. Orbital and physical parameters from <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Espinoza-Arancibia &amp; Pilecki (2025, ApJ 981 L35)</a> and <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Pilecki et al. (2022, ApJ 940 L48)</a>.
+        </p>
+      </div>
+      <div id="hud-table" style="pointer-events: auto; flex-shrink: 0; background: rgba(7,9,26,0.82); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: 0.75rem; padding: 1.25rem 1.5rem; width: 250px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1;">
+          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <span style="color:rgba(255,255,255,0.45);">V-band mag</span><span id="hud-mag" style="color:var(--text);">--</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <span style="color:rgba(255,255,255,0.45);">T&#7522;&#7487;&#7487; Cepheid</span><span id="hud-teff" style="color:#fdba74;">-- K</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <span style="color:rgba(255,255,255,0.45);">R&#8321; Cepheid</span><span id="hud-rad" style="color:#67e8f9;">-- R&#9737;</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0;">
+            <span id="hud-phase-label" style="color:rgba(255,255,255,0.45);">&#981;&#8338;&#7523;&#7495; orbital</span><span id="hud-phase" style="color:#c4b5fd;">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- transparent flex-grow spacer: JS reads getBoundingClientRect() to center stars here -->
+    <div id="sim-canvas-zone" aria-hidden="true" style="flex: 1 1 auto; min-height: 80px;"></div>
+    <div id="sim-bottom" style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;">
+      <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 820px; height: 160px; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); position: relative; overflow: hidden; transition: opacity 0.5s; border-radius: 3px;">
+        <div data-plot-label style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none; z-index: 10; transition: opacity 0.3s;">ORBITAL RADIAL VELOCITIES &middot; KM S&#x207B;&#xB9;</div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+        <div style="pointer-events: auto; background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 0.2rem; display: flex; gap: 2px;">
+          <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">ORBITAL</button>
+          <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">PULSATION</button>
+        </div>
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;&middot; K&#8321; = 30.3 km/s &middot; K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MOBILE UI (hidden >700px via CSS) ──────────────────────────────────
+       All elements are in-flow flex children — structurally impossible to overlap.
+       Canvas (position:absolute; inset:0) fills the section whose height is driven
+       by this block. JS reads mob-canvas-zone and mob-plot-zone bounding rects.
+  ──────────────────────────────────────────────────────────────────────── -->
+  <div id="sim-mobile-ui" style="display: none;">
+    <!-- header -->
+    <div>
+      <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 5px 0;">Live Simulation</p>
+      <h2 style="font-family: 'EB Garamond', serif; font-size: clamp(20px, 6vw, 28px); font-weight: 400; color: var(--text); margin: 0; line-height: 1.15;">OGLE-LMC-CEP-1347</h2>
+      <div style="height: 1px; background: var(--panel-border); margin-top: 8px;"></div>
+    </div>
+    <!-- HUD: separate IDs from desktop -->
+    <div id="mob-hud" style="background: rgba(7,9,26,0.88); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: 0.65rem; padding: 0.7rem 1rem; flex-shrink: 0;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1;">
+        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+          <span style="color:rgba(255,255,255,0.45);">V-band mag</span><span id="mob-hud-mag" style="color:var(--text);">--</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+          <span style="color:rgba(255,255,255,0.45);">T&#7522;&#7487;&#7487; Cepheid</span><span id="mob-hud-teff" style="color:#fdba74;">-- K</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+          <span style="color:rgba(255,255,255,0.45);">R&#8321; Cepheid</span><span id="mob-hud-rad" style="color:#67e8f9;">-- R&#9737;</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0;">
+          <span id="mob-hud-phase-label" style="color:rgba(255,255,255,0.45);">&#981;&#8338;&#7523;&#7495; orbital</span><span id="mob-hud-phase" style="color:#c4b5fd;">--</span>
+        </div>
+      </div>
+    </div>
+    <!-- star zone: transparent placeholder, canvas draws binary system here -->
+    <div id="mob-canvas-zone" style="height: 65vw; width: 100%; flex-shrink: 0;" aria-hidden="true"></div>
+    <!-- plot zone: transparent placeholder, canvas draws RV/LC here -->
+    <div id="mob-plot-zone" style="height: 120px; width: 100%; flex-shrink: 0; position: relative; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden;">
+      <span id="mob-plot-label" style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none;">ORBITAL RADIAL VELOCITIES &middot; KM S&#x207B;&#xB9;</span>
+    </div>
+    <!-- mode buttons -->
+    <div style="display: flex; flex-direction: column; align-items: stretch; gap: 0.4rem; flex-shrink: 0;">
+      <div id="mob-mode-pill" style="background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 0.2rem; display: flex; gap: 2px;">
+        <button id="mob-btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.4rem 0; border-radius: 999px; font-size: 10px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; flex: 1;">ORBITAL</button>
+        <button id="mob-btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.4rem 0; border-radius: 999px; font-size: 10px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; flex: 1;">PULSATION</button>
+      </div>
+      <p style="font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.06em; color: rgba(255,255,255,0.18); margin: 0; text-align: center; text-transform: uppercase;">P&#8338;&#7523;&#7495; = 58.85 d &nbsp;&middot;&nbsp; K&#8321; = 30.3 &middot; K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
+      <button id="mob-espresso-btn" onclick="window.toggleConstraints()" style="background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 0.5rem 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: rgba(255,255,255,0.45); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; text-transform: uppercase; width: 100%;">ESPRESSO WINDOWS OFF</button>
+    </div>
+  </div>
+
+  <div id="sim-preview" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000 url('images/sim-placeholder.jpg') center/cover no-repeat; z-index: 50;">
+    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: #60a5fa; background: rgba(7,9,26,0.72); padding: 6px 16px; border: 1px solid rgba(96,165,250,0.18);">loading system data...</span>
+  </div>
+</section>
+
+  <!-- writing -->
+  <section id="writing" class="section">
+    <div class="section-inner">
+      <h2 class="section-heading" data-label="Writing"><span class="sr-only">Writing</span></h2>
+      <div class="writing-list">
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Phillipian</div>
+            <div class="writing-date">October 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="https://phillipian.net/2025/10/03/why-im-not-all-in-on-the-in-class-onslaught/" target="_blank" rel="noopener">Why I'm Not "All In" On the In-Class Onslaught</a></h3>
+            <p>Opinion piece arguing that mass in-class writing assessments (adopted to counter AI) curtail the very iterative thinking they aim to protect, drawing on a published study of time constraints and writing quality.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">Academic Essay</div>
+            <div class="writing-date">Fall 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="https://henryzimmerman.net/jane.html" target="_blank" rel="noopener">Moral Autonomy and the Due North: Agency in <i>Jane Eyre</i></a></h3>
+            <p>An analysis of the "internal compass" central to Brontë’s work, examining how Jane uncouples her ethical agency from the restrictive moral prescriptions of 19th-century patriarchal figures to achieve personal and spiritual ascendancy.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">Academic Essay</div>
+            <div class="writing-date">Spring 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="muralism.html" target="_blank" rel="noopener">Muerte al Invasor: Examining Siqueiros's Activist Muralism Through his Chillán Mural</a></h3>
+            <p>How David Alfaro Siqueiros's mural in Chillán, Chile reframes a shared Latin American history of colonial resistance while covertly advancing a Marxist critique of capitalism's imperial legacies.</p>
+          </div>
+        </div>
+        
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Revere</div>
+            <div class="writing-date">March 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="https://the-revere.com/2025/03/whats-at-stake-in-greenland/" target="_blank" rel="noopener">What's at Stake in Greenland?</a></h3>
+            <p>Analysis of Trump's Arctic ambitions: why Greenland's strategic value is real, why the approach is counterproductive, and how the sovereignty question reshapes precedent for Ukraine and Taiwan.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">Academic Essay</div>
+            <div class="writing-date">February 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="descartes.html" target="_blank" rel="noopener">Disproving Descartes&#8217; Divine Definition Divination</a></h3>
+            <p>A close reading of the <em>Meditations</em> showing Descartes cannot prove God's existence because he lacks comprehensive knowledge of God's essence to define it.</p>
+          </div>
+        </div>
+        
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Revere</div>
+            <div class="writing-date">February 2025</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="https://the-revere.com/2025/02/germanys-far-right-comeback-why-you-should-be-worried-about-the-afd/" target="_blank" rel="noopener">Germany's Far-Right Comeback: Why You Should Be Worried About the AfD</a></h3>
+            <p>On the AfD's rise from eurosceptic fringe to Germany's second-largest party: its causes, its geopolitical alignment with Russia and China, and what it means for European cohesion.</p>
+          </div>
+        </div>
+
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">The Japan Periodical</div>
+            <div class="writing-date">Fall 2024</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="japan.html" target="_blank" rel="noopener">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</a></h3>
+            <p>Japan's demographic crisis through the lens of its historically restrictive immigration framework: what the recent policy shifts signal, and whether they go far enough.</p>
+          </div>
+        </div>
+        
+        <div class="writing-item">
+          <div class="writing-meta">
+            <div class="writing-venue">Academic Essay</div>
+            <div class="writing-date">Spring 2024</div>
+          </div>
+          <div class="writing-content">
+            <h3><a href="baghdad.html" target="_blank" rel="noopener">Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad</a></h3>
+            <p>How caliph al-Mansour transformed an ancient legend into the center of Islamic trade, symbolic power, and intellectual life in under a century.</p>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- highlights -->
+  <section id="highlights" class="section">
+    <div class="section-inner">
+      <h2 class="section-heading" data-label="Highlights"><span class="sr-only">Highlights</span></h2>
+      <div class="highlights-table">
+        
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>Writing Center Tutor, Phillips Academy</h4>
+            <p>I believe the best thinking happens in dialogue. Before joining the tutoring staff, I booked 63 appointments as a student. I didn't go to fix grammar; I went to discuss my ideas with other thinkers who care about rigorous peer review and dialogue. Now, as a tutor, I try to create that same collaborative, iterative environment for others.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>Machine Learning, NYU Tandon School of Engineering</h4>
+            <p>Class-best 90% validation accuracy on CIFAR-10 with minimal FLOPs. Applied supervised learning methods to asteroid period convergence prediction and photometric classification.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>SHAD Canada, University of British Columbia</h4>
+            <p>Designed a mesh reinforcement system to improve ductility and fracture resistance of Arctic ice roads. Derived expected mechanical behavior from composite materials literature and specified a validation protocol (3-point bending, Charpy impact, in-situ cantilever, environmental cycling) to test predictions against physical samples.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4>The Webster Award &mdash; History &amp; Social Sciences</h4>
+            <p>Phillips Academy's departmental honor in history and the social sciences for achievement in the first two years.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2025</div>
+          <div class="highlights-item">
+            <h4><a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, Philosophy of Religion</h4>
+            <p>Co-created a podcast series and website examining theodicy, divine perfection, design arguments, and the epistemology of religious faith. Developed with Genie Han for PHR380: Faith and Doubt at Phillips Academy Andover.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2024</div>
+          <div class="highlights-item">
+            <h4>RenewBlue, Co-Founder and Leader</h4>
+            <p>Co-founded a campus sustainability initiative. Organized a multi-school climate-tech hackathon and submitted building-grade algae insulation to The Earth Prize (top 100 finalist). We're currently building a functional model of the school's cogeneration plant.</p>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <div class="highlights-year">2024</div>
+          <div class="highlights-item">
+            <h4>Cleanhill Partners, Research Intern</h4>
+            <p>Researched sustainable technologies in the industrial heat sector for an energy-transition-focused private equity firm. Produced a report on emerging solutions and presented findings to senior partners.</p>
+          </div>
+        </div>
+
+<div class="highlights-row">
+      <div class="highlights-year">2023 &ndash;</div>
+      <div class="highlights-item">
+        <h4>Varsity Cross-Country Captain</h4>
+        <p>Leading a 75-athlete roster with a focus on shared resilience and inclusive community building. Dedicated to shifting the team's metrics of success to ensure effort is recognized regardless of speed. Personal records: 16:30 5km XC, 4:24 1500m.</p>
+      </div>
+    </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- bookshelf -->
+  <section id="bookshelf" class="section">
+    <div class="section-inner">
+      <h2 class="section-heading" data-label="Reading"><span class="sr-only">All-Time Favorites</span></h2>
+
+      <div class="bookshelf-intro">
+        <p>Reading is where I do my most unplanned thinking. When I pick up a book, I don't ask much; I just let it take me where I need to be. I keep a running list of everything interesting I read online at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>. The books below are the ones I return to in my head. These are not necessarily the most important, but they're the ones that changed how I see something specific and didn't let me forget them.</p>
+      </div>
+
+      <div id="bookshelf-pool" style="display:none">
+
+ <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Misbehaving</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Misbehaving: The Making of Behavioral Economics</div>
+            <div class="spine-author">Richard Thaler</div>
+            <div class="spine-impact">People aren't perfectly rational, and that's a feature, not a bug.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Rain God</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Rain God</div>
+            <div class="spine-author">Arturo Islas</div>
+            <div class="spine-impact">Martyrdom cannot be aspirational; it only values your action and devotion to the cause.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Cry, the Beloved Country</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Cry, the Beloved Country</div>
+            <div class="spine-author">Alan Paton</div>
+            <div class="spine-impact">A lament for a country being devoured by the very order meant to hold it together.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Man's Search for Meaning</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Man's Search for Meaning</div>
+            <div class="spine-author">Viktor Frankl</div>
+            <div class="spine-impact">The will to find meaning survives even the worst that humans can do to each other.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Walking</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Walking</div>
+            <div class="spine-author">Henry David Thoreau</div>
+            <div class="spine-impact">Intense thought requires the freedom of the woods to inspire and calm the mind. Awareness arrives mid-stride.</div>
+          </div>
+        </div>
+        
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Encounters with the Archdruid</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Encounters with the Archdruid</div>
+            <div class="spine-author">John McPhee</div>
+            <div class="spine-impact">This book pits the conservationist against the engineer, forcing a confrontation between our need for progress and our duty to the Earth.</div>
+          </div>
+        </div>
+        
+        <div class="book-spine" role="listitem">
+         <div class="spine-title"><span>20,000 Leagues</span></div>
+         <div class="spine-panel">
+           <div class="spine-book-title">20,000 Leagues Under the Sea</div>
+           <div class="spine-author">Jules Verne</div>
+           <div class="spine-impact">Captain Nemo is the patron saint of the independent researcher. He built his own tools to observe a world that remains invisible to everyone else.</div>
+         </div>
+       </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Words That Made Us</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Words That Made Us</div>
+            <div class="spine-author">Akhil Reed Amar</div>
+            <div class="spine-impact">The Constitution is might be a document but it's also a centuries-long argument, and the argument is the point.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Manufacturing Consent</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Manufacturing Consent</div>
+            <div class="spine-author">Noam Chomsky & Edward S. Herman</div>
+            <div class="spine-impact">A great reminder that in politics, as in science, the observer must always account for the bias the instrument of observation.</div>
+          </div>
+        </div>
+        
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>1984</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">1984</div>
+            <div class="spine-author">George Orwell</div>
+            <div class="spine-impact">A study on the fragility of objective truth. The scientist's duty is to protect data against the gravity of narrative.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>For Whom the Bell Tolls</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">For Whom the Bell Tolls</div>
+            <div class="spine-author">Ernest Hemingway</div>
+            <div class="spine-impact">Roberto's commitment to fulfilling his purpose, however futile he thinks it may be, is the ultimate standard for integrity.</div>
+          </div>
+        </div>
+        
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Jane Eyre</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Jane Eyre</div>
+            <div class="spine-author">Charlotte Bront&euml;</div>
+            <div class="spine-impact">Moral self-possession made into the engine of a whole novel.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Wide Sargasso Sea</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Wide Sargasso Sea</div>
+            <div class="spine-author">Jean Rhys</div>
+            <div class="spine-impact">Everything the canonical story erased gets its voice back, changing the original forever.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Idiot</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Idiot</div>
+            <div class="spine-author">Elif Batuman</div>
+            <div class="spine-impact">Over-education and under-certainty, rendered with painful comic precision.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Road to Character</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Road to Character</div>
+            <div class="spine-author">David Brooks</div>
+            <div class="spine-impact">As I wrote in 7th grade, Brooks made me realize that 'you can’t find your purpose; your purpose has to find you.'</div>
+          </div>
+        </div>
+        
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Meditations on First Philosophy</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Meditations on First Philosophy</div>
+            <div class="spine-author">René Descartes</div>
+            <div class="spine-impact">Even the greatest thinkers can falter when caught up in their own deepest convictions.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Histories</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Histories</div>
+            <div class="spine-author">Herodotus</div>
+            <div class="spine-impact">The first act of genuine curiosity about the human past, written by someone who couldn't stop asking why.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>The Hitchhiker's Guide</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Hitchhiker's Guide to the Galaxy (Series)</div>
+            <div class="spine-author">Douglas Adams</div>
+            <div class="spine-impact">The universe is absurd and indifferent, and somehow that turns out to be a relief.</div>
+          </div>
+        </div>
+        
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Ender's Game (Series)</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Ender Quintet</div>
+            <div class="spine-author">Orson Scott Card</div>
+            <div class="spine-impact">The first book taught me strategy. The sequels taught me that "Speaker's" duty is to understand the 'Other' so deeply that hate becomes impossible.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Kavalier &amp; Clay</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">The Amazing Adventures of Kavalier &amp; Clay</div>
+            <div class="spine-author">Michael Chabon</div>
+            <div class="spine-impact">Imagination as defiance, myth-making as survival, comics as genuine art.</div>
+          </div>
+        </div>
+
+        <div class="book-spine" role="listitem">
+          <div class="spine-title"><span>Cloud Cuckoo Land</span></div>
+          <div class="spine-panel">
+            <div class="spine-book-title">Cloud Cuckoo Land</div>
+            <div class="spine-author">Anthony Doerr</div>
+            <div class="spine-impact">A love letter to storytelling itself, stitched together across centuries and catastrophe.</div>
+          </div>
+        </div>
+
+      </div><!-- #bookshelf-pool -->
+      <div id="bookshelf-rows"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-left">Henry Zimmerman, Phillips Academy Andover, Class of 2027</div>
+  <div class="footer-links">
+    <a href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Asteroid Scheduler</a>
+    <a href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics</a>
+    <a href="https://henryzimmerman.net/docs/asteroid_3d.html" target="_blank" rel="noopener">Asteroid Orbital Model</a>
+    <a href="https://github.com/HenryZimme" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>
+
+<button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
+<script src="js/main-test.js" defer></script>
+<script>
+  const simObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      const s = document.createElement('script');
+      s.src = 'js/cepheid-engine-test.js';
+      document.body.appendChild(s);
+      simObserver.disconnect();
     }
-    // mobile static button
-    if (mob.espressoBtn) {
-      mob.espressoBtn.textContent = showConstraints ? 'ESPRESSO WINDOWS ON' : 'ESPRESSO WINDOWS OFF';
-      mob.espressoBtn.style.borderColor = showConstraints ? 'rgba(134,239,172,0.5)' : 'rgba(255,255,255,0.15)';
-      mob.espressoBtn.style.color       = showConstraints ? '#86efac' : 'rgba(255,255,255,0.45)';
-    }
-  }
-
-  window.toggleConstraints = function () {
-    showConstraints = !showConstraints;
-    sync_constraint_buttons();
-    if (showConstraints && data && pulsPhaseArr.length) {
-      // jump to first frame where pulsPhase ∈ [PULS_MIN, PULS_MAX]
-      // AND (in orbital mode) ΔRV ≥ RV_THRESH using position-derived orbital phase.
-      const N = data.physics_frames.r1.length;
-      let jumpIdx = -1;
-      for (let j = 0; j < N; j++) {
-        const ph = pulsPhaseArr[j];
-        if (ph >= PULS_MIN && ph <= PULS_MAX) {
-          if (currentMode !== 'orbital') { jumpIdx = j; break; }
-          const ri = Math.round(get_orb_phase(j) * RV_N + RV_N) % RV_N;
-          if (rvDelta[ri] >= RV_THRESH) { jumpIdx = j; break; }
-        }
-      }
-      if (jumpIdx >= 0) { frameIdx = jumpIdx; _lastBorderState = null; }
-    }
-    if (!showConstraints) {
-      _lastBorderState = null;
-      if (simSection) simSection.style.boxShadow = '';
-      if (hud.phase) hud.phase.style.color = COL_PHASE_DEFAULT;
-      if (mob.phase) mob.phase.style.color  = COL_PHASE_DEFAULT;
-    }
-  };
-
-  function injectConstraintToggle() {
-    if (document.getElementById('btn-constraints')) return;
-    const pill = document.querySelector('#ui-layer .btn-mode')?.parentElement;
-    if (!pill) return;
-    const btn = document.createElement('button');
-    btn.id        = 'btn-constraints';
-    btn.className = 'btn-mode';
-    btn.textContent = 'ESPRESSO';
-    btn.onclick = window.toggleConstraints;
-    Object.assign(btn.style, {
-      background: 'transparent', color: 'rgba(255,255,255,0.38)', boxShadow: 'none',
-      border: 'none', padding: '0.45rem 1.4rem', borderRadius: '999px',
-      fontSize: '10.5px', cursor: 'pointer',
-      transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
-      letterSpacing: '0.1em', fontFamily: '\'JetBrains Mono\', monospace',
-    });
-    pill.appendChild(btn);
-  }
-
-  // ── RV precomputation ─────────────────────────────────────────────────────
-  function buildRV() {
-    rv1_orb = []; rv2 = []; rvDelta = []; pulsPhaseArr = [];
-
-    // ── Correct RV signs — derived directly from Python export script ─────
-    // Python: theta = 2π·t/P_orb
-    //   z1 = a1·sin(theta)·sin(i)   → dz1/dt = +K1·cos(theta)  Cepheid recedes at theta=0
-    //   z2 = a2·sin(theta+π)·sin(i) → dz2/dt = −K2·cos(theta)  Companion approaches at theta=0
-    //
-    // At theta=0 (frame 0): stars on opposite sides of screen (x1=+a1, x2=−a2)
-    //   rv1 = +K1 (Cepheid receding)  rv2 = −K2 (Companion approaching)
-    //   ΔRV = K1+K2 = max  → GREEN for ESPRESSO ✓
-    // At theta=π/2 (stars at top/bottom of screen):
-    //   rv1 = 0  rv2 = 0  → RED for ESPRESSO ✓
-    for (let k = 0; k < RV_N; k++) {
-      const phi = k / RV_N;
-      const v1  = +K1 * Math.cos(2 * Math.PI * phi);   // Cepheid: recedes at phi=0
-      const v2  = -K2 * Math.cos(2 * Math.PI * phi);   // Companion: approaches at phi=0
-      rv1_orb.push(v1);
-      rv2.push(v2);
-      rvDelta.push(Math.abs(v1 - v2));  // = (K1+K2)|cos φ|, maximum at phi=0 and 0.5 ✓
-    }
-
-    // ── Pulsation phase array — match Python exactly ───────────────────────
-    // Python: puls_phase_real = (times % p_puls) / p_puls
-    // data.physics_frames.t[i] = time in days; data.metadata.p_puls = 0.69001 days
-    // This cycles ~85.3 times per orbit.  Using i/N (once per orbit) is wrong.
-    const tArr   = data.physics_frames.t;
-    const p_puls = (data.metadata && data.metadata.p_puls) ? data.metadata.p_puls : P_PULS_D;
-    for (let i = 0; i < tArr.length; i++) {
-      pulsPhaseArr.push((tArr[i] % p_puls) / p_puls);
-    }
-
-    // Pulsation velocity per frame (breathing glow + σ envelope)
-    const r1arr = data.physics_frames.r1;
-    const N     = r1arr.length;
-    const dt    = (data.metadata && data.metadata.dt) ? data.metadata.dt : p_puls / 120;
-    const conv  = R_SUN_KM / 86400;
-
-    vpuls_arr = r1arr.map((_, i) => {
-      const prev = (i - 1 + N) % N;
-      const next = (i + 1) % N;
-      return ((r1arr[next] - r1arr[prev]) / (2 * dt)) * conv;
-    });
-    vpuls_rms = Math.sqrt(vpuls_arr.reduce((s, v) => s + v * v, 0) / Math.max(1, N));
-  }
-
-  // ── init ──────────────────────────────────────────────────────────────────
-  async function init() {
-    if (!simCanvas || !ctx) return;
-    try {
-      const r = await fetch('data/master_data.json');
-      data = await r.json();
-      const p = data.physics_frames;
-      for (const k of ['v_mag','x1','y1','z1','x2','y2','z2','r1'])
-        if (!Array.isArray(p[k])) throw new Error(`Missing: physics_frames.${k}`);
-      p.v_mag.forEach(v => {
-        if (v < bounds.minV) bounds.minV = v;
-        if (v > bounds.maxV) bounds.maxV = v;
-      });
-      bounds.a1 = Math.max(...p.x1.map(Math.abs));
-      bounds.a2 = Math.max(...p.x2.map(Math.abs));
-      maxR1     = Math.max(...p.r1);
-
-      buildRV();
-      injectConstraintToggle();
-
-      if (preview) preview.style.display = 'none';
-      simCanvas.style.opacity = '1';
-
-      window.addEventListener('resize', resize);
-      resize();
-      setMode('orbital');
-      animate();
-    } catch (e) { console.error('Cepheid engine init error:', e); }
-  }
-
-  // ── mode switching ────────────────────────────────────────────────────────
-  window.setMode = function (mode) {
-    if (!MODES.has(mode)) return;
-    currentMode = mode;
-    if (plotUI)    plotUI.style.opacity = '1';
-    if (plotLabel) plotLabel.textContent = (mode === 'orbital')
-      ? 'ORBITAL RADIAL VELOCITIES · KM S\u207B\u00B9'
-      : 'V-BAND LIGHT CURVE · PULSATION PHASE';
-    // Update HUD phase row label to match the phase being displayed
-    if (hud.phaseLabel) hud.phaseLabel.textContent = (mode === 'orbital')
-      ? '\u03c6\u1d52\u1d3f\u1d47 orbital'
-      : '\u03c6\u2081 pulsation';
-
-    // update desktop + mobile buttons
-    document.querySelectorAll('.btn-mode').forEach(b => {
-      if (b.id === 'btn-constraints') return;
-      b.style.background = 'transparent';
-      b.style.color      = 'rgba(255,255,255,0.38)';
-      b.style.boxShadow  = 'none';
-    });
-    // active desktop button
-    const btn = document.getElementById(`btn-${mode}`);
-    if (btn) {
-      btn.style.background = 'rgba(255,255,255,0.18)';
-      btn.style.color      = '#ffffff';
-      btn.style.boxShadow  = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
-    }
-    // active mobile button (mirror)
-    const mob_btn = document.getElementById(`mob-btn-${mode}`);
-    if (mob_btn) {
-      mob_btn.style.background = 'rgba(255,255,255,0.18)';
-      mob_btn.style.color      = '#ffffff';
-      mob_btn.style.boxShadow  = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
-    }
-    // mobile phase label
-    const mpl = document.getElementById('mob-hud-phase-label');
-    if (mpl) mpl.textContent = (mode === 'orbital')
-      ? '\u03c6\u1d52\u1d3f\u1d47 orbital'
-      : '\u03c6\u2081 pulsation';
-    // mobile plot label
-    const mplotL = document.getElementById('mob-plot-label');
-    if (mplotL) mplotL.textContent = (mode === 'orbital')
-      ? 'ORBITAL RADIAL VELOCITIES \u00b7 KM S\u207B\u00B9'
-      : 'V-BAND LIGHT CURVE \u00b7 PULSATION PHASE';
-  };
-
-  // ── resize ────────────────────────────────────────────────────────────────
-  function resize() {
-    const dpr = window.devicePixelRatio || 1;
-    void simCanvas.offsetHeight;  // force reflow before measuring (mobile: section height is auto)
-    const rect = simCanvas.getBoundingClientRect();
-    simCanvas.width  = rect.width  * dpr;
-    simCanvas.height = rect.height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  // ── plot box in canvas-space pixels ──────────────────────────────────────
-  // on mobile, use the in-flow #mob-plot-zone placeholder; on desktop use #hud-plot-container.
-  function getPlotRect() {
-    const el = isMobile()
-      ? document.getElementById('mob-plot-zone')
-      : plotUI;
-    if (!el) return null;
-    const pr = el.getBoundingClientRect();
-    const sr = simCanvas.getBoundingClientRect();
-    return { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height };
-  }
-
-  // ── star-zone center in canvas pixels ────────────────────────────────────
-  // on mobile, reads #mob-canvas-zone (in-flow, between HUD and plot).
-  // on desktop, reads #sim-canvas-zone (transparent flex-grow spacer).
-  function getStarZone() {
-    const zoneId = isMobile() ? 'mob-canvas-zone' : 'sim-canvas-zone';
-    const zone = document.getElementById(zoneId);
-    if (!zone) return null;
-    const zr = zone.getBoundingClientRect();
-    const sr = simCanvas.getBoundingClientRect();
-    return {
-      cx: zr.left - sr.left + zr.width  / 2,
-      cy: zr.top  - sr.top  + zr.height / 2,
-      w:  zr.width,
-      h:  zr.height,
-    };
-  }
-
-  // ── orbital phase derived from actual position data ───────────────────────
-  // Avoids assuming frame 0 = orbital phi=0 (which may not hold).
-  // Derivation: x1 = a1·cos(θ), z1 = a1·sin(θ)·sin(i)
-  //   → θ = atan2(z1/sin_i, x1) → phi = θ/(2π) mod 1
-  // At phi=0 (θ=0): x1=+a1, z1=0 → rv1=+K1 (receding), rv2=-K2 (approaching) ✓
-  // At phi=0.25 (θ=π/2): x1=0, z1≈a1·sin_i → rv1=rv2=0 ✓
-  function get_orb_phase(i) {
-    const p = data.physics_frames;
-    const theta = Math.atan2(p.z1[i] / SIN_I, p.x1[i]);
-    return ((theta / (2 * Math.PI)) + 1) % 1;
-  }
-
-  // ── Wrap-safe moveTo/lineTo helper ────────────────────────────────────────
-  // When iterating a circular array of length N centered on some offset,
-  // the index wraps from N-1 back to 0. If the data is not exactly periodic
-  // at that boundary, a raw ctx.lineTo draws a spurious diagonal slash.
-  // Use this helper: call moveTo at the first point AND at every wrap.
-  function circPt(ctx, x, y, isFirst, idx, prevIdx) {
-    const isWrap = !isFirst && idx < prevIdx;
-    isFirst || isWrap ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-
-  // ── RV plot (orbital mode) — scrolling window centered on current phase ──
-  // Z-order (back to front):
-  //   1. Constraint shading
-  //   2. Canvas center line (replaces the HTML line so canvas dots can sit above it)
-  //   3. Zero line + ΔRV threshold lines
-  //   4. σ-puls envelope
-  //   5. Model curves
-  //   6. Current-phase indicator dots (4 px)
-  //   7. Obs data dots (6 px) — always topmost
-  //   8. Constraint text
-  function drawRVPlot(frameI) {
-    const box = getPlotRect();
-    if (!box || !rv1_orb.length) return;
-    const { px, py, pw, ph } = box;
-
-    const N      = data.physics_frames.x1.length;
-    // use position-derived orbital phase so rvI=0 when stars are at same z (x1=+a1)
-    const rvI    = Math.round(get_orb_phase(frameI) * RV_N + RV_N) % RV_N;
-    const inset  = 18;
-    const padTop = 22;
-    const drawH  = ph - padTop - 8;
-    const midY   = py + padTop + drawH / 2;
-    const RVMAX  = (K1 + K2) * 1.15;
-    const yScale = (drawH / 2) / RVMAX;
-    const nPts   = 200;
-    const step   = (pw - inset * 2) / nPts;
-    const mobile = isMobile();
-    const rvY    = v => midY - v * yScale;
-    const curX   = px + pw / 2;
-
-    ctx.save();
-
-    // 1. Constraint shading
-    if (showConstraints) {
-      ctx.fillStyle = 'rgba(239,68,68,0.07)';
-      ctx.fillRect(px + inset, py + padTop, pw - inset * 2, drawH);
-      for (let k = -nPts / 2; k < nPts / 2; k++) {
-        const idx = (rvI + Math.round(k) + RV_N) % RV_N;
-        if (rvDelta[idx] >= RV_THRESH) {
-          ctx.fillStyle = 'rgba(134,239,172,0.13)';
-          ctx.fillRect(curX + k * step, py + padTop, step + 0.5, drawH);
-        }
-      }
-    } else {
-      for (let k = -nPts / 2; k < nPts / 2; k++) {
-        const idx = (rvI + Math.round(k) + RV_N) % RV_N;
-        if (rvDelta[idx] >= RV_THRESH) {
-          ctx.fillStyle = 'rgba(134,239,172,0.06)';
-          ctx.fillRect(curX + k * step, py + padTop, step + 0.5, drawH);
-        }
-      }
-    }
-
-    // 2. Canvas center line — drawn here so canvas dots are above it in z-order
-    ctx.setLineDash([]);
-    ctx.strokeStyle = 'rgba(96,165,250,0.55)';
-    ctx.lineWidth = 1;
-    ctx.shadowBlur = 6; ctx.shadowColor = '#60a5fa';
-    ctx.beginPath(); ctx.moveTo(curX, py + padTop); ctx.lineTo(curX, py + ph - 2); ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // 3. Zero line + ΔRV threshold lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
-    ctx.lineWidth = 1; ctx.setLineDash([4, 7]);
-    ctx.beginPath(); ctx.moveTo(px + inset, midY); ctx.lineTo(px + pw - inset, midY); ctx.stroke();
-
-    ctx.strokeStyle = showConstraints ? 'rgba(134,239,172,0.55)' : 'rgba(134,239,172,0.28)';
-    ctx.lineWidth = 1; ctx.setLineDash([3, 6]);
-    const half = (RV_THRESH / 2) * yScale;
-    for (const yy of [midY - half, midY + half]) {
-      ctx.beginPath(); ctx.moveTo(px + inset, yy); ctx.lineTo(px + pw - inset, yy); ctx.stroke();
-    }
-    ctx.setLineDash([]);
-
-    // 4. σ_puls envelope
-    if (vpuls_rms > 0.5) {
-      ctx.fillStyle = 'rgba(255,228,160,0.07)';
-      ctx.beginPath();
-      for (let k = -nPts / 2; k <= nPts / 2; k++) {
-        const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
-        const prev = (rvI + Math.round(k) - 1 + RV_N) % RV_N;
-        const x = curX + k * step;
-        const y = rvY(rv1_orb[idx] + vpuls_rms);
-        circPt(ctx, x, y, k === -nPts / 2, idx, prev);
-      }
-      for (let k = nPts / 2; k >= -nPts / 2; k--) {
-        const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
-        const prev = (rvI + Math.round(k) + 1 + RV_N) % RV_N;
-        const x = curX + k * step;
-        const y = rvY(rv1_orb[idx] - vpuls_rms);
-        circPt(ctx, x, y, k === nPts / 2, idx, prev);
-      }
-      ctx.closePath(); ctx.fill();
-    }
-
-    // 5. Model RV curves (wrap-safe)
-    const drawCurve = (arr, color, width) => {
-      ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = 'round';
-      for (let k = -nPts / 2; k <= nPts / 2; k++) {
-        const idx  = (rvI + Math.round(k)     + RV_N) % RV_N;
-        const prev = (rvI + Math.round(k) - 1 + RV_N) % RV_N;
-        const x    = curX + k * step;
-        const y    = rvY(arr[idx]);
-        circPt(ctx, x, y, k === -nPts / 2, idx, prev);
-      }
-      ctx.stroke();
-    };
-    drawCurve(rv1_orb, '#ffe4a0', 2.5);
-    drawCurve(rv2,     '#f87171', 2.5);
-
-    // 6. Current-phase indicator dots (4 px) — on model curves at center line
-    ctx.setLineDash([]);
-    [[rv1_orb[rvI], '#ffe4a0'], [rv2[rvI], '#f87171']].forEach(([v, col]) => {
-      ctx.beginPath(); ctx.arc(curX, rvY(v), 4, 0, Math.PI * 2);
-      ctx.fillStyle = col; ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
-    });
-
-    // 7. Obs data dots (6 px) — TOPMOST, always visible above model curves
-    OBS_DATA.forEach(([hjd, rv1_abs, e1, rv2_abs, e2]) => {
-      const phi    = ((hjd - OBS_T0) % OBS_P_ORB + OBS_P_ORB) % OBS_P_ORB / OBS_P_ORB;
-      const obsIdx = Math.round(phi * RV_N) % RV_N;
-      let kOff     = (obsIdx - rvI + RV_N) % RV_N;
-      if (kOff > RV_N / 2) kOff -= RV_N;
-      if (Math.abs(kOff) > nPts / 2) return;
-      const ox  = curX + kOff * step;
-      const v1r = rv1_abs - OBS_GAM;
-      const v2r = rv2_abs - OBS_GAM;
-
-      const drawObsPt = (vRel, eV, col) => {
-        const oy = rvY(vRel);
-        const ey = Math.max(3, eV * yScale);
-        ctx.save();
-        ctx.setLineDash([]);
-        ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.85;
-        ctx.beginPath(); ctx.moveTo(ox, oy - ey); ctx.lineTo(ox, oy + ey); ctx.stroke();
-        ctx.globalAlpha = 1.0;
-        ctx.beginPath(); ctx.arc(ox, oy, 6, 0, Math.PI * 2);
-        ctx.fillStyle = col; ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.lineWidth = 1.3; ctx.stroke();
-        ctx.restore();
-      };
-      drawObsPt(v1r, e1, '#ffe4a0');
-      drawObsPt(v2r, e2, '#f87171');
-    });
-
-    // 8. Constraint status text
-    if (showConstraints) {
-      const meetsRV  = rvDelta[rvI] >= RV_THRESH;
-      const deltaVal = rvDelta[rvI].toFixed(0);
-      ctx.font = `${mobile ? 8 : 9}px 'JetBrains Mono', monospace`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillStyle = meetsRV ? 'rgba(134,239,172,0.9)' : 'rgba(239,68,68,0.85)';
-      ctx.fillText(
-        meetsRV
-          ? `\u0394RV\u2009=\u2009${deltaVal}\u2009km/s  \u2713  orbital window`
-          : `\u0394RV\u2009=\u2009${deltaVal}\u2009km/s  \u2717  need \u226540\u2009km/s`,
-        px + pw / 2, py + 6
-      );
-    }
-
-    // Y-axis ticks
-    const tickVals = mobile
-      ? [Math.round(K1 + K2), 0, -Math.round(K1 + K2)]
-      : [Math.round(K1 + K2), Math.round((K1 + K2) / 2), 0,
-         -Math.round((K1 + K2) / 2), -Math.round(K1 + K2)];
-    ctx.font = `${mobile ? 8 : 9}px 'JetBrains Mono', monospace`;
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-    for (const v of tickVals) {
-      const ly = rvY(v);
-      if (ly > py + padTop + 4 && ly < py + ph - 6)
-        ctx.fillText((v > 0 ? '+' : '') + v, px + inset, ly);
-    }
-
-    // Legend + attribution (desktop only)
-    if (!mobile) {
-      const lr = px + pw - inset;
-      let   lt = py + padTop + 2;
-      if (showConstraints) lt += 14;
-      ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-      ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = '#ffe4a0';                ctx.fillText('Cepheid model', lr, lt);
-      ctx.fillStyle = 'rgba(255,228,160,0.38)'; ctx.fillText(`\u00b1\u03c3\u209A\u2090 \u2248 ${vpuls_rms.toFixed(0)} km/s`, lr, lt + 12);
-      ctx.fillStyle = '#f87171';                ctx.fillText('Companion model', lr, lt + 24);
-      ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fillText('\u25cf Pilecki+2022 obs.', lr, lt + 36);
-      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-      ctx.font = '8px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.fillText('circular orbit \u00b7 i=57\u00b0 \u00b7 K\u2081\u224830.3 \u00b7 K\u2082\u224854.8 km/s', px + inset, py + ph - 8);
-    }
-
-    ctx.restore();
-  }
-
-  // ── Light curve (pulsation mode) ──────────────────────────────────────────
-  function drawLightCurve(magArr, frameI) {
-    const box = getPlotRect();
-    if (!box || !magArr) return;
-    const { px, py, pw, ph } = box;
-
-    const inset    = 16;
-    const padTop   = 22;
-    const drawH    = ph - padTop - 8;
-    const magRange = Math.max(0.1, bounds.maxV - bounds.minV);
-    const midMag   = (bounds.minV + bounds.maxV) / 2;
-    const nPts     = 120;
-    const step     = (pw - inset * 2) / nPts;
-    const N        = magArr.length;
-    const mobile   = isMobile();
-
-    ctx.save();
-
-    if (showConstraints) {
-      // Shade each column by the TRUE pulsation phase from pulsPhaseArr.
-      // pulsPhaseArr[idx] = (t[idx] % p_puls) / p_puls — same formula as Python.
-      for (let k = -nPts / 2; k < nPts / 2; k++) {
-        const idx   = (frameI + Math.round(k) + N) % N;
-        const phase = pulsPhaseArr.length ? pulsPhaseArr[idx] : (idx / N);
-        const inWin = phase >= PULS_MIN && phase <= PULS_MAX;
-        ctx.fillStyle = inWin ? 'rgba(134,239,172,0.13)' : 'rgba(239,68,68,0.06)';
-        ctx.fillRect(px + pw / 2 + k * step, py, step + 0.5, ph);
-      }
-
-      // Boundary tick lines — find nearest frames where pulsPhase crosses 0.50 and 0.70
-      // by scanning forward from frameI within the visible window.
-      [PULS_MIN, PULS_MAX].forEach(tp => {
-        for (let k = -nPts / 2; k < nPts / 2 - 1; k++) {
-          const idxA = (frameI + Math.round(k)     + N) % N;
-          const idxB = (frameI + Math.round(k) + 1 + N) % N;
-          const phA  = pulsPhaseArr.length ? pulsPhaseArr[idxA] : (idxA / N);
-          const phB  = pulsPhaseArr.length ? pulsPhaseArr[idxB] : (idxB / N);
-          // Detect crossing — account for wrap from ~1 → ~0
-          const cross = (phA < phB && phA <= tp && phB > tp) ||
-                        (phA > phB && tp >= 0 && tp < phB);   // wrap crossing
-          if (!cross) continue;
-          const x = px + pw / 2 + (k + 0.5) * step;
-          ctx.strokeStyle = 'rgba(134,239,172,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
-          ctx.beginPath(); ctx.moveTo(x, py + 14); ctx.lineTo(x, py + ph - 2); ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.fillStyle = 'rgba(134,239,172,0.75)'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-          ctx.font = '8px \'JetBrains Mono\', monospace';
-          ctx.fillText(`\u03c6=${tp.toFixed(2)}`, x, py + 16);
-          break;  // only show first crossing per boundary
-        }
-      });
-
-      // Phase status text — TRUE pulsation phase at current frame
-      const cp    = pulsPhaseArr.length ? pulsPhaseArr[frameI] : (frameI / N);
-      const inWin = cp >= PULS_MIN && cp <= PULS_MAX;
-      ctx.font = `${mobile ? 8 : 9}px 'JetBrains Mono', monospace`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillStyle = inWin ? 'rgba(134,239,172,0.9)' : 'rgba(239,68,68,0.85)';
-      ctx.fillText(
-        inWin
-          ? `\u03c6\u2081\u2009=\u2009${cp.toFixed(2)}  \u2713  quiescent window`
-          : `\u03c6\u2081\u2009=\u2009${cp.toFixed(2)}  \u2717  outside [0.50\u20130.70]`,
-        px + pw / 2, py + 2
-      );
-    }
-
-    // Light curve — FIX: wrap detection so Fourier-fit periodicity seam
-    // (frame N-1 → frame 0) doesn't produce a spurious diagonal stroke.
-    ctx.beginPath(); ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
-    for (let k = -nPts / 2; k <= nPts / 2; k++) {
-      const idx  = (frameI + Math.round(k)     + N) % N;
-      const prev = (frameI + Math.round(k) - 1 + N) % N;
-      const x    = px + pw / 2 + k * step;
-      const y    = py + padTop + drawH / 2 - ((magArr[idx] - midMag) * (drawH / magRange) * 0.72);
-      circPt(ctx, x, y, k === -nPts / 2, idx, prev);
-    }
-    ctx.stroke();
-
-    // Current-phase dot
-    const curY = py + padTop + drawH / 2 - ((magArr[frameI] - midMag) * (drawH / magRange) * 0.72);
-    ctx.beginPath(); ctx.arc(px + pw / 2, curY, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#60a5fa'; ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1; ctx.stroke();
-
-    ctx.restore();
-  }
-
-  // ── ESPRESSO constraint badge — drawn on canvas, always readable ─────────
-  // Placed just below the star center so it's in the clear zone between
-  // the stars and the plot panel.  Shows live constraint state each frame.
-  function drawConstraintBadge(starCx, starCy, constraintOk, orbOk, pulsOk, pulsPhase, rvDeltaVal) {
-    if (!showConstraints) return;
-    const mobile = isMobile();
-    const fs  = mobile ? 9 : 10;
-    const bx  = starCx;
-    const by  = starCy + (mobile ? 55 : 75);  // below star center
-
-    ctx.save();
-    ctx.font = `${fs}px 'JetBrains Mono', monospace`;
-
-    const rvLine = currentMode === 'orbital'
-      ? `\u0394RV\u2009=\u2009${rvDeltaVal}\u2009km/s\u2009\u2009${orbOk   ? '\u2713' : '\u2717'}`
-      : null;
-    const phLine = `\u03c6\u2081\u2009=\u2009${pulsPhase.toFixed(2)}\u2009\u2009${pulsOk ? '\u2713' : '\u2717'}`;
-    const stLine = constraintOk ? 'ESPRESSO window  \u25cf  OPEN' : 'ESPRESSO window  \u25cb  CLOSED';
-
-    const lines = [rvLine, phLine, stLine].filter(Boolean);
-    const lineH = fs + 5;
-    const maxW  = lines.reduce((m, l) => Math.max(m, ctx.measureText(l).width), 0);
-    const boxW  = maxW + 28;
-    const boxH  = lines.length * lineH + 14;
-    const boxX  = bx - boxW / 2;
-    const boxY  = by - 4;
-
-    // Background
-    ctx.fillStyle = 'rgba(7,9,26,0.78)';
-    ctx.fillRect(boxX, boxY, boxW, boxH);
-    // Border
-    ctx.strokeStyle = constraintOk ? 'rgba(134,239,172,0.45)' : 'rgba(239,68,68,0.35)';
-    ctx.lineWidth = 1; ctx.setLineDash([]);
-    ctx.strokeRect(boxX, boxY, boxW, boxH);
-
-    // Text lines
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    lines.forEach((line, j) => {
-      const y = boxY + 7 + j * lineH;
-      if (line === stLine) {
-        ctx.fillStyle = constraintOk ? 'rgba(134,239,172,0.95)' : 'rgba(239,68,68,0.90)';
-      } else if (line === rvLine) {
-        ctx.fillStyle = orbOk ? 'rgba(134,239,172,0.85)' : 'rgba(239,68,68,0.80)';
-      } else {
-        ctx.fillStyle = pulsOk ? 'rgba(134,239,172,0.85)' : 'rgba(239,68,68,0.80)';
-      }
-      ctx.fillText(line, boxX + 14, y);
-    });
-
-    ctx.restore();
-  }
-
-  // ── main loop ─────────────────────────────────────────────────────────────
-  function animate() {
-    if (!data || !data.physics_frames) return;
-    const p   = data.physics_frames;
-    const dpr = window.devicePixelRatio || 1;
-    const w   = simCanvas.width  / dpr;
-    const h   = simCanvas.height / dpr;
-
-    ctx.clearRect(0, 0, w, h);
-
-    const i      = Math.floor(frameIdx) % p.x1.length;
-    const N      = p.x1.length;
-    const mobile = isMobile();
-    frameIdx += (currentMode === 'pulsation' ? 0.4 : 0.8);
-
-    let x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
-
-    if (currentMode === 'pulsation') {
-      x1 = 0; y1 = 0; z1 = 0; x2 = 99999; y2 = 0; z2 = -1;
-      r1   = p.r1[i];
-      mag  = p.v_mag[i];
-      teff = safeGet(p.teff, i, null);
-      col1 = safeGet(p.color1, i, FALLBACK_COL);
-      drawLightCurve(p.v_mag, i);
-    } else {
-      x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
-      x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
-      r1   = p.r1[i];
-      mag  = p.v_mag[i];
-      teff = safeGet(p.teff, i, null);
-      col1 = safeGet(p.color1, i, FALLBACK_COL);
-      drawRVPlot(i);
-    }
-
-    // ── Constraint evaluation ─────────────────────────────────────────────
-    // rvI derived from actual orbital position (not frame index fraction).
-    // at phi=0 (x1=+a1, z1=0): rv1=+K1, rv2=-K2 — opposite signs, different magnitudes.
-    const rvI  = Math.round(get_orb_phase(i) * RV_N + RV_N) % RV_N;
-    const orbOk = rvDelta[rvI] >= RV_THRESH;
-    // TRUE pulsation phase from precomputed array: (t[i] % p_puls) / p_puls
-    // This cycles ~85.3× per orbit — exactly as the Python export script computes it.
-    const pulsPhase = pulsPhaseArr.length ? pulsPhaseArr[i] : (i / N);
-    const pulsOk    = pulsPhase >= PULS_MIN && pulsPhase <= PULS_MAX;
-    const constraintOk = currentMode === 'orbital' ? (orbOk && pulsOk) : pulsOk;
-
-    updateSimBorder(constraintOk);
-
-    // ── Zoom + center ─────────────────────────────────────────────────────
-    // On mobile, #sim-canvas-zone is an actual DOM element (position:relative
-    // layout).  Read its center directly via getStarZone() — no percentage
-    // guessing needed.  On desktop, use the conventional fraction of canvas h.
-    let zoom, cx, cy;
-    if (isMobile()) {
-      const zone = getStarZone();
-      cx = zone ? zone.cx : w / 2;
-      cy = zone ? zone.cy : h * 0.50;
-      zoom = currentMode === 'pulsation'
-        ? (Math.min(zone ? zone.w : w, zone ? zone.h : h) * 0.11) / maxR1
-        : (Math.min(zone ? zone.w : w, zone ? zone.h : h) * 0.23) / bounds.a2;
-    } else if (currentMode === 'pulsation') {
-      zoom = (Math.min(w, h) * 0.17) / maxR1;
-      cx   = w / 2;
-      cy   = h * 0.30;
-    } else {
-      zoom = (Math.min(w, h) * 0.40) / bounds.a2;
-      cx   = w / 2;
-      cy   = h * 0.43;
-    }
-
-    // ── Orbital ellipses ──────────────────────────────────────────────────
-    if (currentMode !== 'pulsation') {
-      const inc = 0.545; // cos 57°
-      ctx.save();
-      ctx.lineWidth = mobile ? 1.5 : 2; ctx.setLineDash([7, 9]);
-      ctx.strokeStyle = 'rgba(248,113,113,0.65)';
-      ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a2*zoom, bounds.a2*zoom*inc, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.strokeStyle = 'rgba(196,162,88,0.65)';
-      ctx.beginPath(); ctx.ellipse(cx, cy, bounds.a1*zoom, bounds.a1*zoom*inc, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.setLineDash([]); ctx.restore();
-
-      // Barycenter crosshair
-      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5);
-      ctx.stroke(); ctx.restore();
-
-      // ── ESPRESSO orbit arc: colored by actual ΔRV per orbital phase ──────
-      // FIX: the previous code colored arc segments by VISUAL ANGLE (k/360),
-      // which doesn't match the RV phase because inclination projects y ≠ z.
-      // The correct approach: iterate the actual position-frame data and draw
-      // each segment colored by the corresponding rvDelta. Frame j maps to
-      // rvDelta[round(j/N * RV_N)] — the same mapping used everywhere else,
-      // so the coloring is consistent with the RV plot and constraint readout.
-      if (showConstraints) {
-        // color each arc segment by actual orbital phase (position-derived, not frame fraction).
-        // green when rvDelta ≥ RV_THRESH — i.e. |cos(θ)| ≥ 40/85 ≈ 0.47
-        // (roughly the two 23%-wide windows centered at θ=0 and θ=π).
-        ctx.save(); ctx.lineWidth = 3.5;
-        for (let j = 0; j < N; j++) {
-          const jNext = (j + 1) % N;
-          const rvIdx = Math.round(get_orb_phase(j) * RV_N + RV_N) % RV_N;
-          ctx.beginPath();
-          ctx.strokeStyle = rvDelta[rvIdx] >= RV_THRESH
-            ? 'rgba(134,239,172,0.65)'
-            : 'rgba(239,68,68,0.30)';
-          ctx.moveTo(cx + p.x1[j]     * zoom, cy + p.y1[j]     * zoom);
-          ctx.lineTo(cx + p.x1[jNext] * zoom, cy + p.y1[jNext] * zoom);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-    }
-
-    // ── Draw stars ────────────────────────────────────────────────────────
-    // Breathing glow: shadowBlur scales with |vpuls| so the Cepheid visually
-    // "breathes" — glow peaks at max expansion/contraction velocity.
-    const vpNow  = vpuls_arr[i % Math.max(1, vpuls_arr.length)] || 0;
-    const vpNorm = vpuls_rms > 0 ? Math.min(1, Math.abs(vpNow) / (vpuls_rms * 2)) : 0;
-
-    const drawStar = (sx, sy, r, col, isPulsating) => {
-      const spx = cx + sx * zoom, spy = cy + sy * zoom;
-      const pr  = Math.max(2, r * zoom);
-      ctx.save();
-      ctx.fillStyle  = col || FALLBACK_COL;
-      ctx.shadowBlur  = pr * (isPulsating ? (1.2 + vpNorm * 2.2) : 1.0);
-      ctx.shadowColor = col;
-      ctx.beginPath(); ctx.arc(spx, spy, pr, 0, Math.PI*2); ctx.fill();
-      ctx.restore();
-    };
-
-    if (z1 < z2) {
-      drawStar(x2, y2, COMPANION_RAD, '#f87171', false);
-      drawStar(x1, y1, r1, col1, true);
-    } else {
-      drawStar(x1, y1, r1, col1, true);
-      drawStar(x2, y2, COMPANION_RAD, '#f87171', false);
-    }
-
-    // ── Star labels — desktop only ────────────────────────────────────────
-    if (currentMode !== 'pulsation' && !mobile) {
-      const lx1  = cx + x1 * zoom, ly1 = cy + y1 * zoom;
-      const lx2  = cx + x2 * zoom, ly2 = cy + y2 * zoom;
-      const dist = Math.hypot(lx1 - lx2, ly1 - ly2);
-      const minD = (r1 + COMPANION_RAD) * zoom * 2.2;
-      const alpha = Math.min(1, Math.max(0.72, (dist - minD) / (minD * 0.6)));
-      if (dist > minD * 0.4) {
-        ctx.save();
-        ctx.font = '11px \'JetBrains Mono\', monospace';
-        ctx.textBaseline = 'middle'; ctx.globalAlpha = alpha;
-        ctx.fillStyle = '#ffe4a0';
-        ctx.fillText('Cepheid',   lx1 + r1 * zoom + 8,             ly1 - r1 * zoom * 0.5);
-        ctx.fillStyle = '#f87171';
-        ctx.fillText('Companion', lx2 + COMPANION_RAD * zoom + 8,   ly2 - COMPANION_RAD * zoom * 0.5);
-        ctx.globalAlpha = 1; ctx.restore();
-      }
-    }
-
-    // ── Constraint badge (on canvas, always readable) ─────────────────────
-    if (showConstraints) {
-      const rvDeltaVal = rvDelta[rvI].toFixed(0);
-      drawConstraintBadge(cx, cy, constraintOk, orbOk, pulsOk, pulsPhase, rvDeltaVal);
-    }
-
-    // ── HUD — update both desktop and mobile nodes ───────────────────────
-    const teffStr  = teff !== null ? `${Math.round(teff)} K` : '~6490 K';
-    const radStr   = `${r1.toFixed(1)} R\u2609`;
-    const magStr   = mag.toFixed(1);
-    // orbital mode: show phi_orb = position-derived phase (same as rvI/RV_N)
-    // pulsation mode: show true pulsation phase
-    const displayPhase = currentMode === 'orbital' ? get_orb_phase(i) : pulsPhase;
-    const phaseStr = displayPhase.toFixed(3);
-    const phaseCol = showConstraints ? (constraintOk ? COL_OK : COL_WARN) : COL_PHASE_DEFAULT;
-
-    if (hud.mag)   hud.mag.innerText  = magStr;
-    if (hud.teff)  hud.teff.innerText = teffStr;
-    if (hud.rad)   hud.rad.innerText  = radStr;
-    if (hud.phase) { hud.phase.innerText = phaseStr; hud.phase.style.color = phaseCol; }
-
-    if (mob.mag)   mob.mag.innerText  = magStr;
-    if (mob.teff)  mob.teff.innerText = teffStr;
-    if (mob.rad)   mob.rad.innerText  = radStr;
-    if (mob.phase) { mob.phase.innerText = phaseStr; mob.phase.style.color = phaseCol; }
-
-    requestAnimationFrame(animate);
-  }
-
-  init();
-})();
+  }, { rootMargin: '200px' });
+  simObserver.observe(document.getElementById('cepheid-sim'));
+</script>
+<script>
+  new IntersectionObserver((entries) => {
+    if (!entries[0].isIntersecting) return;
+    window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']] } };
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
+    document.head.appendChild(s);
+  }, { rootMargin: '300px' }).observe(document.getElementById('research'));
+</script>
+</body>
+</html>
