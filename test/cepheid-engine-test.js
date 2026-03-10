@@ -8,7 +8,7 @@
   var P_ORB_S       = P_ORB_D * 86400;
   var P_PULS        = 0.69001; // days
   var T0_ORB        = 2459050.0; // orbital reference epoch HJD (Pilecki+ 2022 Table 1)
-  var T0_PULS       = 2459510.39765; // pulsation reference epoch HJD (chi2 fit to Pilecki RVs)
+  var T0_PULS       = 2459510.64947; // pulsation reference epoch HJD (Fourier r=2 fit to Pilecki RVs)
   var SIN_I         = Math.sin(57 * Math.PI / 180);
   var K1            = 28.5;   // km/s (Pilecki+ 2022 Table 1)
   var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
@@ -168,26 +168,20 @@
   function buildRV() {
     rv1 = []; rv2 = []; rvDelta = [];
 
-    // one pulsation cycle of v_puls via central finite differences on r1
-    var r1arr = data.physics_frames.r1;
-    var dt = (data.metadata && data.metadata.dt)
-      ? data.metadata.dt
-      : (Array.isArray(data.physics_frames.t) && data.physics_frames.t.length > 1
-          ? data.physics_frames.t[1] - data.physics_frames.t[0]
-          : P_PULS / 120);
-    var conv = R_SUN_KM / 86400;
-    var Np = Math.round(P_PULS / dt); // frames per pulsation cycle
-
-    // build v_puls over one cycle, scaled to 15 km/s peak (Pilecki+ right panel)
-    var v_raw = [];
+    // pulsation RV model: Fourier r=2 fit directly to Pilecki RV residuals (R²=0.927)
+    // coeffs: [a0, a1, b1, a2, b2] from chi2-minimised fit over phi0 grid
+    var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
+    var Np = 120;
+    v_puls_cycle = [];
     for (var i = 0; i < Np; i++) {
-      var prev = (i - 1 + Np) % Np;
-      var next = (i + 1) % Np;
-      v_raw.push(((r1arr[next] - r1arr[prev]) / (2 * dt)) * conv);
+      var ph = i / Np;
+      var v = PULS_C[0]
+            + PULS_C[1] * Math.cos(2 * Math.PI * ph)
+            + PULS_C[2] * Math.sin(2 * Math.PI * ph)
+            + PULS_C[3] * Math.cos(4 * Math.PI * ph)
+            + PULS_C[4] * Math.sin(4 * Math.PI * ph);
+      v_puls_cycle.push(v);
     }
-    var vmax = 0;
-    for (var vi = 0; vi < Np; vi++) if (Math.abs(v_raw[vi]) > vmax) vmax = Math.abs(v_raw[vi]);
-    v_puls_cycle = v_raw.map(function(v) { return vmax > 0 ? v * 15.0 / vmax : 0; });
 
     // orbital-only model curves (no pulsation in model lines)
     for (var k = 0; k < RV_N; k++) {
