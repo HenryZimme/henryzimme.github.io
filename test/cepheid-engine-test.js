@@ -857,6 +857,9 @@
       buildRV();
       prepareObservationalData();
 
+      // start at orbital quadrature (phi=0.25) so RVs show maximum separation on load
+      frameIdx = Math.round(0.25 * p.x1.length);
+
       if (preview) preview.style.display = 'none';
       simCanvas.style.opacity = '1';
       if (plotUI) plotUI.style.opacity = '1';
