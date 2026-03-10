@@ -232,12 +232,81 @@
       nav { padding: 18px 24px; }
       .article-wrap { padding: 90px 18px 72px; }
       #back-to-top { bottom: 20px; right: 20px; }
-      
       .poster-breakout { padding: 0 18px; }
-      .poster-iframe { 
-        aspect-ratio: auto; 
-        height: 400px; 
-      }
+      .poster-iframe { aspect-ratio: auto; height: 400px; }
+    }
+
+    /* ── pulsation simulation ── */
+    figure#usgr-sim {
+      position: relative;
+      width: 100%;
+      height: 460px;
+      margin: 2.2em 0;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--panel-border);
+      overflow: hidden;
+    }
+    #usgr-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #usgr-plot {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 220px;
+      pointer-events: none;
+    }
+    #usgr-hud {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .usgr-hud-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .usgr-hud-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: rgba(226,221,212,0.35);
+      text-transform: uppercase;
+    }
+    .usgr-hud-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: 0.03em;
+    }
+    .usgr-teff-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #usgr-hud-swatch {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    figure#usgr-sim figcaption {
+      display: none; /* caption handled inside canvas */
+    }
+    @media (max-width: 600px) {
+      figure#usgr-sim { height: 380px; }
+      #usgr-plot { height: 185px; }
+      #usgr-hud { top: 10px; right: 10px; gap: 6px; }
+      .usgr-hud-val { font-size: 11px; }
     }
   </style>
 </head>
@@ -263,9 +332,30 @@
         U Sagitarii is a Classical Cepheid variable star located in the Messier 25 cluster. 11 observations were made in Cousins V and I bands from 2025-10-14 to 2025-11-15 using the Slooh Chile 2 Telescope. Photometric comparison stars were selected based on angular separation, SNR, and SIMBAD magnitude. 
       </p>
 
-      <figure>
-        <img src="images/cepheid.gif" alt="Animation showing the light curve and pulsation cycle of a Cepheid variable star">
-        <figcaption>Cepheid variable pulsation and magnitude change correlation. Source: Astronomy Club IITK.</figcaption>
+      <figure id="usgr-sim" aria-label="U Sagittarii pulsation simulation">
+        <canvas id="usgr-canvas"></canvas>
+        <div id="usgr-plot"></div>
+        <div id="usgr-hud">
+          <div class="usgr-hud-item">
+            <span class="usgr-hud-label">V mag</span>
+            <span class="usgr-hud-val" id="usgr-hud-mag">—</span>
+          </div>
+          <div class="usgr-hud-item">
+            <span class="usgr-hud-label">T<sub>eff</sub></span>
+            <div class="usgr-teff-row">
+              <span id="usgr-hud-swatch"></span>
+              <span class="usgr-hud-val" id="usgr-hud-teff">—</span>
+            </div>
+          </div>
+          <div class="usgr-hud-item">
+            <span class="usgr-hud-label">Radius</span>
+            <span class="usgr-hud-val" id="usgr-hud-rad">—</span>
+          </div>
+          <div class="usgr-hud-item">
+            <span class="usgr-hud-label">φ<sub>puls</sub></span>
+            <span class="usgr-hud-val" id="usgr-hud-phase">—</span>
+          </div>
+        </div>
       </figure>
 
       <p>
@@ -320,6 +410,307 @@
     backToTopBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+  </script>
+
+  <script>
+    // ── u sgr pulsation engine ──────────────────────────────────────────────
+    (function() {
+      // config
+      var NP           = 200;    // phase points (0.000-0.995, step 0.005)
+      var P_PULS_D     = 6.745;  // days (kavka & kopacki 2009; confirmed simbad)
+      var PULS_SPEED_S = 4.0;    // wall-clock seconds per full pulsation cycle
+      var FPS_CAP      = 40;
+
+      // berdnikov et al. 2014 model — johnson v-band (vizier j/pasp/126/521)
+      var V_MAG = [6.337,6.337,6.339,6.342,6.346,6.351,6.356,6.362,6.369,6.375,6.382,6.389,6.396,6.403,6.410,6.417,6.423,6.430,6.436,6.441,6.447,6.453,6.458,6.464,6.469,6.475,6.480,6.486,6.492,6.498,6.505,6.511,6.518,6.525,6.532,6.539,6.546,6.554,6.561,6.568,6.575,6.581,6.588,6.594,6.599,6.604,6.609,6.613,6.617,6.621,6.623,6.626,6.628,6.629,6.631,6.632,6.632,6.633,6.633,6.634,6.635,6.635,6.636,6.637,6.639,6.641,6.643,6.646,6.650,6.654,6.658,6.664,6.670,6.676,6.683,6.691,6.699,6.707,6.716,6.726,6.735,6.745,6.754,6.764,6.773,6.783,6.792,6.801,6.809,6.817,6.825,6.832,6.839,6.845,6.851,6.857,6.862,6.867,6.871,6.875,6.880,6.884,6.888,6.892,6.896,6.901,6.905,6.910,6.915,6.921,6.926,6.932,6.938,6.944,6.950,6.956,6.963,6.969,6.976,6.982,6.988,6.994,7.000,7.005,7.010,7.015,7.020,7.025,7.029,7.034,7.038,7.041,7.045,7.048,7.052,7.055,7.057,7.060,7.062,7.064,7.066,7.067,7.067,7.067,7.066,7.065,7.063,7.060,7.056,7.051,7.045,7.039,7.031,7.022,7.013,7.002,6.991,6.979,6.966,6.953,6.938,6.924,6.908,6.893,6.877,6.860,6.844,6.827,6.809,6.792,6.774,6.756,6.738,6.719,6.701,6.682,6.663,6.643,6.624,6.604,6.585,6.565,6.546,6.527,6.508,6.489,6.471,6.454,6.438,6.422,6.407,6.394,6.382,6.371,6.362,6.354,6.348,6.343,6.339,6.337];
+
+      // teff mapped from v mag onto spectroscopic range (simbad fe/h table, 2023-2024 refs)
+      // 6200 k at max brightness (f5 supergiant), 5300 k at minimum (g1 supergiant)
+      var TEFF = [6200,6200,6198,6194,6189,6183,6177,6169,6161,6153,6145,6136,6127,6119,6110,6101,6094,6085,6078,6072,6064,6057,6051,6043,6037,6030,6024,6016,6009,6002,5993,5985,5977,5968,5960,5951,5942,5932,5924,5915,5907,5899,5891,5883,5877,5871,5865,5860,5855,5850,5847,5844,5841,5840,5838,5836,5836,5835,5835,5834,5833,5833,5831,5830,5828,5825,5823,5819,5814,5809,5804,5797,5789,5782,5773,5764,5754,5744,5733,5720,5709,5697,5686,5674,5662,5650,5639,5628,5618,5608,5598,5590,5581,5574,5566,5559,5553,5547,5542,5537,5531,5526,5521,5516,5511,5505,5500,5494,5487,5480,5474,5466,5459,5452,5444,5437,5428,5421,5412,5405,5397,5390,5383,5376,5370,5364,5358,5352,5347,5341,5336,5332,5327,5323,5318,5315,5312,5309,5306,5304,5301,5300,5300,5300,5301,5302,5305,5309,5314,5320,5327,5335,5344,5355,5367,5380,5394,5408,5425,5441,5459,5476,5496,5515,5534,5555,5575,5596,5618,5639,5661,5683,5706,5729,5751,5775,5798,5823,5846,5871,5894,5919,5942,5966,5989,6013,6035,6056,6075,6095,6114,6130,6145,6158,6169,6179,6186,6193,6198,6200];
+
+      // radius in r_sun (stefan-boltzmann, normalized to mean 38 r_sun)
+      var R1 = [36.80,36.84,36.84,36.83,36.80,36.76,36.79,36.76,36.72,36.78,36.77,36.77,36.81,36.84,36.87,36.87,36.96,36.99,37.04,37.19,37.28,37.32,37.47,37.52,37.66,37.74,37.89,37.97,38.06,38.18,38.25,38.37,38.43,38.50,38.60,38.67,38.73,38.74,38.80,38.83,38.85,38.94,38.92,38.93,38.99,39.01,38.99,39.03,39.00,39.00,39.04,39.02,39.03,39.04,39.01,39.03,39.10,39.08,39.12,39.10,39.12,39.20,39.22,39.24,39.24,39.27,39.35,39.37,39.37,39.41,39.49,39.49,39.53,39.56,39.62,39.62,39.62,39.70,39.72,39.68,39.70,39.70,39.72,39.71,39.73,39.69,39.67,39.65,39.68,39.68,39.64,39.62,39.60,39.59,39.56,39.52,39.50,39.48,39.47,39.47,39.38,39.38,39.34,39.30,39.30,39.21,39.21,39.15,39.10,39.02,39.00,38.93,38.89,38.82,38.78,38.77,38.68,38.68,38.59,38.58,38.54,38.50,38.46,38.48,38.49,38.47,38.41,38.39,38.39,38.30,38.26,38.27,38.20,38.18,38.08,38.00,37.96,37.88,37.77,37.67,37.57,37.46,37.39,37.26,37.18,37.07,36.94,36.86,36.77,36.69,36.66,36.57,36.51,36.50,36.45,36.44,36.39,36.40,36.38,36.37,36.42,36.39,36.42,36.41,36.40,36.42,36.38,36.39,36.42,36.39,36.38,36.37,36.32,36.33,36.28,36.27,36.24,36.28,36.24,36.25,36.24,36.28,36.27,36.26,36.32,36.37,36.41,36.44,36.44,36.52,36.58,36.61,36.66,36.73,36.73,36.78,36.77,36.81,36.84,36.84];
+
+      // per-phase color: 5300 k = warm gold (#ffb95a), 6200 k = pale yellow-white (#ffe6b4)
+      // r=255 throughout; g=185+45*norm, b=90+90*norm where norm=(t-5300)/900
+      var COLOR1 = [];
+      for (var ci = 0; ci < NP; ci++) {
+        var n  = Math.max(0, Math.min(1, (TEFF[ci] - 5300) / 900));
+        var gg = Math.round(185 + n * 45);
+        var bb = Math.round(90  + n * 90);
+        COLOR1.push('#ff' + gg.toString(16).padStart(2,'0') + bb.toString(16).padStart(2,'0'));
+      }
+
+      // state
+      var puls_time  = 0;
+      var last_t     = null;
+      var last_frame = 0;
+
+      var v_min = Math.min.apply(null, V_MAG);
+      var v_max = Math.max.apply(null, V_MAG);
+      var r_min = Math.min.apply(null, R1);
+      var r_max = Math.max.apply(null, R1);
+
+      // dom refs
+      var canvas     = document.getElementById('usgr-canvas');
+      var ctx        = canvas ? canvas.getContext('2d') : null;
+      var plot_el    = document.getElementById('usgr-plot');
+      var hud_mag    = document.getElementById('usgr-hud-mag');
+      var hud_teff   = document.getElementById('usgr-hud-teff');
+      var hud_rad    = document.getElementById('usgr-hud-rad');
+      var hud_phase  = document.getElementById('usgr-hud-phase');
+      var hud_swatch = document.getElementById('usgr-hud-swatch');
+
+      // linear interpolation across data arrays at arbitrary phase
+      function get_state(phi) {
+        phi = ((phi % 1) + 1) % 1;
+        var fp = phi * (NP - 1);
+        var i0 = Math.floor(fp) % NP;
+        var i1 = (i0 + 1) % NP;
+        var t  = fp - i0;
+        return {
+          mag:  V_MAG[i0] + (V_MAG[i1] - V_MAG[i0]) * t,
+          teff: TEFF[i0]  + (TEFF[i1]  - TEFF[i0])  * t,
+          r1:   R1[i0]    + (R1[i1]    - R1[i0])    * t,
+          col:  COLOR1[i0],
+        };
+      }
+
+      function hex_rgba(hex, a) {
+        var r = parseInt(hex.slice(1,3), 16);
+        var g = parseInt(hex.slice(3,5), 16);
+        var b = parseInt(hex.slice(5,7), 16);
+        return 'rgba('+r+','+g+','+b+','+a+')';
+      }
+
+      // returns plot box in canvas-space pixels
+      function get_plot_rect() {
+        if (!plot_el || !canvas) return null;
+        var pr = plot_el.getBoundingClientRect();
+        var cr = canvas.getBoundingClientRect();
+        return { px: pr.left-cr.left, py: pr.top-cr.top, pw: pr.width, ph: pr.height };
+      }
+
+      // star disc with bloom glow
+      function draw_star(sx, sy, pr, col, brightness) {
+        ctx.save();
+        var b  = Math.max(0, Math.min(1, brightness));
+        var br = pr * 3.5;
+        var ba = 0.06 + b * 0.14;
+        var g  = ctx.createRadialGradient(sx, sy, pr*0.5, sx, sy, br);
+        g.addColorStop(0,   hex_rgba(col, ba));
+        g.addColorStop(0.5, hex_rgba(col, ba * 0.35));
+        g.addColorStop(1,   'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(sx, sy, br, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur  = pr * (1.8 + b * 1.2);
+        ctx.shadowColor = col;
+        ctx.fillStyle   = col;
+        ctx.beginPath(); ctx.arc(sx, sy, pr, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+
+      // scrolling light curve with radius strip — current phase always centered
+      function draw_light_curve(phi) {
+        var box = get_plot_rect();
+        if (!box) return;
+        var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
+        var inset = 20, pad_top = 22, pad_bot = 44;
+        var draw_h  = ph - pad_top - pad_bot;
+        var mid_mag = (v_min + v_max) / 2;
+        var mag_rng = v_max - v_min;
+        var n_pts   = 480, n_cyc = 2;
+        var step    = (pw - inset*2) / n_pts;
+
+        var mag_to_y = function(m) {
+          return py + pad_top + draw_h/2 - ((m - mid_mag) * (draw_h / mag_rng) * 0.72);
+        };
+
+        ctx.save();
+
+        // y-axis label
+        ctx.save();
+        ctx.translate(px + 11, py + pad_top + draw_h/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = 'rgba(196,162,88,0.38)';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('V mag  \u2191 bright', 0, 0);
+        ctx.restore();
+
+        // model curve treadmill (gold)
+        ctx.beginPath();
+        ctx.strokeStyle = '#c4a258';
+        ctx.lineWidth = 2; ctx.lineJoin = 'round';
+        for (var k = -n_pts/2; k <= n_pts/2; k++) {
+          var k_ph = ((phi + k * n_cyc / n_pts) % 1 + 1) % 1;
+          var fi   = Math.floor(k_ph * NP) % NP;
+          var lx   = px + pw/2 + k * step;
+          var ly   = mag_to_y(V_MAG[fi]);
+          k === -n_pts/2 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly);
+        }
+        ctx.stroke();
+
+        // cursor at current phase (centered)
+        ctx.save();
+        ctx.strokeStyle = 'rgba(196,162,88,0.4)';
+        ctx.shadowBlur = 4; ctx.shadowColor = '#c4a258';
+        ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.moveTo(px + pw/2, py + pad_top);
+        ctx.lineTo(px + pw/2, py + ph - pad_bot);
+        ctx.stroke();
+        ctx.restore();
+
+        // header
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = 'rgba(196,162,88,0.5)';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, py + 6);
+
+        // legend
+        ctx.textAlign = 'right';
+        ctx.fillStyle = 'rgba(196,162,88,0.75)';
+        ctx.fillText('Berdnikov et al. 2014', px + pw - inset, py + pad_top + 10);
+        ctx.fillStyle = 'rgba(196,162,88,0.45)';
+        ctx.fillText('P = 6.745 d', px + pw - inset, py + pad_top + 22);
+
+        // y-axis ticks
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = 'rgba(255,255,255,0.38)';
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        for (var tv = 6.4; tv <= 7.1; tv += 0.2) {
+          var tly = mag_to_y(tv);
+          if (tly > py + pad_top + 4 && tly < py + ph - pad_bot - 4)
+            ctx.fillText(tv.toFixed(1), px + inset - 5, tly);
+        }
+
+        // x-axis phase labels
+        ctx.textBaseline = 'top'; ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255,255,255,0.28)';
+        for (var xp = 0; xp <= 1; xp += 0.25)
+          ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp*(pw - inset*2), py + ph - pad_bot + 5);
+
+        // attribution
+        ctx.font = "8px 'JetBrains Mono', monospace";
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        ctx.fillText('Berdnikov et al. 2014 \u00B7 P = 6.745 d \u00B7 Johnson V', px + inset, py + ph - 6);
+
+        // radius strip
+        var r_rng = r_max - r_min;
+        var rh = 30, ry = py + ph - rh - 2;
+        var r_to_y = function(r) { return ry + rh - (r - r_min) / r_rng * rh; };
+
+        ctx.fillStyle = 'rgba(255,255,255,0.025)';
+        ctx.fillRect(px + inset, ry, pw - inset*2, rh);
+
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(134,239,172,0.65)';
+        ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+        for (var rk = -n_pts/2; rk <= n_pts/2; rk++) {
+          var rk_ph = ((phi + rk*n_cyc/n_pts) % 1 + 1) % 1;
+          var rfi   = Math.floor(rk_ph * NP) % NP;
+          var rlx   = px + pw/2 + rk * step;
+          var rly   = r_to_y(R1[rfi]);
+          rk === -n_pts/2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
+        }
+        ctx.stroke();
+
+        // cursor dot on radius curve
+        var cur_r = R1[Math.round(phi * NP) % NP];
+        ctx.beginPath();
+        ctx.arc(px + pw/2, r_to_y(cur_r), 3, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(134,239,172,0.9)'; ctx.fill();
+
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = 'rgba(134,239,172,0.5)';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.fillText('R / R\u2609', px + inset + 2, ry + 3);
+        ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(134,239,172,0.75)';
+        ctx.fillText(cur_r.toFixed(1) + ' R\u2609', px + pw - inset - 2, ry + 3);
+
+        ctx.restore();
+      }
+
+      // visibility flag — set by IntersectionObserver in init()
+      var visible = false;
+
+      // main loop — only runs while canvas is in the viewport
+      function animate(now) {
+        if (!visible) return;
+        requestAnimationFrame(animate);
+        if (now - last_frame < 1000 / FPS_CAP) return;
+        last_frame = now;
+        if (!ctx) return;
+
+        var dpr = window.devicePixelRatio || 1;
+        var cw  = canvas.width / dpr;
+        var ch  = canvas.height / dpr;
+        ctx.clearRect(0, 0, cw, ch);
+
+        if (last_t === null) last_t = now;
+        var dt = Math.min(now - last_t, 100);
+        last_t = now;
+
+        puls_time = (puls_time + (dt / 1000) / PULS_SPEED_S * P_PULS_D) % P_PULS_D;
+        var phi = puls_time / P_PULS_D;
+
+        var s          = get_state(phi);
+        var brightness = 1 - (s.mag - v_min) / (v_max - v_min);
+
+        // star drawing area: above the plot region
+        var box    = get_plot_rect();
+        var star_h = box ? box.py - 12 : ch * 0.52;
+        var zoom   = (Math.min(cw, star_h) * 0.13) / r_max;
+        var pr     = Math.max(3, s.r1 * zoom);
+
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, 0, cw, star_h); ctx.clip();
+        draw_star(cw / 2, star_h * 0.48, pr, s.col, brightness);
+        ctx.restore();
+
+        draw_light_curve(phi);
+
+        // hud
+        if (hud_mag)    hud_mag.textContent    = s.mag.toFixed(2);
+        if (hud_teff)   hud_teff.textContent   = Math.round(s.teff) + ' K';
+        if (hud_rad)    hud_rad.textContent    = s.r1.toFixed(1) + ' R\u2609';
+        if (hud_phase)  hud_phase.textContent  = phi.toFixed(3);
+        if (hud_swatch) hud_swatch.style.background = s.col;
+      }
+
+      function resize() {
+        if (!canvas || !ctx) return;
+        var dpr  = window.devicePixelRatio || 1;
+        var rect = canvas.getBoundingClientRect();
+        // guard against zero-size during hidden/display:none states
+        if (rect.width === 0 || rect.height === 0) return;
+        canvas.width  = rect.width  * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function init() {
+        if (!canvas || !ctx) return;
+        resize();
+        window.addEventListener('resize', function() {
+          resize();
+          last_t = null;
+        });
+        // only animate while the canvas is visible — saves battery on scroll/tab switch
+        var observer = new IntersectionObserver(function(entries) {
+          visible = entries[0].isIntersecting;
+          if (visible) {
+            last_t = null; // reset dt so first resumed frame doesn't jump
+            requestAnimationFrame(animate);
+          }
+        }, { threshold: 0.05 });
+        observer.observe(canvas);
+      }
+
+      init();
+    })();
   </script>
 
 </body>
