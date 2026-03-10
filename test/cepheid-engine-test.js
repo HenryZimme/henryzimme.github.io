@@ -678,10 +678,14 @@
   // ── main loop ──────────────────────────────────────────────────────────────
 
   var ORBIT_DURATION_S  = 40.0; // wall-clock seconds per simulated orbit
-  var PULS_DURATION_S   = 4.0;  // wall-clock seconds per simulated pulsation cycle
+  var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
   // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
   // P_puls/P_orb = 0.69001/58.85 ≈ 0.01172 → cycle takes 40 * 0.01172 ≈ 0.469s
   var REALTIME_PULS_S   = ORBIT_DURATION_S * P_PULS / P_ORB_D;
+  // canonical full-orbit frame count — derived from metadata.dt once data loads.
+  // orbit advancement uses this fixed count so boot (10% frames) runs at the same
+  // visual speed as full data. frames are mapped proportionally: i = floor(phase * N_loaded)
+  var fullOrbitN = null;
 
   function animate(now) {
     if (!data || !data.physics_frames) { requestAnimationFrame(animate); return; }
@@ -703,9 +707,11 @@
     var dt_ms = Math.min(now - lastTime, 100);
     lastTime = now;
 
-    // always advance orbital clock
-    frameIdx += (dt_ms / 1000) / ORBIT_DURATION_S * p.x1.length;
-    var i = Math.floor(frameIdx) % p.x1.length;
+    // always advance orbital clock in canonical full-orbit units
+    // this makes boot JSON (10% of frames) run at identical visual speed to full JSON
+    frameIdx += (dt_ms / 1000) / ORBIT_DURATION_S * fullOrbitN;
+    var orbitPhase = (frameIdx % fullOrbitN) / fullOrbitN;
+    var i = Math.floor(orbitPhase * p.x1.length) % p.x1.length;
 
     // always advance pulsation clock — rate depends on mode
     var puls_rate_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
@@ -891,7 +897,7 @@
         ? '\u03C6<sub>orb</sub> Orbital phase \u00B7 puls \u00D785'
         : '\u03C6<sub>orb</sub> Orbital phase';
       if (hud.phaseLabel) hud.phaseLabel.innerHTML = orbLabel;
-      if (hud.phase) hud.phase.innerText = (i / p.x1.length).toFixed(3);
+      if (hud.phase) hud.phase.innerText = orbitPhase.toFixed(3);
     }
 
     // ── guided first-loop captions ──
@@ -899,8 +905,28 @@
       if (captionStartTime === null) captionStartTime = now;
       var elapsed = now - captionStartTime;
       var starArea = getStarArea();
-      // keep captions in the star area only, well clear of the plot
       var capY = Math.min(starArea.h * 0.82, starArea.h - 50);
+      var maxCapW = starArea.w - 40; // leave margin on both sides
+      ctx.font = '11px \'JetBrains Mono\', monospace';
+
+      // word-wrap helper: returns array of lines fitting within maxW
+      function wrapText(text, maxW) {
+        var words = text.split(' ');
+        var lines = [];
+        var cur = '';
+        for (var wi = 0; wi < words.length; wi++) {
+          var test = cur ? cur + ' ' + words[wi] : words[wi];
+          if (ctx.measureText(test).width > maxW && cur) {
+            lines.push(cur);
+            cur = words[wi];
+          } else {
+            cur = test;
+          }
+        }
+        if (cur) lines.push(cur);
+        return lines;
+      }
+
       for (var ci = 0; ci < CAPTIONS.length; ci++) {
         var cap = CAPTIONS[ci];
         var age = elapsed - cap.t;
@@ -914,14 +940,24 @@
         ctx.font = '11px \'JetBrains Mono\', monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        var capW = ctx.measureText(cap.text).width + 24;
+        var lines = wrapText(cap.text, maxCapW - 24);
+        var lineH = 17;
+        var pillH = lines.length * lineH + 10;
+        var pillW = 0;
+        for (var li = 0; li < lines.length; li++) {
+          var lw = ctx.measureText(lines[li]).width + 24;
+          if (lw > pillW) pillW = lw;
+        }
         var capX = starArea.w / 2;
+        var pillY = capY - pillH / 2;
         ctx.fillStyle = 'rgba(7,9,26,0.80)';
         ctx.beginPath();
-        ctx.roundRect(capX - capW/2, capY - 13, capW, 26, 4);
+        ctx.roundRect(capX - pillW / 2, pillY, pillW, pillH, 4);
         ctx.fill();
         ctx.fillStyle = 'rgba(226,221,212,0.92)';
-        ctx.fillText(cap.text, capX, capY);
+        for (var li2 = 0; li2 < lines.length; li2++) {
+          ctx.fillText(lines[li2], capX, pillY + 5 + lineH * li2 + lineH / 2);
+        }
         ctx.restore();
       }
     }
@@ -992,13 +1028,20 @@
       bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
       maxR1 = Math.max.apply(null, p.r1);
 
+      // derive canonical orbit frame count from metadata.dt (same in boot and full JSON)
+      var dt_meta = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
+      fullOrbitN = Math.round(P_ORB_D / dt_meta);
+
       buildRV();
       prepareObservationalData();
 
-      // start at orbital quadrature (phi=0.25) so RVs show maximum separation on load
-      frameIdx = Math.round(0.25 * p.x1.length);
+      // start at orbital quadrature (phi=0.25) in canonical fullOrbitN units
+      frameIdx = 0.25 * fullOrbitN;
 
-      if (preview) preview.style.display = 'none';
+      if (preview) {
+        preview.style.opacity = '0';
+        setTimeout(function() { preview.style.display = 'none'; }, 650);
+      }
       simCanvas.style.opacity = '1';
       if (plotUI) plotUI.style.opacity = '1';
       var rvLegend = document.getElementById('rv-legend');
@@ -1015,13 +1058,8 @@
         return r2.json();
       }).then(function(fullData) {
         if (!fullData) return;
-        // preserve orbital phase across the swap by scaling frameIdx
-        var oldN = data.physics_frames.x1.length;
-        var newN = fullData.physics_frames.x1.length;
-        var currentPhase = (frameIdx % oldN) / oldN;
+        // frameIdx is already in fullOrbitN units — no scaling needed, just swap data
         data = fullData;
-        frameIdx = currentPhase * newN;
-        lastTime = null; // reset clock — prevents delta spike on swap
         var p2 = data.physics_frames;
         bounds.minV = 99; bounds.maxV = -99;
         for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
