@@ -61,6 +61,8 @@ let mouse = { x: -9999, y: -9999 };
 let hover_star = null;
 let time_s = 0;
 let catalog_loaded = false;
+let raf_id = null;
+let hero_visible = true;
 
 // deterministic rng, used only for per-star twinkle phase assignment
 function make_rng(seed) {
@@ -113,7 +115,10 @@ function build_stars(catalog) {
       phase: rng() * Math.PI * 2,
       freq: 0.3 + rng() * 1.4,
       featured: false,
-      color
+      color,
+      // pre-computed rgba strings to avoid per-frame hex parsing
+      rgba_glow0: hex_to_rgba(color, 0.20),
+      rgba_full:  hex_to_rgba(color, 1)
     });
   }
 
@@ -136,7 +141,9 @@ function build_stars(catalog) {
       freq: 1.2 + fi * 0.2,
       featured: true,
       obj_data: obj,
-      color: featured_colors[fi] || '#c4a258'
+      color: featured_colors[fi] || '#c4a258',
+      rgba_glow0: hex_to_rgba(featured_colors[fi] || '#c4a258', 1),
+      rgba_full:  hex_to_rgba(featured_colors[fi] || '#c4a258', 1)
     });
   }
 }
@@ -166,7 +173,6 @@ function draw_named_star(s, twinkle) {
   if (s.size > 1.6) {
     const gr = s.size * 3.4;
     const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
-    // tint glow by star color (parse hex to rgb for rgba)
     grd.addColorStop(0, hex_to_rgba(s.color, 0.20 * twinkle));
     grd.addColorStop(1, hex_to_rgba(s.color, 0));
     ctx.beginPath();
@@ -195,9 +201,9 @@ function draw_featured_star(s) {
   const ring_base  = is_pipeline ? 0.12 : 0.28;
   const ring_pulse = is_pipeline ? 0.22 : 0.45;
 
-  // radial glow
+  // radial glow — use hex_to_rgba only for the variable alpha (pulse-dependent)
   const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glow_r);
-  grd.addColorStop(0, hex_to_rgba(c, glow_alpha));
+  grd.addColorStop(0, hex_to_rgba(c, glow_alpha * pulse));
   grd.addColorStop(1, hex_to_rgba(c, 0));
   ctx.beginPath();
   ctx.arc(s.x, s.y, glow_r, 0, Math.PI * 2);
@@ -228,12 +234,16 @@ function draw_hover_ring(s) {
   ctx.stroke();
 }
 
-function draw_canvas_legend() {
-  const items = featured_objects.map((obj, i) => ({
-    label: obj.name,
-    color: ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'][i] || '#c4a258'
-  }));
+// pre-computed legend items — built once, not every frame
+const legend_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
+const legend_items = featured_objects.map((obj, i) => ({
+  label: obj.name,
+  color: legend_colors[i] || '#c4a258'
+}));
+let legend_col_w = 0; // measured once after font loads
 
+function draw_canvas_legend() {
+  const items = legend_items;
   ctx.save();
   ctx.font = '600 10px "JetBrains Mono", monospace';
   ctx.textBaseline = 'middle';
@@ -242,13 +252,14 @@ function draw_canvas_legend() {
   const row_h = 18;
   const pad_x = 14;
   const pad_y = 12;
-  const gap = 8;   // gap between dot and text
+  const gap = 8;
 
-  // measure widest label
-  const widths = items.map(it => ctx.measureText(it.label).width);
-  const col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
+  // measure col_w once (font must be set first)
+  if (!legend_col_w) {
+    const widths = items.map(it => ctx.measureText(it.label).width);
+    legend_col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
+  }
 
-  const total_w = items.length * col_w;
   let x = pad_x;
   const y = canvas.height - pad_y - row_h / 2;
 
@@ -277,7 +288,7 @@ function draw_canvas_legend() {
     ctx.fillStyle = 'rgba(200,215,245,0.52)';
     ctx.fillText(it.label, cx + dot_r + gap, y);
 
-    x += col_w;
+    x += legend_col_w;
   }
 
   // 'click to explore' load hint
@@ -289,6 +300,7 @@ function draw_canvas_legend() {
     ctx.fillText('click to explore', pad_x, canvas.height - pad_y - row_h / 2 - 22);
     ctx.restore();
   }
+  ctx.restore(); // matches ctx.save() at top of draw_canvas_legend
 }
 
 // ── main render loop ──────────────────────────────────────────────────────────
@@ -298,7 +310,8 @@ function draw(ts) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!catalog_loaded) {
-    requestAnimationFrame(draw);
+    if (hero_visible) raf_id = requestAnimationFrame(draw);
+    else raf_id = null;
     return;
   }
 
@@ -337,7 +350,11 @@ function draw(ts) {
   }
 
   draw_canvas_legend();
-  requestAnimationFrame(draw);
+  if (hero_visible) {
+    raf_id = requestAnimationFrame(draw);
+  } else {
+    raf_id = null;
+  }
 }
 
 // ── interaction ───────────────────────────────────────────────────────────────
@@ -495,6 +512,7 @@ document.addEventListener('click', (e) => {
 function on_resize() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
+  legend_col_w = 0; // remeasure legend on next draw
   reproject();
 }
 
@@ -503,8 +521,17 @@ function init() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
 
+  // pause render loop when hero is off-screen, resume when it returns
+  const hero_observer = new IntersectionObserver((entries) => {
+    hero_visible = entries[0].isIntersecting;
+    if (hero_visible && !raf_id) {
+      raf_id = requestAnimationFrame(draw);
+    }
+  }, { threshold: 0 });
+  hero_observer.observe(document.getElementById('hero'));
+
   // start render loop immediately — draw() guards on catalog_loaded internally
-  requestAnimationFrame(draw);
+  raf_id = requestAnimationFrame(draw);
 
   fetch('/data/stars.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
