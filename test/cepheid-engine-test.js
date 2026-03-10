@@ -1050,9 +1050,9 @@
       btn.style.color = '#ffffff';
       btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
     }
-    // show legend in orbital and realtime modes (both show RV plot)
+    // show legend in orbital and realtime modes (both show RV plot), hidden on mobile
     var rvLegend = document.getElementById('rv-legend');
-    if (rvLegend) rvLegend.style.opacity = (mode === 'pulsation') ? '0' : '1';
+    if (rvLegend) rvLegend.style.opacity = (mode === 'pulsation' || window.innerWidth <= 740) ? '0' : '1';
   };
 
   // ── resize ─────────────────────────────────────────────────────────────────
@@ -1136,7 +1136,7 @@
       simCanvas.style.opacity = '1';
       if (plotUI) plotUI.style.opacity = '1';
       var rvLegend = document.getElementById('rv-legend');
-      if (rvLegend) rvLegend.style.opacity = '1';
+      if (rvLegend) rvLegend.style.opacity = window.innerWidth <= 740 ? '0' : '1';
 
       window.addEventListener('resize', resize);
       resize();
