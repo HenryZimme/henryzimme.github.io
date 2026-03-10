@@ -103,7 +103,7 @@
   // ── state ──────────────────────────────────────────────────────────────────
   var data        = null;
   var currentMode = 'orbital';
-  var frameIdx    = 0;      // orbital frame index
+  var orbitPhase  = 0;      // normalized 0-1 orbital phase, advances at 1/ORBIT_DURATION_S per sec
   var pulsTime    = 0;      // pulsation elapsed time in days
   var maxR1       = 1;
 
@@ -294,14 +294,12 @@
 
   // ── rv plot (orbital mode) ─────────────────────────────────────────────────
 
-  function drawRVPlot(frameI) {
+  function drawRVPlot(orbitPhi) {
     var box = getPlotRect();
     if (!box || !rv1.length) return;
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-    var N = data.physics_frames.x1.length;
-    var currentPhi = (frameI / N) % 1;
-    var rvI = Math.round(currentPhi * RV_N) % RV_N;
+    var rvI = Math.round(orbitPhi * RV_N) % RV_N;
 
     var inset = 28, padTop = 26, padBottom = 36;
     var drawH = ph - padTop - padBottom;
@@ -442,9 +440,7 @@
     ctx.stroke();
 
     // Cepheid: orbital model + pulsation RV from Fourier model at current pulsation phase
-    var dt_meta = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
-    var t_now = frameI * dt_meta;
-    var puls_ph = (((t_now - T0_PULS + 2450000) % P_PULS) / P_PULS + 1) % 1;
+    var puls_ph = (pulsTime % P_PULS) / P_PULS;
     var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
     var v_puls_now = PULS_C[0]
       + PULS_C[1] * Math.cos(2 * Math.PI * puls_ph)
@@ -682,10 +678,6 @@
   // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
   // P_puls/P_orb = 0.69001/58.85 ≈ 0.01172 → cycle takes 40 * 0.01172 ≈ 0.469s
   var REALTIME_PULS_S   = ORBIT_DURATION_S * P_PULS / P_ORB_D;
-  // canonical full-orbit frame count — derived from metadata.dt once data loads.
-  // orbit advancement uses this fixed count so boot (10% frames) runs at the same
-  // visual speed as full data. frames are mapped proportionally: i = floor(phase * N_loaded)
-  var fullOrbitN = null;
 
   function animate(now) {
     if (!data || !data.physics_frames) { requestAnimationFrame(animate); return; }
@@ -707,10 +699,8 @@
     var dt_ms = Math.min(now - lastTime, 100);
     lastTime = now;
 
-    // always advance orbital clock in canonical full-orbit units
-    // this makes boot JSON (10% of frames) run at identical visual speed to full JSON
-    frameIdx += (dt_ms / 1000) / ORBIT_DURATION_S * fullOrbitN;
-    var orbitPhase = (frameIdx % fullOrbitN) / fullOrbitN;
+    // advance orbitPhase: 0→1 in exactly ORBIT_DURATION_S seconds regardless of frame count
+    orbitPhase = (orbitPhase + (dt_ms / 1000) / ORBIT_DURATION_S) % 1;
     var i = Math.floor(orbitPhase * p.x1.length) % p.x1.length;
 
     // always advance pulsation clock — rate depends on mode
@@ -792,8 +782,14 @@
     if (currentMode === 'pulsation') {
       drawLightCurve(p.v_mag, pulsI);
     } else {
-      drawRVPlot(i);
+      drawRVPlot(orbitPhase);
     }
+
+    // clip all star-area drawing so nothing bleeds into the plot region below
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, sw, star.h);
+    ctx.clip();
 
     // ── trails: cinematic tapered lines ──
     if (currentMode !== 'pulsation') {
@@ -868,6 +864,8 @@
       drawLabel(s2x + pr2 + 9, s2y, 'Companion', '#f87171');
       ctx.restore();
     }
+
+    ctx.restore(); // end star-area clip
 
     // ── mobile separator ──
     if (star.mobile) {
@@ -1028,15 +1026,11 @@
       bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
       maxR1 = Math.max.apply(null, p.r1);
 
-      // derive canonical orbit frame count from metadata.dt (same in boot and full JSON)
-      var dt_meta = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
-      fullOrbitN = Math.round(P_ORB_D / dt_meta);
-
       buildRV();
       prepareObservationalData();
 
-      // start at orbital quadrature (phi=0.25) in canonical fullOrbitN units
-      frameIdx = 0.25 * fullOrbitN;
+      // start at orbital quadrature (phi=0.25) so RVs show maximum separation on load
+      orbitPhase = 0.25;
 
       if (preview) {
         preview.style.opacity = '0';
@@ -1058,7 +1052,7 @@
         return r2.json();
       }).then(function(fullData) {
         if (!fullData) return;
-        // frameIdx is already in fullOrbitN units — no scaling needed, just swap data
+        // orbitPhase is normalized 0-1 — no rescaling needed, just swap data
         data = fullData;
         var p2 = data.physics_frames;
         bounds.minV = 99; bounds.maxV = -99;
