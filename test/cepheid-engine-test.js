@@ -14,7 +14,7 @@
   var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
   var RV_THRESH     = 40;
   var RV_N          = 2400;
-  var TRAIL_LEN     = 40;
+  var TRAIL_LEN     = 80;
   var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
 
   // ── embedded observational data ────────────────────────────────────────────
@@ -290,7 +290,7 @@
     var rvI = Math.round(frameI / N * RV_N) % RV_N;
     var currentPhi = rvI / RV_N;
 
-    var inset = 18, padTop = 22, padBottom = 32;
+    var inset = 28, padTop = 26, padBottom = 36;
     var drawH = ph - padTop - padBottom;
     var range = rv_abs_max - rv_abs_min;
     var yScale = drawH / range;
@@ -302,37 +302,42 @@
 
     ctx.save();
 
-    // delta-rv >= 40 green shading
+    // ── RV color bands between curves ──
+    // approach band (rv1 > rv2 -> Cepheid approaching faster): warm amber tint
+    // recession band (rv2 > rv1): cool red tint
+    for (var kb = 0; kb < nPts; kb++) {
+      var ri_b = Math.round(kb / nPts * RV_N) % RV_N;
+      var y1b = rvToY(rv1[ri_b] + GAMMA_SYS);
+      var y2b = rvToY(rv2[ri_b] + GAMMA_SYS);
+      var yTop = Math.min(y1b, y2b);
+      var yBot = Math.max(y1b, y2b);
+      var bandH = yBot - yTop;
+      if (bandH < 1) continue;
+      // amber where Cepheid is above companion (rv1>rv2), red otherwise
+      var col_b = (rv1[ri_b] > rv2[ri_b])
+        ? 'rgba(196,162,88,0.07)'
+        : 'rgba(248,113,113,0.07)';
+      ctx.fillStyle = col_b;
+      ctx.fillRect(px + inset + kb * step, yTop, step + 0.5, bandH);
+    }
+
+    // delta-rv >= 40 green shading (on top of color bands)
     for (var k = 0; k < nPts; k++) {
       var ri = Math.round(k / nPts * RV_N) % RV_N;
       if (rvDelta[ri] >= RV_THRESH) {
-        ctx.fillStyle = 'rgba(134,239,172,0.08)';
+        ctx.fillStyle = 'rgba(134,239,172,0.07)';
         ctx.fillRect(px + inset + k * step, py + padTop, step + 0.5, drawH);
       }
     }
 
     // gamma line
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 7]);
     ctx.beginPath();
     ctx.moveTo(px + inset, rvToY(GAMMA_SYS));
     ctx.lineTo(px + pw - inset, rvToY(GAMMA_SYS));
     ctx.stroke();
-    ctx.setLineDash([]);
-
-    // threshold reference lines
-    ctx.strokeStyle = 'rgba(134,239,172,0.22)';
-    ctx.setLineDash([3, 6]);
-    var thr = [GAMMA_SYS + 20, GAMMA_SYS - 20];
-    for (var ti = 0; ti < thr.length; ti++) {
-      var tty = rvToY(thr[ti]);
-      if (tty > py + padTop + 2 && tty < py + ph - padBottom - 2) {
-        ctx.beginPath();
-        ctx.moveTo(px + inset, tty); ctx.lineTo(px + pw - inset, tty);
-        ctx.stroke();
-      }
-    }
     ctx.setLineDash([]);
 
     // model curves
@@ -343,9 +348,9 @@
       ctx.lineJoin = 'round';
       for (var k2 = 0; k2 <= nPts; k2++) {
         var ri2 = Math.round(k2 / nPts * RV_N) % RV_N;
-        var cx = px + inset + k2 * step;
-        var cy = rvToY(arr[ri2] + GAMMA_SYS);
-        k2 === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+        var cx2 = px + inset + k2 * step;
+        var cy2 = rvToY(arr[ri2] + GAMMA_SYS);
+        k2 === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
       }
       ctx.stroke();
     };
@@ -354,90 +359,125 @@
 
     // pilecki scatter
     for (var pi2 = 0; pi2 < pilecki_phased.length; pi2++) {
-      var p = pilecki_phased[pi2];
-      var dpx = px + inset + p.display_phase * plotW;
+      var pp = pilecki_phased[pi2];
+      var dpx = px + inset + pp.display_phase * plotW;
       ctx.globalAlpha = 0.9;
-      // cepheid
       ctx.beginPath();
-      ctx.arc(dpx, rvToY(p.rv1), 4.5, 0, Math.PI * 2);
+      ctx.arc(dpx, rvToY(pp.rv1), 4.5, 0, Math.PI * 2);
       ctx.fillStyle = '#ffe4a0';
       ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,0.5)';
       ctx.lineWidth = 1.2;
       ctx.stroke();
-      // companion
       ctx.beginPath();
-      ctx.arc(dpx, rvToY(p.rv2), 4.5, 0, Math.PI * 2);
+      ctx.arc(dpx, rvToY(pp.rv2), 4.5, 0, Math.PI * 2);
       ctx.fillStyle = '#f87171';
       ctx.fill();
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
 
-    // cursor at current phase
+    // cursor line at current orbital phase
     var curX = px + inset + currentPhi * plotW;
     ctx.save();
-    ctx.strokeStyle = 'rgba(96,165,250,0.7)';
-    ctx.shadowBlur = 8;
+    ctx.strokeStyle = 'rgba(96,165,250,0.65)';
+    ctx.shadowBlur = 6;
     ctx.shadowColor = '#60a5fa';
     ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
     ctx.beginPath();
     ctx.moveTo(curX, py + padTop);
     ctx.lineTo(curX, py + ph - padBottom);
     ctx.stroke();
+    ctx.setLineDash([]);
     ctx.restore();
 
-    // dots on cursor
-    var cd = [[rv1[rvI], '#ffe4a0'], [rv2[rvI], '#f87171']];
-    for (var di = 0; di < cd.length; di++) {
-      ctx.beginPath();
-      ctx.arc(curX, rvToY(cd[di][0] + GAMMA_SYS), 4, 0, Math.PI * 2);
-      ctx.fillStyle = cd[di][1];
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
+    // ── tracking dots on cursor ──
+    // Companion: orbital model only
+    var compY = rvToY(rv2[rvI] + GAMMA_SYS);
+    ctx.beginPath();
+    ctx.arc(curX, compY, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#f87171';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
 
-    // y-axis ticks
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    // Cepheid: orbital model + pulsation RV from Fourier model at current pulsation phase
+    var dt_meta = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
+    var t_now = frameI * dt_meta;
+    var puls_ph = (((t_now - T0_PULS + 2450000) % P_PULS) / P_PULS + 1) % 1;
+    var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
+    var v_puls_now = PULS_C[0]
+      + PULS_C[1] * Math.cos(2 * Math.PI * puls_ph)
+      + PULS_C[2] * Math.sin(2 * Math.PI * puls_ph)
+      + PULS_C[3] * Math.cos(4 * Math.PI * puls_ph)
+      + PULS_C[4] * Math.sin(4 * Math.PI * puls_ph);
+    var cepY = rvToY(rv1[rvI] + GAMMA_SYS + v_puls_now);
+    ctx.beginPath();
+    ctx.arc(curX, cepY, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffe4a0';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // y-axis ticks — brighter, larger font
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.textBaseline = 'middle';
-    ctx.textAlign = 'left';
+    ctx.textAlign = 'right';
     var ts = 20;
     for (var tv = Math.ceil(rv_abs_min / ts) * ts; tv <= Math.floor(rv_abs_max / ts) * ts; tv += ts) {
       var tly = rvToY(tv);
       if (tly > py + padTop + 6 && tly < py + ph - padBottom - 4)
-        ctx.fillText(tv.toFixed(0), px + inset, tly);
+        ctx.fillText(tv.toFixed(0), px + inset - 4, tly);
     }
 
     // x-axis phase labels
     ctx.textBaseline = 'top';
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '10px \'JetBrains Mono\', monospace';
     for (var xp = 0; xp <= 1; xp += 0.25) {
-      ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 4);
+      ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 5);
     }
 
     // attribution
-    ctx.font = '8.5px \'JetBrains Mono\', monospace';
+    ctx.font = '9px \'JetBrains Mono\', monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 8);
 
-    // legend
-    ctx.textAlign = 'right';
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = '#ffe4a0';       ctx.fillText('Cepheid', px + pw - inset, py + padTop + 10);
-    ctx.fillStyle = '#f87171';       ctx.fillText('Companion', px + pw - inset, py + padTop + 22);
-    ctx.fillStyle = 'rgba(134,239,172,0.7)'; ctx.fillText('\u0394RV \u2265 40 km/s', px + pw - inset, py + padTop + 34);
-    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + padTop + 46);
+    // legend — bottom left above attribution, dark pill background
+    var legends = [
+      { label: 'Cepheid',        col: '#ffe4a0' },
+      { label: 'Companion',      col: '#f87171' },
+      { label: '\u2022 Pilecki+ 2022', col: 'rgba(255,255,255,0.5)' },
+    ];
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.textBaseline = 'middle';
+    var legX = px + inset;
+    var legY = py + padTop + 12;
+    var legSpacing = 18;
+    for (var li = 0; li < legends.length; li++) {
+      var leg = legends[li];
+      var lw = ctx.measureText(leg.label).width + 10;
+      ctx.fillStyle = 'rgba(7,9,26,0.65)';
+      ctx.beginPath();
+      ctx.roundRect(legX - 2, legY + li*legSpacing - 8, lw, 16, 2);
+      ctx.fill();
+      ctx.fillStyle = leg.col;
+      ctx.fillText(leg.label, legX + 3, legY + li * legSpacing);
+    }
 
     // title
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(96,165,250,0.55)';
-    ctx.fillText('ORBITAL RADIAL VELOCITIES \u00B7 KM S\u207B\u00B9', px + 12, py + 14);
+    ctx.textBaseline = 'top';
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(96,165,250,0.65)';
+    ctx.fillText('ORBITAL RADIAL VELOCITIES \u00B7 KM S\u207B\u00B9', px + inset, py + 8);
 
     ctx.restore();
   }
@@ -530,33 +570,31 @@
     ctx.restore();
   }
 
-  // ── star drawing with bloom ────────────────────────────────────────────────
+  // ── star drawing with tasteful linear bloom ───────────────────────────────
 
   function drawStar(spx, spy, pr, col, is_cepheid, brightness) {
     ctx.save();
+    var c = col || FALLBACK_COL;
+    var b = (brightness !== undefined) ? Math.max(0, Math.min(1, brightness)) : 0.5;
 
-    if (is_cepheid && brightness !== undefined) {
-      var b = Math.max(0, Math.min(1, brightness));
-      var c = col || FALLBACK_COL;
+    // bloom: fixed radius, linear alpha only, single gradient pass
+    var bloom_r = pr * 3.2;
+    var bloom_a = is_cepheid ? (0.07 + b * 0.13) : 0.06;
+    var grad = ctx.createRadialGradient(spx, spy, pr * 0.5, spx, spy, bloom_r);
+    grad.addColorStop(0,   hexToRgba(c, bloom_a));
+    grad.addColorStop(0.5, hexToRgba(c, bloom_a * 0.35));
+    grad.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(spx, spy, bloom_r, 0, Math.PI * 2);
+    ctx.fill();
 
-      // outer bloom: radial gradient modulated by brightness
-      var bloom_r = pr * (2.0 + b * 4.0);
-      var bloom_a = 0.10 + b * 0.35;
-      var grad = ctx.createRadialGradient(spx, spy, pr * 0.3, spx, spy, bloom_r);
-      grad.addColorStop(0, hexToRgba(c, bloom_a));
-      grad.addColorStop(0.4, hexToRgba(c, bloom_a * 0.4));
-      grad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(spx, spy, bloom_r, 0, Math.PI * 2);
-      ctx.fill();
+    // subtle core glow
+    ctx.shadowBlur  = pr * (is_cepheid ? 1.8 + b * 1.2 : 1.4);
+    ctx.shadowColor = c;
 
-      // core glow
-      ctx.shadowBlur = pr * (1.5 + b * 3.0);
-      ctx.shadowColor = c;
-    }
-
-    ctx.fillStyle = col || FALLBACK_COL;
+    // disc
+    ctx.fillStyle = c;
     ctx.beginPath();
     ctx.arc(spx, spy, pr, 0, Math.PI * 2);
     ctx.fill();
@@ -653,27 +691,43 @@
       drawRVPlot(i);
     }
 
-    // ── trails (orbital only) ──
+    // ── trails: cinematic tapered lines ──
     if (currentMode !== 'pulsation') {
-      trail1.push({ x: s1x, y: s1y });
+      trail1.push({ x: s1x, y: s1y, col: col1 || FALLBACK_COL });
       trail2.push({ x: s2x, y: s2y });
       if (trail1.length > TRAIL_LEN) trail1.shift();
       if (trail2.length > TRAIL_LEN) trail2.shift();
 
       ctx.save();
-      for (var ti = 0; ti < trail1.length - 1; ti++) {
-        var ta = (ti / trail1.length) * 0.35;
-        ctx.beginPath();
-        ctx.arc(trail1[ti].x, trail1[ti].y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = hexToRgba(col1 || FALLBACK_COL, ta);
-        ctx.fill();
+      // Cepheid trail — temperature-coloured tapered stroke
+      if (trail1.length > 2) {
+        for (var ti = 1; ti < trail1.length; ti++) {
+          var tf = ti / trail1.length;           // 0=tail, 1=head
+          var tw = tf * tf * 3.5;               // quadratic taper: thin tail, thick head
+          var ta = tf * tf * 0.55;
+          ctx.beginPath();
+          ctx.moveTo(trail1[ti-1].x, trail1[ti-1].y);
+          ctx.lineTo(trail1[ti].x,   trail1[ti].y);
+          ctx.strokeStyle = hexToRgba(trail1[ti].col, ta);
+          ctx.lineWidth   = tw;
+          ctx.lineCap     = 'round';
+          ctx.stroke();
+        }
       }
-      for (var ti2 = 0; ti2 < trail2.length - 1; ti2++) {
-        var ta2 = (ti2 / trail2.length) * 0.3;
-        ctx.beginPath();
-        ctx.arc(trail2[ti2].x, trail2[ti2].y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(248,113,113,' + ta2.toFixed(3) + ')';
-        ctx.fill();
+      // Companion trail — red, same taper
+      if (trail2.length > 2) {
+        for (var ti2 = 1; ti2 < trail2.length; ti2++) {
+          var tf2 = ti2 / trail2.length;
+          var tw2 = tf2 * tf2 * 2.8;
+          var ta2 = tf2 * tf2 * 0.45;
+          ctx.beginPath();
+          ctx.moveTo(trail2[ti2-1].x, trail2[ti2-1].y);
+          ctx.lineTo(trail2[ti2].x,   trail2[ti2].y);
+          ctx.strokeStyle = 'rgba(248,113,113,' + ta2.toFixed(3) + ')';
+          ctx.lineWidth   = tw2;
+          ctx.lineCap     = 'round';
+          ctx.stroke();
+        }
       }
       ctx.restore();
     }
@@ -687,23 +741,28 @@
       drawStar(s2x, s2y, pr2, '#f87171', false, 0);
     }
 
-    // ── star labels (orbital only) ──
+    // ── star labels: always-on, dark pill background ──
     if (currentMode !== 'pulsation') {
-      var ldist = Math.hypot(s1x - s2x, s1y - s2y);
-      var lmin = (r1 + COMPANION_RAD) * zoom * 2.2;
-      var la = Math.min(1, Math.max(0, (ldist - lmin) / (lmin * 0.6)));
-      if (la > 0.01) {
-        ctx.save();
-        ctx.font = '11px \'JetBrains Mono\', monospace';
-        ctx.textBaseline = 'middle';
-        ctx.globalAlpha = la * 0.85;
-        ctx.fillStyle = '#ffe4a0';
-        ctx.fillText('Cepheid', s1x + pr1 + 8, s1y - pr1 * 0.5);
-        ctx.fillStyle = '#f87171';
-        ctx.fillText('Companion', s2x + pr2 + 8, s2y - pr2 * 0.5);
+      ctx.save();
+      ctx.font = '12px \'JetBrains Mono\', monospace';
+      ctx.textBaseline = 'middle';
+
+      var drawLabel = function(lx, ly, text, fgCol) {
+        var pad = 5, tw = ctx.measureText(text).width;
+        var rx = lx, ry = ly - 9, rw = tw + pad*2, rh = 18;
+        ctx.fillStyle = 'rgba(7,9,26,0.72)';
+        ctx.beginPath();
+        ctx.roundRect(rx, ry, rw, rh, 3);
+        ctx.fill();
+        ctx.fillStyle = fgCol;
+        ctx.globalAlpha = 0.92;
+        ctx.fillText(text, lx + pad, ly);
         ctx.globalAlpha = 1;
-        ctx.restore();
-      }
+      };
+
+      drawLabel(s1x + pr1 + 9, s1y, 'Cepheid',   '#ffe4a0');
+      drawLabel(s2x + pr2 + 9, s2y, 'Companion', '#f87171');
+      ctx.restore();
     }
 
     // ── mobile separator ──
