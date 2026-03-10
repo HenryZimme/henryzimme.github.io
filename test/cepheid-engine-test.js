@@ -557,7 +557,7 @@
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(96,165,250,0.55)';
-    ctx.fillText('ORBITAL RADIAL VELOCITIES', px + inset, py + 6);
+    ctx.fillText('RADIAL VELOCITIES (KM/S) - ORBITAL PHASE', px + inset, py + 6);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#ffe4a0';
     ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
