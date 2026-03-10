@@ -229,99 +229,66 @@ function draw_hover_ring(s) {
 }
 
 function draw_canvas_legend() {
-  const is_mobile = canvas.width < 600;
-  const COLORS = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
   const items = featured_objects.map((obj, i) => ({
-    // On mobile, strip "| v = x.xx" suffix for shorter labels
-    label: is_mobile ? obj.name.split(' | ')[0] : obj.name,
-    color: COLORS[i] || '#c4a258'
+    label: obj.name,
+    color: ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'][i] || '#c4a258'
   }));
 
   ctx.save();
+  ctx.font = '600 10px "JetBrains Mono", monospace';
   ctx.textBaseline = 'middle';
 
+  const dot_r = 4;
+  const row_h = 18;
   const pad_x = 14;
   const pad_y = 12;
-  const gap = 6;
+  const gap = 8;   // gap between dot and text
 
-  if (is_mobile) {
-    // ── Vertical stacked layout on mobile ──────────────────────────────────
-    const dot_r = 3;
-    const row_h = 16;
-    ctx.font = '600 9px "JetBrains Mono", monospace';
-    const total_h = items.length * row_h;
-    const start_y = canvas.height - pad_y - total_h;
+  // measure widest label
+  const widths = items.map(it => ctx.measureText(it.label).width);
+  const col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
 
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      const cx = pad_x + dot_r;
-      const y = start_y + i * row_h + row_h / 2;
-      const pulse = 0.5 + 0.5 * Math.sin(time_s * (1.2 + i * 0.2));
+  const total_w = items.length * col_w;
+  let x = pad_x;
+  const y = canvas.height - pad_y - row_h / 2;
 
-      ctx.beginPath();
-      ctx.arc(cx, y, dot_r, 0, Math.PI * 2);
-      ctx.fillStyle = it.color;
-      ctx.globalAlpha = 0.8 + 0.2 * pulse;
-      ctx.fill();
-      ctx.globalAlpha = 1;
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    const cx = x + dot_r;
 
-      ctx.fillStyle = 'rgba(200,215,245,0.52)';
-      ctx.fillText(it.label, cx + dot_r + gap, y);
-    }
+    // pulsing dot
+    const pulse = 0.5 + 0.5 * Math.sin(time_s * (1.2 + i * 0.2));
+    const glow = ctx.createRadialGradient(cx, y, 0, cx, y, dot_r * 3);
+    glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
+    glow.addColorStop(1, hex_to_rgba(it.color, 0));
+    ctx.beginPath();
+    ctx.arc(cx, y, dot_r * 3, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
 
-    if (hint_alpha > 0) {
-      ctx.save();
-      ctx.font = '300 9px "JetBrains Mono", monospace';
-      ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.6 + ')';
-      ctx.fillText('tap to explore', pad_x, start_y - 14);
-      ctx.restore();
-    }
-  } else {
-    // ── Horizontal layout on desktop ───────────────────────────────────────
-    const dot_r = 4;
-    const row_h = 18;
-    ctx.font = '600 10px "JetBrains Mono", monospace';
+    ctx.beginPath();
+    ctx.arc(cx, y, dot_r, 0, Math.PI * 2);
+    ctx.fillStyle = it.color;
+    ctx.globalAlpha = 0.8 + 0.2 * pulse;
+    ctx.fill();
+    ctx.globalAlpha = 1;
 
-    const widths = items.map(it => ctx.measureText(it.label).width);
-    const col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
-    let x = pad_x;
-    const y = canvas.height - pad_y - row_h / 2;
+    // label
+    ctx.fillStyle = 'rgba(200,215,245,0.52)';
+    ctx.fillText(it.label, cx + dot_r + gap, y);
 
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      const cx = x + dot_r;
-      const pulse = 0.5 + 0.5 * Math.sin(time_s * (1.2 + i * 0.2));
-
-      const glow = ctx.createRadialGradient(cx, y, 0, cx, y, dot_r * 3);
-      glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
-      glow.addColorStop(1, hex_to_rgba(it.color, 0));
-      ctx.beginPath();
-      ctx.arc(cx, y, dot_r * 3, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(cx, y, dot_r, 0, Math.PI * 2);
-      ctx.fillStyle = it.color;
-      ctx.globalAlpha = 0.8 + 0.2 * pulse;
-      ctx.fill();
-      ctx.globalAlpha = 1;
-
-      ctx.fillStyle = 'rgba(200,215,245,0.52)';
-      ctx.fillText(it.label, cx + dot_r + gap, y);
-      x += col_w;
-    }
-
-    if (hint_alpha > 0) {
-      ctx.save();
-      ctx.font = '300 10px "JetBrains Mono", monospace';
-      ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.6 + ')';
-      ctx.fillText('click to explore', pad_x, canvas.height - pad_y - row_h / 2 - 22);
-      ctx.restore();
-    }
+    x += col_w;
   }
 
-  ctx.restore();
+  // 'click to explore' load hint
+  if (hint_alpha > 0) {
+    ctx.save();
+    ctx.font = '300 10px "JetBrains Mono", monospace';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.6 + ')';
+    ctx.fillText('click to explore', pad_x, canvas.height - pad_y - row_h / 2 - 22);
+    ctx.restore();
+  }
 }
 
 // ── main render loop ──────────────────────────────────────────────────────────
@@ -391,21 +358,9 @@ function on_mouse_move(e) {
       ? ''
       : `  | v = ${hover_star.mag.toFixed(2)}`;
     tooltip.textContent = `${hover_star.name}${mag_str}`;
-    // Initial position (will be clamped below)
     tooltip.style.left = (e.clientX + 16) + 'px';
     tooltip.style.top  = (e.clientY - 28) + 'px';
     tooltip.classList.add('visible');
-    // Clamp to viewport after layout so offsetWidth is accurate
-    const tw = tooltip.offsetWidth;
-    const th = tooltip.offsetHeight;
-    const tl = e.clientX + 16 + tw + 8 > window.innerWidth
-      ? Math.max(8, e.clientX - tw - 16)
-      : e.clientX + 16;
-    const tt = e.clientY - 28 < 8
-      ? e.clientY + 16
-      : e.clientY - 28;
-    tooltip.style.left = tl + 'px';
-    tooltip.style.top  = tt + 'px';
   } else {
     tooltip.classList.remove('visible');
     // dismiss stale popover once cursor leaves all named stars
@@ -434,40 +389,14 @@ function on_click(e) {
 }
 
 // touch handler for canvas: direct tap-to-open, no hover needed
-// Tap radii are smaller on mobile to prevent accidental triggers
 function on_touch_start(e) {
+  // don't process canvas taps when modal or mobile nav is open
+  if (modal.classList.contains('visible')) return;
   if (mobile_nav.classList.contains('open')) return;
 
   const touch = e.changedTouches[0];
   const tx = touch.clientX;
   const ty = touch.clientY;
-
-  // Smaller tap targets on narrow screens to reduce accidental triggers
-  const is_narrow = window.innerWidth <= 740;
-  const featured_r = is_narrow ? 24 : 38;
-  const named_r    = is_narrow ? 14 : 22;
-
-  // ── Modal is open: tap a different featured star → switch immediately ────
-  if (modal.classList.contains('visible')) {
-    if (canvas_exposed_at(tx, ty)) {
-      let best = null, best_d = featured_r;
-      for (const s of star_data) {
-        if (!s.featured) continue;
-        const dx = tx - s.x, dy = ty - s.y;
-        const d = Math.sqrt(dx * dx + dy * dy);
-        if (d < best_d) { best_d = d; best = s; }
-      }
-      if (best) {
-        e.preventDefault();
-        open_modal(best.obj_data); // replaces content without closing/reopening
-        return;
-      }
-    }
-    // Tapped outside any star while modal is open — close it, suppress synthetic click
-    close_modal();
-    e.preventDefault();
-    return;
-  }
 
   if (!canvas_exposed_at(tx, ty)) return;
 
@@ -477,7 +406,7 @@ function on_touch_start(e) {
 
   // check featured stars first (larger tap target)
   let best = null;
-  let best_d = featured_r;
+  let best_d = 38;
   for (const s of star_data) {
     if (!s.featured) continue;
     const dx = tx - s.x, dy = ty - s.y;
@@ -487,14 +416,13 @@ function on_touch_start(e) {
 
   if (best) {
     e.preventDefault();
-    close_popover();
     open_modal(best.obj_data);
     return;
   }
 
-  // fallback: named catalog stars
+  // fallback: named catalog stars with slightly wider radius than mouse
   let best_named = null;
-  let best_nd = named_r;
+  let best_nd = 22;
   for (const s of star_data) {
     if (!s.name || s.featured) continue;
     const dx = tx - s.x, dy = ty - s.y;
@@ -565,19 +493,15 @@ document.addEventListener('click', (e) => {
 // ── resize ───────────────────────────────────────────────────────────────────
 
 function on_resize() {
-  // offsetWidth/Height reflects the actual CSS-rendered size of the canvas element.
-  // The canvas has `position:fixed; width:100vw; height:100%` so offsetWidth = viewport
-  // width. More reliable than window.innerWidth on Samsung Android (S8+ etc.) where
-  // innerWidth can include a phantom gutter causing a 1–2px star-canvas sliver.
-  canvas.width  = document.documentElement.clientWidth;
-  canvas.height = document.documentElement.clientHeight;
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
   reproject();
 }
 
 // ── init: fetch catalog, build stars, start loop ───────────────
 function init() {
-  canvas.width  = document.documentElement.clientWidth;
-  canvas.height = document.documentElement.clientHeight;
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
 
   fetch('data/stars.json')
     .then(r => r.json())
@@ -613,29 +537,25 @@ document.querySelectorAll('.book-spine').forEach(spine => {
   const spines = Array.from(pool.children);
 
   function layout_shelves() {
-    // Step 1: Move all spines back to pool BEFORE clearing rows_el.
-    // If we call rows_el.innerHTML = '' while spines are grandchildren of rows_el
-    // (spine > shelf-div > rows_el), some browsers destroy the spine nodes even
-    // though `spines` holds external references. Parking spines in pool first makes
-    // them direct children of a stable element, so innerHTML='' only destroys the
-    // now-empty shelf divs we created — never the spine nodes we care about.
-    spines.forEach(s => pool.appendChild(s));
-
     const is_mobile = window.innerWidth <= 740;
     const w_col = is_mobile ? 40 : 46;
     const w_exp = is_mobile ? 150 : 172;
     const gap = 5;
-    // Read width from the section-inner element directly (pool and rows_el share
-    // the same parent). Using offsetWidth avoids any clientWidth quirks caused by
-    // ancestor overflow:hidden.
-    const container_w = rows_el.parentElement.offsetWidth || rows_el.parentElement.clientWidth;
+    const container_w = rows_el.parentElement.clientWidth;
 
-    // Max books per row: 1 expanded + (n-1) collapsed + n gaps ≤ container_w
-    // n*(w_col + gap) ≤ container_w - w_exp + w_col
-    // Also cap so we always get at least 2 rows; on wide screens the uncapped
-    // formula can fit all books on one shelf.
-    const n_per_row_max_fit = Math.max(2, Math.floor((container_w - w_exp + w_col) / (w_col + gap)));
-    const n_per_row = Math.min(n_per_row_max_fit, Math.max(2, Math.ceil(total / 2)));
+    // max books per row: 2 expanded + (n-2) collapsed + n gaps <= container_w
+    // n*(w_col + gap) <= container_w - 2(w_exp + w_col)
+    const container_rect = rows_el.parentElement.getBoundingClientRect();
+    const computed_style = window.getComputedStyle(rows_el.parentElement);
+    const padding_left = parseFloat(computed_style.paddingLeft);
+    const padding_right = parseFloat(computed_style.paddingRight);
+    const container_inner_w = container_rect.width - padding_left - padding_right;
+
+    const n_per_row = is_mobile 
+  
+      ? Math.max(2, Math.floor(container_inner_w / (w_col + gap * 1.3))) // more generous for mobile
+  
+      : Math.max(2, Math.floor(container_inner_w / (w_col + gap * 1.05))); // more conservative for desktop
 
     const total = spines.length;
     const n_rows = Math.ceil(total / n_per_row);
@@ -659,19 +579,7 @@ document.querySelectorAll('.book-spine').forEach(spine => {
     }
   }
 
-  // Run layout after a rAF so the CSS layout pass has completed, giving accurate
-  // offsetWidth values. Falls back to 'load' if DOMContentLoaded hasn't fired yet.
-  function run_layout() {
-    requestAnimationFrame(() => {
-      layout_shelves();
-      pool.style.display = 'none';
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run_layout, { once: true });
-  } else {
-    run_layout();
-  }
+  layout_shelves();
 
   let resize_timer;
   window.addEventListener('resize', () => {
@@ -733,12 +641,10 @@ mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
   });
 });
 
-// -- back to top + nav scroll solidify --
+// -- back to top --
 const back_to_top_btn = document.getElementById('back-to-top');
-const desktop_nav = document.querySelector('nav:not(.nav-mobile)');
 window.addEventListener('scroll', () => {
   back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
-  if (desktop_nav) desktop_nav.classList.toggle('scrolled', window.scrollY > 10);
 }, { passive: true });
 back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
