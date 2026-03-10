@@ -17,8 +17,8 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
-  <link rel="preload" href="/test/style_test.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/test/style_test.css"></noscript></head>
+  <link rel="preload" href="/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/css/style.css"></noscript></head>
 <body>
 
 <canvas id="star-canvas"></canvas>
@@ -679,12 +679,12 @@ The project coordinates photometry across four observatories in the Canary Islan
 </footer>
 
 <button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
-<script src="/test/main-test.js" defer></script>
+<script src="/main.js" defer></script>
 <script>
   const simObserver = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {
       const s = document.createElement('script');
-      s.src = '/test/cepheid-engine-test.js';
+      s.src = '/cepheid-engine.js';
       s.dataset.bootJson = '/data/master_data_boot.json';
       s.dataset.fullJson = '/data/master_data.json';
       document.body.appendChild(s);
