@@ -791,7 +791,7 @@
       transform: translateX(-50%);
       width: calc(100% - 5rem);
       max-width: 820px;
-      height: 160px;
+      height: 185px;
       background: rgba(7,9,26,0.55);
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 3px;
