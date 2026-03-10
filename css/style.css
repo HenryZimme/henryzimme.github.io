@@ -462,6 +462,18 @@
       line-height: 1.3;
     }
 
+    .research-intro {
+      font-family: 'Spectral', serif;
+      font-size: 17px;
+      font-style: italic;
+      color: var(--text-dim);
+      line-height: 1.75;
+      max-width: 640px;
+      margin-bottom: 40px;
+      border-left: 2px solid var(--gold-dim);
+      padding-left: 20px;
+    }
+
     .card-body {
       font-size: 15px;
       line-height: 1.78;
@@ -501,6 +513,14 @@
     .card-link:hover { border-color: var(--gold); }
 
     /* writing */
+    .writing-intro {
+      font-size: 15.5px;
+      color: var(--text-dim);
+      line-height: 1.75;
+      max-width: 600px;
+      margin-bottom: 36px;
+    }
+
     .writing-list {
       display: flex;
       flex-direction: column;
