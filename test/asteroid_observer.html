@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="page-title">Asteroid · Heliocentric Orbit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #050510;
+    --grid:     #10102a;
+    --border:   #1a1a3e;
+    --text:     #b0c0e0;
+    --text-dim: #606090;
+    --cover:    #00efc0;
+    --gap:      #ff1855;
+    --ast:      #ffee00;
+    --earth:    #3a7fd4;
+    --mono:     'JetBrains Mono', monospace;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    overflow: hidden;
+    font-family: var(--mono);
+    color: var(--text);
+  }
+
+  #canvas {
+    position: absolute;
+    top: 0; left: 0;
+    display: block;
+    cursor: crosshair;
+  }
+
+  /* ── panel divider line ────────────────────────────────────────────────── */
+  #divider {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    background: var(--border);
+    pointer-events: none;
+  }
+
+  /* ── header strip ─────────────────────────────────────────────────────── */
+  #header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    background: rgba(5,5,16,0.85);
+    border-bottom: 1px solid var(--border);
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+  }
+  #header-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  #header-right {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── controls bar ─────────────────────────────────────────────────────── */
+  #controls {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    background: rgba(5,5,16,0.92);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+  }
+
+  .spd-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 4px 9px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .spd-btn:hover { color: var(--text); border-color: #2a2a5a; background: rgba(255,255,255,0.03); }
+  .spd-btn.active { color: var(--cover); border-color: rgba(0,239,192,0.35); }
+  .spd-btn.pause-btn { color: var(--gap); border-color: rgba(255,24,85,0.3); }
+  .spd-btn.pause-btn:hover { color: #ff4466; }
+
+  .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+  #scrub-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+  }
+  #scrub {
+    flex: 1;
+    height: 3px;
+    appearance: none;
+    background: var(--grid);
+    outline: none;
+    cursor: pointer;
+    border-radius: 1px;
+  }
+  #scrub::-webkit-slider-thumb {
+    appearance: none;
+    width: 11px; height: 11px;
+    background: var(--cover);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0,239,192,0.5);
+  }
+  #scrub::-moz-range-thumb {
+    width: 11px; height: 11px;
+    background: var(--cover);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  #date-label {
+    font-size: 10px;
+    color: var(--cover);
+    letter-spacing: 0.06em;
+    min-width: 130px;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <span id="header-title">— —</span>
+  <span id="header-right">heliocentric orbit · ecliptic j2000</span>
+</div>
+
+<canvas id="canvas"></canvas>
+<div id="divider"></div>
+
+<div id="controls">
+  <button class="spd-btn" data-dur="500">Slow</button>
+  <button class="spd-btn active" data-dur="100">Medium</button>
+  <button class="spd-btn" data-dur="20">Fast</button>
+  <button class="spd-btn" data-dur="4">Faster</button>
+  <button class="spd-btn" data-dur="0">Max</button>
+  <button class="spd-btn pause-btn" data-dur="-1">⏸</button>
+  <div class="sep"></div>
+  <div id="scrub-wrap">
+    <input type="range" id="scrub" min="0" step="1" value="0">
+  </div>
+  <span id="date-label">—</span>
+</div>
+
+<!-- data injected by python -->
+<script>var ASTEROID_DATA = __ASTEROID_DATA_JSON__;</script>
+
+<script>
+/* ============================================================================
+   asteroid_engine.html  v8
+   canvas + requestAnimationFrame visualization of heliocentric asteroid orbit.
+   reads ASTEROID_DATA (json injected by asteroid_sim_v8.py).
+   ============================================================================ */
+(function () {
+  'use strict';
+
+  // ── data references ────────────────────────────────────────────────────────
+  var meta    = ASTEROID_DATA.meta;
+  var frm     = ASTEROID_DATA.frames;
+  var orbit   = ASTEROID_DATA.orbit;
+  var e_orbit = ASTEROID_DATA.earth_orbit;
+  var N       = meta.n_frames;
+
+  // ── palette ────────────────────────────────────────────────────────────────
+  var C_BG     = '#050510';
+  var C_COVER  = '#00efc0';
+  var C_GAP    = '#ff1855';
+  var C_AST    = '#ffee00';
+  var C_EARTH  = '#3a7fd4';
+  var C_TEXT   = '#b0c0e0';
+  var C_DIM    = '#606090';
+  var C_GRID   = '#10102a';
+
+  // ── projection: az=200°, el=28° oblique orthographic ──────────────────────
+  // right  = [-sin(az), cos(az), 0]
+  // up     = [-sin(el)*cos(az), -sin(el)*sin(az), cos(el)]
+  // screen_x =  world · right       (rightward in image)
+  // screen_y = -world · up          (downward in image = positive canvas y)
+  var AZ = 200 * Math.PI / 180;
+  var EL = 28  * Math.PI / 180;
+  var _ca = Math.cos(AZ), _sa = Math.sin(AZ);
+  var _ce = Math.cos(EL), _se = Math.sin(EL);
+  var R_RIGHT = [-_sa,         _ca,          0   ];
+  var R_UP    = [-_se * _ca,  -_se * _sa,    _ce ];
+
+  // scale + origin — updated on resize
+  var scale = 120;    // px per AU
+  var scene_cx = 0;   // canvas pixel coord of heliocentric origin
+  var scene_cy = 0;
+
+  function proj_px(x, y, z) {
+    var sx = x*R_RIGHT[0] + y*R_RIGHT[1] + z*R_RIGHT[2];
+    var sy = -(x*R_UP[0]  + y*R_UP[1]   + z*R_UP[2]);
+    return [scene_cx + sx * scale, scene_cy + sy * scale];
+  }
+
+  // ── layout dimensions (updated on resize) ─────────────────────────────────
+  var HEADER_H  = 36;
+  var CTRL_H    = 48;
+  var SCENE_W   = 0;   // left panel width
+  var RIGHT_X   = 0;   // start of right panel
+  var RIGHT_W   = 0;
+  var CONTENT_H = 0;   // total canvas height minus header and controls
+
+  var DIAL_R    = 0;   // phase dial radius in px
+  var DIAL_CX   = 0;   // dial center x
+  var DIAL_CY   = 0;   // dial center y (relative to canvas top)
+  var HUD_Y     = 0;
+  var TIME_Y    = 0;
+  var TIME_H_PX = 0;
+  var TIME_W_PX = 0;
+  var TIME_X0   = 0;   // left edge of timeline drawing area
+
+  // ── canvas setup ──────────────────────────────────────────────────────────
+  var canvas = document.getElementById('canvas');
+  var ctx    = canvas.getContext('2d');
+  var dpr    = window.devicePixelRatio || 1;
+
+  function resize() {
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    CONTENT_H = H - HEADER_H - CTRL_H;
+    SCENE_W   = Math.floor(W * 0.635);
+    RIGHT_X   = SCENE_W + 1;
+    RIGHT_W   = W - RIGHT_X;
+
+    // scene center: place Sun slightly left of SCENE_W center to give
+    // more room for the orbit on the +y side (which projects rightward)
+    scene_cx = SCENE_W * 0.48;
+    scene_cy = HEADER_H + CONTENT_H * 0.50;
+
+    // scale: fit ±3.1 AU horizontally in the scene panel (with 8% margin)
+    scale = (SCENE_W * 0.92) / (2 * 3.1);
+
+    // right panel layout
+    var dial_area_h = Math.floor(CONTENT_H * 0.48);
+    var hud_area_h  = Math.floor(CONTENT_H * 0.10);
+    var time_area_h = CONTENT_H - dial_area_h - hud_area_h;
+
+    DIAL_R  = Math.min(RIGHT_W * 0.38, dial_area_h * 0.42);
+    DIAL_CX = RIGHT_X + RIGHT_W / 2;
+    DIAL_CY = HEADER_H + dial_area_h / 2;
+    HUD_Y   = HEADER_H + dial_area_h;
+    TIME_Y  = HUD_Y + hud_area_h;
+    TIME_H_PX = time_area_h - 12;
+    var time_pad = Math.floor(RIGHT_W * 0.07);
+    TIME_X0   = RIGHT_X + time_pad;
+    TIME_W_PX = RIGHT_W - 2 * time_pad;
+
+    // update divider line
+    var div = document.getElementById('divider');
+    div.style.left   = SCENE_W + 'px';
+    div.style.top    = HEADER_H + 'px';
+    div.style.height = CONTENT_H + 'px';
+
+    // update scrub max
+    document.getElementById('scrub').max = N - 1;
+
+    // rebuild precomputed caches (stars, orbit path, timeline)
+    build_stars();
+    build_orbit_cache();
+    build_timeline_cache();
+  }
+
+  // ── seeded PRNG (mulberry32) ───────────────────────────────────────────────
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rng = mulberry32(42);
+
+  // ── star field ─────────────────────────────────────────────────────────────
+  // stars generated on a sphere of radius 6.8 AU (beyond orbit boundary).
+  // positions are precomputed in AU then projected to canvas on resize.
+  var RAW_STARS = (function () {
+    var r  = mulberry32(7);
+    var st = [];
+    for (var i = 0; i < 750; i++) {
+      var u1 = r(), u2 = r();
+      var phi   = Math.acos(2 * u1 - 1);
+      var theta = 2 * Math.PI * u2;
+      var R_AU  = 6.8;
+      st.push({
+        x: R_AU * Math.sin(phi) * Math.cos(theta),
+        y: R_AU * Math.sin(phi) * Math.sin(theta),
+        z: R_AU * Math.cos(phi),
+        a: 0.12 + r() * 0.76,
+      });
+    }
+    return st;
+  }());
+
+  var star_cache = [];   // [{sx, sy, a}] projected star positions
+
+  function build_stars() {
+    star_cache = [];
+    var pad = 30;
+    for (var i = 0; i < RAW_STARS.length; i++) {
+      var s = RAW_STARS[i];
+      var p = proj_px(s.x, s.y, s.z);
+      if (p[0] > -pad && p[0] < SCENE_W + pad &&
+          p[1] > HEADER_H - pad && p[1] < HEADER_H + CONTENT_H + pad) {
+        star_cache.push({ sx: p[0], sy: p[1], a: s.a });
+      }
+    }
+  }
+
+  // ── orbit gradient color (purple → dark red → amber → gold) ───────────────
+  var GRAD_STOPS = [
+    { t: 0.00, r: 32,  g: 8,   b: 128 },
+    { t: 0.25, r: 144, g: 24,  b: 8   },
+    { t: 0.55, r: 216, g: 96,  b: 8   },
+    { t: 1.00, r: 255, g: 234, b: 48  },
+  ];
+  function orbit_color(t) {
+    var s0 = GRAD_STOPS[0], s1 = GRAD_STOPS[1];
+    for (var k = 1; k < GRAD_STOPS.length; k++) {
+      if (t <= GRAD_STOPS[k].t) { s0 = GRAD_STOPS[k-1]; s1 = GRAD_STOPS[k]; break; }
+    }
+    var f = (t - s0.t) / (s1.t - s0.t);
+    var r = Math.round(s0.r + f * (s1.r - s0.r));
+    var g = Math.round(s0.g + f * (s1.g - s0.g));
+    var b = Math.round(s0.b + f * (s1.b - s0.b));
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  // ── precomputed offscreen canvases ─────────────────────────────────────────
+  var orbit_oc    = null;  // asteroid background orbit arc
+  var timeline_oc = null;  // phase + night raster strip
+
+  function build_orbit_cache() {
+    orbit_oc = document.createElement('canvas');
+    orbit_oc.width  = canvas.width  / dpr;
+    orbit_oc.height = canvas.height / dpr;
+    var oc = orbit_oc.getContext('2d');
+
+    var n = orbit.x.length;
+
+    // draw gradient orbit arc as individual segment strokes
+    oc.save();
+    oc.globalAlpha = 0.72;
+    oc.lineWidth = 2;
+    oc.lineJoin  = 'round';
+    for (var i = 0; i < n - 1; i++) {
+      var p0 = proj_px(orbit.x[i],   orbit.y[i],   orbit.z[i]);
+      var p1 = proj_px(orbit.x[i+1], orbit.y[i+1], orbit.z[i+1]);
+      oc.beginPath();
+      oc.moveTo(p0[0], p0[1]);
+      oc.lineTo(p1[0], p1[1]);
+      oc.strokeStyle = orbit_color(i / (n - 1));
+      oc.stroke();
+    }
+    oc.restore();
+
+    // earth orbit arc (thin blue circle)
+    oc.save();
+    oc.globalAlpha = 0.30;
+    oc.strokeStyle = '#3a7fd4';
+    oc.lineWidth = 1.2;
+    var en = e_orbit.x.length;
+    oc.beginPath();
+    var ep0 = proj_px(e_orbit.x[0], e_orbit.y[0], e_orbit.z[0]);
+    oc.moveTo(ep0[0], ep0[1]);
+    for (var j = 1; j < en; j++) {
+      var ep = proj_px(e_orbit.x[j], e_orbit.y[j], e_orbit.z[j]);
+      oc.lineTo(ep[0], ep[1]);
+    }
+    oc.closePath();
+    oc.stroke();
+    oc.restore();
+  }
+
+  function compute_is_night(fi) {
+    // rotates observatory arm with Earth's sidereal period + I12 longitude offset
+    var t_h   = fi * meta.frame_stride_h;
+    var lon   = meta.obs_lon_deg * Math.PI / 180;
+    var arm   = (t_h / 23.9345) * 2 * Math.PI + lon;
+    var ex    = frm.ear_x[fi], ey = frm.ear_y[fi];
+    var e_len = Math.sqrt(ex*ex + ey*ey);
+    if (e_len < 1e-9) return false;
+    var anti   = Math.atan2(-ey, -ex);
+    var diff   = ((arm - anti) + Math.PI) % (2*Math.PI) - Math.PI;
+    return Math.abs(diff) < Math.PI / 2;
+  }
+
+  function build_timeline_cache() {
+    var W = TIME_W_PX, H = TIME_H_PX;
+    if (W < 4 || H < 4) return;
+
+    timeline_oc = document.createElement('canvas');
+    timeline_oc.width  = W;
+    timeline_oc.height = H;
+    var tc = timeline_oc.getContext('2d');
+
+    // background
+    tc.fillStyle = 'rgba(5,5,20,0.8)';
+    tc.fillRect(0, 0, W, H);
+
+    // layout within the offscreen canvas
+    var PHASE_H = Math.floor(H * 0.40);
+    var NIGHT_H = Math.floor(H * 0.14);
+    var PHASE_Y = Math.floor(H * 0.20);
+    var NIGHT_Y = Math.floor(H * 0.68);
+
+    var gs  = meta.gap_start_ph;
+    var ge  = meta.gap_end_ph;
+
+    for (var fi = 0; fi < N; fi++) {
+      var px      = Math.floor(fi * (W - 1) / (N - 1));
+      var rot_ph  = frm.rot_ph[fi];
+      var in_gap  = rot_ph >= gs && rot_ph < ge;
+      var night   = compute_is_night(fi);
+
+      // phase band: bright if night, dimmed if daytime
+      var a_phase = night ? (in_gap ? 0.88 : 0.60) : (in_gap ? 0.30 : 0.22);
+      if (in_gap) {
+        tc.fillStyle = 'rgba(255,24,85,' + a_phase + ')';
+      } else {
+        tc.fillStyle = 'rgba(0,239,192,' + a_phase + ')';
+      }
+      tc.fillRect(px, PHASE_Y, 1, PHASE_H);
+
+      // night observing band
+      if (night) {
+        tc.fillStyle = 'rgba(0,255,136,0.35)';
+        tc.fillRect(px, NIGHT_Y, 1, NIGHT_H);
+      }
+    }
+
+    // date tick marks — every ~15 days
+    var date_start  = new Date(meta.date_start + 'T00:00:00Z');
+    var tick_step   = 15;  // days
+    tc.font          = '9px JetBrains Mono, monospace';
+    tc.textAlign     = 'center';
+    tc.fillStyle     = C_DIM;
+    tc.strokeStyle   = 'rgba(96,96,144,0.4)';
+    tc.lineWidth     = 0.7;
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    for (var d = 0; d < meta.n_days; d += tick_step) {
+      var tx = Math.floor(d / (meta.n_days - 1) * (W - 1));
+      tc.beginPath(); tc.moveTo(tx, PHASE_Y - 4); tc.lineTo(tx, PHASE_Y + PHASE_H + 4); tc.stroke();
+      var dt = new Date(date_start.getTime() + d * 86400000);
+      var lbl = months[dt.getUTCMonth()] + '\u202f' + dt.getUTCDate();
+      tc.fillText(lbl, tx, H - 3);
+    }
+
+    // legend labels
+    tc.textAlign   = 'left';
+    tc.fillStyle   = C_COVER;
+    tc.font = '8px JetBrains Mono, monospace';
+    tc.fillText('coverage', 2, PHASE_Y + PHASE_H + 9);
+    tc.fillStyle = 'rgba(0,255,136,0.7)';
+    tc.fillText('night', 2, NIGHT_Y + NIGHT_H + 9);
+  }
+
+  // ── vector helpers ─────────────────────────────────────────────────────────
+  function v_sub(a, b)   { return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
+  function v_scale(a, s) { return [a[0]*s, a[1]*s, a[2]*s]; }
+  function v_dot(a, b)   { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
+  function v_norm(a)     { return Math.sqrt(v_dot(a, a)); }
+  function v_unit(a)     { var n = v_norm(a); return n > 1e-12 ? v_scale(a, 1/n) : a; }
+
+  // ── phase angle arc geometry ───────────────────────────────────────────────
+  function compute_arc(ast, ear) {
+    var r   = v_norm(v_sub(ear, ast)) * 0.12;  // arc radius
+    var n1  = v_unit(v_sub([0,0,0], ast));     // ast → sun direction
+    var n2h = v_unit(v_sub(ear, ast));          // ast → earth direction
+    var n2r = v_sub(n2h, v_scale(n1, v_dot(n2h, n1)));  // gram-schmidt
+    var nm  = v_norm(n2r);
+    if (nm < 1e-10) return null;
+    var n2    = v_scale(n2r, 1/nm);
+    var cos_a = Math.min(1, Math.max(-1, v_dot(n1, n2h)));
+    var alpha = Math.acos(cos_a);
+    var pts   = [];
+    var NP    = 28;
+    for (var i = 0; i <= NP; i++) {
+      var t = i / NP * alpha;
+      pts.push([
+        ast[0] + r * (Math.cos(t)*n1[0] + Math.sin(t)*n2[0]),
+        ast[1] + r * (Math.cos(t)*n1[1] + Math.sin(t)*n2[1]),
+        ast[2] + r * (Math.cos(t)*n1[2] + Math.sin(t)*n2[2]),
+      ]);
+    }
+    var m = alpha / 2;
+    return {
+      pts:       pts,
+      label:     [
+        ast[0] + 1.60*r*(Math.cos(m)*n1[0] + Math.sin(m)*n2[0]),
+        ast[1] + 1.60*r*(Math.cos(m)*n1[1] + Math.sin(m)*n2[1]),
+        ast[2] + 1.60*r*(Math.cos(m)*n1[2] + Math.sin(m)*n2[2]),
+      ],
+      alpha_deg: alpha * 180 / Math.PI,
+    };
+  }
+
+  // ── body-frame ring arcs around asteroid ──────────────────────────────────
+  function compute_rings(ast, cum_ph) {
+    var R   = 0.24;  // AU
+    var off = -cum_ph * 2 * Math.PI;
+    var gs  = meta.gap_start_ph, ge = meta.gap_end_ph;
+    var gap_span = (ge - gs) * 2 * Math.PI;
+    var cov_span = 2 * Math.PI - gap_span;
+    var g_st = gs * 2 * Math.PI + off;
+    var g_en = ge * 2 * Math.PI + off;
+
+    function arc_pts(start, span, n) {
+      var pts = [];
+      for (var i = 0; i <= n; i++) {
+        var a = start + (i/n) * span;
+        pts.push([ast[0] + R*Math.cos(a), ast[1] + R*Math.sin(a), ast[2]]);
+      }
+      return pts;
+    }
+    return { cov: arc_pts(g_en, cov_span, 48), gap: arc_pts(g_st, gap_span, 18) };
+  }
+
+  // ── draw helpers ──────────────────────────────────────────────────────────
+  function draw_line3d(p0, p1, color, width, dash) {
+    var a = proj_px(p0[0], p0[1], p0[2]);
+    var b = proj_px(p1[0], p1[1], p1[2]);
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = width;
+    if (dash) ctx.setLineDash(dash); else ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+    ctx.restore();
+  }
+
+  function draw_arc3d(pts, color, width) {
+    if (!pts || pts.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = width;
+    ctx.lineJoin    = 'round';
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    var p0 = proj_px(pts[0][0], pts[0][1], pts[0][2]);
+    ctx.moveTo(p0[0], p0[1]);
+    for (var i = 1; i < pts.length; i++) {
+      var p = proj_px(pts[i][0], pts[i][1], pts[i][2]);
+      ctx.lineTo(p[0], p[1]);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function draw_dot3d(x, y, z, r, fill, stroke_col) {
+    var p = proj_px(x, y, z);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 2*Math.PI);
+    ctx.fillStyle   = fill;
+    ctx.strokeStyle = stroke_col || 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = 1.3;
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    return p;
+  }
+
+  function draw_text3d(x, y, z, text, color, size) {
+    var p = proj_px(x, y, z);
+    ctx.save();
+    ctx.font      = (size || 11) + 'px JetBrains Mono, monospace';
+    ctx.fillStyle = color;
+    ctx.fillText(text, p[0] + 6, p[1] - 4);
+    ctx.restore();
+  }
+
+  // ── scene panel drawing ────────────────────────────────────────────────────
+  function draw_stars() {
+    ctx.save();
+    for (var i = 0; i < star_cache.length; i++) {
+      var s = star_cache[i];
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle   = '#c8d8f8';
+      ctx.beginPath(); ctx.arc(s.sx, s.sy, 0.9, 0, 2*Math.PI); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  function draw_sun() {
+    var p = proj_px(0, 0, 0);
+    // outer corona glow
+    var g1 = ctx.createRadialGradient(p[0], p[1], 6, p[0], p[1], 48);
+    g1.addColorStop(0, 'rgba(255,220,60,0.45)');
+    g1.addColorStop(0.5, 'rgba(255,100,0,0.15)');
+    g1.addColorStop(1, 'rgba(255,60,0,0)');
+    ctx.fillStyle = g1; ctx.beginPath(); ctx.arc(p[0], p[1], 48, 0, 2*Math.PI); ctx.fill();
+    // core
+    var g2 = ctx.createRadialGradient(p[0]-3, p[1]-3, 1, p[0], p[1], 14);
+    g2.addColorStop(0, '#ffffff');
+    g2.addColorStop(0.4, '#ffe060');
+    g2.addColorStop(1, '#ff6600');
+    ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(p[0], p[1], 14, 0, 2*Math.PI); ctx.fill();
+    // label
+    ctx.save(); ctx.fillStyle = 'rgba(255,220,60,0.55)';
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillText('\u2609', p[0]+16, p[1]-10); ctx.restore();
+  }
+
+  function draw_scene(fi) {
+    var ast    = [frm.ast_x[fi], frm.ast_y[fi], frm.ast_z[fi]];
+    var ear    = [frm.ear_x[fi], frm.ear_y[fi], frm.ear_z[fi]];
+    var rot_ph = frm.rot_ph[fi];
+    var cum_ph = frm.cum_ph[fi];
+    var in_gap = rot_ph >= meta.gap_start_ph && rot_ph < meta.gap_end_ph;
+
+    // clip to scene panel
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, HEADER_H, SCENE_W, CONTENT_H);
+    ctx.clip();
+
+    // background
+    ctx.fillStyle = C_BG;
+    ctx.fillRect(0, HEADER_H, SCENE_W, CONTENT_H);
+
+    // stars
+    draw_stars();
+
+    // precomputed orbit arcs (asteroid + earth) from offscreen canvas
+    if (orbit_oc) ctx.drawImage(orbit_oc, 0, 0);
+
+    // phase gap segments on orbit path (campaign arc colored by phase)
+    draw_campaign_arc(fi);
+
+    // sun
+    draw_sun();
+
+    // body-frame ring arcs
+    var rings = compute_rings(ast, cum_ph);
+    draw_arc3d(rings.cov, C_COVER, 3.5);
+    draw_arc3d(rings.gap, C_GAP, 3.5);
+
+    // line of sight
+    draw_line3d(ear, ast, 'rgba(180,195,255,0.20)', 1.2, [4, 6]);
+
+    // phase angle geometry
+    var arc = compute_arc(ast, ear);
+    if (arc) {
+      draw_line3d(ast, [0,0,0], 'rgba(255,210,50,0.45)', 1.5, [6,4]);
+      draw_line3d(ast, ear,     'rgba(60,127,212,0.45)', 1.5, [6,4]);
+      draw_arc3d(arc.pts, 'rgba(255,255,255,0.88)', 1.8);
+      ctx.save();
+      ctx.font      = '10px JetBrains Mono, monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.80)';
+      var lp = proj_px(arc.label[0], arc.label[1], arc.label[2]);
+      ctx.fillText('\u03b1\u202f' + arc.alpha_deg.toFixed(1) + '\u00b0', lp[0], lp[1]);
+      ctx.restore();
+    }
+
+    // telescope arm at I12
+    draw_telescope(fi, ear);
+
+    // earth
+    draw_dot3d(ear[0], ear[1], ear[2], 5.5, C_EARTH);
+    draw_text3d(ear[0], ear[1], ear[2], 'Earth', 'rgba(58,127,212,0.6)', 9);
+
+    // asteroid (drawn last — on top)
+    var ast_col = in_gap ? C_GAP : C_AST;
+    if (in_gap) {
+      // soft glow when in gap
+      var p_a = proj_px(ast[0], ast[1], ast[2]);
+      var glow = ctx.createRadialGradient(p_a[0], p_a[1], 4, p_a[0], p_a[1], 22);
+      glow.addColorStop(0, 'rgba(255,24,85,0.45)');
+      glow.addColorStop(1, 'rgba(255,24,85,0)');
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(p_a[0], p_a[1], 22, 0, 2*Math.PI); ctx.fill();
+    }
+    draw_dot3d(ast[0], ast[1], ast[2], 7, ast_col, 'rgba(255,255,255,0.75)');
+    draw_text3d(ast[0], ast[1], ast[2], meta.asteroid_name, 'rgba(255,238,0,0.65)', 9);
+
+    ctx.restore();
+  }
+
+  function draw_campaign_arc(fi) {
+    // draws the 90-day asteroid path colored by in_gap status.
+    // thin scan so we only draw the campaign subset.
+    var step = 6;  // subsample: every 6 frames for performance
+    ctx.save();
+    ctx.lineWidth = 4.5;
+    ctx.lineJoin  = 'round';
+    for (var k = 0; k < N - step; k += step) {
+      var rot = frm.rot_ph[k];
+      var gap = rot >= meta.gap_start_ph && rot < meta.gap_end_ph;
+      ctx.strokeStyle = gap ? 'rgba(255,24,85,0.85)' : 'rgba(0,239,192,0.75)';
+      ctx.beginPath();
+      var p0 = proj_px(frm.ast_x[k],      frm.ast_y[k],      frm.ast_z[k]);
+      var p1 = proj_px(frm.ast_x[k+step], frm.ast_y[k+step], frm.ast_z[k+step]);
+      ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function draw_telescope(fi, ear) {
+    var t_h   = fi * meta.frame_stride_h;
+    var lon   = meta.obs_lon_deg * Math.PI / 180;
+    var arm   = (t_h / 23.9345) * 2 * Math.PI + lon;
+    var r_arm = 0.18;
+    var tip   = [ear[0] + r_arm*Math.cos(arm), ear[1] + r_arm*Math.sin(arm), ear[2]];
+
+    var ex    = ear[0], ey = ear[1];
+    var anti  = Math.atan2(-ey, -ex);
+    var diff  = ((arm - anti) + Math.PI) % (2*Math.PI) - Math.PI;
+    var night = Math.abs(diff) < Math.PI / 2;
+    var col   = night ? '#00ff88' : '#ff8800';
+
+    draw_line3d(ear, tip, col, 3, []);
+    // diamond tip
+    var p = proj_px(tip[0], tip[1], tip[2]);
+    ctx.save(); ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(p[0], p[1]-5); ctx.lineTo(p[0]+4, p[1]);
+    ctx.lineTo(p[0], p[1]+5); ctx.lineTo(p[0]-4, p[1]);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+
+  // ── phase dial drawing ─────────────────────────────────────────────────────
+  function draw_dial(fi) {
+    var cx     = DIAL_CX;
+    var cy     = DIAL_CY;
+    var R      = DIAL_R;
+    var rot_ph = frm.rot_ph[fi];
+    var in_gap = rot_ph >= meta.gap_start_ph && rot_ph < meta.gap_end_ph;
+    var gs     = meta.gap_start_ph, ge = meta.gap_end_ph;
+
+    // panel background
+    ctx.save();
+    ctx.beginPath(); ctx.rect(RIGHT_X, HEADER_H, RIGHT_W, DIAL_CY - HEADER_H + R + 30);
+    ctx.fillStyle = C_BG; ctx.fill();
+    ctx.restore();
+
+    // outer ring fill
+    ctx.save();
+    var bg_grd = ctx.createRadialGradient(cx, cy, R*0.5, cx, cy, R*1.15);
+    bg_grd.addColorStop(0, 'rgba(8,8,28,0.95)');
+    bg_grd.addColorStop(1, 'rgba(5,5,16,0)');
+    ctx.fillStyle = bg_grd; ctx.beginPath(); ctx.arc(cx, cy, R*1.15, 0, 2*Math.PI); ctx.fill();
+    ctx.restore();
+
+    // reference ring (hairline)
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R*0.72, 0, 2*Math.PI);
+    ctx.strokeStyle = '#1a1a42'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+
+    // covered arc: phase 0 → gap_start (teal)
+    var a_cov_st = -Math.PI/2;
+    var a_cov_en = -Math.PI/2 + gs * 2 * Math.PI;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R*0.72, a_cov_st, a_cov_en, false);
+    ctx.strokeStyle = C_COVER; ctx.lineWidth = Math.max(8, R*0.12);
+    ctx.lineCap = 'butt'; ctx.stroke();
+    ctx.restore();
+
+    // gap arc: phase gap_start → gap_end (red)
+    var a_gap_st = -Math.PI/2 + gs * 2 * Math.PI;
+    var a_gap_en = -Math.PI/2 + ge * 2 * Math.PI;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R*0.72, a_gap_st, a_gap_en, false);
+    ctx.strokeStyle = C_GAP; ctx.lineWidth = Math.max(8, R*0.12);
+    ctx.lineCap = 'butt'; ctx.stroke();
+    ctx.restore();
+
+    // tick marks at phase 0, 0.25, 0.5, 0.75, gap_start
+    ctx.save();
+    ctx.font = '8px JetBrains Mono, monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    [[0,'0'],[0.25,'¼'],[0.5,'½'],[0.75,'¾'],[gs, gs.toString()]].forEach(function(pair) {
+      var ph = pair[0], lbl = pair[1];
+      var th = -Math.PI/2 + ph * 2 * Math.PI;
+      var cos_t = Math.cos(th), sin_t = Math.sin(th);
+      // tick
+      ctx.strokeStyle = '#2a2a5a'; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(cx + cos_t * R*0.80, cy + sin_t * R*0.80);
+      ctx.lineTo(cx + cos_t * R*0.64, cy + sin_t * R*0.64);
+      ctx.stroke();
+      // label
+      ctx.fillStyle = C_DIM;
+      ctx.fillText(lbl, cx + cos_t * R*0.92, cy + sin_t * R*0.92);
+    });
+    ctx.restore();
+
+    // center dot
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.restore();
+
+    // dial hand — tweened angle
+    var theta = hand_angle;
+    var hx = cx + Math.cos(theta) * R * 0.78;
+    var hy = cy + Math.sin(theta) * R * 0.78;
+    ctx.save();
+    ctx.strokeStyle = in_gap ? C_GAP : C_AST;
+    ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(hx, hy); ctx.stroke();
+    // tip dot
+    ctx.fillStyle = in_gap ? C_GAP : C_AST;
+    ctx.beginPath(); ctx.arc(hx, hy, 4, 0, 2*Math.PI); ctx.fill();
+    ctx.restore();
+
+    // phase label inside dial
+    ctx.save();
+    ctx.font      = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center'; ctx.fillStyle = C_DIM;
+    ctx.fillText('P = ' + meta.period_h + ' h', cx, cy + R * 0.35);
+    ctx.fillStyle = in_gap ? C_GAP : C_COVER;
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText('\u03c6 = ' + rot_ph.toFixed(3), cx, cy + R * 0.50);
+    ctx.fillStyle = C_DIM; ctx.font = '8px JetBrains Mono, monospace';
+    ctx.fillText(in_gap ? '[ gap ]' : '[ covered ]', cx, cy + R * 0.63);
+    ctx.restore();
+
+    // title above dial
+    ctx.save();
+    ctx.font      = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center'; ctx.fillStyle = C_DIM;
+    ctx.fillText('ROTATIONAL PHASE', cx, HEADER_H + 18);
+    ctx.restore();
+  }
+
+  // ── hud readouts ──────────────────────────────────────────────────────────
+  function draw_hud(fi) {
+    var ast     = [frm.ast_x[fi], frm.ast_y[fi], frm.ast_z[fi]];
+    var ear     = [frm.ear_x[fi], frm.ear_y[fi], frm.ear_z[fi]];
+    var delta   = v_norm(v_sub(ast, ear));
+    var arc     = compute_arc(ast, ear);
+    var alpha_s = arc ? arc.alpha_deg.toFixed(1) + '\u00b0' : '—';
+    var night   = compute_is_night(fi);
+    var rot_ph  = frm.rot_ph[fi];
+    var in_gap  = rot_ph >= meta.gap_start_ph && rot_ph < meta.gap_end_ph;
+
+    var y0    = HUD_Y;
+    var mid   = RIGHT_X + RIGHT_W / 2;
+    var line  = 14;
+
+    // separator line
+    ctx.save();
+    ctx.strokeStyle = C_GRID; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(RIGHT_X + 12, y0); ctx.lineTo(RIGHT_X + RIGHT_W - 12, y0); ctx.stroke();
+    ctx.restore();
+
+    var entries = [
+      ['\u03b1', alpha_s,        arc ? phase_quality(arc.alpha_deg) : ''],
+      ['\u0394', delta.toFixed(3) + ' AU', ''],
+    ];
+
+    ctx.save();
+    ctx.font      = '10px JetBrains Mono, monospace';
+    ctx.textAlign = 'left';
+    var y = y0 + 13;
+    entries.forEach(function (e) {
+      ctx.fillStyle = C_DIM;   ctx.fillText(e[0] + ' = ', RIGHT_X + 14, y);
+      ctx.fillStyle = C_TEXT;  ctx.fillText(e[1], RIGHT_X + 42, y);
+      if (e[2]) {
+        ctx.fillStyle = C_DIM; ctx.font = '8px JetBrains Mono, monospace';
+        ctx.fillText(e[2], RIGHT_X + 42 + ctx.measureText(e[1]).width + 6, y);
+        ctx.font = '10px JetBrains Mono, monospace';
+      }
+      y += line;
+    });
+    ctx.restore();
+  }
+
+  function phase_quality(alpha) {
+    if (alpha < 15)  return 'opposition surge';
+    if (alpha < 40)  return 'excellent';
+    if (alpha < 65)  return 'good';
+    if (alpha < 90)  return 'fair';
+    if (alpha < 120) return 'poor';
+    return 'near conjunction';
+  }
+
+  // ── timeline drawing ───────────────────────────────────────────────────────
+  function draw_timeline(fi) {
+    var x0 = TIME_X0;
+    var y0 = TIME_Y + 4;
+    var W  = TIME_W_PX;
+    var H  = TIME_H_PX - 4;
+
+    // panel background
+    ctx.save();
+    ctx.fillStyle = C_BG;
+    ctx.fillRect(RIGHT_X, TIME_Y, RIGHT_W, H + 20);
+    ctx.restore();
+
+    // section label
+    ctx.save();
+    ctx.font      = '9px JetBrains Mono, monospace';
+    ctx.fillStyle = C_DIM; ctx.textAlign = 'left';
+    ctx.fillText('PHASE COVERAGE  \u00b7  OBSERVABILITY', x0, y0 + 9);
+    ctx.restore();
+
+    // draw precomputed timeline image
+    if (timeline_oc) {
+      ctx.save(); ctx.globalAlpha = 1;
+      ctx.drawImage(timeline_oc, x0, y0 + 16, W, H - 16);
+      ctx.restore();
+    }
+
+    // cursor line
+    var cx_t = x0 + Math.floor(fi / (N - 1) * (W - 1));
+    ctx.save();
+    ctx.strokeStyle = C_AST; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(cx_t, y0 + 16); ctx.lineTo(cx_t, y0 + H - 4); ctx.stroke();
+    ctx.restore();
+
+    // title
+    ctx.save();
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillStyle = C_DIM; ctx.textAlign = 'left';
+    ctx.fillText('CAMPAIGN TIMELINE', x0, TIME_Y + 13);
+    ctx.restore();
+  }
+
+  // ── animation state ────────────────────────────────────────────────────────
+  var cur_fi      = 0;
+  var frame_dur   = 100;    // ms per animation frame; -1 = paused
+  var last_t      = null;
+  var accum_t     = 0;
+  var raf_id      = null;
+  var hand_angle  = -Math.PI / 2;   // current rendered dial hand angle
+
+  // ── hand tween ─────────────────────────────────────────────────────────────
+  var tween_from  = 0;
+  var tween_delta = 0;
+  var tween_t     = 1;     // 0-1 progress; 1 = complete
+  var tween_dur   = 80;    // ms
+
+  function sin_ease(t) { return 0.5 - 0.5 * Math.cos(Math.PI * t); }
+
+  function start_hand_tween(target_cum_ph) {
+    var target = -Math.PI/2 + target_cum_ph * 2 * Math.PI;
+    tween_from  = hand_angle;
+    tween_delta = target - hand_angle;
+    tween_t     = 0;
+    tween_dur   = Math.max(30, frame_dur * 0.9);
+  }
+
+  function tick_tween(dt_ms) {
+    if (tween_t >= 1) return;
+    tween_t = Math.min(1, tween_t + dt_ms / tween_dur);
+    hand_angle = tween_from + tween_delta * sin_ease(tween_t);
+  }
+
+  // ── main draw ─────────────────────────────────────────────────────────────
+  function draw_frame(fi) {
+    // clear everything
+    ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+
+    draw_scene(fi);
+    draw_dial(fi);
+    draw_hud(fi);
+    draw_timeline(fi);
+
+    // right panel top/bottom separators
+    ctx.save();
+    ctx.strokeStyle = C_GRID; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(RIGHT_X, HUD_Y); ctx.lineTo(RIGHT_X + RIGHT_W, HUD_Y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(RIGHT_X, TIME_Y); ctx.lineTo(RIGHT_X + RIGHT_W, TIME_Y); ctx.stroke();
+    ctx.restore();
+
+    // update date label
+    document.getElementById('date-label').textContent = frm.timestamps[fi];
+    document.getElementById('scrub').value = fi;
+  }
+
+  // ── rAF loop ──────────────────────────────────────────────────────────────
+  function loop(ts) {
+    raf_id = requestAnimationFrame(loop);
+
+    var dt = last_t ? ts - last_t : 0;
+    last_t = ts;
+    dt = Math.min(dt, 200);  // clamp: tab-switch guard
+
+    tick_tween(dt);
+
+    if (frame_dur >= 0) {
+      accum_t += dt;
+      var steps = frame_dur > 0 ? Math.floor(accum_t / frame_dur) : 1;
+      if (steps > 0) {
+        accum_t = frame_dur > 0 ? accum_t % frame_dur : 0;
+        var prev_fi = cur_fi;
+        cur_fi = (cur_fi + steps) % N;
+        if (cur_fi !== prev_fi) start_hand_tween(frm.cum_ph[cur_fi]);
+      }
+    }
+
+    draw_frame(cur_fi);
+  }
+
+  // ── controls ──────────────────────────────────────────────────────────────
+  var btns = document.querySelectorAll('.spd-btn');
+  btns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var dur = parseInt(btn.dataset.dur);
+      frame_dur = dur;
+      accum_t   = 0;
+      btns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  });
+
+  var scrub = document.getElementById('scrub');
+  var scrubbing = false;
+  scrub.addEventListener('mousedown', function () { scrubbing = true; });
+  scrub.addEventListener('touchstart', function () { scrubbing = true; });
+  window.addEventListener('mouseup', function () { scrubbing = false; });
+  window.addEventListener('touchend', function () { scrubbing = false; });
+  scrub.addEventListener('input', function () {
+    var fi = parseInt(scrub.value);
+    cur_fi = fi;
+    hand_angle = -Math.PI/2 + frm.cum_ph[fi] * 2 * Math.PI;
+    draw_frame(fi);
+  });
+
+  // ── init ───────────────────────────────────────────────────────────────────
+  function init() {
+    // set page title
+    document.getElementById('page-title').textContent =
+      meta.asteroid_id + ' ' + meta.asteroid_name + ' \u00b7 Heliocentric Orbit';
+    document.getElementById('header-title').textContent =
+      meta.asteroid_id + '\u202f' + meta.asteroid_name.toUpperCase() +
+      '\u202f\u00b7\u202f' +
+      meta.date_start + '\u202f\u2013\u202f' + meta.date_end;
+
+    // init hand angle from first frame
+    hand_angle = -Math.PI/2 + frm.cum_ph[0] * 2 * Math.PI;
+
+    // layout + precompute
+    resize();
+
+    // start
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', function () {
+    resize();
+    hand_angle = -Math.PI/2 + frm.cum_ph[cur_fi] * 2 * Math.PI;
+  });
+
+  // defer until fonts are likely loaded
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(init);
+  } else {
+    setTimeout(init, 400);
+  }
+
+}());
+</script>
+</body>
+</html>
