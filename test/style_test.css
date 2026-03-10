@@ -926,7 +926,7 @@
         pointer-events: auto;
       }
       .sim-params { font-size: 8px; }
-      #rv-legend  { display: none; }
+      #rv-legend  { opacity: 0 !important; pointer-events: none; }
     }
 
     /* bookshelf */
