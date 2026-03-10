@@ -10,6 +10,7 @@
   var T0_ORB        = 2459050.0; // orbital reference epoch HJD (Pilecki+ 2022 Table 1)
   var T0_PULS       = 2459510.64947; // pulsation reference epoch HJD (Fourier r=2 fit to Pilecki RVs)
   var SIN_I         = Math.sin(57 * Math.PI / 180);
+  var COS_I         = Math.cos(57 * Math.PI / 180); // orbital inclination projection factor
   var K1            = 28.5;   // km/s (Pilecki+ 2022 Table 1)
   var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
   var RV_THRESH     = 40;
@@ -755,11 +756,11 @@
       ctx.setLineDash([7, 9]);
       ctx.strokeStyle = 'rgba(248,113,113,0.55)';
       ctx.beginPath();
-      ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * inc, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * COS_I, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.strokeStyle = 'rgba(196,162,88,0.55)';
       ctx.beginPath();
-      ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * inc, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * COS_I, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
