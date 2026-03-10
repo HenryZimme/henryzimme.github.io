@@ -503,7 +503,7 @@ function init() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  fetch('data/stars.json')
+  fetch('https://www.henryzimmerman.net/data/stars.json')
     .then(r => r.json())
     .then(catalog => {
       build_stars(catalog);
