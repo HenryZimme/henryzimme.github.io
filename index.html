@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Henry Zimmerman</title>
-  <meta name="description" content="Henry Zimmerman, junior at Phillips Academy Andover. Astrophysics researcher, writer, and cross-country captain.">
+  <meta name="description" content="Henry Zimmerman -- astrophysics researcher, writer, and cross-country captain at Phillips Academy Andover. Leading a VLT/ESPRESSO observing proposal and coordinating multi-site asteroid observations.">
   <meta property="og:title" content="Henry Zimmerman">
   <meta property="og:description" content="Astrophysicist, writer, and runner. I love using logic to tease out the truth from imperfect information, whether analyzing binary Cepheids or examining Cartesian reasoning.">
   <meta property="og:type" content="website">
@@ -17,7 +17,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
-  <link rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="/css/style.css"></noscript></head>
 <body>
 
@@ -67,7 +67,7 @@
   <section id="hero">
     <p class="hero-eyebrow">Phillips Academy Andover, Class of 2027</p>
     <h1 class="hero-name">Henry<br>Zimmerman</h1>
-    <p class="hero-tagline">I follow questions wherever they lead.</p>
+    <p class="hero-tagline">Astrophysicist. Writer. Runner.<br><span style="opacity:0.65;">I follow questions wherever they lead.</span></p>
     <div class="hero-arrow">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M4 7l6 6 6-6" stroke="rgba(196,162,88,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -111,6 +111,9 @@
           <div class="meta-item">
             <div class="meta-label">Contact</div>
             <div class="meta-value" id="contact-email"></div>
+            <div class="meta-value" style="margin-top: 10px; font-size: 13.5px; color: var(--text-dim); line-height: 1.6;">
+              I'm open to research collaboration, conversations about astrophysics, or anything in between. Feel free to reach out.
+            </div>
           </div>
         </div>
 
@@ -123,6 +126,7 @@
   <section id="research" class="section">
     <div class="section-inner">
       <h2 class="section-heading" data-label="Research"><span class="sr-only">Research</span></h2>
+      <p class="research-intro">My work begins with data, but it doesn't end there. Every result is a question about what to ask next -- and the best questions are the ones that make the model harder to defend.</p>
       <div class="research-cards">
 
         <div class="research-card">
@@ -292,6 +296,7 @@ The project coordinates photometry across four observatories in the Canary Islan
   <section id="writing" class="section">
     <div class="section-inner">
       <h2 class="section-heading" data-label="Writing"><span class="sr-only">Writing</span></h2>
+      <p class="writing-intro">I write across disciplines -- astrophysics, history, philosophy, education policy. The common thread is a conviction that careful argument is its own form of rigor.</p>
       <div class="writing-list">
 
         <div class="writing-item">
@@ -679,12 +684,12 @@ The project coordinates photometry across four observatories in the Canary Islan
 </footer>
 
 <button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
-<script src="/js/main.js" defer></script>
+<script src="/main.js" defer></script>
 <script>
   const simObserver = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {
       const s = document.createElement('script');
-      s.src = '/js/cepheid-engine.js';
+      s.src = '/cepheid-engine.js';
       s.dataset.bootJson = '/data/master_data_boot.json';
       s.dataset.fullJson = '/data/master_data.json';
       document.body.appendChild(s);
