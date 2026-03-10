@@ -848,7 +848,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #000 url('images/sim-placeholder.jpg') center/cover no-repeat;
+      background: #000 url('/images/sim-placeholder.jpg') center/cover no-repeat;
       z-index: 50;
     }
     .sim-loading {
