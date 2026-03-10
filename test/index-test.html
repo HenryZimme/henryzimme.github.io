@@ -265,13 +265,26 @@ The project coordinates photometry across four observatories in the Canary Islan
     </div>
   </div>
 
+  <!-- epilepsy warning modal -->
+  <div id="epilepsy-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(7,9,26,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+    <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
+      <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
+      <p style="font-size:13px;color:rgba(226,221,212,0.85);line-height:1.7;margin-bottom:1.5rem;">Real-time mode shows the Cepheid pulsating at its true physical rate &mdash; approximately 4.3 cycles per second. This produces rapid brightness changes that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
+      <div style="display:flex;gap:1rem;">
+        <button onclick="document.getElementById('epilepsy-modal').style.display='none';" style="flex:1;padding:0.6rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">Cancel</button>
+        <button onclick="document.getElementById('epilepsy-modal').style.display='none';window.setMode('realtime');" style="flex:1;padding:0.6rem;background:rgba(196,162,88,0.12);border:1px solid rgba(196,162,88,0.4);border-radius:6px;color:#c4a258;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">I understand, continue</button>
+      </div>
+    </div>
+  </div>
+
   <!-- controls -->
   <div id="sim-controls">
     <div class="mode-pill">
       <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode">ORBITAL</button>
       <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode">PULSATION</button>
+      <button id="btn-realtime" onclick="document.getElementById('epilepsy-modal').style.display='flex';" class="btn-mode" title="Physically accurate pulsation rate &#215;85">REAL-TIME &#9888;</button>
     </div>
-    <p class="sim-params">Orbital P<sub>orb</sub> = 58.85 d &middot; K&#8321; = 30.3 km/s &middot; K&#8322; = 54.8 km/s &middot; Pulsation P<sub>puls</sub> = 0.690 d</p>
+    <p class="sim-params">Orbital P<sub>orb</sub> = 58.85 d &middot; K&#8321; = 28.5 km/s &middot; K&#8322; = 51.6 km/s &middot; Pulsation P<sub>puls</sub> = 0.690 d</p>
   </div>
 
 </section>
