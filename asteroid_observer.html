@@ -257,31 +257,28 @@
     /* tighter nav */
     nav { padding: 13px 18px; }
 
-    /* single-column info panel, note hidden to save space */
+    /* collapse info panel to subtitle line only — body + note hidden */
     #info-panel {
       grid-template-columns: 1fr;
-      padding: 52px 18px 14px;
-      row-gap: 7px;
+      grid-template-rows: auto;
+      padding: 48px 18px 10px;
+      row-gap: 0;
     }
-    #info-subtitle { grid-column: 1; grid-row: 1; }
-    #info-body     { grid-column: 1; grid-row: 2; font-size: 12px; }
-    #info-note     { display: none; }
+    #info-subtitle {
+      grid-column: 1; grid-row: 1;
+      white-space: normal;
+    }
+    #info-body { display: none; }
+    #info-note { display: none; }
 
     /* sim header: hide coordinate label */
     #header-right { display: none; }
 
-    /* controls: remove step buttons, remove Faster/Max speed buttons,
-       tighten padding so Slow/Med/Fast/pause + scrubber + date fits at 390px */
-    #controls {
-      padding: 0 10px;
-      gap: 4px;
-    }
+    /* controls: step + Faster/Max buttons hidden, tight padding */
+    #controls { padding: 0 10px; gap: 4px; }
     .spd-btn.hide-mobile { display: none; }
     .spd-btn.step-btn    { display: none; }
-    #date-label {
-      min-width: 96px;
-      font-size: 9px;
-    }
+    #date-label { min-width: 90px; font-size: 9px; }
   }
 
 
@@ -452,15 +449,16 @@
     var dial_area_h, hud_area_h, time_area_h, time_pad, div;
 
     if (MOBILE_PORTRAIT) {
-      // portrait: scene on top half, right panel on bottom half
+      // portrait: scene on top 38%, right panel on bottom 62%
+      // right panel needs more room — dial + HUD + timeline require height
       SCENE_W   = W;
-      SCENE_H   = Math.floor(CONTENT_H * 0.50);
+      SCENE_H   = Math.floor(CONTENT_H * 0.38);
       RIGHT_X   = 0;
       RIGHT_W   = W;
 
       var rp_h     = CONTENT_H - SCENE_H;
-      dial_area_h  = Math.floor(rp_h * 0.52);
-      hud_area_h   = Math.floor(rp_h * 0.12);
+      dial_area_h  = Math.floor(rp_h * 0.50);
+      hud_area_h   = Math.floor(rp_h * 0.13);
       time_area_h  = rp_h - dial_area_h - hud_area_h;
 
       DIAL_R  = Math.min(RIGHT_W * 0.30, dial_area_h * 0.42);
