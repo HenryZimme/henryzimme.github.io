@@ -1,6 +1,6 @@
 (function() {
   // ── config ──────────────────────────────────────────────────────────────────
-  var MODES         = new Set(['orbital', 'pulsation']);
+  var MODES         = new Set(['orbital', 'pulsation', 'realtime']);
   var COMPANION_RAD = 12.51;   // R_sun (Espinoza-Arancibia & Pilecki 2025)
   var FALLBACK_COL  = '#ffe066';
   var R_SUN_KM      = 695700;
@@ -503,12 +503,12 @@
 
   // ── light curve (pulsation mode) ───────────────────────────────────────────
 
-  function drawLightCurve(magArr, frameI) {
+  function drawLightCurve(magArr, pulsI) {
     var box = getPlotRect();
     if (!box || !magArr) return;
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-    var inset = 16, padTop = 22, padBottom = 10;
+    var inset = 16, padTop = 22, padBottom = 40;
     var drawH = ph - padTop - padBottom;
     var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
     var midMag = (bounds.minV + bounds.maxV) / 2;
@@ -517,14 +517,25 @@
 
     var dt = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
     var fpp = Math.round(P_PULS / dt); // frames per pulsation cycle
-    var t_cur = frameI * dt;
-    var phi_cur = (t_cur % P_PULS) / P_PULS;
+    var phi_cur = (pulsI / fpp) % 1;
 
+    // magnitude → y: bright (small mag) maps UP — standard astro convention
     var magToY = function(m) {
       return py + padTop + drawH / 2 - ((m - midMag) * (drawH / magRange) * 0.72);
     };
 
     ctx.save();
+
+    // y-axis label — "V mag ▲ bright"
+    ctx.save();
+    ctx.translate(px + 10, py + padTop + drawH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(96,165,250,0.4)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('V mag  \u2191 bright', 0, 0);
+    ctx.restore();
 
     // ogle scatter (behind curve)
     for (var oi = 0; oi < ogle_phased.length; oi++) {
@@ -554,7 +565,7 @@
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     for (var k = -nPts / 2; k <= nPts / 2; k++) {
-      var fi = (frameI + k + magArr.length) % magArr.length;
+      var fi = (pulsI + k + magArr.length) % magArr.length;
       var lx = px + pw / 2 + k * step;
       var ly = magToY(magArr[fi]);
       k === -nPts / 2 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly);
@@ -579,7 +590,7 @@
     ctx.textAlign = 'left';
     ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + 12, py + 14);
 
-    // legend
+    // legend top-right
     ctx.textAlign = 'right';
     ctx.fillStyle = '#60a5fa';
     ctx.fillText('Fourier fit', px + pw - inset, py + padTop + 10);
@@ -595,43 +606,41 @@
       if (r1arr_lc[ri] > rMax) rMax = r1arr_lc[ri];
     }
     var rRange = Math.max(0.01, rMax - rMin);
-    var rH = 28, rY = py + ph - rH - 2;
+    var rH = 32, rY = py + ph - rH - 4;
     var rToY2 = function(r) { return rY + rH - (r - rMin) / rRange * rH; };
 
     // background strip
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
     ctx.fillRect(px + inset, rY, pw - inset*2, rH);
 
-    // radius curve
+    // radius curve — treadmill synced to pulsI
     ctx.beginPath();
     ctx.strokeStyle = 'rgba(134,239,172,0.7)';
     ctx.lineWidth = 1.5;
     ctx.lineJoin = 'round';
     for (var rk = -nPts/2; rk <= nPts/2; rk++) {
-      var rfi = (frameI + rk + fpp2) % fpp2;
+      var rfi = (pulsI + rk + fpp2) % fpp2;
       var rlx = px + pw/2 + rk * step;
       var rly = rToY2(r1arr_lc[rfi]);
       rk === -nPts/2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
     }
     ctx.stroke();
 
-    // cursor on radius curve
+    // cursor dot on radius curve
     ctx.beginPath();
-    ctx.arc(px + pw/2, rToY2(r1arr_lc[frameI % fpp2]), 3, 0, Math.PI*2);
+    ctx.arc(px + pw/2, rToY2(r1arr_lc[pulsI % fpp2]), 3.5, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(134,239,172,0.9)';
     ctx.fill();
 
-    // label
+    // R label and live value
     ctx.font = '9px \'JetBrains Mono\', monospace';
     ctx.fillStyle = 'rgba(134,239,172,0.55)';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 2);
-
-    // live R value
+    ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 3);
     ctx.textAlign = 'right';
     ctx.fillStyle = 'rgba(134,239,172,0.8)';
-    ctx.fillText(r1arr_lc[frameI % fpp2].toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 2);
+    ctx.fillText(r1arr_lc[pulsI % fpp2].toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 3);
 
     ctx.restore();
   }
@@ -667,8 +676,11 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  var ORBIT_DURATION_S = 20.0; // wall-clock seconds per simulated orbit
-  var PULS_DURATION_S  = 4.0;  // wall-clock seconds per simulated pulsation cycle
+  var ORBIT_DURATION_S  = 20.0; // wall-clock seconds per simulated orbit
+  var PULS_DURATION_S   = 4.0;  // wall-clock seconds per simulated pulsation cycle
+  // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
+  // P_puls/P_orb = 0.69001/58.85 ≈ 0.01172 → cycle takes 20 * 0.01172 ≈ 0.234s
+  var REALTIME_PULS_S   = ORBIT_DURATION_S * P_PULS / P_ORB_D;
 
   function animate(now) {
     if (!data || !data.physics_frames) return;
@@ -685,21 +697,19 @@
     lastTime = now;
 
     var i;
-    if (currentMode === 'pulsation') {
-      // advance pulsTime in days: one pulsation cycle per PULS_DURATION_S seconds
-      pulsTime += (dt_ms / 1000) / PULS_DURATION_S * P_PULS;
-      // map pulsation time to frame index: one pulsation cycle = Np frames
+    if (currentMode === 'pulsation' || currentMode === 'realtime') {
+      var dur_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
+      pulsTime += (dt_ms / 1000) / dur_s * P_PULS;
       var Np = Math.round(P_PULS / ((data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120));
       i = Math.floor((pulsTime / P_PULS) * Np) % p.x1.length;
     } else {
-      // advance frameIdx: one full orbit (N frames) per ORBIT_DURATION_S seconds
       frameIdx += (dt_ms / 1000) / ORBIT_DURATION_S * p.x1.length;
       i = Math.floor(frameIdx) % p.x1.length;
     }
 
     var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
 
-    if (currentMode === 'pulsation') {
+    if (currentMode === 'pulsation' || currentMode === 'realtime') {
       x1 = 0; y1 = 0; z1 = 0;
       x2 = 99999; y2 = 0; z2 = -1;
       r1 = p.r1[i]; mag = p.v_mag[i];
@@ -722,7 +732,7 @@
     var sw = star.w, sh = star.h;
 
     var zoom, cx, cy;
-    if (currentMode === 'pulsation') {
+    if (currentMode === 'pulsation' || currentMode === 'realtime') {
       zoom = (Math.min(sw, sh) * 0.14) / maxR1;
       cx = sw / 2;
       cy = sh * 0.35;
@@ -739,8 +749,7 @@
     var pr2 = Math.max(2, COMPANION_RAD * zoom);
 
     // ── orbital ellipses ──
-    if (currentMode !== 'pulsation') {
-      var inc = 0.545;
+    if (currentMode !== 'pulsation' && currentMode !== 'realtime') {
       ctx.save();
       ctx.lineWidth = 2;
       ctx.setLineDash([7, 9]);
@@ -767,14 +776,17 @@
     }
 
     // ── plots ──
-    if (currentMode === 'pulsation') {
-      drawLightCurve(p.v_mag, i);
+    if (currentMode === 'pulsation' || currentMode === 'realtime') {
+      var dt_meta = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
+      var Np_lc = Math.round(P_PULS / dt_meta);
+      var pulsI = Math.floor((pulsTime / P_PULS) * Np_lc) % Np_lc;
+      drawLightCurve(p.v_mag, pulsI);
     } else {
       drawRVPlot(i);
     }
 
     // ── trails: cinematic tapered lines ──
-    if (currentMode !== 'pulsation') {
+    if (currentMode !== 'pulsation' && currentMode !== 'realtime') {
       trail1.push({ x: s1x, y: s1y, col: col1 || FALLBACK_COL });
       trail2.push({ x: s2x, y: s2y });
       if (trail1.length > TRAIL_LEN) trail1.shift();
@@ -824,7 +836,7 @@
     }
 
     // ── star labels: always-on, dark pill background ──
-    if (currentMode !== 'pulsation') {
+    if (currentMode !== 'pulsation' && currentMode !== 'realtime') {
       ctx.save();
       ctx.font = '12px \'JetBrains Mono\', monospace';
       ctx.textBaseline = 'middle';
@@ -866,8 +878,9 @@
     if (swatch && col1) swatch.style.background = col1;
     if (hud.rad) hud.rad.innerText = r1.toFixed(1) + ' R\u2609';
 
-    if (currentMode === 'pulsation') {
-      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> Pulsation phase';
+    if (currentMode === 'pulsation' || currentMode === 'realtime') {
+      var modeLabel = currentMode === 'realtime' ? '\u03C6<sub>puls</sub> Pulsation phase \u00B7 \u00D785' : '\u03C6<sub>puls</sub> Pulsation phase';
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = modeLabel;
       var pp = (pulsTime % P_PULS) / P_PULS;
       if (hud.phase) hud.phase.innerText = pp.toFixed(3);
     } else {
@@ -879,7 +892,9 @@
     if (currentMode === 'orbital') {
       if (captionStartTime === null) captionStartTime = now;
       var elapsed = now - captionStartTime;
-      var star2 = getStarArea();
+      var starArea = getStarArea();
+      // keep captions in the star area only, well clear of the plot
+      var capY = Math.min(starArea.h * 0.82, starArea.h - 50);
       for (var ci = 0; ci < CAPTIONS.length; ci++) {
         var cap = CAPTIONS[ci];
         var age = elapsed - cap.t;
@@ -890,15 +905,14 @@
         if (alpha <= 0) continue;
         ctx.save();
         ctx.globalAlpha = alpha * 0.88;
-        ctx.font = '12px \'JetBrains Mono\', monospace';
+        ctx.font = '11px \'JetBrains Mono\', monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         var capW = ctx.measureText(cap.text).width + 24;
-        var capX = star2.w / 2;
-        var capY = star2.h * 0.88;
-        ctx.fillStyle = 'rgba(7,9,26,0.75)';
+        var capX = starArea.w / 2;
+        ctx.fillStyle = 'rgba(7,9,26,0.80)';
         ctx.beginPath();
-        ctx.roundRect(capX - capW/2, capY - 14, capW, 28, 4);
+        ctx.roundRect(capX - capW/2, capY - 13, capW, 26, 4);
         ctx.fill();
         ctx.fillStyle = 'rgba(226,221,212,0.92)';
         ctx.fillText(cap.text, capX, capY);
@@ -915,8 +929,8 @@
     if (!MODES.has(mode)) return;
     currentMode = mode;
     trail1 = []; trail2 = [];
-    lastTime = null; // reset clock to prevent delta spike on mode switch
-    pulsTime = 0;   // restart pulsation phase from zero
+    lastTime = null;
+    pulsTime = 0;
 
     document.querySelectorAll('.btn-mode').forEach(function(b) {
       b.style.background = 'transparent';
@@ -929,6 +943,9 @@
       btn.style.color = '#ffffff';
       btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
     }
+    // show legend only in orbital mode
+    var rvLegend = document.getElementById('rv-legend');
+    if (rvLegend) rvLegend.style.opacity = (mode === 'orbital') ? '1' : '0';
   };
 
   // ── resize ─────────────────────────────────────────────────────────────────
