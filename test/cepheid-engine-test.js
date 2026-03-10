@@ -230,6 +230,42 @@
     rv_abs_max += 12;
   }
 
+  // ── orbital position interpolation ────────────────────────────────────────
+
+  function lerpFrame(p, i_fp) {
+    // linear interpolation between two adjacent orbital frames
+    var N  = p.x1.length;
+    var i0 = Math.floor(i_fp) % N;
+    var i1 = (i0 + 1) % N;
+    var t  = i_fp - Math.floor(i_fp);
+    function lerp(a, b, f) { return a + (b - a) * f; }
+    return {
+      x1: lerp(p.x1[i0], p.x1[i1], t), y1: lerp(p.y1[i0], p.y1[i1], t),
+      z1: lerp(p.z1[i0], p.z1[i1], t), x2: lerp(p.x2[i0], p.x2[i1], t),
+      y2: lerp(p.y2[i0], p.y2[i1], t), z2: lerp(p.z2[i0], p.z2[i1], t),
+    };
+  }
+
+  // ── pulsation state lookup — uses puls_cycle from JSON metadata ────────────
+  // decoupled from orbital frame count: always 480-frame resolution
+  // puls_phi: 0-1 pulsation phase
+
+  function getPulsState(puls_phi) {
+    var pc = data && data.metadata && data.metadata.puls_cycle;
+    if (!pc) return { r1: 13.65, mag: 17.1, teff: 6490, col: FALLBACK_COL };
+    var fp = ((puls_phi % 1 + 1) % 1) * (pc.Np - 1);
+    var i0 = Math.floor(fp) % pc.Np;
+    var i1 = (i0 + 1) % pc.Np;
+    var t  = fp - Math.floor(fp);
+    function lerp(a, b, f) { return a + (b - a) * f; }
+    return {
+      r1:  lerp(pc.r1[i0],    pc.r1[i1],    t),
+      mag: lerp(pc.v_mag[i0], pc.v_mag[i1], t),
+      teff: pc.teff ? lerp(pc.teff[i0], pc.teff[i1], t) : null,
+      col:  pc.color1[Math.round(fp) % pc.Np],
+    };
+  }
+
   // ── phase-fold observational data ──────────────────────────────────────────
 
   function prepareObservationalData() {
@@ -294,12 +330,14 @@
 
   // ── rv plot (orbital mode) ─────────────────────────────────────────────────
 
-  function drawRVPlot(orbitPhi) {
+  function drawRVPlot(orbitPhi, puls_phi) {
     var box = getPlotRect();
     if (!box || !rv1.length) return;
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-    var rvI = Math.round(orbitPhi * RV_N) % RV_N;
+    // apply phase_offset so cursor aligns with Pilecki data points
+    var cursor_phi = (orbitPhi + phase_offset) % 1;
+    var rvI = Math.round(cursor_phi * RV_N) % RV_N;
 
     var inset = 28, padTop = 26, padBottom = 36;
     var drawH = ph - padTop - padBottom;
@@ -413,8 +451,8 @@
     }
     ctx.globalAlpha = 1;
 
-    // cursor line at current orbital phase
-    var curX = px + inset + orbitPhi * plotW;
+    // cursor line at current orbital phase (shifted by phase_offset to match data)
+    var curX = px + inset + cursor_phi * plotW;
     ctx.save();
     ctx.strokeStyle = 'rgba(96,165,250,0.65)';
     ctx.shadowBlur = 6;
@@ -440,7 +478,7 @@
     ctx.stroke();
 
     // Cepheid: orbital model + pulsation RV from Fourier model at current pulsation phase
-    var puls_ph = (pulsTime % P_PULS) / P_PULS;
+    var puls_ph = puls_phi;
     var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
     var v_puls_now = PULS_C[0]
       + PULS_C[1] * Math.cos(2 * Math.PI * puls_ph)
@@ -500,21 +538,22 @@
 
   // ── light curve (pulsation mode) ───────────────────────────────────────────
 
-  function drawLightCurve(magArr, pulsI) {
+  function drawLightCurve(puls_phi) {
     var box = getPlotRect();
-    if (!box || !magArr) return;
+    var pc = data && data.metadata && data.metadata.puls_cycle;
+    if (!box || !pc) return;
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
     var inset = 16, padTop = 22, padBottom = 40;
     var drawH = ph - padTop - padBottom;
     var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
     var midMag = (bounds.minV + bounds.maxV) / 2;
-    var nPts = 240;
-    var step = (pw - inset * 2) / nPts;
-
-    var dt = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
-    var fpp = Math.round(P_PULS / dt); // frames per pulsation cycle
-    var phi_cur = (pulsI / fpp) % 1;
+    // nPts render columns; n_cycles = total pulsation cycles visible in window
+    var nPts     = 480;
+    var n_cycles = 2;
+    var step     = (pw - inset * 2) / nPts;
+    var Np       = pc.Np;
+    var phi_cur  = puls_phi;
 
     // magnitude → y: bright (small mag) maps UP — standard astro convention
     var magToY = function(m) {
@@ -523,7 +562,7 @@
 
     ctx.save();
 
-    // y-axis label — "V mag ▲ bright"
+    // y-axis label
     ctx.save();
     ctx.translate(px + 10, py + padTop + drawH / 2);
     ctx.rotate(-Math.PI / 2);
@@ -534,15 +573,15 @@
     ctx.fillText('V mag  \u2191 bright', 0, 0);
     ctx.restore();
 
-    // ogle scatter (behind curve)
+    // ogle scatter — phase-based x offset from center
     for (var oi = 0; oi < ogle_phased.length; oi++) {
       var op = ogle_phased[oi];
       var dp = op.phase - phi_cur;
       dp = dp - Math.round(dp); // wrap to [-0.5, 0.5]
-      var df = dp * fpp;
+      var px_off = dp * nPts / n_cycles; // pixel offset from center
 
       for (var c = -3; c <= 3; c++) {
-        var off = df + c * fpp;
+        var off = px_off + c * (nPts / n_cycles);
         if (off >= -nPts / 2 && off <= nPts / 2) {
           var ox = px + pw / 2 + off * step;
           var oy = magToY(op.mag);
@@ -556,15 +595,16 @@
     }
     ctx.globalAlpha = 1;
 
-    // fourier fit curve
+    // fourier fit treadmill — scrolls with phi_cur, phase-indexed into puls_cycle
     ctx.beginPath();
     ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     for (var k = -nPts / 2; k <= nPts / 2; k++) {
-      var fi = (pulsI + k + magArr.length) % magArr.length;
+      var k_phase = ((phi_cur + k * n_cycles / nPts) % 1 + 1) % 1;
+      var fi = Math.floor(k_phase * Np) % Np;
       var lx = px + pw / 2 + k * step;
-      var ly = magToY(magArr[fi]);
+      var ly = magToY(pc.v_mag[fi]);
       k === -nPts / 2 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly);
     }
     ctx.stroke();
@@ -595,37 +635,36 @@
     ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
 
     // ── radius vs phase mini-curve (bottom strip) ──
-    var r1arr_lc = data.physics_frames.r1;
-    var fpp2 = Math.round(P_PULS / dt);
     var rMin = Infinity, rMax = -Infinity;
-    for (var ri = 0; ri < fpp2; ri++) {
-      if (r1arr_lc[ri] < rMin) rMin = r1arr_lc[ri];
-      if (r1arr_lc[ri] > rMax) rMax = r1arr_lc[ri];
+    for (var ri = 0; ri < Np; ri++) {
+      if (pc.r1[ri] < rMin) rMin = pc.r1[ri];
+      if (pc.r1[ri] > rMax) rMax = pc.r1[ri];
     }
     var rRange = Math.max(0.01, rMax - rMin);
     var rH = 32, rY = py + ph - rH - 4;
     var rToY2 = function(r) { return rY + rH - (r - rMin) / rRange * rH; };
 
-    // background strip
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
-    ctx.fillRect(px + inset, rY, pw - inset*2, rH);
+    ctx.fillRect(px + inset, rY, pw - inset * 2, rH);
 
-    // radius curve — treadmill synced to pulsI
+    // radius treadmill synced to phi_cur
     ctx.beginPath();
     ctx.strokeStyle = 'rgba(134,239,172,0.7)';
     ctx.lineWidth = 1.5;
     ctx.lineJoin = 'round';
-    for (var rk = -nPts/2; rk <= nPts/2; rk++) {
-      var rfi = (pulsI + rk + fpp2) % fpp2;
-      var rlx = px + pw/2 + rk * step;
-      var rly = rToY2(r1arr_lc[rfi]);
-      rk === -nPts/2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
+    for (var rk = -nPts / 2; rk <= nPts / 2; rk++) {
+      var rk_phase = ((phi_cur + rk * n_cycles / nPts) % 1 + 1) % 1;
+      var rfi = Math.floor(rk_phase * Np) % Np;
+      var rlx = px + pw / 2 + rk * step;
+      var rly = rToY2(pc.r1[rfi]);
+      rk === -nPts / 2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
     }
     ctx.stroke();
 
     // cursor dot on radius curve
+    var cur_r1 = pc.r1[Math.round(phi_cur * Np) % Np];
     ctx.beginPath();
-    ctx.arc(px + pw/2, rToY2(r1arr_lc[pulsI % fpp2]), 3.5, 0, Math.PI*2);
+    ctx.arc(px + pw / 2, rToY2(cur_r1), 3.5, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(134,239,172,0.9)';
     ctx.fill();
 
@@ -637,7 +676,7 @@
     ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 3);
     ctx.textAlign = 'right';
     ctx.fillStyle = 'rgba(134,239,172,0.8)';
-    ctx.fillText(r1arr_lc[pulsI % fpp2].toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 3);
+    ctx.fillText(cur_r1.toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 3);
 
     ctx.restore();
   }
@@ -699,32 +738,42 @@
     var dt_ms = Math.min(now - lastTime, 100);
     lastTime = now;
 
-    // advance orbitPhase: 0→1 in exactly ORBIT_DURATION_S seconds regardless of frame count
+    // advance orbital phase: 0→1 in ORBIT_DURATION_S wall seconds
     orbitPhase = (orbitPhase + (dt_ms / 1000) / ORBIT_DURATION_S) % 1;
-    var i = Math.floor(orbitPhase * p.x1.length) % p.x1.length;
 
-    // always advance pulsation clock — rate depends on mode
-    var puls_rate_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
-    pulsTime += (dt_ms / 1000) / puls_rate_s * P_PULS;
-    var Np = Math.round(P_PULS / ((data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120));
-    var pulsI = Math.floor((pulsTime / P_PULS) * Np) % Np;
+    // pulsation clock: only advance in pulsation and realtime modes.
+    // in orbital mode, pulsation phase is derived from orbital time (physically correct).
+    if (currentMode !== 'orbital') {
+      var puls_rate_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
+      pulsTime += (dt_ms / 1000) / puls_rate_s * P_PULS;
+    }
+
+    // pulsation phase 0-1:
+    // orbital mode  → tied to orbital time: one P_PULS per 1/85.3 of the orbit
+    // pulsation/realtime → independent pulsTime clock
+    var puls_phi = (currentMode === 'orbital')
+      ? ((orbitPhase * P_ORB_D % P_PULS) / P_PULS + 1) % 1
+      : ((pulsTime % P_PULS) / P_PULS + 1) % 1;
 
     var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
 
     if (currentMode === 'pulsation') {
-      // pulsation view: freeze orbital positions, use pulsI for star state
+      // pulsation view: freeze orbital positions at center
       x1 = 0; y1 = 0; z1 = 0;
       x2 = 99999; y2 = 0; z2 = -1;
     } else {
-      // orbital / realtime: live orbital positions
-      x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
-      x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
+      // orbital / realtime: interpolated positions from skeleton or full data
+      var orb = lerpFrame(p, orbitPhase * (p.x1.length - 1));
+      x1 = orb.x1; y1 = orb.y1; z1 = orb.z1;
+      x2 = orb.x2; y2 = orb.y2; z2 = orb.z2;
     }
-    // star state always driven by pulsation clock
-    r1   = p.r1[pulsI];
-    mag  = p.v_mag[pulsI];
-    teff = safeGet(p.teff,   pulsI, null);
-    col1 = safeGet(p.color1, pulsI, FALLBACK_COL);
+
+    // star state from puls_cycle (stable 480-frame resolution regardless of orbital dataset)
+    var ps = getPulsState(puls_phi);
+    r1   = ps.r1;
+    mag  = ps.mag;
+    teff = ps.teff;
+    col1 = ps.col;
 
     // brightness for bloom
     var mag_range = bounds.maxV - bounds.minV;
@@ -780,9 +829,9 @@
 
     // ── plots ──
     if (currentMode === 'pulsation') {
-      drawLightCurve(p.v_mag, pulsI);
+      drawLightCurve(puls_phi);
     } else {
-      drawRVPlot(orbitPhase);
+      drawRVPlot(orbitPhase, puls_phi);
     }
 
     // clip all star-area drawing so nothing bleeds into the plot region below
@@ -888,8 +937,7 @@
 
     if (currentMode === 'pulsation') {
       if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> Pulsation phase';
-      var pp = (pulsTime % P_PULS) / P_PULS;
-      if (hud.phase) hud.phase.innerText = pp.toFixed(3);
+      if (hud.phase) hud.phase.innerText = puls_phi.toFixed(3);
     } else {
       var orbLabel = currentMode === 'realtime'
         ? '\u03C6<sub>orb</sub> Orbital phase \u00B7 puls \u00D785'
@@ -1039,6 +1087,15 @@
         if (p.v_mag[mi] < bounds.minV) bounds.minV = p.v_mag[mi];
         if (p.v_mag[mi] > bounds.maxV) bounds.maxV = p.v_mag[mi];
       }
+      // refine bounds from puls_cycle (full cycle, high resolution)
+      var pc_init = data.metadata && data.metadata.puls_cycle;
+      if (pc_init) {
+        for (var pci = 0; pci < pc_init.Np; pci++) {
+          if (pc_init.v_mag[pci] < bounds.minV) bounds.minV = pc_init.v_mag[pci];
+          if (pc_init.v_mag[pci] > bounds.maxV) bounds.maxV = pc_init.v_mag[pci];
+        }
+        maxR1 = Math.max(maxR1, Math.max.apply(null, pc_init.r1));
+      }
       bounds.a1 = Math.max.apply(null, p.x1.map(Math.abs));
       bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
       maxR1 = Math.max.apply(null, p.r1);
@@ -1046,8 +1103,8 @@
       buildRV();
       prepareObservationalData();
 
-      // start at phase 0 — boot JSON only covers phases 0-0.1, so starting anywhere
-      // else would desync stars from the RV cursor (stars drawn from wrong frame index)
+      // boot JSON is now uniformly sampled across the full orbit,
+      // so orbitPhase can start at 0 without any positional desync.
       orbitPhase = 0;
 
       if (preview) {
@@ -1080,6 +1137,14 @@
         for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
           if (p2.v_mag[mi2] < bounds.minV) bounds.minV = p2.v_mag[mi2];
           if (p2.v_mag[mi2] > bounds.maxV) bounds.maxV = p2.v_mag[mi2];
+        }
+        var pc_full = data.metadata && data.metadata.puls_cycle;
+        if (pc_full) {
+          for (var pci2 = 0; pci2 < pc_full.Np; pci2++) {
+            if (pc_full.v_mag[pci2] < bounds.minV) bounds.minV = pc_full.v_mag[pci2];
+            if (pc_full.v_mag[pci2] > bounds.maxV) bounds.maxV = pc_full.v_mag[pci2];
+          }
+          maxR1 = Math.max.apply(null, pc_full.r1);
         }
         bounds.a1 = Math.max.apply(null, p2.x1.map(Math.abs));
         bounds.a2 = Math.max.apply(null, p2.x2.map(Math.abs));
