@@ -102,9 +102,11 @@ function build_stars(catalog) {
 
   for (const [ra_deg, dec_deg, vmag, color, name] of catalog) {
     const pos = project(ra_deg, dec_deg);
-    // scale dot size by magnitude: brighter = larger
     const size = Math.max(0.4, (7.2 - vmag) * 0.38);
     const is_named = name !== null;
+    const phase = rng() * Math.PI * 2;
+    const freq  = 0.3 + rng() * 1.4;
+    const freq_bucket = Math.round((freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1));
 
     star_data.push({
       x: pos.x,
@@ -114,13 +116,12 @@ function build_stars(catalog) {
       size,
       mag: vmag,
       name: is_named ? name : null,
-      // simbad uses the star name for named stars
       simbad_id: is_named ? name : null,
-      phase: rng() * Math.PI * 2,
-      freq: 0.3 + rng() * 1.4,
+      freq_bucket,
+      sin_phase: Math.sin(phase),
+      cos_phase: Math.cos(phase),
       featured: false,
       color,
-      // pre-computed rgba strings to avoid per-frame hex parsing
       rgba_glow0: hex_to_rgba(color, 0.20),
       rgba_full:  hex_to_rgba(color, 1)
     });
@@ -132,6 +133,9 @@ function build_stars(catalog) {
     const obj = featured_objects[fi];
     const pos = project(obj.ra_deg, obj.dec_deg);
     const rng2 = make_rng(99999 + fi * 7);
+    const f_phase = rng2() * Math.PI * 2;
+    const f_freq  = 1.2 + fi * 0.2;
+    const f_bucket = Math.round((f_freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1));
     star_data.push({
       x: pos.x,
       y: pos.y,
@@ -141,8 +145,9 @@ function build_stars(catalog) {
       mag: 0,
       name: obj.name,
       simbad_id: obj.simbad_id,
-      phase: rng2() * Math.PI * 2,
-      freq: 1.2 + fi * 0.2,
+      freq_bucket: Math.min(TWINKLE_BUCKETS - 1, Math.max(0, f_bucket)),
+      sin_phase: Math.sin(f_phase),
+      cos_phase: Math.cos(f_phase),
       featured: true,
       obj_data: obj,
       color: featured_colors[fi] || '#c4a258',
@@ -160,7 +165,33 @@ function build_stars(catalog) {
   }
 }
 
-// ── draw helpers ─────────────────────────────────────────────────────────────
+// ── twinkle lookup table ──────────────────────────────────────────────────────
+// Instead of Math.sin(time_s * freq + phase) per star (~9000 calls/frame),
+// we quantize frequencies into TWINKLE_BUCKETS bins and use the angle-addition
+// identity: sin(t*f + p) = sin(t*f)*cos(p) + cos(t*f)*sin(p).
+// Per frame: compute sin/cos for each bucket (64 calls total).
+// Per star: one lookup + 2 multiplies + 1 add. No per-star trig.
+const TWINKLE_BUCKETS = 64;
+const FREQ_MIN = 0.3, FREQ_MAX = 1.7;
+const twinkle_sin_lut = new Float32Array(TWINKLE_BUCKETS); // sin(time_s * bucket_freq)
+const twinkle_cos_lut = new Float32Array(TWINKLE_BUCKETS); // cos(time_s * bucket_freq)
+
+function update_twinkle_lut() {
+  for (let i = 0; i < TWINKLE_BUCKETS; i++) {
+    const f = FREQ_MIN + (i / (TWINKLE_BUCKETS - 1)) * (FREQ_MAX - FREQ_MIN);
+    const a = time_s * f;
+    twinkle_sin_lut[i] = Math.sin(a);
+    twinkle_cos_lut[i] = Math.cos(a);
+  }
+}
+
+// inline twinkle value for a star: uses LUT + pre-stored sin_phase/cos_phase
+function star_twinkle(s) {
+  const i = s.freq_bucket;
+  return 0.78 + 0.22 * (twinkle_sin_lut[i] * s.cos_phase + twinkle_cos_lut[i] * s.sin_phase);
+}
+
+
 
 // convert #rrggbb to rgba(r,g,b,a) string
 function hex_to_rgba(hex, alpha) {
@@ -175,9 +206,9 @@ function hex_to_rgba(hex, alpha) {
 function draw_background_stars_batched() {
   const TWO_PI = Math.PI * 2;
   for (const color in bg_stars_by_color) {
-    ctx.fillStyle = color; // set once per color group
+    ctx.fillStyle = color;
     for (const s of bg_stars_by_color[color]) {
-      const twinkle = 0.78 + 0.22 * Math.sin(time_s * s.freq + s.phase);
+      const twinkle = star_twinkle(s);
       ctx.globalAlpha = 0.32 + 0.24 * twinkle;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.size, 0, TWO_PI);
@@ -187,7 +218,8 @@ function draw_background_stars_batched() {
   ctx.globalAlpha = 1;
 }
 
-function draw_named_star(s, twinkle) {
+function draw_named_star(s) {
+  const twinkle = star_twinkle(s);
   // soft glow for brighter stars
   if (s.size > 1.6) {
     const gr = s.size * 3.4;
@@ -200,20 +232,18 @@ function draw_named_star(s, twinkle) {
     ctx.fill();
   }
 
-  const alpha = 0.70 + 0.30 * twinkle;
   ctx.beginPath();
   ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
   ctx.fillStyle = s.color;
-  ctx.globalAlpha = alpha;
+  ctx.globalAlpha = 0.70 + 0.30 * twinkle;
   ctx.fill();
   ctx.globalAlpha = 1;
 }
 
 function draw_featured_star(s) {
   const is_pipeline = s.obj_data && s.obj_data.pipeline;
-  // pipeline objects: slower period (0.6x), lower peak alpha
-  const pulse_freq = is_pipeline ? 1.9 * 0.6 : 1.9;
-  const pulse = 0.5 + 0.5 * Math.sin(time_s * pulse_freq + s.phase);
+  // featured stars use the LUT-based twinkle as their pulse
+  const pulse = star_twinkle(s);
   const glow_r = 16 + pulse * 5;
   const c = s.color;
   const glow_alpha = is_pipeline ? 0.22 : 0.45;
@@ -286,8 +316,9 @@ function draw_canvas_legend() {
     const it = items[i];
     const cx = x + dot_r;
 
-    // pulsing dot
-    const pulse = 0.5 + 0.5 * Math.sin(time_s * (1.2 + i * 0.2));
+    // pulsing dot — use bucket 0..4 mapped across LUT for variety
+    const lut_i = Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1));
+    const pulse = 0.5 + 0.5 * twinkle_sin_lut[lut_i];
     const glow = ctx.createRadialGradient(cx, y, 0, cx, y, dot_r * 3);
     glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
     glow.addColorStop(1, hex_to_rgba(it.color, 0));
@@ -342,6 +373,8 @@ function draw(ts) {
     return;
   }
 
+  update_twinkle_lut(); // 64 sin/cos calls instead of ~9000
+
   hover_star = null;
   let min_d = 14;
 
@@ -352,8 +385,7 @@ function draw(ts) {
     if (s.featured) {
       draw_featured_star(s);
     } else if (s.name) {
-      const twinkle = 0.78 + 0.22 * Math.sin(time_s * s.freq + s.phase);
-      draw_named_star(s, twinkle);
+      draw_named_star(s);
       // hover detection only for named + featured stars
       const dx = mouse.x - s.x, dy = mouse.y - s.y;
       const d = Math.sqrt(dx * dx + dy * dy);
