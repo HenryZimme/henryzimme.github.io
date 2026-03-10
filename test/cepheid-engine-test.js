@@ -552,6 +552,20 @@
       ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
     }
 
+    // canvas legend — replaces #rv-legend HTML element, always drawn on canvas
+    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(96,165,250,0.55)';
+    ctx.fillText('ORBITAL RADIAL VELOCITIES', px + inset, py + 6);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffe4a0';
+    ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText('\u2014 Companion', px + pw - inset, py + 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 30);
+
     ctx.restore();
   }
 
@@ -1050,9 +1064,6 @@
       btn.style.color = '#ffffff';
       btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
     }
-    // show legend in orbital and realtime modes (both show RV plot), hidden on mobile
-    var rvLegend = document.getElementById('rv-legend');
-    if (rvLegend) rvLegend.style.opacity = (mode === 'pulsation' || window.innerWidth <= 740) ? '0' : '1';
   };
 
   // ── resize ─────────────────────────────────────────────────────────────────
@@ -1135,8 +1146,6 @@
       }
       simCanvas.style.opacity = '1';
       if (plotUI) plotUI.style.opacity = '1';
-      var rvLegend = document.getElementById('rv-legend');
-      if (rvLegend) rvLegend.style.opacity = window.innerWidth <= 740 ? '0' : '1';
 
       window.addEventListener('resize', resize);
       resize();
