@@ -614,7 +614,9 @@
     ctx.clearRect(0, 0, cw, ch);
 
     var i = Math.floor(frameIdx) % p.x1.length;
-    frameIdx += (currentMode === 'pulsation' ? 0.4 : 0.8);
+    // advance by fixed fraction of total frames so orbital period is constant regardless of N
+    var FRAMES_PER_ORBIT = 1200; // animation frames per one full orbit
+    frameIdx += (currentMode === 'pulsation' ? 0.5 : 1.0) * p.x1.length / FRAMES_PER_ORBIT;
 
     var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
 
@@ -875,7 +877,12 @@
         return r2.json();
       }).then(function(fullData) {
         if (!fullData) return;
+        // preserve orbital phase across the swap by scaling frameIdx
+        var oldN = data.physics_frames.x1.length;
+        var newN = fullData.physics_frames.x1.length;
+        var currentPhase = (frameIdx % oldN) / oldN;
         data = fullData;
+        frameIdx = currentPhase * newN;
         var p2 = data.physics_frames;
         bounds.minV = 99; bounds.maxV = -99;
         for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
