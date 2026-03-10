@@ -111,6 +111,14 @@
   var v_puls_cycle = [];
   var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
 
+  // guided first-loop captions
+  var captionStartTime = null;
+  var CAPTIONS = [
+    { t: 0,    dur: 4500, text: 'A Cepheid variable — pulsating giant, thermometer of the universe' },
+    { t: 5000, dur: 4500, text: 'Its companion orbits every 58.85 days, tugging the Cepheid\'s spectrum' },
+    { t: 10000,dur: 5000, text: 'The radial velocity curves below encode both stars\' motion — measured from Earth' },
+  ];
+
   var ogle_phased    = [];
   var pilecki_phased = [];
   var phase_offset   = 0;
@@ -257,8 +265,10 @@
       var rv1_corrected = row[1] - v_puls_cycle[pidx];
       pilecki_phased.push({
         display_phase: (raw_phases[pi] + phase_offset) % 1,
-        rv1: rv1_corrected,  // pulsation-subtracted Cepheid RV
-        rv2: row[3]          // companion unchanged
+        rv1:  rv1_corrected,
+        rv2:  row[3],
+        err1: row[2],
+        err2: row[4]
       });
     }
 
@@ -359,20 +369,45 @@
     drawCurve(rv1, '#ffe4a0');
     drawCurve(rv2, '#f87171');
 
-    // pilecki scatter
+    // pilecki scatter with error bars
     for (var pi2 = 0; pi2 < pilecki_phased.length; pi2++) {
       var pp = pilecki_phased[pi2];
       var dpx = px + inset + pp.display_phase * plotW;
-      ctx.globalAlpha = 0.9;
+      var errPx = pp.err1 !== undefined ? pp.err1 * yScale : 2 * yScale;
+      var errPx2 = pp.err2 !== undefined ? pp.err2 * yScale : 2 * yScale;
+      ctx.globalAlpha = 0.92;
+      // cepheid error bar
+      ctx.strokeStyle = 'rgba(255,228,160,0.5)';
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.arc(dpx, rvToY(pp.rv1), 4.5, 0, Math.PI * 2);
+      ctx.moveTo(dpx, rvToY(pp.rv1) - errPx);
+      ctx.lineTo(dpx, rvToY(pp.rv1) + errPx);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv1) - errPx);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv1) - errPx);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv1) + errPx);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv1) + errPx);
+      ctx.stroke();
+      // companion error bar
+      ctx.strokeStyle = 'rgba(248,113,113,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(dpx, rvToY(pp.rv2) - errPx2);
+      ctx.lineTo(dpx, rvToY(pp.rv2) + errPx2);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv2) - errPx2);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv2) - errPx2);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv2) + errPx2);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv2) + errPx2);
+      ctx.stroke();
+      // cepheid dot
+      ctx.beginPath();
+      ctx.arc(dpx, rvToY(pp.rv1), 6, 0, Math.PI * 2);
       ctx.fillStyle = '#ffe4a0';
       ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,0.5)';
       ctx.lineWidth = 1.2;
       ctx.stroke();
+      // companion dot
       ctx.beginPath();
-      ctx.arc(dpx, rvToY(pp.rv2), 4.5, 0, Math.PI * 2);
+      ctx.arc(dpx, rvToY(pp.rv2), 6, 0, Math.PI * 2);
       ctx.fillStyle = '#f87171';
       ctx.fill();
       ctx.stroke();
@@ -423,6 +458,17 @@
     ctx.strokeStyle = 'rgba(0,0,0,0.5)';
     ctx.lineWidth = 1.2;
     ctx.stroke();
+
+    // y-axis label — rotated "km s⁻¹"
+    ctx.save();
+    ctx.translate(px + 10, py + padTop + drawH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('km s\u207B\u00B9', 0, 0);
+    ctx.restore();
 
     // y-axis ticks — brighter, larger font
     ctx.font = '10px \'JetBrains Mono\', monospace';
@@ -569,10 +615,55 @@
     ctx.fillStyle = 'rgba(96,165,250,0.5)';
     ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
 
+    // ── radius vs phase mini-curve (bottom strip) ──
+    var r1arr_lc = data.physics_frames.r1;
+    var fpp2 = Math.round(P_PULS / dt);
+    var rMin = Infinity, rMax = -Infinity;
+    for (var ri = 0; ri < fpp2; ri++) {
+      if (r1arr_lc[ri] < rMin) rMin = r1arr_lc[ri];
+      if (r1arr_lc[ri] > rMax) rMax = r1arr_lc[ri];
+    }
+    var rRange = Math.max(0.01, rMax - rMin);
+    var rH = 28, rY = py + ph - rH - 2;
+    var rToY2 = function(r) { return rY + rH - (r - rMin) / rRange * rH; };
+
+    // background strip
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillRect(px + inset, rY, pw - inset*2, rH);
+
+    // radius curve
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(134,239,172,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    for (var rk = -nPts/2; rk <= nPts/2; rk++) {
+      var rfi = (frameI + rk + fpp2) % fpp2;
+      var rlx = px + pw/2 + rk * step;
+      var rly = rToY2(r1arr_lc[rfi]);
+      rk === -nPts/2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
+    }
+    ctx.stroke();
+
+    // cursor on radius curve
+    ctx.beginPath();
+    ctx.arc(px + pw/2, rToY2(r1arr_lc[frameI % fpp2]), 3, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(134,239,172,0.9)';
+    ctx.fill();
+
+    // label
+    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(134,239,172,0.55)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 2);
+
+    // live R value
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(134,239,172,0.8)';
+    ctx.fillText(r1arr_lc[frameI % fpp2].toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 2);
+
     ctx.restore();
   }
-
-  // ── star drawing with tasteful linear bloom ───────────────────────────────
 
   function drawStar(spx, spy, pr, col, is_cepheid, brightness) {
     ctx.save();
@@ -800,6 +891,8 @@
     // ── hud ──
     if (hud.mag) hud.mag.innerText = mag.toFixed(1);
     if (hud.teff) hud.teff.innerText = teff !== null ? Math.round(teff) + ' K' : '~6490 K';
+    var swatch = document.getElementById('hud-teff-swatch');
+    if (swatch && col1) swatch.style.background = col1;
     if (hud.rad) hud.rad.innerText = r1.toFixed(1) + ' R\u2609';
 
     if (currentMode === 'pulsation') {
@@ -809,6 +902,37 @@
     } else {
       if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>orb</sub> Orbital phase';
       if (hud.phase) hud.phase.innerText = (i / p.x1.length).toFixed(3);
+    }
+
+    // ── guided first-loop captions ──
+    if (currentMode === 'orbital') {
+      if (captionStartTime === null) captionStartTime = now;
+      var elapsed = now - captionStartTime;
+      var star2 = getStarArea();
+      for (var ci = 0; ci < CAPTIONS.length; ci++) {
+        var cap = CAPTIONS[ci];
+        var age = elapsed - cap.t;
+        if (age < 0 || age > cap.dur + 800) continue;
+        var alpha = age < 400 ? age / 400
+                  : age > cap.dur ? Math.max(0, 1 - (age - cap.dur) / 800)
+                  : 1;
+        if (alpha <= 0) continue;
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.88;
+        ctx.font = '12px \'JetBrains Mono\', monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        var capW = ctx.measureText(cap.text).width + 24;
+        var capX = star2.w / 2;
+        var capY = star2.h * 0.88;
+        ctx.fillStyle = 'rgba(7,9,26,0.75)';
+        ctx.beginPath();
+        ctx.roundRect(capX - capW/2, capY - 14, capW, 28, 4);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(226,221,212,0.92)';
+        ctx.fillText(cap.text, capX, capY);
+        ctx.restore();
+      }
     }
 
     requestAnimationFrame(animate);
