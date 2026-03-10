@@ -543,9 +543,9 @@ document.querySelectorAll('.book-spine').forEach(spine => {
     const gap = 5;
     const container_w = rows_el.parentElement.clientWidth;
 
-    // max books per row: 1 expanded + (n-1) collapsed + n gaps <= container_w
-    // n*(w_col + gap) <= container_w - w_exp + w_col
-    const n_per_row = Math.max(2, Math.floor((container_w - w_exp + w_col) / (w_col + gap)));
+    // max books per row: 2 expanded + (n-2) collapsed + n gaps <= container_w
+    // n*(w_col + gap) <= container_w - 2(w_exp + w_col)
+    const n_per_row = Math.max(2, Math.floor((container_w - 2 * (w_exp + w_col)) / (w_col + gap)));
 
     const total = spines.length;
     const n_rows = Math.ceil(total / n_per_row);
