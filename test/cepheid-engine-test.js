@@ -1,746 +1,799 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Henry Zimmerman</title>
-  <meta name="description" content="Henry Zimmerman, junior at Phillips Academy Andover. Astrophysics researcher, writer, and cross-country captain.">
-  <meta property="og:title" content="Henry Zimmerman">
-  <meta property="og:description" content="Astrophysicist, writer, and runner. I love using logic to tease out the truth from imperfect information, whether analyzing binary Cepheids or examining Cartesian reasoning.">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="canonical" href="https://www.henryzimmerman.net/">
-  <meta property="og:image" content="https://www.henryzimmerman.net/og-preview.jpg">
-  <meta name="twitter:image" content="https://www.henryzimmerman.net/og-preview.jpg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
-  <link rel="preload" href="css/style_test.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="css/style_test.css"></noscript></head>
-<body>
-
-<canvas id="star-canvas"></canvas>
-<div id="star-tooltip"></div>
-
-<div id="star-popover">
-  <div id="star-popover-name"></div>
-  <a id="star-popover-btn" href="#" target="_blank" rel="noopener">View on SIMBAD ↗</a>
-</div>
-
-<div id="object-modal">
-  <div class="modal-inner">
-    <button class="modal-close" id="modal-close-btn">&#x2715;</button>
-    <div class="modal-type" id="modal-type">Featured Object</div>
-    <h2 class="modal-name" id="modal-name"></h2>
-    <p class="modal-body" id="modal-body"></p>
-    <a class="modal-simbad" id="modal-simbad" href="#" target="_blank" rel="noopener">View on SIMBAD</a>
-  </div>
-</div>
-
-<nav>
-  <a href="#hero" class="nav-name">Henry Zimmerman</a>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#research">Research</a></li>
-    <li><a href="#cepheid-sim">Simulation</a></li>
-    <li><a href="#writing">Writing</a></li>
-    <li><a href="#highlights">Highlights</a></li>
-    <li><a href="#bookshelf">Reading</a></li>
-  </ul>
-  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
-</nav>
-
-<nav class="nav-mobile" id="nav-mobile">
-  <a href="#about" class="mobile-link">About</a>
-  <a href="#research" class="mobile-link">Research</a>
-  <a href="#cepheid-sim" class="mobile-link">Simulation</a>
-  <a href="#writing" class="mobile-link">Writing</a>
-  <a href="#highlights" class="mobile-link">Highlights</a>
-  <a href="#bookshelf" class="mobile-link">Reading</a>
-  <a href="https://github.com/HenryZimme" target="_blank" rel="noopener">GitHub</a>
-</nav>
-
-<main>
-  <!-- hero -->
-  <a id="stars" style="position: absolute; top: 0;"></a>
-  <section id="hero">
-    <p class="hero-eyebrow">Phillips Academy Andover, Class of 2027</p>
-    <h1 class="hero-name">Henry<br>Zimmerman</h1>
-    <p class="hero-tagline">I follow questions wherever they lead.</p>
-    <div class="hero-arrow">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 7l6 6 6-6" stroke="rgba(196,162,88,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-  </section>
-
-  <!-- about -->
-  <section id="about" class="section">
-    <div class="section-inner">
-      <h2 class="section-heading" data-label="About"><span class="sr-only">About</span></h2>
-      <div class="about-grid">
-        <div class="about-text">
-          <p class="about-lead">I'm an astrophysicist, writer, and runner. I love using logic to tease out the truth from imperfect information. I'm always looking for the ideas that challenge my perspective, whether I'm doing asteroseismology on merger-origin Cepheids or examining Cartesian constructs.</p>
-          <p>My main scientific work is in time-domain astronomy. While investigating OGLE-LMC-CEP-1347, I identified candidate non-radial modes suggesting a merger-origin; however, my subsequent analysis of the spectral window revealed these signals as yearly aliases. Rather than accepting an ambiguous result, I am now leading a VLT/ESPRESSO proposal to resolve the system's history through high-resolution spectroscopy.</p>
-          <p>A parallel thread is asteroid rotation: I am determining the first confirmed synodic period for main-belt asteroid 7605 Cindygraber, coordinating multi-site observations across Chile, Australia, and the Canary Islands using an open-source scheduler I built for the project.</p>
-          <p>I co-created <a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, a philosophical website and podcast series examining theodicy, divine perfection, and the epistemology of religious faith, developed alongside a classmate for PHR380: Faith and Doubt at Andover. The same instinct that pulls me toward hard scientific questions pulls me toward hard philosophical ones.</p>
-          <p>Outside research, I captain the cross-country team, play jazz guitar, and founded RenewBlue, a campus sustainability initiative. I am drawn to problems that require patience, precision, and a willingness to tear down a model when the data demands it.</p>
-        </div>
-
-        <div class="about-meta">
-          <div class="profile-frame">
-            <img src="images/HSZ_Headshot_BW.jpeg" width="613" height="661" alt="Henry Zimmerman headshot">
-          </div>
-
-          <div class="meta-item">
-            <div class="meta-label">Affiliation</div>
-            <div class="meta-value">Phillips Academy Andover<br>Class of 2027</div>
-          </div>
-
-          <div class="meta-item">
-            <div class="meta-label">Research Interests</div>
-            <div class="meta-value">Asteroseismology<br>Binary Cepheids<br>Stellar mergers<br>Cosmic distance scale<br>Minor planet dynamics</div>
-          </div>
-
-          <div class="meta-item">
-            <div class="meta-label">Collaborator</div>
-            <div class="meta-value">Dr. Bogumił Pilecki (CAMK Warsaw)</div>
-          </div>
-
-          <div class="meta-item">
-            <div class="meta-label">Contact</div>
-            <div class="meta-value" id="contact-email"></div>
-          </div>
-        </div>
-
-      </div>
-      <p class="about-footnote">The star field is drawn from the Yale Bright Star Catalog. Hover to see names; click to open in SIMBAD. For an interactive simulation of OGLE-LMC-CEP-1347 — the binary Cepheid at the center of my primary research — scroll to the Simulation section below.</p>
-    </div>
-  </section>
-
-  <!-- research -->
-  <section id="research" class="section">
-    <div class="section-inner">
-      <h2 class="section-heading" data-label="Research"><span class="sr-only">Research</span></h2>
-      <div class="research-cards">
-
-        <div class="research-card">
-          <div class="card-id">Primary Research, In Preparation</div>
-          <h3 class="card-title">First Asteroseismic Evidence of Merger Origin in a Binary Cepheid → VLT Spectroscopic Follow-Up
-</h3>
-          <p class="card-body">
-            I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary Cepheid in the Large Magellanic Cloud with the shortest known orbital period for a Cepheid (58.85 ± 0.08 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I recovered a non-radial frequency triplet with spacing $\Delta$f ≈ 0.0074 c/d. I validated this with dual-domain frequency and time-evolution $O-C$ Monte Carlo simulations, finding Prot ≈ 135 ± 15 days. This is over five σ longer than the 58.85 day orbit. Since tidal theory predicts synchronization precedes circularization by $>10$x, this asynchronous rotation in a circular orbit suggests recent merger spindown.
-          </p>
-
-          <p class = "card-body">
-          Update (March 2026): My window function analysis revealed a &Delta; f degeneracy with the 1-year OGLE sampling aliases. The sampling limits of the ground-based photometry prompted a methodological pivot. As Co-I and primary author of the Science Justification, I am drafting a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki to obtain phase-constrained chemical abundances. Spectroscopy bypasses these aliases to provide the definitive test of the merger scenario.
-          </p>
-          
-          <p class = "card-body">
-          For readers interested in the full analysis pipeline, including the alias diagnostic that invalidated the candidate rotational signal, see the Methodological Appendix.
-          </p>
-          
-          <div class="card-links">
-            <a class="card-link" href="1347_methods.html" target="_blank" rel="noopener">
-              View Methods and Diagnostic Analysis →
-            </a>
-          </div>
-
-          <a href="#cepheid-sim" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated ↓</div>
-            </div>
-            <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.50&ndash;0.70, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where &Delta;RV&nbsp;&#8819;&nbsp;40&nbsp;km&thinsp;s<sup>&minus;1</sup> to cleanly separate the Cepheid and companion spectra. The simulation makes both constraints visible at once.</div>
-          </a>
-
-
-          <div class="card-tags">
-            <span class="tag">Asteroseismology</span>
-            <span class="tag">Binary Cepheids</span>
-            <span class="tag">OGLE</span>
-            <span class="tag">Fourier Analysis</span>
-            <span class="tag">Stellar Mergers</span>
-            <span class="tag">LMC</span>
-          </div>
-        </div>
-
-        <div class="research-card">
-          <div class="card-id">Ongoing</div>
-          <h3 class="card-title">Rotation Period and Taxonomy of 7605 Cindygraber</h3>
-
-          <p class="card-body">
-            I am studying the rotation state of main-belt asteroid 7605 Cindygraber. Using photometric measurements from the ALCDEF Light Curve Database, I developed statistical models to estimate period convergence requirements and used those results to design a multi-site observing strategy.
-          </p>
-
-          <p class="card-body">
-The project coordinates photometry across four observatories in the Canary Islands, Chile, Australia, and Andover to improve phase sampling of the asteroid’s light curve. I am also analyzing diffraction grating images to extract spectral information that may help constrain its taxonomic classification.
-          </p>
-
-          <p class="card-body">
-          To improve observational efficiency under variable viewing conditions, I built an open-source scheduling tool that integrates orbital ephemerides, lunar sky brightness models, and site visibility constraints to prioritize high-quality observing windows. The goal is to reduce wasted telescope time and improve cadence reliability. I am preparing the results for submission to the Minor Planet Bulletin.
-          </p>
-          
-          <div class="card-links">
-            <a class="card-link" href="docs/asteroid_3d.html" target="_blank" rel="noopener">
-              View Interactive Asteroid Orbital Model →
-            </a>
-            <br>
-            <a class="card-link" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">
-              Observing Scheduler on GitHub
-            </a> |
-            <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">
-              Asteroid Statistics on GitHub
-            </a>
-          </div>
-          <div class="card-tags">
-            <span class="tag">Photometry</span>
-            <span class="tag">Minor Planets</span>
-            <span class="tag">Machine Learning</span>
-            <span class="tag">ALCDEF</span>
-            <span class="tag">Spectroscopy</span>
-            <span class="tag">Python</span>
-          </div>
-        </div>
-
-        <div class="research-card">
-          <div class="card-id">Completed, with Dr. José Zorrilla</div>
-          <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
-          <p class="card-body">
-            My first independent research target. I remotely operated the Slooh Chile 432mm telescope for two months, performing multi-band (V&minus;I) differential photometry of the classical Cepheid U Sgr in open cluster M25. Sinusoidal light curve fits confirmed the 6.74-day period (R&sup2; = 0.93 V-band, 0.70 I-band). V-band distance calculations yielded 40.8% error versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths and why accurate extinction corrections are critical for Cepheid distance work. Strong color index correlation (r = 0.85) provided independent evidence for the kappa-mechanism. The project expanded into an investigation of metallicity-dependent corrections to the period-luminosity relation.
-          </p>
-          <div class="card-links">
-            <a class="card-link" href="U_Sgr_abs.html" target="_blank" rel="noopener">
-              View Abstract & Poster →
-            </a>
-          </div>
-          
-          <div class="card-tags">
-            <span class="tag">Cepheid Variables</span>
-            <span class="tag">Differential Photometry</span>
-            <span class="tag">Distance Scale</span>
-            <span class="tag">Dust Extinction</span>
-            <span class="tag">Period-Luminosity</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <section id="cepheid-sim" style="position: relative; width: 100%; height: 100vh; background: #000; overflow: hidden; display: block; isolation: isolate;">
-
-  <!-- canvas: position:absolute always. desktop: fills 100vh. mobile: fills height driven by #sim-mobile-ui. -->
-  <canvas id="simCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s;"></canvas>
-
-  <!-- ── DESKTOP UI (hidden ≤700px via CSS) ─────────────────────────────── -->
-  <div id="ui-layer" style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 2.5rem 2.5rem 2rem; z-index: 20;">
-    <div id="sim-top" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;">
-      <div style="max-width: 420px;">
-        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 10px 0;">Live Simulation</p>
-        <h2 style="font-family: 'EB Garamond', serif; font-size: clamp(22px, 3vw, 34px); font-weight: 400; color: var(--text); margin: 0 0 10px 0; line-height: 1.15;">OGLE-LMC-CEP-1347</h2>
-        <div style="height: 1px; background: var(--panel-border); margin-bottom: 14px;"></div>
-        <p class="sim-desc-italic" style="font-family: 'Spectral', serif; font-style: italic; font-size: 14.5px; color: var(--text-dim); line-height: 1.72; margin: 0;">
-          The binary Cepheid I spent the past year studying. Built from real Fourier fits to six years of OGLE photometry &mdash; the same light curve I used to search for non-radial modes and orbital aliases. Orbital and physical parameters from <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Espinoza-Arancibia &amp; Pilecki (2025, ApJ 981 L35)</a> and <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener" style="color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(120,165,210,0.3); pointer-events:auto;">Pilecki et al. (2022, ApJ 940 L48)</a>.
-        </p>
-      </div>
-      <div id="hud-table" style="pointer-events: auto; flex-shrink: 0; background: rgba(7,9,26,0.82); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: 0.75rem; padding: 1.25rem 1.5rem; width: 250px;">
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1;">
-          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <span style="color:rgba(255,255,255,0.45);">V-band mag</span><span id="hud-mag" style="color:var(--text);">--</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <span style="color:rgba(255,255,255,0.45);">T&#7522;&#7487;&#7487; Cepheid</span><span id="hud-teff" style="color:#fdba74;">-- K</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <span style="color:rgba(255,255,255,0.45);">R&#8321; Cepheid</span><span id="hud-rad" style="color:#67e8f9;">-- R&#9737;</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 0.38rem 0;">
-            <span id="hud-phase-label" style="color:rgba(255,255,255,0.45);">&#981;&#8338;&#7523;&#7495; orbital</span><span id="hud-phase" style="color:#c4b5fd;">--</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- transparent flex-grow spacer: JS reads getBoundingClientRect() to center stars here -->
-    <div id="sim-canvas-zone" aria-hidden="true" style="flex: 1 1 auto; min-height: 80px;"></div>
-    <div id="sim-bottom" style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;">
-      <div id="hud-plot-container" style="opacity: 0; width: 100%; max-width: 820px; height: 160px; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); position: relative; overflow: hidden; transition: opacity 0.5s; border-radius: 3px;">
-        <div data-plot-label style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none; z-index: 10; transition: opacity 0.3s;">ORBITAL RADIAL VELOCITIES &middot; KM S&#x207B;&#xB9;</div>
-      </div>
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-        <div style="pointer-events: auto; background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 0.2rem; display: flex; gap: 2px;">
-          <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">ORBITAL</button>
-          <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.45rem 1.4rem; border-radius: 999px; font-size: 10.5px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">PULSATION</button>
-        </div>
-        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin: 0; text-transform: uppercase;">Orbital &nbsp;P&#8338;&#7523;&#7495; = 58.85 d &nbsp;&middot; K&#8321; = 30.3 km/s &middot; K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; Pulsation &nbsp;P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MOBILE UI (hidden >700px via CSS) ──────────────────────────────────
-       All elements are in-flow flex children — structurally impossible to overlap.
-       Canvas (position:absolute; inset:0) fills the section whose height is driven
-       by this block. JS reads mob-canvas-zone and mob-plot-zone bounding rects.
-  ──────────────────────────────────────────────────────────────────────── -->
-  <div id="sim-mobile-ui" style="display: none;">
-    <!-- header -->
-    <div>
-      <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin: 0 0 5px 0;">Live Simulation</p>
-      <h2 style="font-family: 'EB Garamond', serif; font-size: clamp(20px, 6vw, 28px); font-weight: 400; color: var(--text); margin: 0; line-height: 1.15;">OGLE-LMC-CEP-1347</h2>
-      <div style="height: 1px; background: var(--panel-border); margin-top: 8px;"></div>
-    </div>
-    <!-- HUD: separate IDs from desktop -->
-    <div id="mob-hud" style="background: rgba(7,9,26,0.88); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: 0.65rem; padding: 0.7rem 1rem; flex-shrink: 0;">
-      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1;">
-        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-          <span style="color:rgba(255,255,255,0.45);">V-band mag</span><span id="mob-hud-mag" style="color:var(--text);">--</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-          <span style="color:rgba(255,255,255,0.45);">T&#7522;&#7487;&#7487; Cepheid</span><span id="mob-hud-teff" style="color:#fdba74;">-- K</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-          <span style="color:rgba(255,255,255,0.45);">R&#8321; Cepheid</span><span id="mob-hud-rad" style="color:#67e8f9;">-- R&#9737;</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 0.32rem 0;">
-          <span id="mob-hud-phase-label" style="color:rgba(255,255,255,0.45);">&#981;&#8338;&#7523;&#7495; orbital</span><span id="mob-hud-phase" style="color:#c4b5fd;">--</span>
-        </div>
-      </div>
-    </div>
-    <!-- star zone: transparent placeholder, canvas draws binary system here -->
-    <div id="mob-canvas-zone" style="height: 65vw; width: 100%; flex-shrink: 0;" aria-hidden="true"></div>
-    <!-- plot zone: transparent placeholder, canvas draws RV/LC here -->
-    <div id="mob-plot-zone" style="height: 120px; width: 100%; flex-shrink: 0; position: relative; background: rgba(7,9,26,0.55); border: 1px solid rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden;">
-      <span id="mob-plot-label" style="position: absolute; top: 7px; left: 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: rgba(96,165,250,0.55); pointer-events: none;">ORBITAL RADIAL VELOCITIES &middot; KM S&#x207B;&#xB9;</span>
-    </div>
-    <!-- mode buttons -->
-    <div style="display: flex; flex-direction: column; align-items: stretch; gap: 0.4rem; flex-shrink: 0;">
-      <div id="mob-mode-pill" style="background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 0.2rem; display: flex; gap: 2px;">
-        <button id="mob-btn-orbital" onclick="window.setMode('orbital')" class="btn-mode" style="background: rgba(255,255,255,0.15); color: #ffffff; border: none; padding: 0.4rem 0; border-radius: 999px; font-size: 10px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; flex: 1;">ORBITAL</button>
-        <button id="mob-btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode" style="background: transparent; color: rgba(255,255,255,0.38); border: none; padding: 0.4rem 0; border-radius: 999px; font-size: 10px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; flex: 1;">PULSATION</button>
-      </div>
-      <p style="font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.06em; color: rgba(255,255,255,0.18); margin: 0; text-align: center; text-transform: uppercase;">P&#8338;&#7523;&#7495; = 58.85 d &nbsp;&middot;&nbsp; K&#8321; = 30.3 &middot; K&#8322; = 54.8 km/s &nbsp;&middot;&nbsp; P&#7523;&#7512;&#8326;&#7515; = 0.690 d</p>
-      <button id="mob-espresso-btn" onclick="window.toggleConstraints()" style="background: rgba(7,9,26,0.85); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 0.5rem 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: rgba(255,255,255,0.45); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; text-transform: uppercase; width: 100%;">ESPRESSO WINDOWS OFF</button>
-    </div>
-  </div>
-
-  <div id="sim-preview" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000 url('images/sim-placeholder.jpg') center/cover no-repeat; z-index: 50;">
-    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: #60a5fa; background: rgba(7,9,26,0.72); padding: 6px 16px; border: 1px solid rgba(96,165,250,0.18);">loading system data...</span>
-  </div>
-</section>
-
-  <!-- writing -->
-  <section id="writing" class="section">
-    <div class="section-inner">
-      <h2 class="section-heading" data-label="Writing"><span class="sr-only">Writing</span></h2>
-      <div class="writing-list">
-
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">The Phillipian</div>
-            <div class="writing-date">October 2025</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="https://phillipian.net/2025/10/03/why-im-not-all-in-on-the-in-class-onslaught/" target="_blank" rel="noopener">Why I'm Not "All In" On the In-Class Onslaught</a></h3>
-            <p>Opinion piece arguing that mass in-class writing assessments (adopted to counter AI) curtail the very iterative thinking they aim to protect, drawing on a published study of time constraints and writing quality.</p>
-          </div>
-        </div>
-
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">Academic Essay</div>
-            <div class="writing-date">Fall 2025</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="https://henryzimmerman.net/jane.html" target="_blank" rel="noopener">Moral Autonomy and the Due North: Agency in <i>Jane Eyre</i></a></h3>
-            <p>An analysis of the "internal compass" central to Brontë’s work, examining how Jane uncouples her ethical agency from the restrictive moral prescriptions of 19th-century patriarchal figures to achieve personal and spiritual ascendancy.</p>
-          </div>
-        </div>
-
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">Academic Essay</div>
-            <div class="writing-date">Spring 2025</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="muralism.html" target="_blank" rel="noopener">Muerte al Invasor: Examining Siqueiros's Activist Muralism Through his Chillán Mural</a></h3>
-            <p>How David Alfaro Siqueiros's mural in Chillán, Chile reframes a shared Latin American history of colonial resistance while covertly advancing a Marxist critique of capitalism's imperial legacies.</p>
-          </div>
-        </div>
-        
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">The Revere</div>
-            <div class="writing-date">March 2025</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="https://the-revere.com/2025/03/whats-at-stake-in-greenland/" target="_blank" rel="noopener">What's at Stake in Greenland?</a></h3>
-            <p>Analysis of Trump's Arctic ambitions: why Greenland's strategic value is real, why the approach is counterproductive, and how the sovereignty question reshapes precedent for Ukraine and Taiwan.</p>
-          </div>
-        </div>
-
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">Academic Essay</div>
-            <div class="writing-date">February 2025</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="descartes.html" target="_blank" rel="noopener">Disproving Descartes&#8217; Divine Definition Divination</a></h3>
-            <p>A close reading of the <em>Meditations</em> showing Descartes cannot prove God's existence because he lacks comprehensive knowledge of God's essence to define it.</p>
-          </div>
-        </div>
-        
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">The Revere</div>
-            <div class="writing-date">February 2025</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="https://the-revere.com/2025/02/germanys-far-right-comeback-why-you-should-be-worried-about-the-afd/" target="_blank" rel="noopener">Germany's Far-Right Comeback: Why You Should Be Worried About the AfD</a></h3>
-            <p>On the AfD's rise from eurosceptic fringe to Germany's second-largest party: its causes, its geopolitical alignment with Russia and China, and what it means for European cohesion.</p>
-          </div>
-        </div>
-
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">The Japan Periodical</div>
-            <div class="writing-date">Fall 2024</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="japan.html" target="_blank" rel="noopener">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</a></h3>
-            <p>Japan's demographic crisis through the lens of its historically restrictive immigration framework: what the recent policy shifts signal, and whether they go far enough.</p>
-          </div>
-        </div>
-        
-        <div class="writing-item">
-          <div class="writing-meta">
-            <div class="writing-venue">Academic Essay</div>
-            <div class="writing-date">Spring 2024</div>
-          </div>
-          <div class="writing-content">
-            <h3><a href="baghdad.html" target="_blank" rel="noopener">Power, Money, and Knowledge: the Abbasid Caliphate in Baghdad</a></h3>
-            <p>How caliph al-Mansour transformed an ancient legend into the center of Islamic trade, symbolic power, and intellectual life in under a century.</p>
-          </div>
-        </div>
-        
-      </div>
-    </div>
-  </section>
-
-  <!-- highlights -->
-  <section id="highlights" class="section">
-    <div class="section-inner">
-      <h2 class="section-heading" data-label="Highlights"><span class="sr-only">Highlights</span></h2>
-      <div class="highlights-table">
-        
-        <div class="highlights-row">
-          <div class="highlights-year">2025</div>
-          <div class="highlights-item">
-            <h4>Writing Center Tutor, Phillips Academy</h4>
-            <p>I believe the best thinking happens in dialogue. Before joining the tutoring staff, I booked 63 appointments as a student. I didn't go to fix grammar; I went to discuss my ideas with other thinkers who care about rigorous peer review and dialogue. Now, as a tutor, I try to create that same collaborative, iterative environment for others.</p>
-          </div>
-        </div>
-
-        <div class="highlights-row">
-          <div class="highlights-year">2025</div>
-          <div class="highlights-item">
-            <h4>Machine Learning, NYU Tandon School of Engineering</h4>
-            <p>Class-best 90% validation accuracy on CIFAR-10 with minimal FLOPs. Applied supervised learning methods to asteroid period convergence prediction and photometric classification.</p>
-          </div>
-        </div>
-
-        <div class="highlights-row">
-          <div class="highlights-year">2025</div>
-          <div class="highlights-item">
-            <h4>SHAD Canada, University of British Columbia</h4>
-            <p>Designed a mesh reinforcement system to improve ductility and fracture resistance of Arctic ice roads. Derived expected mechanical behavior from composite materials literature and specified a validation protocol (3-point bending, Charpy impact, in-situ cantilever, environmental cycling) to test predictions against physical samples.</p>
-          </div>
-        </div>
-
-        <div class="highlights-row">
-          <div class="highlights-year">2025</div>
-          <div class="highlights-item">
-            <h4>The Webster Award &mdash; History &amp; Social Sciences</h4>
-            <p>Phillips Academy's departmental honor in history and the social sciences for achievement in the first two years.</p>
-          </div>
-        </div>
-
-        <div class="highlights-row">
-          <div class="highlights-year">2025</div>
-          <div class="highlights-item">
-            <h4><a href="https://believingbelief.online/" target="_blank" rel="noopener">Believing Belief</a>, Philosophy of Religion</h4>
-            <p>Co-created a podcast series and website examining theodicy, divine perfection, design arguments, and the epistemology of religious faith. Developed with Genie Han for PHR380: Faith and Doubt at Phillips Academy Andover.</p>
-          </div>
-        </div>
-
-        <div class="highlights-row">
-          <div class="highlights-year">2024</div>
-          <div class="highlights-item">
-            <h4>RenewBlue, Co-Founder and Leader</h4>
-            <p>Co-founded a campus sustainability initiative. Organized a multi-school climate-tech hackathon and submitted building-grade algae insulation to The Earth Prize (top 100 finalist). We're currently building a functional model of the school's cogeneration plant.</p>
-          </div>
-        </div>
-
-        <div class="highlights-row">
-          <div class="highlights-year">2024</div>
-          <div class="highlights-item">
-            <h4>Cleanhill Partners, Research Intern</h4>
-            <p>Researched sustainable technologies in the industrial heat sector for an energy-transition-focused private equity firm. Produced a report on emerging solutions and presented findings to senior partners.</p>
-          </div>
-        </div>
-
-<div class="highlights-row">
-      <div class="highlights-year">2023 &ndash;</div>
-      <div class="highlights-item">
-        <h4>Varsity Cross-Country Captain</h4>
-        <p>Leading a 75-athlete roster with a focus on shared resilience and inclusive community building. Dedicated to shifting the team's metrics of success to ensure effort is recognized regardless of speed. Personal records: 16:30 5km XC, 4:24 1500m.</p>
-      </div>
-    </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- bookshelf -->
-  <section id="bookshelf" class="section">
-    <div class="section-inner">
-      <h2 class="section-heading" data-label="Reading"><span class="sr-only">All-Time Favorites</span></h2>
-
-      <div class="bookshelf-intro">
-        <p>Reading is where I do my most unplanned thinking. When I pick up a book, I don't ask much; I just let it take me where I need to be. I keep a running list of everything interesting I read online at <a href="https://curius.app/henry-zimmerman" target="_blank" rel="noopener">curius.app/henry-zimmerman</a>. The books below are the ones I return to in my head. These are not necessarily the most important, but they're the ones that changed how I see something specific and didn't let me forget them.</p>
-      </div>
-
-      <div id="bookshelf-pool" style="display:none">
-
- <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Misbehaving</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Misbehaving: The Making of Behavioral Economics</div>
-            <div class="spine-author">Richard Thaler</div>
-            <div class="spine-impact">People aren't perfectly rational, and that's a feature, not a bug.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>The Rain God</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Rain God</div>
-            <div class="spine-author">Arturo Islas</div>
-            <div class="spine-impact">Martyrdom cannot be aspirational; it only values your action and devotion to the cause.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Cry, the Beloved Country</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Cry, the Beloved Country</div>
-            <div class="spine-author">Alan Paton</div>
-            <div class="spine-impact">A lament for a country being devoured by the very order meant to hold it together.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Man's Search for Meaning</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Man's Search for Meaning</div>
-            <div class="spine-author">Viktor Frankl</div>
-            <div class="spine-impact">The will to find meaning survives even the worst that humans can do to each other.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Walking</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Walking</div>
-            <div class="spine-author">Henry David Thoreau</div>
-            <div class="spine-impact">Intense thought requires the freedom of the woods to inspire and calm the mind. Awareness arrives mid-stride.</div>
-          </div>
-        </div>
-        
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Encounters with the Archdruid</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Encounters with the Archdruid</div>
-            <div class="spine-author">John McPhee</div>
-            <div class="spine-impact">This book pits the conservationist against the engineer, forcing a confrontation between our need for progress and our duty to the Earth.</div>
-          </div>
-        </div>
-        
-        <div class="book-spine" role="listitem">
-         <div class="spine-title"><span>20,000 Leagues</span></div>
-         <div class="spine-panel">
-           <div class="spine-book-title">20,000 Leagues Under the Sea</div>
-           <div class="spine-author">Jules Verne</div>
-           <div class="spine-impact">Captain Nemo is the patron saint of the independent researcher. He built his own tools to observe a world that remains invisible to everyone else.</div>
-         </div>
-       </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>The Words That Made Us</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Words That Made Us</div>
-            <div class="spine-author">Akhil Reed Amar</div>
-            <div class="spine-impact">The Constitution is might be a document but it's also a centuries-long argument, and the argument is the point.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Manufacturing Consent</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Manufacturing Consent</div>
-            <div class="spine-author">Noam Chomsky & Edward S. Herman</div>
-            <div class="spine-impact">A great reminder that in politics, as in science, the observer must always account for the bias the instrument of observation.</div>
-          </div>
-        </div>
-        
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>1984</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">1984</div>
-            <div class="spine-author">George Orwell</div>
-            <div class="spine-impact">A study on the fragility of objective truth. The scientist's duty is to protect data against the gravity of narrative.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>For Whom the Bell Tolls</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">For Whom the Bell Tolls</div>
-            <div class="spine-author">Ernest Hemingway</div>
-            <div class="spine-impact">Roberto's commitment to fulfilling his purpose, however futile he thinks it may be, is the ultimate standard for integrity.</div>
-          </div>
-        </div>
-        
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Jane Eyre</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Jane Eyre</div>
-            <div class="spine-author">Charlotte Bront&euml;</div>
-            <div class="spine-impact">Moral self-possession made into the engine of a whole novel.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Wide Sargasso Sea</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Wide Sargasso Sea</div>
-            <div class="spine-author">Jean Rhys</div>
-            <div class="spine-impact">Everything the canonical story erased gets its voice back, changing the original forever.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>The Idiot</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Idiot</div>
-            <div class="spine-author">Elif Batuman</div>
-            <div class="spine-impact">Over-education and under-certainty, rendered with painful comic precision.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>The Road to Character</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Road to Character</div>
-            <div class="spine-author">David Brooks</div>
-            <div class="spine-impact">As I wrote in 7th grade, Brooks made me realize that 'you can’t find your purpose; your purpose has to find you.'</div>
-          </div>
-        </div>
-        
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Meditations on First Philosophy</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Meditations on First Philosophy</div>
-            <div class="spine-author">René Descartes</div>
-            <div class="spine-impact">Even the greatest thinkers can falter when caught up in their own deepest convictions.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>The Histories</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Histories</div>
-            <div class="spine-author">Herodotus</div>
-            <div class="spine-impact">The first act of genuine curiosity about the human past, written by someone who couldn't stop asking why.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>The Hitchhiker's Guide</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Hitchhiker's Guide to the Galaxy (Series)</div>
-            <div class="spine-author">Douglas Adams</div>
-            <div class="spine-impact">The universe is absurd and indifferent, and somehow that turns out to be a relief.</div>
-          </div>
-        </div>
-        
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Ender's Game (Series)</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Ender Quintet</div>
-            <div class="spine-author">Orson Scott Card</div>
-            <div class="spine-impact">The first book taught me strategy. The sequels taught me that "Speaker's" duty is to understand the 'Other' so deeply that hate becomes impossible.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Kavalier &amp; Clay</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">The Amazing Adventures of Kavalier &amp; Clay</div>
-            <div class="spine-author">Michael Chabon</div>
-            <div class="spine-impact">Imagination as defiance, myth-making as survival, comics as genuine art.</div>
-          </div>
-        </div>
-
-        <div class="book-spine" role="listitem">
-          <div class="spine-title"><span>Cloud Cuckoo Land</span></div>
-          <div class="spine-panel">
-            <div class="spine-book-title">Cloud Cuckoo Land</div>
-            <div class="spine-author">Anthony Doerr</div>
-            <div class="spine-impact">A love letter to storytelling itself, stitched together across centuries and catastrophe.</div>
-          </div>
-        </div>
-
-      </div><!-- #bookshelf-pool -->
-      <div id="bookshelf-rows"></div>
-    </div>
-  </section>
-</main>
-
-<footer>
-  <div class="footer-left">Henry Zimmerman, Phillips Academy Andover, Class of 2027</div>
-  <div class="footer-links">
-    <a href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Asteroid Scheduler</a>
-    <a href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics</a>
-    <a href="https://henryzimmerman.net/docs/asteroid_3d.html" target="_blank" rel="noopener">Asteroid Orbital Model</a>
-    <a href="https://github.com/HenryZimme" target="_blank" rel="noopener">GitHub</a>
-  </div>
-</footer>
-
-<button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
-<script src="js/main-test.js" defer></script>
-<script>
-  const simObserver = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      const s = document.createElement('script');
-      s.src = 'js/cepheid-engine-test.js';
-      document.body.appendChild(s);
-      simObserver.disconnect();
+(function() {
+  // ── config ──────────────────────────────────────────────────────────────────
+  var MODES         = new Set(['orbital', 'pulsation']);
+  var COMPANION_RAD = 12.51;   // R_sun (Espinoza-Arancibia & Pilecki 2025)
+  var FALLBACK_COL  = '#ffe066';
+  var R_SUN_KM      = 695700;
+  var P_ORB_D       = 58.85;
+  var P_ORB_S       = P_ORB_D * 86400;
+  var P_PULS        = 0.69001; // days
+  var T0_ORB        = 2459000.0; // orbital reference epoch HJD
+  var SIN_I         = Math.sin(57 * Math.PI / 180);
+  var K1            = (2 * Math.PI * 42 * R_SUN_KM * SIN_I) / P_ORB_S;
+  var K2            = (2 * Math.PI * 76 * R_SUN_KM * SIN_I) / P_ORB_S;
+  var RV_THRESH     = 40;
+  var RV_N          = 2400;
+  var TRAIL_LEN     = 40;
+  var GAMMA_SYS     = 240.4; // km/s systemic velocity
+
+  // ── embedded observational data ────────────────────────────────────────────
+  // 187 OGLE-IV V-band observations [hjd-2450000, v_mag, err]
+  var OGLE_V_RAW = [
+    [5260.65957,17.078,0.008],[5267.58314,17.150,0.007],[5446.91815,17.057,0.008],
+    [5459.83597,16.916,0.006],[5477.76899,16.889,0.006],[5485.80179,17.254,0.007],
+    [5492.80569,17.192,0.008],[5493.82817,17.016,0.008],[5494.80475,17.232,0.008],
+    [5495.76190,16.884,0.007],[5497.85791,16.874,0.007],[5499.76516,17.170,0.007],
+    [5502.85632,17.102,0.006],[5503.79358,17.214,0.007],[5505.76030,17.245,0.007],
+    [5507.79578,17.207,0.007],[5509.76198,17.143,0.006],[5510.79597,17.166,0.006],
+    [5511.80606,17.100,0.007],[5512.81494,17.171,0.007],[5514.81718,17.239,0.007],
+    [5515.79436,16.902,0.006],[5516.81975,17.241,0.007],[5517.78078,16.905,0.006],
+    [5521.76864,17.176,0.010],[5522.76706,16.943,0.007],[5523.72738,17.263,0.009],
+    [5524.73678,16.881,0.006],[5525.70272,17.203,0.007],[5526.73953,16.975,0.006],
+    [5527.80058,17.217,0.007],[5528.67496,17.202,0.007],[5529.65538,16.971,0.006],
+    [5530.73352,17.191,0.007],[5531.81659,17.097,0.006],[5532.72558,17.244,0.006],
+    [5533.74548,16.883,0.006],[5534.77892,17.270,0.007],[5535.67971,17.090,0.006],
+    [5536.75827,17.227,0.007],[5539.76703,17.205,0.007],[5546.73411,17.026,0.007],
+    [5547.79317,17.208,0.007],[5548.76495,17.160,0.007],[5549.78511,17.159,0.007],
+    [5550.80713,17.178,0.008],[5553.68434,16.910,0.007],[5556.72571,17.168,0.007],
+    [5557.70759,17.165,0.007],[5558.70713,17.076,0.007],[5559.75050,17.174,0.007],
+    [5561.65181,17.241,0.007],[5562.77438,16.919,0.006],[5563.70387,17.255,0.007],
+    [5565.71040,17.199,0.007],[5566.73995,17.031,0.006],[5582.72890,16.836,0.007],
+    [5589.67657,16.963,0.006],[5592.69597,17.262,0.007],[5596.66782,17.054,0.006],
+    [5598.64893,16.971,0.006],[5614.61509,17.097,0.007],[5619.60705,17.239,0.006],
+    [5622.60546,17.156,0.007],[5623.56815,17.082,0.006],[5625.56129,16.901,0.006],
+    [5627.63124,16.935,0.006],[5629.57132,16.905,0.006],[5633.55797,17.180,0.007],
+    [5647.55292,16.898,0.006],[5650.54864,17.131,0.006],[5652.55008,17.082,0.006],
+    [5656.51796,16.875,0.006],[5659.54757,17.172,0.007],[5670.50101,17.054,0.008],
+    [5674.52737,16.858,0.006],[5679.51660,17.109,0.006],[5685.51210,16.786,0.006],
+    [5693.47271,17.261,0.007],[5825.84308,17.217,0.007],[5843.88726,17.229,0.007],
+    [5854.79544,17.178,0.006],[5863.75821,17.160,0.006],[5867.77492,16.895,0.005],
+    [5875.74444,17.180,0.007],[5880.81056,16.933,0.007],[5883.80062,17.203,0.007],
+    [5886.81874,17.164,0.007],[5892.78162,17.156,0.006],[5897.77018,17.234,0.007],
+    [5910.73680,17.152,0.007],[5924.73350,17.188,0.006],[5932.69733,17.077,0.007],
+    [5940.72735,17.034,0.006],[5952.73776,17.086,0.006],[5961.67663,16.985,0.006],
+    [5970.63305,16.946,0.006],[5972.71011,17.052,0.006],[5994.53416,17.031,0.008],
+    [5994.67369,16.935,0.007],[5995.52897,17.088,0.007],[5995.67303,17.181,0.010],
+    [5996.51279,17.209,0.007],[5996.65647,16.913,0.008],[5997.51132,17.040,0.006],
+    [5997.66473,17.230,0.008],[5998.54367,17.186,0.006],[5998.66807,17.161,0.007],
+    [5999.53890,16.827,0.005],[5999.66103,17.073,0.006],[6000.49175,17.235,0.010],
+    [6000.65559,17.172,0.006],[6001.49642,17.076,0.007],[6001.61660,16.897,0.006],
+    [6006.54369,17.114,0.006],[6013.58322,17.205,0.006],[6020.55695,17.234,0.007],
+    [6193.89478,17.166,0.006],[6226.85738,17.211,0.006],[6229.85812,17.071,0.007],
+    [6236.83182,16.851,0.005],[6292.78911,16.889,0.006],[6317.66143,16.991,0.006],
+    [6333.65492,17.156,0.006],[6344.62146,17.030,0.005],[6592.83432,16.827,0.005],
+    [6600.74469,17.187,0.005],[6685.59638,17.161,0.006],[6687.69604,17.214,0.006],
+    [6688.62904,17.156,0.006],[6689.65282,17.054,0.005],[6690.65529,17.154,0.005],
+    [6691.67804,17.001,0.005],[6692.69787,17.219,0.005],[6693.64409,16.909,0.004],
+    [6694.68977,17.235,0.005],[6695.63489,16.848,0.005],[6696.62245,17.164,0.006],
+    [6697.68051,17.097,0.005],[6698.68090,17.166,0.007],[6699.52519,17.218,0.007],
+    [6700.55428,16.843,0.005],[6700.67819,17.002,0.006],[6701.54620,17.264,0.007],
+    [6701.68172,17.185,0.007],[6702.55196,16.960,0.007],[6702.68457,16.978,0.007],
+    [6703.56258,17.194,0.008],[6704.56320,17.050,0.006],[6704.70883,16.895,0.007],
+    [6705.55212,17.111,0.005],[6706.63145,17.126,0.006],[6707.64413,17.163,0.006],
+    [6708.63181,17.182,0.005],[6709.62621,16.992,0.005],[6710.63554,17.201,0.005],
+    [6711.62247,16.915,0.005],[6712.57312,17.265,0.005],[6997.80230,17.160,0.008],
+    [7007.75349,17.090,0.006],[7063.65587,17.103,0.006],[7064.71928,17.142,0.006],
+    [7065.70435,17.021,0.006],[7066.70004,17.206,0.006],[7067.69589,16.997,0.005],
+    [7068.67172,17.243,0.006],[7069.68134,16.848,0.005],[7070.71694,17.213,0.006],
+    [7071.72318,16.851,0.005],[7072.70390,17.202,0.007],[7075.64953,17.184,0.006],
+    [7076.65465,16.941,0.005],[7077.63346,17.245,0.006],[7078.63331,16.909,0.006],
+    [7110.50625,17.025,0.006],[7111.52920,17.212,0.007],[7112.52721,16.945,0.007],
+    [7113.52238,17.204,0.007],[7114.53109,16.812,0.006],[7115.52542,17.233,0.007],
+    [7116.51354,17.089,0.009],[7117.54233,17.197,0.007],[7118.51542,17.152,0.007],
+    [7119.50233,17.018,0.006],[7137.49852,17.102,0.006],[7332.74904,17.095,0.006],
+    [7366.72606,17.236,0.006]
+  ];
+
+  // 9 spectroscopic RVs from Pilecki et al. (2022, ApJ 940 L48)
+  // [hjd-2450000, rv_cepheid, err1, rv_companion, err2]
+  var PILECKI_RV_RAW = [
+    [9510.80498,271.408,0.148,195.142,0.397],
+    [9541.61089,222.409,0.113,281.004,0.479],
+    [9556.62074,246.214,0.124,207.792,0.542],
+    [9558.63776,251.270,0.128,200.067,0.553],
+    [9563.71814,280.680,0.128,188.181,0.397],
+    [9566.72085,261.271,0.183,189.594,0.514],
+    [9579.64289,255.698,0.292,239.801,0.335],
+    [9589.71976,206.661,0.109,285.529,0.421],
+    [9604.62569,231.395,0.159,263.152,0.546]
+  ];
+
+  // ── state ──────────────────────────────────────────────────────────────────
+  var data        = null;
+  var currentMode = 'orbital';
+  var frameIdx    = 0;
+  var maxR1       = 1;
+
+  var rv1 = [], rv2 = [], rvDelta = [];
+  var rv_abs_min = 0, rv_abs_max = 0;
+
+  var ogle_phased    = [];
+  var pilecki_phased = [];
+  var phase_offset   = 0;
+
+  var trail1 = [], trail2 = [];
+
+  // ── dom ────────────────────────────────────────────────────────────────────
+  var simCanvas = document.getElementById('simCanvas');
+  var ctx       = simCanvas ? simCanvas.getContext('2d') : null;
+  var preview   = document.getElementById('sim-preview');
+  var plotUI    = document.getElementById('hud-plot-container');
+
+  var hud = {
+    mag:        document.getElementById('hud-mag'),
+    teff:       document.getElementById('hud-teff'),
+    rad:        document.getElementById('hud-rad'),
+    phase:      document.getElementById('hud-phase'),
+    phaseLabel: document.getElementById('hud-phase-label'),
+  };
+
+  var bounds = { a1: 0, a2: 0, minV: 99, maxV: -99 };
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+
+  function safeGet(arr, idx, fb) {
+    return (arr && arr[idx] !== undefined) ? arr[idx] : fb;
+  }
+
+  function hexToRgba(hex, a) {
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+
+  function getPlotRect() {
+    if (!plotUI) return null;
+    var pr = plotUI.getBoundingClientRect();
+    var sr = simCanvas.getBoundingClientRect();
+    return { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height };
+  }
+
+  function getStarArea() {
+    var dpr = window.devicePixelRatio || 1;
+    var w = simCanvas.width / dpr;
+    var h = simCanvas.height / dpr;
+    if (window.innerWidth <= 740) {
+      var plot = getPlotRect();
+      var star_h = plot ? plot.py - 30 : h * 0.6;
+      return { w: w, h: star_h, full_h: h, mobile: true };
     }
-  }, { rootMargin: '200px' });
-  simObserver.observe(document.getElementById('cepheid-sim'));
-</script>
-<script>
-  new IntersectionObserver((entries) => {
-    if (!entries[0].isIntersecting) return;
-    window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']] } };
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
-    document.head.appendChild(s);
-  }, { rootMargin: '300px' }).observe(document.getElementById('research'));
-</script>
-</body>
-</html>
+    return { w: w, h: h, full_h: h, mobile: false };
+  }
+
+  // ── rv precomputation ──────────────────────────────────────────────────────
+
+  function buildRV() {
+    rv1 = []; rv2 = []; rvDelta = [];
+
+    var r1arr = data.physics_frames.r1;
+    var N = r1arr.length;
+    var dt = (data.metadata && data.metadata.dt)
+      ? data.metadata.dt
+      : (Array.isArray(data.physics_frames.t) && data.physics_frames.t.length > 1
+          ? data.physics_frames.t[1] - data.physics_frames.t[0]
+          : P_PULS / 120);
+    var conv = R_SUN_KM / 86400;
+
+    // pulsation velocity from r1 finite differences
+    var v_puls = [];
+    for (var i = 0; i < N; i++) {
+      var prev = (i - 1 + N) % N;
+      var next = (i + 1) % N;
+      v_puls.push(((r1arr[next] - r1arr[prev]) / (2 * dt)) * conv);
+    }
+
+    // combined rv on RV_N orbital-phase grid
+    for (var k = 0; k < RV_N; k++) {
+      var phi = k / RV_N;
+      var v_orb = K1 * Math.sin(2 * Math.PI * phi);
+      var pi2 = Math.round(phi * N) % N;
+      var v1 = v_orb + v_puls[pi2];
+      var v2 = -K2 * Math.sin(2 * Math.PI * phi);
+      rv1.push(v1);
+      rv2.push(v2);
+      rvDelta.push(Math.abs(v1 - v2));
+    }
+
+    // absolute-frame bounds for y-axis
+    rv_abs_min = Infinity; rv_abs_max = -Infinity;
+    for (var j = 0; j < RV_N; j++) {
+      var a1 = rv1[j] + GAMMA_SYS;
+      var a2 = rv2[j] + GAMMA_SYS;
+      if (a1 < rv_abs_min) rv_abs_min = a1;
+      if (a1 > rv_abs_max) rv_abs_max = a1;
+      if (a2 < rv_abs_min) rv_abs_min = a2;
+      if (a2 > rv_abs_max) rv_abs_max = a2;
+    }
+    for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
+      var row = PILECKI_RV_RAW[pi];
+      if (row[1] < rv_abs_min) rv_abs_min = row[1];
+      if (row[1] > rv_abs_max) rv_abs_max = row[1];
+      if (row[3] < rv_abs_min) rv_abs_min = row[3];
+      if (row[3] > rv_abs_max) rv_abs_max = row[3];
+    }
+    rv_abs_min -= 12;
+    rv_abs_max += 12;
+  }
+
+  // ── phase-fold observational data ──────────────────────────────────────────
+
+  function prepareObservationalData() {
+    // 1. raw orbital phases for Pilecki data
+    var raw_phases = [];
+    for (var i = 0; i < PILECKI_RV_RAW.length; i++) {
+      var hjd = PILECKI_RV_RAW[i][0] + 2450000.0;
+      raw_phases.push((((hjd - T0_ORB) % P_ORB_D) / P_ORB_D + 1) % 1);
+    }
+
+    // grid search: find offset minimizing companion rv residuals
+    var best_d = 0, best_sse = Infinity;
+    for (var d = 0; d < 1000; d++) {
+      var delta = d / 1000;
+      var sse = 0;
+      for (var j = 0; j < PILECKI_RV_RAW.length; j++) {
+        var phi = (raw_phases[j] + delta) % 1;
+        var model = -K2 * Math.sin(2 * Math.PI * phi) + GAMMA_SYS;
+        var res = model - PILECKI_RV_RAW[j][3];
+        sse += res * res;
+      }
+      if (sse < best_sse) { best_sse = sse; best_d = delta; }
+    }
+    phase_offset = best_d;
+
+    // store corrected Pilecki data
+    pilecki_phased = [];
+    for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
+      pilecki_phased.push({
+        display_phase: (raw_phases[pi] + phase_offset) % 1,
+        rv1: PILECKI_RV_RAW[pi][1],
+        rv2: PILECKI_RV_RAW[pi][3]
+      });
+    }
+
+    // 2. OGLE V-band scatter: phase-fold at P_puls, weight by 1/err^2
+    var weights = [];
+    var max_w = 0;
+    for (var oi = 0; oi < OGLE_V_RAW.length; oi++) {
+      var w = 1 / (OGLE_V_RAW[oi][2] * OGLE_V_RAW[oi][2]);
+      weights.push(w);
+      if (w > max_w) max_w = w;
+    }
+    ogle_phased = [];
+    for (var oi2 = 0; oi2 < OGLE_V_RAW.length; oi2++) {
+      var r = OGLE_V_RAW[oi2];
+      ogle_phased.push({
+        phase: (((r[0] + 2450000) % P_PULS) / P_PULS + 1) % 1,
+        mag:   r[1],
+        alpha: 0.08 + 0.52 * (weights[oi2] / max_w)
+      });
+    }
+  }
+
+  // ── rv plot (orbital mode) ─────────────────────────────────────────────────
+
+  function drawRVPlot(frameI) {
+    var box = getPlotRect();
+    if (!box || !rv1.length) return;
+    var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
+
+    var N = data.physics_frames.x1.length;
+    var rvI = Math.round(frameI / N * RV_N) % RV_N;
+    var currentPhi = rvI / RV_N;
+
+    var inset = 18, padTop = 22, padBottom = 32;
+    var drawH = ph - padTop - padBottom;
+    var range = rv_abs_max - rv_abs_min;
+    var yScale = drawH / range;
+    var plotW = pw - 2 * inset;
+    var nPts = 600;
+    var step = plotW / nPts;
+
+    var rvToY = function(v) { return py + padTop + (rv_abs_max - v) * yScale; };
+
+    ctx.save();
+
+    // delta-rv >= 40 green shading
+    for (var k = 0; k < nPts; k++) {
+      var ri = Math.round(k / nPts * RV_N) % RV_N;
+      if (rvDelta[ri] >= RV_THRESH) {
+        ctx.fillStyle = 'rgba(134,239,172,0.08)';
+        ctx.fillRect(px + inset + k * step, py + padTop, step + 0.5, drawH);
+      }
+    }
+
+    // gamma line
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 7]);
+    ctx.beginPath();
+    ctx.moveTo(px + inset, rvToY(GAMMA_SYS));
+    ctx.lineTo(px + pw - inset, rvToY(GAMMA_SYS));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // threshold reference lines
+    ctx.strokeStyle = 'rgba(134,239,172,0.22)';
+    ctx.setLineDash([3, 6]);
+    var thr = [GAMMA_SYS + 20, GAMMA_SYS - 20];
+    for (var ti = 0; ti < thr.length; ti++) {
+      var tty = rvToY(thr[ti]);
+      if (tty > py + padTop + 2 && tty < py + ph - padBottom - 2) {
+        ctx.beginPath();
+        ctx.moveTo(px + inset, tty); ctx.lineTo(px + pw - inset, tty);
+        ctx.stroke();
+      }
+    }
+    ctx.setLineDash([]);
+
+    // model curves
+    var drawCurve = function(arr, color) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      for (var k2 = 0; k2 <= nPts; k2++) {
+        var ri2 = Math.round(k2 / nPts * RV_N) % RV_N;
+        var cx = px + inset + k2 * step;
+        var cy = rvToY(arr[ri2] + GAMMA_SYS);
+        k2 === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+    };
+    drawCurve(rv1, '#ffe4a0');
+    drawCurve(rv2, '#f87171');
+
+    // pilecki scatter
+    for (var pi2 = 0; pi2 < pilecki_phased.length; pi2++) {
+      var p = pilecki_phased[pi2];
+      var dpx = px + inset + p.display_phase * plotW;
+      ctx.globalAlpha = 0.9;
+      // cepheid
+      ctx.beginPath();
+      ctx.arc(dpx, rvToY(p.rv1), 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffe4a0';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      // companion
+      ctx.beginPath();
+      ctx.arc(dpx, rvToY(p.rv2), 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#f87171';
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // cursor at current phase
+    var curX = px + inset + currentPhi * plotW;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(96,165,250,0.7)';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#60a5fa';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(curX, py + padTop);
+    ctx.lineTo(curX, py + ph - padBottom);
+    ctx.stroke();
+    ctx.restore();
+
+    // dots on cursor
+    var cd = [[rv1[rvI], '#ffe4a0'], [rv2[rvI], '#f87171']];
+    for (var di = 0; di < cd.length; di++) {
+      ctx.beginPath();
+      ctx.arc(curX, rvToY(cd[di][0] + GAMMA_SYS), 4, 0, Math.PI * 2);
+      ctx.fillStyle = cd[di][1];
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // y-axis ticks
+    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    var ts = 20;
+    for (var tv = Math.ceil(rv_abs_min / ts) * ts; tv <= Math.floor(rv_abs_max / ts) * ts; tv += ts) {
+      var tly = rvToY(tv);
+      if (tly > py + padTop + 6 && tly < py + ph - padBottom - 4)
+        ctx.fillText(tv.toFixed(0), px + inset, tly);
+    }
+
+    // x-axis phase labels
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    for (var xp = 0; xp <= 1; xp += 0.25) {
+      ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 4);
+    }
+
+    // attribution
+    ctx.font = '8.5px \'JetBrains Mono\', monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.fillText('circular orbit + pulsation, i=57\u00B0 \u00B7 Espinoza-Arancibia & Pilecki 2025', px + inset, py + ph - 8);
+
+    // legend
+    ctx.textAlign = 'right';
+    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = '#ffe4a0';       ctx.fillText('Cepheid', px + pw - inset, py + padTop + 10);
+    ctx.fillStyle = '#f87171';       ctx.fillText('Companion', px + pw - inset, py + padTop + 22);
+    ctx.fillStyle = 'rgba(134,239,172,0.7)'; ctx.fillText('\u0394RV \u2265 40 km/s', px + pw - inset, py + padTop + 34);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + padTop + 46);
+
+    // title
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(96,165,250,0.55)';
+    ctx.fillText('ORBITAL RADIAL VELOCITIES \u00B7 KM S\u207B\u00B9', px + 12, py + 14);
+
+    ctx.restore();
+  }
+
+  // ── light curve (pulsation mode) ───────────────────────────────────────────
+
+  function drawLightCurve(magArr, frameI) {
+    var box = getPlotRect();
+    if (!box || !magArr) return;
+    var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
+
+    var inset = 16, padTop = 22, padBottom = 10;
+    var drawH = ph - padTop - padBottom;
+    var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
+    var midMag = (bounds.minV + bounds.maxV) / 2;
+    var nPts = 240;
+    var step = (pw - inset * 2) / nPts;
+
+    var dt = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
+    var fpp = Math.round(P_PULS / dt); // frames per pulsation cycle
+    var t_cur = frameI * dt;
+    var phi_cur = (t_cur % P_PULS) / P_PULS;
+
+    var magToY = function(m) {
+      return py + padTop + drawH / 2 - ((m - midMag) * (drawH / magRange) * 0.72);
+    };
+
+    ctx.save();
+
+    // ogle scatter (behind curve)
+    for (var oi = 0; oi < ogle_phased.length; oi++) {
+      var op = ogle_phased[oi];
+      var dp = op.phase - phi_cur;
+      dp = dp - Math.round(dp); // wrap to [-0.5, 0.5]
+      var df = dp * fpp;
+
+      for (var c = -3; c <= 3; c++) {
+        var off = df + c * fpp;
+        if (off >= -nPts / 2 && off <= nPts / 2) {
+          var ox = px + pw / 2 + off * step;
+          var oy = magToY(op.mag);
+          ctx.beginPath();
+          ctx.arc(ox, oy, 2, 0, Math.PI * 2);
+          ctx.fillStyle = '#60a5fa';
+          ctx.globalAlpha = op.alpha;
+          ctx.fill();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // fourier fit curve
+    ctx.beginPath();
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    for (var k = -nPts / 2; k <= nPts / 2; k++) {
+      var fi = (frameI + k + magArr.length) % magArr.length;
+      var lx = px + pw / 2 + k * step;
+      var ly = magToY(magArr[fi]);
+      k === -nPts / 2 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly);
+    }
+    ctx.stroke();
+
+    // center cursor
+    ctx.save();
+    ctx.strokeStyle = 'rgba(96,165,250,0.5)';
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = '#60a5fa';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px + pw / 2, py + padTop);
+    ctx.lineTo(px + pw / 2, py + ph - padBottom);
+    ctx.stroke();
+    ctx.restore();
+
+    // title
+    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(96,165,250,0.55)';
+    ctx.textAlign = 'left';
+    ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + 12, py + 14);
+
+    // legend
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#60a5fa';
+    ctx.fillText('Fourier fit', px + pw - inset, py + padTop + 10);
+    ctx.fillStyle = 'rgba(96,165,250,0.5)';
+    ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
+
+    ctx.restore();
+  }
+
+  // ── star drawing with bloom ────────────────────────────────────────────────
+
+  function drawStar(spx, spy, pr, col, is_cepheid, brightness) {
+    ctx.save();
+
+    if (is_cepheid && brightness !== undefined) {
+      var b = Math.max(0, Math.min(1, brightness));
+      var c = col || FALLBACK_COL;
+
+      // outer bloom: radial gradient modulated by brightness
+      var bloom_r = pr * (2.0 + b * 4.0);
+      var bloom_a = 0.10 + b * 0.35;
+      var grad = ctx.createRadialGradient(spx, spy, pr * 0.3, spx, spy, bloom_r);
+      grad.addColorStop(0, hexToRgba(c, bloom_a));
+      grad.addColorStop(0.4, hexToRgba(c, bloom_a * 0.4));
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(spx, spy, bloom_r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // core glow
+      ctx.shadowBlur = pr * (1.5 + b * 3.0);
+      ctx.shadowColor = c;
+    }
+
+    ctx.fillStyle = col || FALLBACK_COL;
+    ctx.beginPath();
+    ctx.arc(spx, spy, pr, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ── main loop ──────────────────────────────────────────────────────────────
+
+  function animate() {
+    if (!data || !data.physics_frames) return;
+    var p = data.physics_frames;
+    var dpr = window.devicePixelRatio || 1;
+    var cw = simCanvas.width / dpr;
+    var ch = simCanvas.height / dpr;
+
+    ctx.clearRect(0, 0, cw, ch);
+
+    var i = Math.floor(frameIdx) % p.x1.length;
+    frameIdx += (currentMode === 'pulsation' ? 0.4 : 0.8);
+
+    var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
+
+    if (currentMode === 'pulsation') {
+      x1 = 0; y1 = 0; z1 = 0;
+      x2 = 99999; y2 = 0; z2 = -1;
+      r1 = p.r1[i]; mag = p.v_mag[i];
+      teff = safeGet(p.teff, i, null);
+      col1 = safeGet(p.color1, i, FALLBACK_COL);
+    } else {
+      x1 = p.x1[i]; y1 = p.y1[i]; z1 = p.z1[i];
+      x2 = p.x2[i]; y2 = p.y2[i]; z2 = p.z2[i];
+      r1 = p.r1[i]; mag = p.v_mag[i];
+      teff = safeGet(p.teff, i, null);
+      col1 = safeGet(p.color1, i, FALLBACK_COL);
+    }
+
+    // brightness for bloom
+    var mag_range = bounds.maxV - bounds.minV;
+    var brightness = mag_range > 0 ? 1 - (mag - bounds.minV) / mag_range : 0.5;
+
+    // star drawing area
+    var star = getStarArea();
+    var sw = star.w, sh = star.h;
+
+    var zoom, cx, cy;
+    if (currentMode === 'pulsation') {
+      zoom = (Math.min(sw, sh) * 0.14) / maxR1;
+      cx = sw / 2;
+      cy = sh * 0.35;
+    } else {
+      zoom = (Math.min(sw, sh) * 0.32) / bounds.a2;
+      cx = sw / 2;
+      cy = sh / 2;
+    }
+
+    // screen positions
+    var s1x = cx + x1 * zoom, s1y = cy + y1 * zoom;
+    var s2x = cx + x2 * zoom, s2y = cy + y2 * zoom;
+    var pr1 = Math.max(2, r1 * zoom);
+    var pr2 = Math.max(2, COMPANION_RAD * zoom);
+
+    // ── orbital ellipses ──
+    if (currentMode !== 'pulsation') {
+      var inc = 0.545;
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 9]);
+      ctx.strokeStyle = 'rgba(248,113,113,0.55)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * inc, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(196,162,88,0.55)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * inc, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // barycenter
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy);
+      ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── plots ──
+    if (currentMode === 'pulsation') {
+      drawLightCurve(p.v_mag, i);
+    } else {
+      drawRVPlot(i);
+    }
+
+    // ── trails (orbital only) ──
+    if (currentMode !== 'pulsation') {
+      trail1.push({ x: s1x, y: s1y });
+      trail2.push({ x: s2x, y: s2y });
+      if (trail1.length > TRAIL_LEN) trail1.shift();
+      if (trail2.length > TRAIL_LEN) trail2.shift();
+
+      ctx.save();
+      for (var ti = 0; ti < trail1.length - 1; ti++) {
+        var ta = (ti / trail1.length) * 0.35;
+        ctx.beginPath();
+        ctx.arc(trail1[ti].x, trail1[ti].y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba(col1 || FALLBACK_COL, ta);
+        ctx.fill();
+      }
+      for (var ti2 = 0; ti2 < trail2.length - 1; ti2++) {
+        var ta2 = (ti2 / trail2.length) * 0.3;
+        ctx.beginPath();
+        ctx.arc(trail2[ti2].x, trail2[ti2].y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(248,113,113,' + ta2.toFixed(3) + ')';
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // ── stars (z-sorted) ──
+    if (z1 < z2) {
+      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
+      drawStar(s1x, s1y, pr1, col1, true, brightness);
+    } else {
+      drawStar(s1x, s1y, pr1, col1, true, brightness);
+      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
+    }
+
+    // ── star labels (orbital only) ──
+    if (currentMode !== 'pulsation') {
+      var ldist = Math.hypot(s1x - s2x, s1y - s2y);
+      var lmin = (r1 + COMPANION_RAD) * zoom * 2.2;
+      var la = Math.min(1, Math.max(0, (ldist - lmin) / (lmin * 0.6)));
+      if (la > 0.01) {
+        ctx.save();
+        ctx.font = '11px \'JetBrains Mono\', monospace';
+        ctx.textBaseline = 'middle';
+        ctx.globalAlpha = la * 0.85;
+        ctx.fillStyle = '#ffe4a0';
+        ctx.fillText('Cepheid', s1x + pr1 + 8, s1y - pr1 * 0.5);
+        ctx.fillStyle = '#f87171';
+        ctx.fillText('Companion', s2x + pr2 + 8, s2y - pr2 * 0.5);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+    }
+
+    // ── mobile separator ──
+    if (star.mobile) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, sh + 10);
+      ctx.lineTo(sw, sh + 10);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── hud ──
+    if (hud.mag) hud.mag.innerText = mag.toFixed(1);
+    if (hud.teff) hud.teff.innerText = teff !== null ? Math.round(teff) + ' K' : '~6490 K';
+    if (hud.rad) hud.rad.innerText = r1.toFixed(1) + ' R\u2609';
+
+    if (currentMode === 'pulsation') {
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> pulsation';
+      var pdt = (data.metadata && data.metadata.dt) ? data.metadata.dt : P_PULS / 120;
+      var pp = ((i * pdt) % P_PULS) / P_PULS;
+      if (hud.phase) hud.phase.innerText = pp.toFixed(3);
+    } else {
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>orb</sub> orbital';
+      if (hud.phase) hud.phase.innerText = (i / p.x1.length).toFixed(3);
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // ── mode switching ─────────────────────────────────────────────────────────
+
+  window.setMode = function(mode) {
+    if (!MODES.has(mode)) return;
+    currentMode = mode;
+    trail1 = []; trail2 = [];
+
+    document.querySelectorAll('.btn-mode').forEach(function(b) {
+      b.style.background = 'transparent';
+      b.style.color = 'rgba(255,255,255,0.4)';
+      b.style.boxShadow = 'none';
+    });
+    var btn = document.getElementById('btn-' + mode);
+    if (btn) {
+      btn.style.background = 'rgba(255,255,255,0.18)';
+      btn.style.color = '#ffffff';
+      btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
+    }
+  };
+
+  // ── resize ─────────────────────────────────────────────────────────────────
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    var rect = simCanvas.getBoundingClientRect();
+    simCanvas.width = rect.width * dpr;
+    simCanvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    trail1 = []; trail2 = [];
+  }
+
+  // ── init ───────────────────────────────────────────────────────────────────
+
+  async function init() {
+    if (!simCanvas || !ctx) return;
+    try {
+      var r = await fetch('data/master_data.json');
+      data = await r.json();
+      var p = data.physics_frames;
+      var req = ['v_mag', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'r1'];
+      for (var ri = 0; ri < req.length; ri++) {
+        if (!Array.isArray(p[req[ri]])) throw new Error('Missing: physics_frames.' + req[ri]);
+      }
+
+      for (var mi = 0; mi < p.v_mag.length; mi++) {
+        if (p.v_mag[mi] < bounds.minV) bounds.minV = p.v_mag[mi];
+        if (p.v_mag[mi] > bounds.maxV) bounds.maxV = p.v_mag[mi];
+      }
+      bounds.a1 = Math.max.apply(null, p.x1.map(Math.abs));
+      bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
+      maxR1 = Math.max.apply(null, p.r1);
+
+      buildRV();
+      prepareObservationalData();
+
+      if (preview) preview.style.display = 'none';
+      simCanvas.style.opacity = '1';
+      if (plotUI) plotUI.style.opacity = '1';
+
+      window.addEventListener('resize', resize);
+      resize();
+      setMode('orbital');
+      animate();
+    } catch (e) {
+      console.error('Cepheid sim init error:', e);
+    }
+  }
+
+  init();
+})();
