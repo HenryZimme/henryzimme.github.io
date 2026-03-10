@@ -894,39 +894,34 @@
     }
 
     /* ── #cepheid-sim mobile layout ─────────────────────────────────────────
-       The desktop UI (#ui-layer) is hidden on mobile.
-       A separate #sim-mobile-ui div with fully stacked, in-flow elements is
-       shown instead — canvas stays position:absolute and fills section height,
-       which is driven by #sim-mobile-ui content (no JS override needed).
+       CSS-driven two-UI approach — no applyLayout() JS needed.
+       Desktop (>700px): #ui-layer position:absolute, canvas fills 100vh.
+       Mobile (≤700px): #ui-layer hidden, #sim-mobile-ui shown as in-flow flex column.
+         Section height:auto driven by #sim-mobile-ui stacked content.
+         Canvas (position:absolute; inset:0) fills the section height.
     ──────────────────────────────────────────────────────────────────────── */
     @media (max-width: 700px) {
       .section-heading { top: 56px; }
-
+      /* section: height auto, content-driven */
       #cepheid-sim { height: auto !important; overflow: visible !important; }
-
-      /* hide desktop overlay entirely */
+      /* hide the desktop overlay entirely */
       #ui-layer { display: none !important; }
-
       /* show and stack the mobile UI */
       #sim-mobile-ui {
         display: flex !important;
         flex-direction: column;
         position: relative;
         z-index: 20;
-        pointer-events: none;
-        padding: 1rem 1rem 1.5rem;
+        padding: 1.1rem 1rem 1.4rem;
         box-sizing: border-box;
         gap: 0.65rem;
         width: 100%;
       }
-
-      /* re-enable pointer events on interactive children */
-      #mob-hud,
-      #mob-mode-pill,
-      #mob-mode-pill button,
-      #sim-mobile-ui a { pointer-events: auto; }
+      /* pointer events: section off, interactive children on */
+      #sim-mobile-ui { pointer-events: none; }
+      #mob-hud, #mob-mode-pill, #mob-mode-pill button,
+      #mob-espresso-btn, #sim-mobile-ui a { pointer-events: auto; }
     }
-
     @media (min-width: 701px) {
       #sim-mobile-ui { display: none !important; }
     }
