@@ -251,6 +251,33 @@
   var ctx    = canvas.getContext('2d');
   var dpr    = window.devicePixelRatio || 1;
 
+  function compute_orbit_screen_bounds() {
+    // project every orbit point and find the screen-space bounding box.
+    // used to auto-fit scale + scene center to the actual orbit geometry.
+    var min_sx =  Infinity, max_sx = -Infinity;
+    var min_sy =  Infinity, max_sy = -Infinity;
+    var n = orbit.x.length;
+    for (var i = 0; i < n; i++) {
+      var sx =  orbit.x[i]*R_RIGHT[0] + orbit.y[i]*R_RIGHT[1] + orbit.z[i]*R_RIGHT[2];
+      var sy = -(orbit.x[i]*R_UP[0]   + orbit.y[i]*R_UP[1]   + orbit.z[i]*R_UP[2]);
+      if (sx < min_sx) min_sx = sx;
+      if (sx > max_sx) max_sx = sx;
+      if (sy < min_sy) min_sy = sy;
+      if (sy > max_sy) max_sy = sy;
+    }
+    // also include earth orbit
+    var ne = e_orbit.x.length;
+    for (var j = 0; j < ne; j++) {
+      var esx =  e_orbit.x[j]*R_RIGHT[0] + e_orbit.y[j]*R_RIGHT[1] + e_orbit.z[j]*R_RIGHT[2];
+      var esy = -(e_orbit.x[j]*R_UP[0]   + e_orbit.y[j]*R_UP[1]   + e_orbit.z[j]*R_UP[2]);
+      if (esx < min_sx) min_sx = esx;
+      if (esx > max_sx) max_sx = esx;
+      if (esy < min_sy) min_sy = esy;
+      if (esy > max_sy) max_sy = esy;
+    }
+    return { min_sx: min_sx, max_sx: max_sx, min_sy: min_sy, max_sy: max_sy };
+  }
+
   function resize() {
     var W = window.innerWidth;
     var H = window.innerHeight;
@@ -265,13 +292,20 @@
     RIGHT_X   = SCENE_W + 1;
     RIGHT_W   = W - RIGHT_X;
 
-    // scene center: place Sun slightly left of SCENE_W center to give
-    // more room for the orbit on the +y side (which projects rightward)
-    scene_cx = SCENE_W * 0.48;
-    scene_cy = HEADER_H + CONTENT_H * 0.50;
+    // fit scale to actual projected orbit bounding box with 10% padding
+    var PAD   = 0.90;
+    var ob    = compute_orbit_screen_bounds();
+    var span_x = ob.max_sx - ob.min_sx;
+    var span_y = ob.max_sy - ob.min_sy;
+    var scale_x = (SCENE_W  * PAD) / span_x;
+    var scale_y = (CONTENT_H * PAD) / span_y;
+    scale = Math.min(scale_x, scale_y);
 
-    // scale: fit ±3.1 AU horizontally in the scene panel (with 8% margin)
-    scale = (SCENE_W * 0.92) / (2 * 3.1);
+    // center: map the orbit centroid to the center of the scene panel
+    var ctr_sx = (ob.min_sx + ob.max_sx) / 2;
+    var ctr_sy = (ob.min_sy + ob.max_sy) / 2;
+    scene_cx = SCENE_W  / 2 - ctr_sx * scale;
+    scene_cy = HEADER_H + CONTENT_H / 2 - ctr_sy * scale;
 
     // right panel layout
     var dial_area_h = Math.floor(CONTENT_H * 0.48);
@@ -472,20 +506,21 @@
       }
     }
 
-    // date tick marks — every ~15 days
+    // date tick marks — every 15 days, start at d=7 to avoid left-edge clip
     var date_start  = new Date(meta.date_start + 'T00:00:00Z');
-    var tick_step   = 15;  // days
+    var tick_step   = 15;
     tc.font          = '9px JetBrains Mono, monospace';
     tc.textAlign     = 'center';
     tc.fillStyle     = C_DIM;
     tc.strokeStyle   = 'rgba(96,96,144,0.4)';
     tc.lineWidth     = 0.7;
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    for (var d = 0; d < meta.n_days; d += tick_step) {
+    for (var d = 7; d < meta.n_days - 3; d += tick_step) {
       var tx = Math.floor(d / (meta.n_days - 1) * (W - 1));
-      tc.beginPath(); tc.moveTo(tx, PHASE_Y - 4); tc.lineTo(tx, PHASE_Y + PHASE_H + 4); tc.stroke();
+      tc.beginPath(); tc.moveTo(tx, PHASE_Y - 3); tc.lineTo(tx, PHASE_Y + PHASE_H + 3); tc.stroke();
       var dt = new Date(date_start.getTime() + d * 86400000);
-      var lbl = months[dt.getUTCMonth()] + '\u202f' + dt.getUTCDate();
+      var lbl = months[dt.getUTCMonth()] + ' ' + dt.getUTCDate();
+      tc.fillStyle = C_DIM;
       tc.fillText(lbl, tx, H - 3);
     }
 
@@ -601,12 +636,12 @@
     return p;
   }
 
-  function draw_text3d(x, y, z, text, color, size) {
+  function draw_text3d(x, y, z, text, color, size, dx, dy) {
     var p = proj_px(x, y, z);
     ctx.save();
     ctx.font      = (size || 11) + 'px JetBrains Mono, monospace';
     ctx.fillStyle = color;
-    ctx.fillText(text, p[0] + 6, p[1] - 4);
+    ctx.fillText(text, p[0] + (dx !== undefined ? dx : 6), p[1] + (dy !== undefined ? dy : -4));
     ctx.restore();
   }
 
@@ -699,7 +734,7 @@
 
     // earth
     draw_dot3d(ear[0], ear[1], ear[2], 5.5, C_EARTH);
-    draw_text3d(ear[0], ear[1], ear[2], 'Earth', 'rgba(58,127,212,0.6)', 9);
+    draw_text3d(ear[0], ear[1], ear[2], 'Earth', 'rgba(58,127,212,0.6)', 9, 8, -5);
 
     // asteroid (drawn last — on top)
     var ast_col = in_gap ? C_GAP : C_AST;
@@ -712,7 +747,8 @@
       ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(p_a[0], p_a[1], 22, 0, 2*Math.PI); ctx.fill();
     }
     draw_dot3d(ast[0], ast[1], ast[2], 7, ast_col, 'rgba(255,255,255,0.75)');
-    draw_text3d(ast[0], ast[1], ast[2], meta.asteroid_name, 'rgba(255,238,0,0.65)', 9);
+    // name below dot, α label handled separately above the arc midpoint
+    draw_text3d(ast[0], ast[1], ast[2], meta.asteroid_name, 'rgba(255,238,0,0.65)', 9, 10, 14);
 
     ctx.restore();
   }
@@ -793,7 +829,7 @@
     var a_cov_en = -Math.PI/2 + gs * 2 * Math.PI;
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, R*0.72, a_cov_st, a_cov_en, false);
-    ctx.strokeStyle = C_COVER; ctx.lineWidth = Math.max(8, R*0.12);
+    ctx.strokeStyle = C_COVER; ctx.lineWidth = Math.max(5, R*0.07);
     ctx.lineCap = 'butt'; ctx.stroke();
     ctx.restore();
 
@@ -802,7 +838,7 @@
     var a_gap_en = -Math.PI/2 + ge * 2 * Math.PI;
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, R*0.72, a_gap_st, a_gap_en, false);
-    ctx.strokeStyle = C_GAP; ctx.lineWidth = Math.max(8, R*0.12);
+    ctx.strokeStyle = C_GAP; ctx.lineWidth = Math.max(5, R*0.07);
     ctx.lineCap = 'butt'; ctx.stroke();
     ctx.restore();
 
@@ -810,7 +846,7 @@
     ctx.save();
     ctx.font = '8px JetBrains Mono, monospace';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    [[0,'0'],[0.25,'¼'],[0.5,'½'],[0.75,'¾'],[gs, gs.toString()]].forEach(function(pair) {
+    [[0,'0'],[0.25,'0.25'],[0.5,'0.50'],[0.75,'0.75'],[gs, gs.toFixed(2)]].forEach(function(pair) {
       var ph = pair[0], lbl = pair[1];
       var th = -Math.PI/2 + ph * 2 * Math.PI;
       var cos_t = Math.cos(th), sin_t = Math.sin(th);
@@ -920,27 +956,27 @@
   // ── timeline drawing ───────────────────────────────────────────────────────
   function draw_timeline(fi) {
     var x0 = TIME_X0;
-    var y0 = TIME_Y + 4;
+    var y0 = TIME_Y + 18;   // push content down to make room for single title
     var W  = TIME_W_PX;
-    var H  = TIME_H_PX - 4;
+    var H  = TIME_H_PX - 18;
 
     // panel background
     ctx.save();
     ctx.fillStyle = C_BG;
-    ctx.fillRect(RIGHT_X, TIME_Y, RIGHT_W, H + 20);
+    ctx.fillRect(RIGHT_X, TIME_Y, RIGHT_W, H + 30);
     ctx.restore();
 
-    // section label
+    // single title
     ctx.save();
     ctx.font      = '9px JetBrains Mono, monospace';
     ctx.fillStyle = C_DIM; ctx.textAlign = 'left';
-    ctx.fillText('PHASE COVERAGE  \u00b7  OBSERVABILITY', x0, y0 + 9);
+    ctx.fillText('CAMPAIGN COVERAGE \u00b7 OBSERVABILITY', x0, TIME_Y + 12);
     ctx.restore();
 
     // draw precomputed timeline image
     if (timeline_oc) {
       ctx.save(); ctx.globalAlpha = 1;
-      ctx.drawImage(timeline_oc, x0, y0 + 16, W, H - 16);
+      ctx.drawImage(timeline_oc, x0, y0, W, H);
       ctx.restore();
     }
 
@@ -948,14 +984,7 @@
     var cx_t = x0 + Math.floor(fi / (N - 1) * (W - 1));
     ctx.save();
     ctx.strokeStyle = C_AST; ctx.lineWidth = 1.5; ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(cx_t, y0 + 16); ctx.lineTo(cx_t, y0 + H - 4); ctx.stroke();
-    ctx.restore();
-
-    // title
-    ctx.save();
-    ctx.font = '9px JetBrains Mono, monospace';
-    ctx.fillStyle = C_DIM; ctx.textAlign = 'left';
-    ctx.fillText('CAMPAIGN TIMELINE', x0, TIME_Y + 13);
+    ctx.beginPath(); ctx.moveTo(cx_t, y0); ctx.lineTo(cx_t, y0 + H); ctx.stroke();
     ctx.restore();
   }
 
