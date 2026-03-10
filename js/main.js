@@ -57,6 +57,7 @@ const featured_objects = [
 
 // rendering state
 let star_data = [];
+let bg_stars_by_color = {}; // pre-grouped background stars, built once in build_stars
 let mouse = { x: -9999, y: -9999 };
 let hover_star = null;
 let time_s = 0;
@@ -149,6 +150,14 @@ function build_stars(catalog) {
       rgba_full:  hex_to_rgba(featured_colors[fi] || '#c4a258', 1)
     });
   }
+
+  // pre-group background stars by color so draw loop doesn't rebuild every frame
+  bg_stars_by_color = {};
+  for (const s of star_data) {
+    if (s.featured || s.name) continue;
+    if (!bg_stars_by_color[s.color]) bg_stars_by_color[s.color] = [];
+    bg_stars_by_color[s.color].push(s);
+  }
 }
 
 // ── draw helpers ─────────────────────────────────────────────────────────────
@@ -161,13 +170,20 @@ function hex_to_rgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function draw_background_star(s, twinkle) {
-  const alpha = 0.32 + 0.24 * twinkle;
-  ctx.beginPath();
-  ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-  ctx.fillStyle = s.color;
-  ctx.globalAlpha = alpha;
-  ctx.fill();
+// batched background star drawing — uses pre-grouped color buckets built at catalog load.
+// Sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
+function draw_background_stars_batched() {
+  const TWO_PI = Math.PI * 2;
+  for (const color in bg_stars_by_color) {
+    ctx.fillStyle = color; // set once per color group
+    for (const s of bg_stars_by_color[color]) {
+      const twinkle = 0.78 + 0.22 * Math.sin(time_s * s.freq + s.phase);
+      ctx.globalAlpha = 0.32 + 0.24 * twinkle;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, TWO_PI);
+      ctx.fill();
+    }
+  }
   ctx.globalAlpha = 1;
 }
 
@@ -329,19 +345,19 @@ function draw(ts) {
   hover_star = null;
   let min_d = 14;
 
-  for (const s of star_data) {
-    const twinkle = 0.78 + 0.22 * Math.sin(time_s * s.freq + s.phase);
+  // draw all background stars batched by color (pre-grouped at catalog load)
+  draw_background_stars_batched();
 
+  for (const s of star_data) {
     if (s.featured) {
       draw_featured_star(s);
     } else if (s.name) {
+      const twinkle = 0.78 + 0.22 * Math.sin(time_s * s.freq + s.phase);
       draw_named_star(s, twinkle);
       // hover detection only for named + featured stars
       const dx = mouse.x - s.x, dy = mouse.y - s.y;
       const d = Math.sqrt(dx * dx + dy * dy);
       if (d < min_d) { min_d = d; hover_star = s; }
-    } else {
-      draw_background_star(s, twinkle);
     }
   }
 
