@@ -108,6 +108,7 @@
   var rv1 = [], rv2 = [], rvDelta = [];
   var rv_abs_min = 0, rv_abs_max = 0;
   var v_puls_cycle = [];
+  var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
 
   var ogle_phased    = [];
   var pilecki_phased = [];
@@ -603,7 +604,10 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  function animate() {
+  var ORBIT_DURATION_S  = 20.0; // seconds per simulated orbit (wall clock)
+  var PULS_DURATION_S   = 10.0; // seconds per simulated orbit in pulsation mode
+
+  function animate(now) {
     if (!data || !data.physics_frames) return;
     var p = data.physics_frames;
     var dpr = window.devicePixelRatio || 1;
@@ -612,10 +616,15 @@
 
     ctx.clearRect(0, 0, cw, ch);
 
+    // wall-clock delta, capped at 100ms to avoid jumps after tab switch
+    if (lastTime === null) lastTime = now;
+    var dt_ms = Math.min(now - lastTime, 100);
+    lastTime = now;
+
+    var duration_s = currentMode === 'pulsation' ? PULS_DURATION_S : ORBIT_DURATION_S;
+    frameIdx += (dt_ms / 1000) / duration_s * p.x1.length;
+
     var i = Math.floor(frameIdx) % p.x1.length;
-    // advance by fixed fraction of total frames so orbital period is constant regardless of N
-    var FRAMES_PER_ORBIT = 1200; // animation frames per one full orbit
-    frameIdx += (currentMode === 'pulsation' ? 0.5 : 1.0) * p.x1.length / FRAMES_PER_ORBIT;
 
     var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
 
@@ -803,6 +812,7 @@
     if (!MODES.has(mode)) return;
     currentMode = mode;
     trail1 = []; trail2 = [];
+    lastTime = null; // reset clock to prevent delta spike on mode switch
 
     document.querySelectorAll('.btn-mode').forEach(function(b) {
       b.style.background = 'transparent';
@@ -868,7 +878,7 @@
       window.addEventListener('resize', resize);
       resize();
       setMode('orbital');
-      animate();
+      requestAnimationFrame(animate);
 
       // stage 2: fetch full JSON in background, swap seamlessly
       fetch(fullUrl).then(function(r2) {
