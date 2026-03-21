@@ -862,4 +862,15 @@ setTimeout(() => {
   }
 })();
 
+// research card expand/collapse
+document.querySelectorAll('.card-toggle').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    const card = btn.closest('.research-card');
+    const expand = card.querySelector('.card-expand');
+    const open = card.classList.toggle('card-open');
+    expand.style.maxHeight = open ? expand.scrollHeight + 'px' : '0';
+    btn.textContent = open ? 'Read less \u2191' : 'Read more \u2193';
+  });
+});
+
 init();
