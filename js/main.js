@@ -68,7 +68,7 @@ let raf_id = null;
 let hero_visible = true;
 let cursor_is_pointer = false; // track to avoid per-frame style writes
 let last_frame_ts = 0;
-const FRAME_INTERVAL = 1000 / 30; // target 30fps — star field needs no more
+const FRAME_INTERVAL = 1000 / 30; // target 30fps, the star field needs no more
 
 // deterministic rng, used only for per-star twinkle phase assignment
 function make_rng(seed) {
@@ -104,7 +104,7 @@ function build_stars(catalog) {
 
   // sort: named stars first (interactive layer loads first), then by magnitude
   // ascending (brightest = lowest vmag first) within each group.
-  // O(n log n) once at load time — zero runtime cost.
+  // O(n log n) once at load time, zero runtime cost.
   const sorted = catalog.slice().sort((a, b) => {
     const a_named = a[4] !== null ? 0 : 1;
     const b_named = b[4] !== null ? 0 : 1;
@@ -183,7 +183,7 @@ function build_stars(catalog) {
     bg_stars_by_color[s.color].push(s);
   }
 
-  // Opt 4: pre-filtered views — avoids full star_data scan on every touch event
+  // Opt 4: pre-filtered views, this avoids full star_data scan on every touch event
   featured_stars = star_data.filter(s => s.featured);
   named_stars    = star_data.filter(s => s.name && !s.featured);
 }
@@ -199,7 +199,7 @@ const FREQ_MIN = 0.3, FREQ_MAX = 1.7;
 const twinkle_sin_lut = new Float32Array(TWINKLE_BUCKETS); // sin(time_s * bucket_freq)
 const twinkle_cos_lut = new Float32Array(TWINKLE_BUCKETS); // cos(time_s * bucket_freq)
 
-// Opt 5: pre-computed per-bucket frequencies — eliminates 64 multiply-adds every frame
+// Opt 5: pre-computed per-bucket frequencies, eliminates 64 multiply-adds every frame
 const twinkle_bucket_freqs = new Float32Array(TWINKLE_BUCKETS);
 for (let i = 0; i < TWINKLE_BUCKETS; i++) {
   twinkle_bucket_freqs[i] = FREQ_MIN + (i / (TWINKLE_BUCKETS - 1)) * (FREQ_MAX - FREQ_MIN);
@@ -214,7 +214,7 @@ function update_twinkle_lut() {
 }
 
 // twinkle value for a star: lerps between adjacent LUT buckets using freq_lerp.
-// Each star gets a unique effective frequency within its bin — full variation,
+// Each star gets a unique effective frequency within its bin, full variation,
 // zero per-star trig. Cost: 2 LUT lookups + 1 lerp (3 multiplies, 2 adds).
 function star_twinkle(s) {
   const i = s.freq_bucket;
@@ -234,7 +234,7 @@ function hex_to_rgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// Opt 1: alpha-bucket batching — star_twinkle() returns [0.56, 1.0], so
+// Opt 1: alpha-bucket batching, star_twinkle() returns [0.56, 1.0], so
 // alpha = 0.32 + 0.24 * t ∈ [BG_ALPHA_MIN, BG_ALPHA_MAX].
 // Quantising into BG_ALPHA_BUCKETS steps lets us batch all stars at the same
 // (color, alpha) into one compound path, reducing fill() calls 9000 → ~40.
@@ -242,15 +242,15 @@ const BG_ALPHA_BUCKETS = 8;
 const BG_ALPHA_MIN   = 0.32 + 0.24 * 0.56; // ≈ 0.4544
 const BG_ALPHA_MAX   = 0.32 + 0.24 * 1.00; // = 0.56
 const BG_ALPHA_RANGE = BG_ALPHA_MAX - BG_ALPHA_MIN;
-// Pre-allocated bucket arrays — cleared each frame with .length = 0, no GC churn
+// pre-allocated bucket arrays, cleared each frame with .length = 0, no GC churn
 const _bg_buckets = Array.from({ length: BG_ALPHA_BUCKETS }, () => []);
 
-// batched background star drawing — uses pre-grouped color buckets built at catalog load.
-// Sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
+// batched background star drawing, uses pre-grouped color buckets built at catalog load.
+// sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
 function draw_background_stars_batched() {
   const TWO_PI = Math.PI * 2;
   for (const color in bg_stars_by_color) {
-    // Distribute this color's stars into alpha buckets
+    // distribute this color's stars into alpha buckets
     for (let b = 0; b < BG_ALPHA_BUCKETS; b++) _bg_buckets[b].length = 0;
     for (const s of bg_stars_by_color[color]) {
       const twinkle = star_twinkle(s);
@@ -259,7 +259,7 @@ function draw_background_stars_batched() {
                   Math.max(0, Math.floor((alpha - BG_ALPHA_MIN) / BG_ALPHA_RANGE * BG_ALPHA_BUCKETS)));
       _bg_buckets[b].push(s);
     }
-    // One compound path + one fill() per non-empty (color, alpha-bucket) pair
+    // one compound path + one fill() per non-empty (color, alpha-bucket) pair
     ctx.fillStyle = color;
     for (let b = 0; b < BG_ALPHA_BUCKETS; b++) {
       const group = _bg_buckets[b];
@@ -308,7 +308,7 @@ function draw_featured_star(s) {
   const ring_base  = is_pipeline ? 0.12 : 0.28;
   const ring_pulse = is_pipeline ? 0.22 : 0.45;
 
-  // radial glow — use hex_to_rgba only for the variable alpha (pulse-dependent)
+  // radial glow, use hex_to_rgba only for the variable alpha (pulse-dependent)
   const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glow_r);
   grd.addColorStop(0, hex_to_rgba(c, glow_alpha * pulse));
   grd.addColorStop(1, hex_to_rgba(c, 0));
@@ -341,7 +341,7 @@ function draw_hover_ring(s) {
   ctx.stroke();
 }
 
-// pre-computed legend items — built once, not every frame
+// pre-computed legend items, built once, not every frame
 const legend_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
 const legend_items = featured_objects.map((obj, i) => ({
   label: obj.name,
@@ -374,7 +374,7 @@ function draw_canvas_legend() {
     const it = items[i];
     const cx = x + dot_r;
 
-    // pulsing dot — use bucket 0..4 mapped across LUT for variety
+    // pulsing dot, use bucket 0..4 mapped across LUT for variety
     const lut_i = Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1));
     const pulse = 0.5 + 0.5 * twinkle_sin_lut[lut_i];
     const glow = ctx.createRadialGradient(cx, y, 0, cx, y, dot_r * 3);
@@ -414,7 +414,7 @@ function draw_canvas_legend() {
 // ── main render loop ──────────────────────────────────────────────────────────
 
 function draw(ts) {
-  // throttle to ~30fps — star field doesn't benefit from 60fps
+  // throttle to ~30fps, star field doesn't benefit from 60fps
   if (ts - last_frame_ts < FRAME_INTERVAL) {
     if (hero_visible) raf_id = requestAnimationFrame(draw);
     else raf_id = null;
@@ -476,10 +476,8 @@ function draw(ts) {
 
 // ── interaction ───────────────────────────────────────────────────────────────
 
-// Bug 2 / Opt 7: cache hero element + derived measurements so neither
-// getElementById nor getBoundingClientRect runs on every mousemove or scroll.
 // hero_rect_cache is refreshed on scroll (layout already dirty) and resize.
-// hero_scroll_bottom is stable between resizes — uses offsetTop + offsetHeight.
+// hero_scroll_bottom is stable between resizes, uses offsetTop + offsetHeight.
 let hero_el         = null;
 let hero_rect_cache = null;  // viewport-relative rect for canvas_exposed_at
 let hero_scroll_bottom = 0;  // doc-absolute bottom edge for scroll spy
@@ -492,7 +490,6 @@ function refresh_hero_cache() {
 }
 
 function canvas_exposed_at(x, y) {
-  // Bug 2: use cached rect — no forced reflow on every mousemove
   const r = hero_rect_cache;
   return r !== null && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
@@ -552,7 +549,7 @@ function on_touch_start(e) {
   mouse.x = tx;
   mouse.y = ty;
 
-  // check featured stars first (larger tap target) — Opt 4: use pre-built array
+  // check featured stars first (larger tap target), Opt 4: use pre-built array
   let best = null;
   let best_d = 38;
   for (const s of featured_stars) {
@@ -567,7 +564,7 @@ function on_touch_start(e) {
     return;
   }
 
-  // fallback: named catalog stars with slightly wider radius than mouse — Opt 4: pre-built array
+  // fallback: named catalog stars with slightly wider radius than mouse, Opt 4: pre-built array
   let best_named = null;
   let best_nd = 22;
   for (const s of named_stars) {
@@ -662,7 +659,7 @@ function init() {
   }, { threshold: 0 });
   hero_observer.observe(document.getElementById('hero'));
 
-  // start render loop immediately — draw() guards on catalog_loaded internally
+  // start render loop immediately, draw() guards on catalog_loaded internally
   raf_id = requestAnimationFrame(draw);
 
   fetch('/data/stars.json')
@@ -821,7 +818,7 @@ const back_to_top_btn = document.getElementById('back-to-top');
 window.addEventListener('scroll', () => {
   back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
 
-  // Opt 7: compare scrollY against cached doc-absolute bottom — no getElementById or getBoundingClientRect
+  // Opt 7: compare scrollY against cached doc-absolute bottom, no getElementById or getBoundingClientRect
   nav_el.classList.toggle('nav--scrolled', window.scrollY >= hero_scroll_bottom);
 
   // Bug 2: refresh viewport rect on scroll (layout is already dirty here) so
