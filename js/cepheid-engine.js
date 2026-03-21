@@ -115,8 +115,8 @@
   // guided first-loop captions
   var captionStartTime = null;
   var CAPTIONS = [
-    { t: 0,    dur: 4500, text: 'A Cepheid variable — pulsating giant, thermometer of the universe' },
-    { t: 6000, dur: 5000, text: 'The radial velocity curves below encode both stars\' motion — measured from Earth' },
+    { t: 0,    dur: 4500, text: 'A Cepheid variable. Pulsating standard candle' },
+    { t: 6000, dur: 5000, text: 'The radial velocity curves below encode both stars\' motion, measured from Earth' },
   ];
 
   var ogle_phased    = [];
