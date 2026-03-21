@@ -245,7 +245,7 @@
     };
   }
 
-  // ── pulsation state lookup — uses puls_cycle from JSON metadata ────────────
+  // ── pulsation state lookup, uses puls_cycle from JSON metadata ────────────
   // decoupled from orbital frame count: always 480-frame resolution
   // puls_phi: 0-1 pulsation phase
 
@@ -466,7 +466,7 @@
     ctx.setLineDash([]);
     ctx.restore();
 
-    // ── tracking dots on cursor — target-sight: outer ring + bright center ──
+    // ── tracking dots on cursor, target-sight: outer ring + bright center ──
     // companion: orbital model only
     var compY = rvToY(rv2[rvI] + GAMMA_SYS);
     ctx.save();
@@ -508,9 +508,9 @@
     ctx.fill();
     ctx.restore();
 
-    // y-axis label and ticks — hidden on mobile to prevent overlap with plot
+    // y-axis label and ticks, hidden on mobile to prevent overlap with plot
     if (!getStarArea().mobile) {
-      // y-axis label — rotated "km s⁻¹"
+      // y-axis label, rotated "km s⁻¹"
       ctx.save();
       ctx.translate(px + 10, py + padTop + drawH / 2);
       ctx.rotate(-Math.PI / 2);
@@ -521,7 +521,7 @@
       ctx.fillText('km s\u207B\u00B9', 0, 0);
       ctx.restore();
 
-      // y-axis ticks — brighter, larger font
+      // y-axis ticks, brighter, larger font
       ctx.font = '10px \'JetBrains Mono\', monospace';
       ctx.fillStyle = 'rgba(255,255,255,0.45)';
       ctx.textBaseline = 'middle';
@@ -534,7 +534,7 @@
       }
     }
 
-    // x-axis phase labels and attribution — hidden on mobile to prevent overlap
+    // x-axis phase labels and attribution, hidden on mobile to prevent overlap
     if (!getStarArea().mobile) {
       ctx.textBaseline = 'top';
       ctx.textAlign = 'center';
@@ -552,7 +552,7 @@
       ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
     }
 
-    // canvas legend — replaces #rv-legend HTML element, always drawn on canvas
+    // canvas legend, replaces #rv-legend HTML element, always drawn on canvas
     ctx.font = '9px \'JetBrains Mono\', monospace';
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
@@ -588,7 +588,7 @@
     var Np       = pc.Np;
     var phi_cur  = puls_phi;
 
-    // magnitude → y: bright (small mag) maps UP — standard astro convention
+    // magnitude → y: bright (small mag) maps UP, standard astro convention
     var magToY = function(m) {
       return py + padTop + drawH / 2 - ((m - midMag) * (drawH / magRange) * 0.72);
     };
@@ -606,7 +606,7 @@
     ctx.fillText('V mag  \u2191 bright', 0, 0);
     ctx.restore();
 
-    // ogle scatter — phase-based x offset from center
+    // ogle scatter, phase-based x offset from center
     for (var oi = 0; oi < ogle_phased.length; oi++) {
       var op = ogle_phased[oi];
       var dp = op.phase - phi_cur;
@@ -628,7 +628,7 @@
     }
     ctx.globalAlpha = 1;
 
-    // fourier fit treadmill — scrolls with phi_cur, phase-indexed into puls_cycle
+    // fourier fit treadmill, scrolls with phi_cur, phase-indexed into puls_cycle
     ctx.beginPath();
     ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 3;
@@ -881,7 +881,7 @@
       if (trail2.length > TRAIL_LEN) trail2.shift();
 
       ctx.save();
-      // Cepheid trail — temperature-coloured tapered stroke
+      // Cepheid trail, temperature-coloured tapered stroke
       if (trail1.length > 2) {
         for (var ti = 1; ti < trail1.length; ti++) {
           var tf = ti / trail1.length;           // 0=tail, 1=head
@@ -896,7 +896,7 @@
           ctx.stroke();
         }
       }
-      // Companion trail — red, same taper
+      // Companion trail, red, same taper
       if (trail2.length > 2) {
         for (var ti2 = 1; ti2 < trail2.length; ti2++) {
           var tf2 = ti2 / trail2.length;
@@ -1082,7 +1082,7 @@
   async function init() {
     if (!simCanvas || !ctx) return;
     try {
-      // stage 1: boot JSON — starts sim immediately
+      // stage 1: boot JSON, starts sim immediately
 
       // sequence loading lines: each fades in, holds, fades out, then next starts
       // fade-in 0.4s → hold 0.8s → fade-out 0.4s, 3s between line starts
@@ -1158,7 +1158,7 @@
         return r2.json();
       }).then(function(fullData) {
         if (!fullData) return;
-        // orbitPhase is normalized 0-1 — no rescaling needed, just swap data
+        // orbitPhase is normalized 0-1, no rescaling needed, just swap data
         data = fullData;
         var p2 = data.physics_frames;
         bounds.minV = 99; bounds.maxV = -99;
