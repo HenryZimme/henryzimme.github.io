@@ -115,7 +115,7 @@
   // guided first-loop captions
   var captionStartTime = null;
   var CAPTIONS = [
-    { t: 0,    dur: 4500, text: 'A Cepheid variable. Pulsating standard candle' },
+    { t: 0,    dur: 4500, text: 'A Cepheid, pulsating standard candle' },
     { t: 6000, dur: 5000, text: 'The radial velocity curves below encode both stars\' motion, measured from Earth' },
   ];
 
