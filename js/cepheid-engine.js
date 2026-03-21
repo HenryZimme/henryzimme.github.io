@@ -322,7 +322,7 @@
       ogle_phased.push({
         phase: (((r[0] + 2450000) % P_PULS) / P_PULS + 1) % 1,
         mag:   r[1],
-        alpha: 0.08 + 0.52 * (weights[oi2] / max_w)
+        alpha: 0.18 + 0.64 * (weights[oi2] / max_w)
       });
     }
   }
@@ -644,7 +644,7 @@
 
     // center cursor
     ctx.save();
-    ctx.strokeStyle = 'rgba(96,165,250,0.5)';
+    ctx.strokeStyle = 'rgba(96,165,250,0.72)';
     ctx.shadowBlur = 6;
     ctx.shadowColor = '#60a5fa';
     ctx.lineWidth = 1;
@@ -682,7 +682,7 @@
 
     // radius treadmill synced to phi_cur
     ctx.beginPath();
-    ctx.strokeStyle = 'rgba(134,239,172,0.7)';
+    ctx.strokeStyle = 'rgba(134,239,172,0.92)';
     ctx.lineWidth = 1.5;
     ctx.lineJoin = 'round';
     for (var rk = -nPts / 2; rk <= nPts / 2; rk++) {
