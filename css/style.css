@@ -512,9 +512,12 @@
 
     .card-toggle {
       display: inline-block;
+      -webkit-appearance: none;
+      appearance: none;
       background: none;
       border: none;
       border-bottom: 1px solid var(--gold);
+      border-radius: 0;
       padding: 0 0 1px 0;
       margin-bottom: 20px;
       font-family: 'JetBrains Mono', monospace;
@@ -525,6 +528,7 @@
       cursor: pointer;
       opacity: 0.6;
       transition: opacity 0.18s;
+      line-height: normal;
     }
     .card-toggle:hover { opacity: 1; }
 
