@@ -526,7 +526,7 @@
       color: var(--gold);
       text-transform: uppercase;
       cursor: pointer;
-      opacity: 0.6;
+      opacity: 0.80;
       transition: opacity 0.18s;
       line-height: normal;
     }
@@ -569,7 +569,7 @@
       padding-bottom: 1px;
       transition: opacity 0.18s;
       margin-bottom: 20px;
-      opacity: 0.6;
+      opacity: 0.80;
     }
     .card-link:hover { opacity: 1; }
 
@@ -800,7 +800,7 @@
     }
     .sim-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
       letter-spacing: 0.22em;
       color: var(--gold);
       text-transform: uppercase;
@@ -849,7 +849,7 @@
     }
     .hud-inner {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
+      font-size: 11px;
       line-height: 1;
     }
     .hud-row {
@@ -859,7 +859,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
     .hud-row:last-child { border-bottom: none; }
-    .hud-label { color: rgba(255,255,255,0.45); }
+    .hud-label { color: rgba(255,255,255,0.58); }
     .hud-val--text   { color: var(--text); }
     .hud-val--red    { color: #fca5a5; }
     .hud-val--green  { color: #86efac; }
@@ -903,11 +903,11 @@
     }
     .btn-mode {
       background: transparent;
-      color: rgba(255,255,255,0.38);
+      color: rgba(255,255,255,0.52);
       border: none;
       padding: 0.45rem 1.4rem;
       border-radius: 999px;
-      font-size: 10.5px;
+      font-size: 11px;
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
       letter-spacing: 0.1em;
@@ -915,9 +915,9 @@
     }
     .sim-params {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
+      font-size: 10px;
       letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.45);
       margin: 0;
       text-transform: uppercase;
       text-align: center;
@@ -1005,7 +1005,7 @@
         padding: 1rem 1.5rem 1.5rem;
         pointer-events: auto;
       }
-      .sim-params { font-size: 8px; }
+      .sim-params { font-size: 10px; }
       #rv-legend  { display: none; }
     }
 
@@ -1174,7 +1174,7 @@
     .spine-impact {
       font-family: 'Spectral', serif;
       font-size: 12px;
-      color: rgba(226,221,212,0.52);
+      color: rgba(226,221,212,0.65);
       line-height: 1.5;
       margin-top: 5px;
     }
