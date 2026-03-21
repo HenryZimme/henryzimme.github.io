@@ -496,6 +496,47 @@
       margin-bottom: 22px;
     }
 
+    .card-summary {
+      font-family: 'Spectral', serif;
+      font-size: 15px;
+      line-height: 1.78;
+      color: var(--text-dim);
+      margin-bottom: 18px;
+    }
+
+    .card-expand {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.28s ease-out;
+    }
+
+    .card-toggle {
+      display: inline-block;
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--gold);
+      padding: 0 0 1px 0;
+      margin-bottom: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.18s;
+    }
+    .card-toggle:hover { opacity: 1; }
+
+    /* suppress hover lift when card is expanded */
+    .research-card.card-open {
+      transform: none;
+      border-left: 2px solid rgba(196, 162, 88, 0.3);
+    }
+    .research-card.card-open::after {
+      opacity: 0;
+    }
+
     .card-tags {
       display: flex;
       flex-wrap: wrap;
