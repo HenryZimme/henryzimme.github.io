@@ -642,15 +642,18 @@
     }
     ctx.stroke();
 
-    // center cursor
+    // cursor dot on photometric curve
+    var cur_fi = Math.round(phi_cur * Np) % Np;
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, magToY(pc.v_mag[cur_fi]), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(96,165,250,0.9)';
+    ctx.fill();
     ctx.save();
-    ctx.strokeStyle = 'rgba(96,165,250,0.72)';
-    ctx.shadowBlur = 6;
-    ctx.shadowColor = '#60a5fa';
+    ctx.strokeStyle = 'rgba(255,255,255,0.30)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(px + pw / 2, py + padTop);
-    ctx.lineTo(px + pw / 2, py + ph - padBottom);
+    ctx.lineTo(px + pw / 2, py + ph);
     ctx.stroke();
     ctx.restore();
 
