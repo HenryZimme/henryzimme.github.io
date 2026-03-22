@@ -240,7 +240,7 @@
     figure#usgr-sim {
       position: relative;
       width: 100%;
-      height: 460px;
+      height: 560px;
       margin: 2.2em 0;
       background: rgba(0,0,0,0.35);
       border: 1px solid var(--panel-border);
@@ -258,7 +258,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 220px;
+      height: 320px;
       pointer-events: none;
     }
     #usgr-hud {
@@ -303,8 +303,8 @@
       display: none; /* caption handled inside canvas */
     }
     @media (max-width: 600px) {
-      figure#usgr-sim { height: 380px; }
-      #usgr-plot { height: 185px; }
+      figure#usgr-sim { height: 460px; }
+      #usgr-plot { height: 280px; }
       #usgr-hud { top: 10px; right: 10px; gap: 6px; }
       .usgr-hud-val { font-size: 11px; }
     }
@@ -352,6 +352,10 @@
             <span class="usgr-hud-val" id="usgr-hud-rad">—</span>
           </div>
           <div class="usgr-hud-item">
+            <span class="usgr-hud-label">V<sub>r</sub></span>
+            <span class="usgr-hud-val" id="usgr-hud-rv">—</span>
+          </div>
+          <div class="usgr-hud-item">
             <span class="usgr-hud-label">φ<sub>puls</sub></span>
             <span class="usgr-hud-val" id="usgr-hud-phase">—</span>
           </div>
@@ -365,6 +369,19 @@
       <p>
         Distance calculation using Leavitt's law were accurate for I<sub>c</sub> but inaccurate for V<sub>c</sub> (δ = 40.77%). Future studies can further explore the Kappa-mechanism after adjusting for dust extinction.
       </p>
+
+      <h3>Radial Velocity &amp; Radius — Hocdé et al. (2026)</h3>
+
+      <p>
+        The simulation above now includes a reconstructed radial velocity (RV) curve derived using the method of <a href="https://arxiv.org/abs/2603.11748" target="_blank" rel="noopener">Hocdé et al. (2026)</a>. That paper calibrates tight empirical relations between the Fourier parameters of the V-band light curve and the Fourier parameters of the RV curve, using a sample of 81 short-period Galactic Cepheids. The reconstruction requires only the pulsation period and the LC amplitude ratios R<sub>21</sub> and R<sub>31</sub>.
+      </p>
+
+      <p>
+        For U Sgr, a 7th-order Fourier decomposition of the Berdnikov light curve yields R<sub>21</sub>(LC) = 0.363 and R<sub>31</sub>(LC) = 0.134. Applying Table 1 of Hocdé et al., the RV semi-amplitude is A<sub>1</sub>(RV) = 14.7 km/s, and the full reconstructed curve has a peak-to-peak amplitude of ~40 km/s. A phase lag of Δφ<sub>1</sub> = −0.28 rad (Ogłoza et al. 2000) is applied to align the RV curve with the light curve, so the RV maximum (rapid infall) occurs just before photometric maximum.
+      </p>
+
+      <p>
+        The radius variation (green strip) is derived by integrating the pulsational component of the RV curve via the Baade-Wesselink method, using a projection factor p = 1.27 (Mérand et al. 2005, CHARA direct measurement of δ Cep; consistent with the Trahin et al. 2021 mean of p = 1.26 ± 0.07 across 63 Galactic Cepheids). The mean radius anchor uses the Trahin et al. (2021) P-R relation calibrated with Gaia EDR3 parallaxes: log R = 1.763 + 0.653(log P − 0.9), giving R<sub>mean</sub> = 52.1 R<sub>☉</sub>. This is consistent with interferometric measurements of comparable Cepheids (δ Cep at P = 5.37 d has R ≈ 43 R<sub>☉</sub> from interferometry; the Trahin relation gives 44.8 R<sub>☉</sub>). The BW integration yields a peak-to-peak radius variation of ΔR ≈ 5.4 R<sub>☉</sub> (range 48.7–54.1 R<sub>☉</sub>), with the shape being independent of the anchor.</p>
 
       <h3>View the Poster</h3>
       
@@ -414,6 +431,11 @@
 
   <script>
     // ── u sgr pulsation engine ──────────────────────────────────────────────
+    // RV curve reconstructed via Hocdé et al. (2026) – A&A arXiv:2603.11748
+    // Fourier order 7; calibration from Table 1; phase lag Δφ₁=−0.28 rad (Ogłoza+2000)
+    // p-factor = 1.27 (Mérand+2005 CHARA; Groenewegen 2007; Trahin+2021 mean p=1.26±0.07)
+    // P-R anchor: Trahin+2021 (Gaia EDR3, 63 Cepheids): log R = 1.763+0.653*(logP-0.9)
+    //   → R_mean = 52.07 R_sun  (verified against δ Cep interferometry: 43 R_sun ✓)
     (function() {
       // config
       var NP           = 200;    // phase points (0.000-0.995, step 0.005)
@@ -430,6 +452,23 @@
 
       // radius in r_sun (stefan-boltzmann, normalized to mean 38 r_sun)
       var R1 = [36.80,36.84,36.84,36.83,36.80,36.76,36.79,36.76,36.72,36.78,36.77,36.77,36.81,36.84,36.87,36.87,36.96,36.99,37.04,37.19,37.28,37.32,37.47,37.52,37.66,37.74,37.89,37.97,38.06,38.18,38.25,38.37,38.43,38.50,38.60,38.67,38.73,38.74,38.80,38.83,38.85,38.94,38.92,38.93,38.99,39.01,38.99,39.03,39.00,39.00,39.04,39.02,39.03,39.04,39.01,39.03,39.10,39.08,39.12,39.10,39.12,39.20,39.22,39.24,39.24,39.27,39.35,39.37,39.37,39.41,39.49,39.49,39.53,39.56,39.62,39.62,39.62,39.70,39.72,39.68,39.70,39.70,39.72,39.71,39.73,39.69,39.67,39.65,39.68,39.68,39.64,39.62,39.60,39.59,39.56,39.52,39.50,39.48,39.47,39.47,39.38,39.38,39.34,39.30,39.30,39.21,39.21,39.15,39.10,39.02,39.00,38.93,38.89,38.82,38.78,38.77,38.68,38.68,38.59,38.58,38.54,38.50,38.46,38.48,38.49,38.47,38.41,38.39,38.39,38.30,38.26,38.27,38.20,38.18,38.08,38.00,37.96,37.88,37.77,37.67,37.57,37.46,37.39,37.26,37.18,37.07,36.94,36.86,36.77,36.69,36.66,36.57,36.51,36.50,36.45,36.44,36.39,36.40,36.38,36.37,36.42,36.39,36.42,36.41,36.40,36.42,36.38,36.39,36.42,36.39,36.38,36.37,36.32,36.33,36.28,36.27,36.24,36.28,36.24,36.25,36.24,36.28,36.27,36.26,36.32,36.37,36.41,36.44,36.44,36.52,36.58,36.61,36.66,36.73,36.73,36.78,36.77,36.81,36.84,36.84];
+
+      // ── Hocdé et al. 2026 (arXiv:2603.11748) ───────────────────────────
+      // RV pulsation curve (km/s, systemic velocity subtracted)
+      // Reconstructed from order-7 Fourier decomposition of Berdnikov LC
+      // Calibration: Table 1 relations; R21(LC)=0.3631, R31(LC)=0.1340
+      // A1(RV)=14.71 km/s; phase lag Δφ₁=−0.28 rad (Ogłoza et al. 2000)
+      var RV_PULS = [-2.617,-2.336,-2.056,-1.779,-1.507,-1.238,-0.975,-0.717,-0.465,-0.218,0.023,0.259,0.490,0.716,0.937,1.154,1.367,1.575,1.779,1.978,2.172,2.362,2.546,2.724,2.896,3.063,3.224,3.380,3.531,3.678,3.823,3.968,4.113,4.262,4.416,4.578,4.751,4.937,5.140,5.360,5.600,5.862,6.147,6.456,6.789,7.145,7.524,7.924,8.343,8.779,9.229,9.690,10.160,10.634,11.112,11.589,12.063,12.534,12.998,13.457,13.909,14.355,14.796,15.232,15.666,16.099,16.533,16.968,17.407,17.849,18.295,18.743,19.191,19.638,20.077,20.505,20.914,21.298,21.647,21.954,22.208,22.400,22.520,22.558,22.505,22.353,22.095,21.723,21.235,20.628,19.900,19.053,18.090,17.016,15.837,14.563,13.204,11.770,10.276,8.734,7.158,5.562,3.961,2.368,0.796,-0.743,-2.237,-3.676,-5.053,-6.361,-7.593,-8.746,-9.818,-10.806,-11.711,-12.535,-13.278,-13.943,-14.535,-15.055,-15.508,-15.899,-16.229,-16.505,-16.728,-16.902,-17.030,-17.115,-17.159,-17.164,-17.132,-17.066,-16.968,-16.838,-16.680,-16.495,-16.287,-16.056,-15.807,-15.542,-15.264,-14.976,-14.681,-14.383,-14.084,-13.787,-13.496,-13.211,-12.935,-12.670,-12.417,-12.176,-11.947,-11.731,-11.527,-11.334,-11.150,-10.975,-10.807,-10.644,-10.485,-10.328,-10.172,-10.016,-9.859,-9.700,-9.539,-9.376,-9.210,-9.042,-8.873,-8.703,-8.532,-8.360,-8.189,-8.019,-7.849,-7.680,-7.511,-7.342,-7.173,-7.003,-6.831,-6.655,-6.475,-6.290,-6.099,-5.900,-5.694,-5.479,-5.255,-5.022,-4.780,-4.529,-4.271,-4.006,-3.735,-3.459,-3.180,-2.899];
+
+      // Radius in R_sun: Baade-Wesselink integration of RV curve
+      // p=1.27 (Mérand+2005 CHARA direct δ Cep; consistent with Trahin+2021 p=1.26±0.07)
+      // P-R anchor: Trahin+2021 A&A 656 A102 (Gaia EDR3, 63 Cepheids):
+      //   log R = 1.763 + 0.653*(logP − 0.9) → R_mean = 52.07 R_sun
+      //   Cross-checked: δ Cep (P=5.37d) → 44.8 R_sun vs 42.7 R_sun interferometric ✓
+      //   Range: 48.71–54.13 R_sun;  ΔR ≈ 5.4 R_sun
+      var R_BW = [54.067,54.079,54.09,54.1,54.108,54.114,54.119,54.123,54.126,54.127,54.127,54.125,54.123,54.119,54.114,54.108,54.101,54.092,54.083,54.072,54.061,54.048,54.035,54.02,54.005,53.988,53.971,53.953,53.934,53.915,53.895,53.873,53.852,53.829,53.805,53.781,53.756,53.729,53.702,53.674,53.644,53.613,53.58,53.546,53.51,53.472,53.432,53.389,53.345,53.298,53.249,53.198,53.144,53.087,53.028,52.966,52.902,52.835,52.766,52.695,52.621,52.544,52.466,52.385,52.301,52.216,52.128,52.037,51.945,51.85,51.753,51.653,51.551,51.446,51.34,51.231,51.119,51.006,50.891,50.774,50.656,50.537,50.417,50.297,50.177,50.058,49.941,49.825,49.712,49.603,49.497,49.395,49.299,49.209,49.124,49.047,48.977,48.914,48.86,48.813,48.775,48.745,48.724,48.712,48.708,48.711,48.723,48.743,48.77,48.804,48.844,48.891,48.943,49.0,49.063,49.129,49.2,49.274,49.351,49.431,49.514,49.598,49.685,49.773,49.862,49.951,50.042,50.133,50.224,50.316,50.407,50.498,50.588,50.677,50.766,50.854,50.94,51.026,51.11,51.193,51.274,51.353,51.432,51.508,51.583,51.656,51.728,51.798,51.867,51.935,52.001,52.065,52.129,52.191,52.253,52.313,52.372,52.431,52.488,52.545,52.601,52.655,52.71,52.763,52.815,52.867,52.918,52.968,53.016,53.065,53.112,53.158,53.203,53.248,53.291,53.334,53.376,53.417,53.457,53.496,53.534,53.571,53.607,53.643,53.677,53.711,53.743,53.775,53.805,53.834,53.862,53.889,53.914,53.938,53.961,53.982,54.002,54.021,54.037,54.053];
+
+      var V_GAMMA = 26.4; // km/s systemic velocity of U Sgr in M25
 
       // per-phase color: 5300 k = warm gold (#ffb95a), 6200 k = pale yellow-white (#ffe6b4)
       // r=255 throughout; g=185+45*norm, b=90+90*norm where norm=(t-5300)/900
@@ -448,8 +487,10 @@
 
       var v_min = Math.min.apply(null, V_MAG);
       var v_max = Math.max.apply(null, V_MAG);
-      var r_min = Math.min.apply(null, R1);
-      var r_max = Math.max.apply(null, R1);
+      var r_min = Math.min.apply(null, R_BW);
+      var r_max = Math.max.apply(null, R_BW);
+      var rv_min = Math.min.apply(null, RV_PULS);
+      var rv_max = Math.max.apply(null, RV_PULS);
 
       // dom refs
       var canvas     = document.getElementById('usgr-canvas');
@@ -458,6 +499,7 @@
       var hud_mag    = document.getElementById('usgr-hud-mag');
       var hud_teff   = document.getElementById('usgr-hud-teff');
       var hud_rad    = document.getElementById('usgr-hud-rad');
+      var hud_rv     = document.getElementById('usgr-hud-rv');
       var hud_phase  = document.getElementById('usgr-hud-phase');
       var hud_swatch = document.getElementById('usgr-hud-swatch');
 
@@ -471,7 +513,8 @@
         return {
           mag:  V_MAG[i0] + (V_MAG[i1] - V_MAG[i0]) * t,
           teff: TEFF[i0]  + (TEFF[i1]  - TEFF[i0])  * t,
-          r1:   R1[i0]    + (R1[i1]    - R1[i0])    * t,
+          r1:   R_BW[i0]  + (R_BW[i1]  - R_BW[i0])  * t,
+          rv:   RV_PULS[i0] + (RV_PULS[i1] - RV_PULS[i0]) * t,
           col:  COLOR1[i0],
         };
       }
@@ -510,27 +553,43 @@
         ctx.restore();
       }
 
-      // scrolling light curve with radius strip — current phase always centered
+      // scrolling light curve with RV curve and radius strip — current phase always centered
       function draw_light_curve(phi) {
         var box = get_plot_rect();
         if (!box) return;
         var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
-        var inset = 20, pad_top = 22, pad_bot = 44;
-        var draw_h  = ph - pad_top - pad_bot;
-        var mid_mag = (v_min + v_max) / 2;
-        var mag_rng = v_max - v_min;
+
+        // ── layout: three stacked panels ──────────────────────────────────
+        var inset   = 20;
+        var gap     = 2;       // gap between panels
+        var lc_h    = Math.floor(ph * 0.42);  // LC panel height
+        var rv_h    = Math.floor(ph * 0.32);  // RV panel height
+        var rad_h   = ph - lc_h - rv_h - gap*2;  // radius panel height
+
+        var lc_py   = py;                         // LC panel top
+        var rv_py   = py + lc_h + gap;            // RV panel top
+        var rad_py  = py + lc_h + rv_h + gap*2;  // Radius panel top
+
         var n_pts   = 480, n_cyc = 2;
         var step    = (pw - inset*2) / n_pts;
 
-        var mag_to_y = function(m) {
-          return py + pad_top + draw_h/2 - ((m - mid_mag) * (draw_h / mag_rng) * 0.72);
-        };
-
         ctx.save();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PANEL 1 — V-band light curve
+        // ═══════════════════════════════════════════════════════════════════
+        var pad_top_lc = 20, pad_bot_lc = 36;
+        var draw_h_lc  = lc_h - pad_top_lc - pad_bot_lc;
+        var mid_mag    = (v_min + v_max) / 2;
+        var mag_rng    = v_max - v_min;
+
+        var mag_to_y = function(m) {
+          return lc_py + pad_top_lc + draw_h_lc/2 - ((m - mid_mag) * (draw_h_lc / mag_rng) * 0.72);
+        };
 
         // y-axis label
         ctx.save();
-        ctx.translate(px + 11, py + pad_top + draw_h/2);
+        ctx.translate(px + 11, lc_py + pad_top_lc + draw_h_lc/2);
         ctx.rotate(-Math.PI/2);
         ctx.font = "9px 'JetBrains Mono', monospace";
         ctx.fillStyle = 'rgba(196,162,88,0.38)';
@@ -538,7 +597,7 @@
         ctx.fillText('V mag  \u2191 bright', 0, 0);
         ctx.restore();
 
-        // model curve treadmill (gold)
+        // model curve (gold)
         ctx.beginPath();
         ctx.strokeStyle = '#c4a258';
         ctx.lineWidth = 2; ctx.lineJoin = 'round';
@@ -551,14 +610,14 @@
         }
         ctx.stroke();
 
-        // cursor at current phase (centered)
+        // vertical cursor
         ctx.save();
         ctx.strokeStyle = 'rgba(196,162,88,0.4)';
         ctx.shadowBlur = 4; ctx.shadowColor = '#c4a258';
         ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
         ctx.beginPath();
-        ctx.moveTo(px + pw/2, py + pad_top);
-        ctx.lineTo(px + pw/2, py + ph - pad_bot);
+        ctx.moveTo(px + pw/2, lc_py + pad_top_lc);
+        ctx.lineTo(px + pw/2, lc_py + lc_h - pad_bot_lc);
         ctx.stroke();
         ctx.restore();
 
@@ -566,14 +625,13 @@
         ctx.font = "9px 'JetBrains Mono', monospace";
         ctx.fillStyle = 'rgba(196,162,88,0.5)';
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-        ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, py + 6);
+        ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, lc_py + 6);
 
-        // legend
         ctx.textAlign = 'right';
         ctx.fillStyle = 'rgba(196,162,88,0.75)';
-        ctx.fillText('Berdnikov et al. 2014', px + pw - inset, py + pad_top + 10);
+        ctx.fillText('Berdnikov et al. 2014', px + pw - inset, lc_py + pad_top_lc + 10);
         ctx.fillStyle = 'rgba(196,162,88,0.45)';
-        ctx.fillText('P = 6.745 d', px + pw - inset, py + pad_top + 22);
+        ctx.fillText('P = 6.745 d', px + pw - inset, lc_py + pad_top_lc + 22);
 
         // y-axis ticks
         ctx.font = "9px 'JetBrains Mono', monospace";
@@ -581,7 +639,7 @@
         ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
         for (var tv = 6.4; tv <= 7.1; tv += 0.2) {
           var tly = mag_to_y(tv);
-          if (tly > py + pad_top + 4 && tly < py + ph - pad_bot - 4)
+          if (tly > lc_py + pad_top_lc + 4 && tly < lc_py + lc_h - pad_bot_lc - 4)
             ctx.fillText(tv.toFixed(1), px + inset - 5, tly);
         }
 
@@ -589,46 +647,144 @@
         ctx.textBaseline = 'top'; ctx.textAlign = 'center';
         ctx.fillStyle = 'rgba(255,255,255,0.28)';
         for (var xp = 0; xp <= 1; xp += 0.25)
-          ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp*(pw - inset*2), py + ph - pad_bot + 5);
+          ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp*(pw - inset*2), lc_py + lc_h - pad_bot_lc + 5);
 
-        // attribution
-        ctx.font = "8px 'JetBrains Mono', monospace";
-        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-        ctx.fillStyle = 'rgba(255,255,255,0.12)';
-        ctx.fillText('Berdnikov et al. 2014 \u00B7 P = 6.745 d \u00B7 Johnson V', px + inset, py + ph - 6);
-
-        // radius strip
-        var r_rng = r_max - r_min;
-        var rh = 30, ry = py + ph - rh - 2;
-        var r_to_y = function(r) { return ry + rh - (r - r_min) / r_rng * rh; };
-
-        ctx.fillStyle = 'rgba(255,255,255,0.025)';
-        ctx.fillRect(px + inset, ry, pw - inset*2, rh);
-
+        // divider line
+        ctx.strokeStyle = 'rgba(196,162,88,0.10)';
+        ctx.lineWidth = 1; ctx.setLineDash([]);
         ctx.beginPath();
-        ctx.strokeStyle = 'rgba(134,239,172,0.65)';
-        ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+        ctx.moveTo(px, lc_py + lc_h);
+        ctx.lineTo(px + pw, lc_py + lc_h);
+        ctx.stroke();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PANEL 2 — Radial velocity curve (Hocdé 2026)
+        // ═══════════════════════════════════════════════════════════════════
+        var pad_top_rv = 18, pad_bot_rv = 12;
+        var draw_h_rv  = rv_h - pad_top_rv - pad_bot_rv;
+        var rv_rng = rv_max - rv_min;
+        var rv_mid = (rv_min + rv_max) / 2;
+
+        var rv_to_y = function(v) {
+          return rv_py + pad_top_rv + draw_h_rv/2 - ((v - rv_mid) / rv_rng * draw_h_rv * 0.85);
+        };
+
+        // zero-line (systemic velocity)
+        ctx.save();
+        ctx.strokeStyle = 'rgba(120,165,210,0.20)';
+        ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+        var y0 = rv_to_y(0);
+        ctx.beginPath();
+        ctx.moveTo(px + inset, y0);
+        ctx.lineTo(px + pw - inset, y0);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+
+        // RV curve (blue)
+        ctx.beginPath();
+        ctx.strokeStyle = '#78a5d2';
+        ctx.lineWidth = 2; ctx.lineJoin = 'round';
         for (var rk = -n_pts/2; rk <= n_pts/2; rk++) {
-          var rk_ph = ((phi + rk*n_cyc/n_pts) % 1 + 1) % 1;
+          var rk_ph = ((phi + rk * n_cyc / n_pts) % 1 + 1) % 1;
           var rfi   = Math.floor(rk_ph * NP) % NP;
           var rlx   = px + pw/2 + rk * step;
-          var rly   = r_to_y(R1[rfi]);
+          var rly   = rv_to_y(RV_PULS[rfi]);
           rk === -n_pts/2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
         }
         ctx.stroke();
 
-        // cursor dot on radius curve
-        var cur_r = R1[Math.round(phi * NP) % NP];
+        // cursor on RV
+        ctx.save();
+        ctx.strokeStyle = 'rgba(120,165,210,0.4)';
+        ctx.shadowBlur = 4; ctx.shadowColor = '#78a5d2';
+        ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+        ctx.beginPath();
+        ctx.moveTo(px + pw/2, rv_py + pad_top_rv);
+        ctx.lineTo(px + pw/2, rv_py + rv_h - pad_bot_rv);
+        ctx.stroke();
+        ctx.restore();
+
+        // header
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = 'rgba(120,165,210,0.55)';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.fillText('RADIAL VELOCITY \u00B7 HOCDE\u0301 ET AL. 2026', px + inset, rv_py + 4);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = 'rgba(120,165,210,0.75)';
+        var cur_rv = RV_PULS[Math.round(phi * NP) % NP];
+        ctx.fillText((cur_rv >= 0 ? '+' : '') + cur_rv.toFixed(1) + ' km/s', px + pw - inset, rv_py + 4);
+
+        // y-axis label
+        ctx.save();
+        ctx.translate(px + 11, rv_py + pad_top_rv + draw_h_rv/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillStyle = 'rgba(120,165,210,0.38)';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('V\u1d63 (km/s)', 0, 0);
+        ctx.restore();
+
+        // y-ticks
+        ctx.fillStyle = 'rgba(255,255,255,0.30)';
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        for (var tv2 = -20; tv2 <= 25; tv2 += 10) {
+          var tly2 = rv_to_y(tv2);
+          if (tly2 > rv_py + pad_top_rv + 4 && tly2 < rv_py + rv_h - pad_bot_rv - 4)
+            ctx.fillText((tv2 > 0 ? '+' : '') + tv2, px + inset - 5, tly2);
+        }
+
+        // divider line
+        ctx.strokeStyle = 'rgba(120,165,210,0.08)';
+        ctx.lineWidth = 1; ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(px, rv_py + rv_h);
+        ctx.lineTo(px + pw, rv_py + rv_h);
+        ctx.stroke();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PANEL 3 — Radius (Baade-Wesselink)
+        // ═══════════════════════════════════════════════════════════════════
+        var r_rng = r_max - r_min;
+        var ry = rad_py, rh = rad_h;
+        var r_to_y = function(r) { return ry + rh - (r - r_min) / r_rng * rh; };
+
+        ctx.fillStyle = 'rgba(255,255,255,0.02)';
+        ctx.fillRect(px + inset, ry, pw - inset*2, rh);
+
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(134,239,172,0.75)';
+        ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+        for (var rk2 = -n_pts/2; rk2 <= n_pts/2; rk2++) {
+          var rk2_ph = ((phi + rk2*n_cyc/n_pts) % 1 + 1) % 1;
+          var rfi2   = Math.floor(rk2_ph * NP) % NP;
+          var rlx2   = px + pw/2 + rk2 * step;
+          var rly2   = r_to_y(R_BW[rfi2]);
+          rk2 === -n_pts/2 ? ctx.moveTo(rlx2, rly2) : ctx.lineTo(rlx2, rly2);
+        }
+        ctx.stroke();
+
+        var cur_r = R_BW[Math.round(phi * NP) % NP];
         ctx.beginPath();
         ctx.arc(px + pw/2, r_to_y(cur_r), 3, 0, Math.PI*2);
         ctx.fillStyle = 'rgba(134,239,172,0.9)'; ctx.fill();
 
         ctx.font = "9px 'JetBrains Mono', monospace";
-        ctx.fillStyle = 'rgba(134,239,172,0.5)';
+        ctx.fillStyle = 'rgba(134,239,172,0.55)';
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-        ctx.fillText('R / R\u2609', px + inset + 2, ry + 3);
-        ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(134,239,172,0.75)';
+        ctx.fillText('RADIUS \u00B7 BAADE-WESSELINK  (p=1.27, Trahin+2021 P-R)', px + inset + 2, ry + 3);
+        ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(134,239,172,0.85)';
         ctx.fillText(cur_r.toFixed(1) + ' R\u2609', px + pw - inset - 2, ry + 3);
+
+        // vertical cursor on radius
+        ctx.save();
+        ctx.strokeStyle = 'rgba(134,239,172,0.3)';
+        ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+        ctx.beginPath();
+        ctx.moveTo(px + pw/2, ry);
+        ctx.lineTo(px + pw/2, ry + rh);
+        ctx.stroke();
+        ctx.restore();
 
         ctx.restore();
       }
@@ -676,6 +832,7 @@
         if (hud_mag)    hud_mag.textContent    = s.mag.toFixed(2);
         if (hud_teff)   hud_teff.textContent   = Math.round(s.teff) + ' K';
         if (hud_rad)    hud_rad.textContent    = s.r1.toFixed(1) + ' R\u2609';
+        if (hud_rv)     hud_rv.textContent     = (s.rv >= 0 ? '+' : '') + s.rv.toFixed(1) + ' km/s';
         if (hud_phase)  hud_phase.textContent  = phi.toFixed(3);
         if (hud_swatch) hud_swatch.style.background = s.col;
       }
