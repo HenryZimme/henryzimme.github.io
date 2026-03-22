@@ -21,6 +21,7 @@
   <noscript><link rel="stylesheet" href="/css/style.css"></noscript></head>
 <body>
 
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <canvas id="star-canvas"></canvas>
 <div id="star-tooltip"></div>
 
@@ -39,7 +40,7 @@
   </div>
 </div>
 
-<nav>
+<nav aria-label="Primary">
   <a href="#hero" class="nav-name">Henry Zimmerman</a>
   <ul class="nav-links">
     <li><a href="#about">About</a></li>
@@ -49,10 +50,10 @@
     <li><a href="#highlights">Highlights</a></li>
     <li><a href="#bookshelf">Reading</a></li>
   </ul>
-  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
 </nav>
 
-<nav class="nav-mobile" id="nav-mobile">
+<nav class="nav-mobile" id="nav-mobile" aria-label="Mobile">
   <a href="#about" class="mobile-link">About</a>
   <a href="#research" class="mobile-link">Research</a>
   <a href="#cepheid-sim" class="mobile-link">Simulation</a>
@@ -61,9 +62,9 @@
   <a href="#bookshelf" class="mobile-link">Reading</a>
 </nav>
 
-<main>
+<main id="main-content">
   <!-- hero -->
-  <a id="stars" style="position: absolute; top: 0;"></a>
+  <span id="stars" style="position: absolute; top: 0;"></span>
   <section id="hero">
     <p class="hero-eyebrow">Phillips Academy Andover, Class of 2027</p>
     <h1 class="hero-name">Henry<br>Zimmerman</h1>
@@ -133,8 +134,8 @@
           <div class="card-id">Primary Research, In Preparation</div>
           <h3 class="card-title">First Asteroseismic Evidence of Merger Origin in a Binary Cepheid -> VLT Spectroscopic Follow-Up</h3>
           <p class="card-summary">After six years of OGLE photometry revealed a candidate rotational signal suggesting merger spindown, my own window function analysis identified it as a 1-year sampling alias, a diagnostic that drove the pivot to a VLT/ESPRESSO spectroscopic proposal with Dr. Bogumił Pilecki, where chemical abundances will provide the definitive merger test.</p>
-          <button class="card-toggle">Read more &#8595;</button>
-          <div class="card-expand">
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-1">Read more &#8595;</button>
+          <div class="card-expand" id="card-expand-1">
             <p class="card-body">
               I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary Cepheid in the Large Magellanic Cloud with the shortest known orbital period for a Cepheid (58.85 ± 0.08 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I isolated a non-radial frequency triplet with spacing $\Delta$f ≈ 0.0074 c/d. I validated this with dual-domain frequency and time-evolution $O-C$ Monte Carlo simulations, finding Prot ≈ 135 ± 15 days. This is over five σ longer than the 58.85 day orbit. Since tidal theory predicts synchronization precedes circularization by $>10$x, this asynchronous rotation in a circular orbit suggests recent merger spindown.
             </p>
@@ -147,9 +148,9 @@
             <div class="card-links">
               <a class="card-link" href="/1347_methods" target="_blank" rel="noopener">View Methods and Diagnostic Analysis &rarr;</a>
             </div>
-            <a href="#cepheid-sim" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
+            <a href="#cepheid-sim" class="card-cta" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated &#8595;</div>
               </div>
               <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.40&ndash;0.60, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where &Delta;RV&nbsp;&#8819;&nbsp;40&nbsp;km&thinsp;s<sup>&minus;1</sup> to cleanly separate the Cepheid and companion spectra. The simulation makes both constraints visible at once.</div>
@@ -169,8 +170,8 @@
           <div class="card-id">Ongoing</div>
           <h3 class="card-title">Rotation Period and Taxonomy of 7605 Cindygraber</h3>
           <p class="card-summary">I am coordinating a multi-site Slooh campaign with citizen scientists remotely operating telescopes across three continents to determine the rotation period and taxonomy of main-belt asteroid 7605 Cindygraber, using a custom open-source scheduler to optimize observing cadence under variable site conditions.</p>
-          <button class="card-toggle">Read more &#8595;</button>
-          <div class="card-expand">
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-2">Read more &#8595;</button>
+          <div class="card-expand" id="card-expand-2">
             <p class="card-body">
               I am studying the rotation state of main-belt asteroid 7605 Cindygraber. Using photometric measurements from the ALCDEF Light Curve Database, I developed statistical models to estimate period convergence requirements and used those results to design a multi-site observing strategy.
             </p>
@@ -184,9 +185,9 @@
               <a class="card-link" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Observing Scheduler on GitHub</a> |
               <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics on GitHub</a>
             </div>
-            <a href="/asteroid_observer" target="_blank" rel="noopener" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
+            <a href="/asteroid_observer" target="_blank" rel="noopener" class="card-cta" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="9" ry="5" stroke="#78a5d2" stroke-width="1.8"/><circle cx="20" cy="11.5" r="2.5" fill="#78a5d2"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="9" ry="5" stroke="#78a5d2" stroke-width="1.8"/><circle cx="20" cy="11.5" r="2.5" fill="#78a5d2"/></svg>
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">View Interactive Orbital Model &#8599;</div>
               </div>
               <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">To determine an asteroid&rsquo;s rotation period, you need full phase coverage of its light curve. But aliasing between the asteroid&rsquo;s spin period and the 24-hour observing cadence at a single site often leaves gaps. I built this visualization to see how observations can be scheduled to maximize information gain.</div>
@@ -206,8 +207,8 @@
           <div class="card-id">Completed, with Dr. José Zorrilla</div>
           <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
           <p class="card-summary">Multi-band photometry of classical Cepheid U Sagittarii confirmed its 6.74-day period and produced a 40.8% vs. 1.9% V-to-I distance error gap, a direct demonstration of how interstellar dust corrupts Cepheid distance measurements.</p>
-          <button class="card-toggle">Read more &#8595;</button>
-          <div class="card-expand">
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-3">Read more &#8595;</button>
+          <div class="card-expand" id="card-expand-3">
             <p class="card-body">
               My first independent research target. I remotely operated the Slooh Chile 432mm telescope for two months, performing multi-band (V&minus;I) differential photometry of the classical Cepheid U Sgr in open cluster M25. Sinusoidal light curve fits confirmed the 6.74-day period (R&sup2; = 0.93 V-band, 0.70 I-band). V-band distance calculations yielded 40.8% error versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths and why accurate extinction corrections are critical for Cepheid distance work. Strong color index correlation (r = 0.85) provided independent evidence for the kappa-mechanism. The project expanded into an investigation of metallicity-dependent corrections to the period-luminosity relation.
             </p>
