@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calls | Henry Zimmerman</title>
+  <meta name="description" content="An experimental visual poem in two voices, with analytical essay on memory, diptych form, and Kay Walkingstick's Late Summer on the Ramapo.">
+  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #07091a;
+      --gold:         #c4a258;
+      --gold-dim:     rgba(196,162,88,0.25);
+      --text:         #e2ddd4;
+      --text-dim:     rgba(226,221,212,0.72);
+      --panel:        rgba(7,9,26,0.84);
+      --panel-border: rgba(196,162,88,0.18);
+      --blue:         #78a5d2;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 19px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
+    }
+    .nav-name {
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .nav-name:hover { color: var(--text); text-decoration: none; }
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-back:hover { color: var(--gold); border-color: var(--gold-dim); text-decoration: none; }
+    .article-wrap {
+      max-width: 65ch;
+      margin: 0 auto;
+      padding: 120px 28px 100px;
+    }
+    .article-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .article-title {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .article-byline {
+      font-style: italic;
+      color: var(--text-dim);
+      margin-bottom: 40px;
+    }
+    .article-divider {
+      border: none;
+      border-top: 1px solid var(--panel-border);
+      margin-bottom: 40px;
+    }
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--panel-border);
+      margin: 3em 0;
+    }
+    /* pdf embed */
+    .pdf-breakout {
+      width: 100vw;
+      max-width: 1100px;
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0 0 1em;
+      padding: 0 28px;
+    }
+    .pdf-frame {
+      width: 100%;
+      height: 80vh;
+      min-height: 520px;
+      border: 1px solid var(--panel-border);
+      background: #fff;
+      display: block;
+    }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 1em;
+      padding: 11px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--gold);
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+    .btn-download:hover { background: var(--gold); color: var(--bg); text-decoration: none; }
+    /* analysis section */
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1.4em;
+    }
+    .article-body p { margin-bottom: 1.4em; font-size: 20px; }
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3em;
+      padding-top: 1.5em;
+      border-top: 1px solid var(--panel-border);
+    }
+    #back-to-top {
+      position: fixed;
+      bottom: 40px; right: 40px;
+      z-index: 300;
+      width: 44px; height: 44px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, border-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+    #back-to-top:hover { border-color: var(--gold); }
+    @media (max-width: 600px) {
+      nav { padding: 18px 24px; }
+      .article-wrap { padding: 90px 18px 72px; }
+      .pdf-breakout { padding: 0 18px; }
+      .pdf-frame { height: 60vh; min-height: 380px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="https://www.henryzimmerman.net" class="nav-name">Henry Zimmerman</a>
+  <a href="https://www.henryzimmerman.net/#writing" class="nav-back">← Back to Writing</a>
+</nav>
+
+<article class="article-wrap">
+  <header>
+    <div class="article-meta">ENG200B &middot; English &middot; Spring 2025</div>
+    <h1 class="article-title">Calls</h1>
+    <div class="article-byline">By Henry Zimmerman</div>
+  </header>
+
+  <hr class="article-divider">
+
+</article>
+
+<!-- full-width poem embed -->
+<div class="pdf-breakout">
+  <iframe class="pdf-frame" src="calls_poem.pdf" title="Calls, a visual poem by Henry Zimmerman"></iframe>
+  <a class="btn-download" href="calls_poem.pdf" download>↓ Download Poem</a>
+</div>
+
+<article class="article-wrap">
+
+  <hr class="section-divider">
+
+  <div class="section-label">Essay &middot; On Writing Calls</div>
+
+  <div class="article-body">
+
+    <p>Upside down. I remember lying there on the floor, craning for a closer, truer glimpse of Kay Walkingstick&rsquo;s memory. The waxy sheen on the canvas was there, ripe for capture by dimensionless photographs, photographs plundering the image but not the soul. I still can recall my disappointment upon first referencing that horribly malignant excuse of a memory that still resides on my phone. I made a horrible mistake: the pixels could indeed picture the canvas <em>ad infinitum</em>, yet they remain devoid of art and corrupt recollection. Now that was when I first understood the true meaning of memory. I now know that I will never again experience Walkingstick&rsquo;s <em>Late Summer on the Ramapo</em> (1987) again as I did it the first time. It was foolish to think that captured contours could bring me back. No photograph or sketch can revive my experience. Memory is not &ndash; it cannot be &ndash; simply what I see, or a fragment of a cause of emotion. I now understand what Sol LeWitt&rsquo;s instructions for his <em>Wall Drawing #123</em> (1972) meant: you experience the artwork; to only see it without digesting its representative nature is to fail to understand. Abstraction plays to emotion and conceptualism; the visual form the art takes is just a singular convenient optical expression of the art. That&rsquo;s why I was drawn to <em>Late Summer on the Ramapo</em>: it contained a ticket to true experience, a mishmash between thoughts, depictions, and ideas seemingly divided by a break in panels but interacting nonetheless, a true masterpiece of subtle mosaicism. I had been finally freed from absolutism by its diptych form.</p>
+
+    <p><em>Late Summer</em> was an earthen-gold invitation to see the abstract in terms of feeling and representation, uniting two panels underneath one title. In other words, released from the constraints of artificial memory, I was going to write a poem, and boy I had tons of material to work with.</p>
+
+    <p><em>Late Summer on the Ramapo</em> is described by Walkingstick in the Addison Gallery painting description as expressing different kinds of memory contained in moments as well as perceptions built up over lifetimes. The poem that now lounges on my page seemingly has two distinct notions of memory represented on each side as well, but just like <em>Late Summer on the Ramapo</em>, the two sides have much more to do with each other than the first look would suggest. While both sides seemingly cover different content, each reads into the other, adding context and deeper meaning to the poem titled &ldquo;Calls&rdquo; (Zimmerman middle meridian). I chose to name this poem &ldquo;Calls&rdquo; and put the title inside a triangle, the most vivid visual aspect of the <em>Late Summer</em>, because the poem draws its rhythm, alliteration, and floating form from the everchanging idea of what &lsquo;calls&rsquo; the reader to remember transient memories (Zimmerman). Its embrace of palindromes emphasizes a similar ambivalence to that displayed in <em>Late Summer</em> regarding where ideas and experiences originate and terminate and how we perceive them throughout (Zimmerman). The conceptual and tangible association with Walkingstick&rsquo;s thoughtful use of diptych form is distinctly engaged with throughout the poem.</p>
+
+  </div>
+
+  <div class="footer-nav">
+    <a href="https://www.henryzimmerman.net/#writing" class="nav-back">← Back to Writing</a>
+  </div>
+
+</article>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script>
+  const btt = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btt.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
