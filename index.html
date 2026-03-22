@@ -181,11 +181,16 @@
               To improve observational efficiency under variable viewing conditions, I built an open-source scheduling tool that integrates orbital ephemerides, lunar sky brightness models, and site visibility constraints to prioritize high-quality observing windows. The goal is to reduce wasted telescope time and improve cadence reliability. I am preparing the results for submission to the Minor Planet Bulletin.
             </p>
             <div class="card-links">
-              <a class="card-link" href="/asteroid_observer" target="_blank" rel="noopener">View Interactive Asteroid Orbital Model &rarr;</a>
-              <br>
               <a class="card-link" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Observing Scheduler on GitHub</a> |
               <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics on GitHub</a>
             </div>
+            <a href="/asteroid_observer" target="_blank" rel="noopener" style="display:block; margin-top:24px; padding:16px 20px; border:1px solid rgba(120,165,210,0.22); background:rgba(120,165,210,0.04); text-decoration:none; transition:border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(120,165,210,0.45)';this.style.background='rgba(120,165,210,0.09)'" onmouseout="this.style.borderColor='rgba(120,165,210,0.22)';this.style.background='rgba(120,165,210,0.04)'">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="9" ry="5" stroke="#78a5d2" stroke-width="1.8"/><circle cx="20" cy="11.5" r="2.5" fill="#78a5d2"/></svg>
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">View Interactive Orbital Model &#8599;</div>
+              </div>
+              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">To determine an asteroid&rsquo;s rotation period, you need full phase coverage of its light curve. But aliasing between the asteroid&rsquo;s spin period and the 24-hour observing cadence at a single site often leaves gaps. I built this visualization to see how observations can be scheduled to maximize information gain.</div>
+            </a>
           </div>
           <div class="card-tags">
             <span class="tag">Photometry</span>
