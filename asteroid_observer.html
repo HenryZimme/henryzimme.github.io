@@ -1149,7 +1149,7 @@
     var date_start = new Date(meta.date_start + 'T00:00:00Z');
     var frames_per_day = 24 / meta.frame_stride_h;
     var last_label_x = -999;
-    var min_label_gap = MOBILE_PORTRAIT ? 38 : 28;
+    var min_label_gap = MOBILE_PORTRAIT ? 52 : 28;
     for (var d = 0; d <= meta.n_days; d++) {
       var fi_d = Math.round(d * frames_per_day);
       if (fi_d < fi_min || fi_d > fi_max) continue;
