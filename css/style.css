@@ -12,6 +12,39 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
+    /* skip link — hidden until focused */
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 9999;
+      padding: 10px 20px;
+      background: var(--gold);
+      color: var(--bg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 400;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+    }
+    .skip-link:focus { left: 0; }
+
+    /* global focus-visible ring — gold outline on all interactive elements */
+    :focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+    /* suppress focus ring for mouse users on elements that have a clear hover state */
+    :focus:not(:focus-visible) { outline: none; }
+
+    /* card-cta anchors: mirror hover state on keyboard focus */
+    .card-cta:focus-visible {
+      border-color: rgba(120, 165, 210, 0.45) !important;
+      background: rgba(120, 165, 210, 0.09) !important;
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -1268,4 +1301,13 @@
       display: block;
       opacity: 0.95;
       filter: contrast(1.05);
+    }
+
+    /* reduced motion — collapse all CSS animations and transitions for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
