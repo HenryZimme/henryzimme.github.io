@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Believing Belief | Henry Zimmerman</title>
+  <meta name="description" content="A philosophical podcast series examining theodicy, divine perfection, and the epistemology of religious faith. Co-created by Henry Zimmerman and Genie Han.">
+  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #07091a;
+      --gold:         #c4a258;
+      --gold-dim:     rgba(196,162,88,0.25);
+      --text:         #e2ddd4;
+      --text-dim:     rgba(226,221,212,0.72);
+      --panel:        rgba(7,9,26,0.84);
+      --panel-border: rgba(196,162,88,0.18);
+      --blue:         #78a5d2;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
+    }
+
+    .nav-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-style: italic;
+    }
+    .nav-name:hover { color: var(--gold); text-decoration: none; }
+
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-back:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+      text-decoration: none;
+    }
+
+    .article-wrap {
+      max-width: 65ch;
+      margin: 0 auto;
+      padding: 120px 28px 100px;
+    }
+
+    .article-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .article-title {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .article-byline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .article-context {
+      font-family: 'Spectral', serif;
+      font-size: 15px;
+      font-style: italic;
+      color: var(--text-dim);
+      margin-bottom: 36px;
+    }
+
+    .article-divider {
+      border: none;
+      border-top: 1px solid var(--panel-border);
+      margin-bottom: 40px;
+    }
+
+    .article-body p {
+      margin-bottom: 1.4em;
+    }
+
+    .article-body h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--text);
+      margin: 2.4em 0 0.9em;
+      letter-spacing: 0.01em;
+    }
+
+    .article-body h3 {
+      font-family: 'EB Garamond', serif;
+      font-size: 20px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text-dim);
+      margin: 2em 0 0.7em;
+    }
+
+    /* Extended styles for Believing Belief */
+    
+    .intro-graf {
+      font-size: 19px;
+      line-height: 1.65;
+      color: var(--text);
+      margin-bottom: 1.6em;
+    }
+
+    .quote-callout {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 20px;
+      line-height: 1.5;
+      color: var(--text-dim);
+      margin: 2.4em 0;
+      padding-left: 1.5em;
+      border-left: 2px solid var(--gold-dim);
+    }
+
+    .theme-grid {
+      margin: 2.4em 0;
+    }
+
+    .theme-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      padding: 1.8em;
+      margin-bottom: 1.4em;
+      transition: border-color 0.2s ease;
+    }
+
+    .theme-card:hover {
+      border-color: var(--gold-dim);
+    }
+
+    .theme-card h3 {
+      font-family: 'EB Garamond', serif;
+      font-size: 20px;
+      font-weight: 500;
+      font-style: normal;
+      color: var(--gold);
+      margin: 0 0 0.6em 0;
+    }
+
+    .theme-card p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--text-dim);
+    }
+
+    .excerpt-container {
+      background: var(--panel);
+      border-left: 3px solid var(--gold);
+      padding: 1.8em;
+      margin: 2.4em 0;
+    }
+
+    .excerpt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.2em;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .excerpt-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--gold);
+    }
+
+    .excerpt-timestamp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .excerpt-text {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-dim);
+    }
+
+    .excerpt-text p {
+      margin-bottom: 1.2em;
+    }
+
+    .excerpt-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    .speaker {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, 
+        rgba(196,162,88,0.08) 0%, 
+        rgba(120,165,210,0.06) 100%);
+      border: 1px solid var(--panel-border);
+      padding: 2.4em;
+      margin: 3em 0;
+      text-align: center;
+    }
+
+    .cta-box h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: 24px;
+      font-weight: 400;
+      margin: 0 0 0.6em 0;
+      color: var(--text);
+    }
+
+    .cta-box p {
+      margin-bottom: 1.4em;
+      color: var(--text-dim);
+    }
+
+    .btn-primary {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold-dim);
+      padding: 12px 28px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      margin: 6px;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-dim);
+      border-color: var(--gold);
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--panel-border);
+      padding: 12px 28px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      margin: 6px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gold-dim);
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .topic-list {
+      margin: 1.4em 0;
+    }
+
+    .topic-list p {
+      margin-bottom: 1em;
+    }
+
+    .topic-list a {
+      color: var(--blue);
+      font-weight: 400;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .topic-list a:hover {
+      border-bottom-color: var(--blue);
+      text-decoration: none;
+    }
+
+    footer {
+      margin-top: 4em;
+      padding-top: 2em;
+      border-top: 1px solid var(--panel-border);
+    }
+
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .footer-nav a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .footer-nav a:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+      text-decoration: none;
+    }
+
+    #back-to-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 300;
+      width: 40px;
+      height: 40px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, border-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+      padding: 0;
+    }
+    #back-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #back-to-top:hover {
+      border-color: var(--gold);
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 18px 24px; }
+      .article-wrap { padding: 90px 18px 72px; }
+      .excerpt-header { flex-direction: column; gap: 0.4em; }
+      .cta-box { padding: 1.8em 1.4em; }
+      .footer-nav { flex-direction: column; align-items: flex-start; }
+      #back-to-top { bottom: 20px; right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-name">Henry Zimmerman</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
+  </nav>
+
+  <article class="article-wrap">
+    <header>
+      <div class="article-meta">Philosophy & Epistemology · Collaborative Project</div>
+      <h1 class="article-title">Believing Belief</h1>
+      <div class="article-byline">Henry Zimmerman and Genie Han</div>
+      <div class="article-context">
+        A philosophical podcast series examining theodicy, divine perfection, and the epistemology of religious faith.<br>
+        Developed in Winter 2025 for PHR380: Faith and Doubt at Phillips Academy Andover
+      </div>
+    </header>
+    
+    <hr class="article-divider">
+
+    <div class="article-body">
+      <p class="intro-graf">What are the fundamental beliefs by which we live? How do we form, inform, and reform these beliefs?</p>
+      
+      <p class="intro-graf">Alongside my classmate Genie Han, I co-created <em>Believing Belief</em>, a podcast series and philosophical website exploring the nature of belief itself. Our conversations tackle the questions that philosophy has grappled with for centuries: Can we prove God's existence? If not, what role does faith play? How do we reconcile suffering with divine perfection? And ultimately, what kind of knowledge can we truly possess?</p>
+
+      <div class="quote-callout">
+        "We hope this series leads you to re-examine your beliefs, and, ultimately what belief is and how it helps us address some of our most profound questions."
+      </div>
+
+      <h2>Themes Explored</h2>
+      
+      <div class="theme-grid">
+        <div class="theme-card">
+          <h3>Theodicy & The Evil Demon</h3>
+          <p>How do you know you're not being deceived? We examine Descartes' attempt to overcome radical skepticism through the "light of nature" and his proof of God's existence. Can subjective clarity ever establish objective truth? If God is perfect and omnipotent, can evil exist, or are we the unintended consequence of a creator who never thought about us at all?</p>
+        </div>
+
+        <div class="theme-card">
+          <h3>Divine Perfection</h3>
+          <p>Descartes claims God possesses all perfections and that perfection implies existence. But we challenge this: perfection should not imply existence any more than lacking a social life implies good grades. Using the "triangle of life" (sleep, studying, socializing), we show that perfect equilibrium is impossible for finite beings, and if perfection requires absolute balance, then even God cannot simultaneously be perfect, infinite, and existent.</p>
+        </div>
+
+        <div class="theme-card">
+          <h3>Design & Intentionality</h3>
+          <p>Paley's watchmaker argument suggests the universe's complexity demands a creator. But Putnam's ant drawing Winston Churchill in the sand reveals a deeper problem: without intentionality, representation has no meaning. Were humans meant to exist? If we're an unintended consequence of creation, does that absolve God of responsibility for evil? Can there be design without a designer who knew what they were designing?</p>
+        </div>
+
+        <div class="theme-card">
+          <h3>The Epistemology of Faith</h3>
+          <p>All knowledge rests on belief. Even Descartes' supposedly self-sufficient logic relies on assumptions: that he's thinking, that his logic is coherent, that he can be understood. Skepticism alone is immature: it's only useful for examining our convictions, not tearing down all reason. The real question isn't whether we can achieve objective truth, but what we've learned, what knowledge we can have, and how skepticism has strengthened belief.</p>
+        </div>
+      </div>
+
+      <div class="cta-box">
+        <h2>Explore the Full Project</h2>
+        <p>The complete <em>Believing Belief</em> project includes episode transcripts, source materials, and comprehensive explorations of each theme.</p>
+        <a href="https://sites.google.com/view/faith-and-doubt/home" class="btn-primary" target="_blank">Visit Believing Belief →</a>
+      </div>
+
+      <div class="quote-callout" style="margin-top: 3em;">
+        "Emerging from the cave... as former prisoners... or still imprisoned?"
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-nav">
+        <a href="index.html#writing">← Back to Writing</a>
+        <a href="/descartes">Next: Descartes →</a>
+      </div>
+    </footer>
+  </article>
+
+  <button id="back-to-top" aria-label="Back to top">
+    &uarr;
+  </button>
+
+  <script>
+    const backToTopBtn = document.getElementById('back-to-top');
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 500) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }, {
