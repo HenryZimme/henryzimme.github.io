@@ -1,1195 +1,1507 @@
-(function() {
-  // ── config ──────────────────────────────────────────────────────────────────
-  var MODES         = new Set(['orbital', 'pulsation', 'realtime']);
-  var COMPANION_RAD = 12.51;   // R_sun (Espinoza-Arancibia & Pilecki 2025)
-  var FALLBACK_COL  = '#ffe066';
-  var R_SUN_KM      = 695700;
-  var P_ORB_D       = 58.85;
-  var P_ORB_S       = P_ORB_D * 86400;
-  var P_PULS        = 0.69001; // days
-  var T0_ORB        = 2459050.0; // orbital reference epoch HJD (Pilecki+ 2022 Table 1)
-  var T0_PULS       = 2459510.64947; // pulsation reference epoch HJD (Fourier r=2 fit to Pilecki RVs)
-  var SIN_I         = Math.sin(57 * Math.PI / 180);
-  var COS_I         = Math.cos(57 * Math.PI / 180); // orbital inclination projection factor
-  var K1            = 28.5;   // km/s (Pilecki+ 2022 Table 1)
-  var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
-  var RV_THRESH     = 40;
-  var RV_N          = 2400;
-  var TRAIL_LEN     = 200;
-  var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
+# -*- coding: utf-8 -*-
+"""BinaryCepheidGifBetterVisualforWebsite.ipynb
 
-  // ── embedded observational data ────────────────────────────────────────────
-  // 187 OGLE-IV V-band observations [hjd-2450000, v_mag, err]
-  var OGLE_V_RAW = [
-    [5260.65957,17.078,0.008],[5267.58314,17.150,0.007],[5446.91815,17.057,0.008],
-    [5459.83597,16.916,0.006],[5477.76899,16.889,0.006],[5485.80179,17.254,0.007],
-    [5492.80569,17.192,0.008],[5493.82817,17.016,0.008],[5494.80475,17.232,0.008],
-    [5495.76190,16.884,0.007],[5497.85791,16.874,0.007],[5499.76516,17.170,0.007],
-    [5502.85632,17.102,0.006],[5503.79358,17.214,0.007],[5505.76030,17.245,0.007],
-    [5507.79578,17.207,0.007],[5509.76198,17.143,0.006],[5510.79597,17.166,0.006],
-    [5511.80606,17.100,0.007],[5512.81494,17.171,0.007],[5514.81718,17.239,0.007],
-    [5515.79436,16.902,0.006],[5516.81975,17.241,0.007],[5517.78078,16.905,0.006],
-    [5521.76864,17.176,0.010],[5522.76706,16.943,0.007],[5523.72738,17.263,0.009],
-    [5524.73678,16.881,0.006],[5525.70272,17.203,0.007],[5526.73953,16.975,0.006],
-    [5527.80058,17.217,0.007],[5528.67496,17.202,0.007],[5529.65538,16.971,0.006],
-    [5530.73352,17.191,0.007],[5531.81659,17.097,0.006],[5532.72558,17.244,0.006],
-    [5533.74548,16.883,0.006],[5534.77892,17.270,0.007],[5535.67971,17.090,0.006],
-    [5536.75827,17.227,0.007],[5539.76703,17.205,0.007],[5546.73411,17.026,0.007],
-    [5547.79317,17.208,0.007],[5548.76495,17.160,0.007],[5549.78511,17.159,0.007],
-    [5550.80713,17.178,0.008],[5553.68434,16.910,0.007],[5556.72571,17.168,0.007],
-    [5557.70759,17.165,0.007],[5558.70713,17.076,0.007],[5559.75050,17.174,0.007],
-    [5561.65181,17.241,0.007],[5562.77438,16.919,0.006],[5563.70387,17.255,0.007],
-    [5565.71040,17.199,0.007],[5566.73995,17.031,0.006],[5582.72890,16.836,0.007],
-    [5589.67657,16.963,0.006],[5592.69597,17.262,0.007],[5596.66782,17.054,0.006],
-    [5598.64893,16.971,0.006],[5614.61509,17.097,0.007],[5619.60705,17.239,0.006],
-    [5622.60546,17.156,0.007],[5623.56815,17.082,0.006],[5625.56129,16.901,0.006],
-    [5627.63124,16.935,0.006],[5629.57132,16.905,0.006],[5633.55797,17.180,0.007],
-    [5647.55292,16.898,0.006],[5650.54864,17.131,0.006],[5652.55008,17.082,0.006],
-    [5656.51796,16.875,0.006],[5659.54757,17.172,0.007],[5670.50101,17.054,0.008],
-    [5674.52737,16.858,0.006],[5679.51660,17.109,0.006],[5685.51210,16.786,0.006],
-    [5693.47271,17.261,0.007],[5825.84308,17.217,0.007],[5843.88726,17.229,0.007],
-    [5854.79544,17.178,0.006],[5863.75821,17.160,0.006],[5867.77492,16.895,0.005],
-    [5875.74444,17.180,0.007],[5880.81056,16.933,0.007],[5883.80062,17.203,0.007],
-    [5886.81874,17.164,0.007],[5892.78162,17.156,0.006],[5897.77018,17.234,0.007],
-    [5910.73680,17.152,0.007],[5924.73350,17.188,0.006],[5932.69733,17.077,0.007],
-    [5940.72735,17.034,0.006],[5952.73776,17.086,0.006],[5961.67663,16.985,0.006],
-    [5970.63305,16.946,0.006],[5972.71011,17.052,0.006],[5994.53416,17.031,0.008],
-    [5994.67369,16.935,0.007],[5995.52897,17.088,0.007],[5995.67303,17.181,0.010],
-    [5996.51279,17.209,0.007],[5996.65647,16.913,0.008],[5997.51132,17.040,0.006],
-    [5997.66473,17.230,0.008],[5998.54367,17.186,0.006],[5998.66807,17.161,0.007],
-    [5999.53890,16.827,0.005],[5999.66103,17.073,0.006],[6000.49175,17.235,0.010],
-    [6000.65559,17.172,0.006],[6001.49642,17.076,0.007],[6001.61660,16.897,0.006],
-    [6006.54369,17.114,0.006],[6013.58322,17.205,0.006],[6020.55695,17.234,0.007],
-    [6193.89478,17.166,0.006],[6226.85738,17.211,0.006],[6229.85812,17.071,0.007],
-    [6236.83182,16.851,0.005],[6292.78911,16.889,0.006],[6317.66143,16.991,0.006],
-    [6333.65492,17.156,0.006],[6344.62146,17.030,0.005],[6592.83432,16.827,0.005],
-    [6600.74469,17.187,0.005],[6685.59638,17.161,0.006],[6687.69604,17.214,0.006],
-    [6688.62904,17.156,0.006],[6689.65282,17.054,0.005],[6690.65529,17.154,0.005],
-    [6691.67804,17.001,0.005],[6692.69787,17.219,0.005],[6693.64409,16.909,0.004],
-    [6694.68977,17.235,0.005],[6695.63489,16.848,0.005],[6696.62245,17.164,0.006],
-    [6697.68051,17.097,0.005],[6698.68090,17.166,0.007],[6699.52519,17.218,0.007],
-    [6700.55428,16.843,0.005],[6700.67819,17.002,0.006],[6701.54620,17.264,0.007],
-    [6701.68172,17.185,0.007],[6702.55196,16.960,0.007],[6702.68457,16.978,0.007],
-    [6703.56258,17.194,0.008],[6704.56320,17.050,0.006],[6704.70883,16.895,0.007],
-    [6705.55212,17.111,0.005],[6706.63145,17.126,0.006],[6707.64413,17.163,0.006],
-    [6708.63181,17.182,0.005],[6709.62621,16.992,0.005],[6710.63554,17.201,0.005],
-    [6711.62247,16.915,0.005],[6712.57312,17.265,0.005],[6997.80230,17.160,0.008],
-    [7007.75349,17.090,0.006],[7063.65587,17.103,0.006],[7064.71928,17.142,0.006],
-    [7065.70435,17.021,0.006],[7066.70004,17.206,0.006],[7067.69589,16.997,0.005],
-    [7068.67172,17.243,0.006],[7069.68134,16.848,0.005],[7070.71694,17.213,0.006],
-    [7071.72318,16.851,0.005],[7072.70390,17.202,0.007],[7075.64953,17.184,0.006],
-    [7076.65465,16.941,0.005],[7077.63346,17.245,0.006],[7078.63331,16.909,0.006],
-    [7110.50625,17.025,0.006],[7111.52920,17.212,0.007],[7112.52721,16.945,0.007],
-    [7113.52238,17.204,0.007],[7114.53109,16.812,0.006],[7115.52542,17.233,0.007],
-    [7116.51354,17.089,0.009],[7117.54233,17.197,0.007],[7118.51542,17.152,0.007],
-    [7119.50233,17.018,0.006],[7137.49852,17.102,0.006],[7332.74904,17.095,0.006],
-    [7366.72606,17.236,0.006]
-  ];
+Automatically generated by Colab.
 
-  // 9 spectroscopic RVs from Pilecki et al. (2022, ApJ 940 L48)
-  // [hjd-2450000, rv_cepheid, err1, rv_companion, err2]
-  var PILECKI_RV_RAW = [
-    [9510.80498,271.408,0.148,195.142,0.397],
-    [9541.61089,222.409,0.113,281.004,0.479],
-    [9556.62074,246.214,0.124,207.792,0.542],
-    [9558.63776,251.270,0.128,200.067,0.553],
-    [9563.71814,280.680,0.128,188.181,0.397],
-    [9566.72085,261.271,0.183,189.594,0.514],
-    [9579.64289,255.698,0.292,239.801,0.335],
-    [9589.71976,206.661,0.109,285.529,0.421],
-    [9604.62569,231.395,0.159,263.152,0.546]
-  ];
+Original file is located at
+    https://colab.research.google.com/drive/1-eiNXRnMPRprB542A6HylTQ1_6bIr8ie
+"""
 
-  // ── state ──────────────────────────────────────────────────────────────────
-  var data        = null;
-  var currentMode = 'orbital';
-  var orbitPhase  = 0;      // normalized 0-1 orbital phase, advances at 1/ORBIT_DURATION_S per sec
-  var pulsTime    = 0;      // pulsation elapsed time in days
-  var maxR1       = 1;
+!pip install astroquery
+!pip install astropy
 
-  var rv1 = [], rv2 = [], rvDelta = [];
-  var rv_abs_min = 0, rv_abs_max = 0;
-  var v_puls_cycle = [];
-  var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
+!apt-get install ffmpeg
 
-  // guided first-loop captions
-  var captionStartTime = null;
-  var CAPTIONS = [
-    { t: 0,    dur: 4500, text: 'A Cepheid, pulsating standard candle' },
-    { t: 6000, dur: 5000, text: 'The radial velocity curves below encode both stars\' motion, measured from Earth' },
-  ];
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from dataclasses import dataclass
+from astropy.coordinates import SkyCoord
+import astropy.units as u
 
-  var ogle_phased    = [];
-  var pilecki_phased = [];
-  var phase_offset   = 0;
+# ==========================================
+# PHASE 0: CONFIGURATION & CONSTANTS
+# ==========================================
 
-  var trail1 = [], trail2 = [];
+# --- 1. GLOBAL PHYSICS CONSTANTS (Invariant) ---
+# Keeping these separate ensures accidental overwrites don't break physics calculations.
+class Physics:
+    G = 6.674e-11 * u.m**3 / (u.kg * u.s**2)
+    M_SUN = 1.989e30 * u.kg
+    R_SUN = 6.957e8 * u.m
+    DAY_SEC = 86400 * u.s
+    SIGMA_CLIP = 3  # Outlier rejection threshold (sigma units, used in clean_outliers_phased)
 
-  // ── dom ────────────────────────────────────────────────────────────────────
-  var simCanvas = document.getElementById('simCanvas');
-  var ctx       = simCanvas ? simCanvas.getContext('2d') : null;
-  var preview   = document.getElementById('sim-preview');
-  var plotUI    = document.getElementById('hud-plot-container');
+# --- 2. TARGET CONFIGURATION FRAMEWORK ---
+@dataclass
+class TargetConfig:
+    """
+    A template for target parameters.
+    Fill this out for any new star to ensure the pipeline runs correctly.
+    """
+    name: str
+    coords: SkyCoord
 
-  var hud = {
-    mag:        document.getElementById('hud-mag'),
-    teff:       document.getElementById('hud-teff'),
-    rad:        document.getElementById('hud-rad'),
-    phase:      document.getElementById('hud-phase'),
-    phaseLabel: document.getElementById('hud-phase-label'),
-  };
+    # Periods (Days)
+    p_puls: float      # First Overtone
+    p_puls_2: float    # Second Overtone
+    p_orb: float       # Orbital Period
+    t0_orb: float      # Reference Epoch (HJD)
 
-  var bounds = { a1: 0, a2: 0, minV: 99, maxV: -99 };
+    # Physical Properties (Solar Units)
+    m1: float          # Mass Cepheid
+    m2: float          # Mass Companion
+    r1: float          # Radius Cepheid
+    r2: float          # Radius Companion
 
-  // ── helpers ────────────────────────────────────────────────────────────────
+    # Temperatures (Kelvin)
+    teff1: float
+    teff2: float
+    dist_pc: float     # Distance in Parsecs
+    inclination_deg: float = 57.0  # Orbital inclination (degrees); inferred from evolutionary masses
 
-  function safeGet(arr, idx, fb) {
-    return (arr && arr[idx] !== undefined) ? arr[idx] : fb;
-  }
+    def summary(self):
+        """Prints a standardized summary of the loaded configuration."""
+        q = self.m2 / self.m1
+        print(f"✅ Configuration Loaded for {self.name}")
+        print(f"   • Coordinates:   {self.coords.to_string('hmsdms')}")
+        print(f"   • Cepheid Mass:  {self.m1} M_sun")
+        print(f"   • Companion Mass:{self.m2} M_sun (q = {q:.2f})")
+        print(f"   • Cepheid Radius:{self.r1} R_sun")
+        print(f"   • Orbital Period:{self.p_orb} days")
 
-  function hexToRgba(hex, a) {
-    var r = parseInt(hex.slice(1, 3), 16);
-    var g = parseInt(hex.slice(3, 5), 16);
-    var b = parseInt(hex.slice(5, 7), 16);
-    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
-  }
+# --- 3. LOAD TARGET DATA ---
+# To switch targets in the future, simply copy this block and change values.
+current_target = TargetConfig(
+    name="OGLE-LMC-CEP-1347",
+    coords=SkyCoord('05 15 06.4', '-69 39 05.3', unit=(u.hourangle, u.deg), frame='icrs'),
 
-  function getPlotRect() {
-    if (!plotUI) return null;
-    var pr = plotUI.getBoundingClientRect();
-    var sr = simCanvas.getBoundingClientRect();
-    return { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height };
-  }
+    p_puls=0.69001,
+    p_puls_2=0.556,
+    p_orb=58.85,
+    t0_orb=2459000.0,
 
-  function getStarArea() {
-    var dpr = window.devicePixelRatio || 1;
-    var w = simCanvas.width / dpr;
-    var h = simCanvas.height / dpr;
-    if (window.innerWidth <= 740) {
-      var plot = getPlotRect();
-      var star_h = plot ? plot.py - 30 : h * 0.6;
-      return { w: w, h: star_h, full_h: h, mobile: true };
-    }
-    return { w: w, h: h, full_h: h, mobile: false };
-  }
+    m1=3.41,
+    m2=1.89,
+    r1=13.65,
+    r2=12.51,
 
-  // ── rv precomputation ──────────────────────────────────────────────────────
+    teff1=6490,
+    teff2=4910,
+    dist_pc=49800
+)
 
-  function buildRV() {
-    rv1 = []; rv2 = []; rvDelta = [];
+# --- 4. EXECUTION ---
+current_target.summary()
 
-    // pulsation RV model: Fourier r=2 fit directly to Pilecki RV residuals (R²=0.927)
-    // coeffs: [a0, a1, b1, a2, b2] from chi2-minimised fit over phi0 grid
-    var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
-    var Np = 120;
-    v_puls_cycle = [];
-    for (var i = 0; i < Np; i++) {
-      var ph = i / Np;
-      var v = PULS_C[0]
-            + PULS_C[1] * Math.cos(2 * Math.PI * ph)
-            + PULS_C[2] * Math.sin(2 * Math.PI * ph)
-            + PULS_C[3] * Math.cos(4 * Math.PI * ph)
-            + PULS_C[4] * Math.sin(4 * Math.PI * ph);
-      v_puls_cycle.push(v);
-    }
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from astropy.time import Time
+from astropy.coordinates import SkyCoord, EarthLocation
+import astropy.units as u
 
-    // orbital-only model curves (no pulsation in model lines)
-    for (var k = 0; k < RV_N; k++) {
-      var phi = k / RV_N;
-      var v1 = K1 * Math.sin(2 * Math.PI * phi);
-      var v2 = -K2 * Math.sin(2 * Math.PI * phi);
-      rv1.push(v1);
-      rv2.push(v2);
-      rvDelta.push(Math.abs(v1 - v2));
-    }
+def set_pub_style():
+    sns.set_theme(style="ticks", context="paper")
+    plt.rcParams.update({
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "DejaVu Serif"],
+        "mathtext.fontset": "stix",
+        "axes.labelsize": 14,
+        "axes.titlesize": 14,
+        "xtick.labelsize": 12,
+        "ytick.labelsize": 12,
+        "xtick.direction": "in",
+        "ytick.direction": "in",
+        "lines.linewidth": 1.5,
+        "figure.dpi": 300
+    })
 
-    // y-axis bounds from model + pulsation-corrected Pilecki points
-    rv_abs_min = Infinity; rv_abs_max = -Infinity;
-    for (var j = 0; j < RV_N; j++) {
-      var a1 = rv1[j] + GAMMA_SYS;
-      var a2 = rv2[j] + GAMMA_SYS;
-      if (a1 < rv_abs_min) rv_abs_min = a1;
-      if (a1 > rv_abs_max) rv_abs_max = a1;
-      if (a2 < rv_abs_min) rv_abs_min = a2;
-      if (a2 > rv_abs_max) rv_abs_max = a2;
-    }
-    for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
-      var row = PILECKI_RV_RAW[pi];
-      // pulsation-corrected Cepheid RV for bounds check
-      var hjd_pi = row[0] + 2450000.0;
-      var pp = (((hjd_pi - T0_PULS) % P_PULS) / P_PULS + 1) % 1;
-      var pidx = Math.round(pp * Np) % Np;
-      var rv1_corr = row[1] - v_puls_cycle[pidx];
-      if (rv1_corr < rv_abs_min) rv_abs_min = rv1_corr;
-      if (rv1_corr > rv_abs_max) rv_abs_max = rv1_corr;
-      if (row[3] < rv_abs_min) rv_abs_min = row[3];
-      if (row[3] > rv_abs_max) rv_abs_max = row[3];
-    }
-    rv_abs_min -= 12;
-    rv_abs_max += 12;
-  }
+set_pub_style()
 
-  // ── orbital position interpolation ────────────────────────────────────────
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.time import Time
+from astropy.coordinates import EarthLocation
 
-  function lerpFrame(p, i_fp) {
-    // linear interpolation between two adjacent orbital frames
-    var N  = p.x1.length;
-    var i0 = Math.floor(i_fp) % N;
-    var i1 = (i0 + 1) % N;
-    var t  = i_fp - Math.floor(i_fp);
-    function lerp(a, b, f) { return a + (b - a) * f; }
-    return {
-      x1: lerp(p.x1[i0], p.x1[i1], t), y1: lerp(p.y1[i0], p.y1[i1], t),
-      z1: lerp(p.z1[i0], p.z1[i1], t), x2: lerp(p.x2[i0], p.x2[i1], t),
-      y2: lerp(p.y2[i0], p.y2[i1], t), z2: lerp(p.z2[i0], p.z2[i1], t),
-    };
-  }
+# ==========================================
+# ROBUST CLEANING FUNCTION
+# ==========================================
 
-  // ── pulsation state lookup, uses puls_cycle from JSON metadata ────────────
-  // decoupled from orbital frame count: always 480-frame resolution
-  // puls_phi: 0-1 pulsation phase
+def clean_outliers_phased(df, period, sigma=3.0, bins=50):
+    """
+    Removes outliers using Median Absolute Deviation (MAD).
+    MAD is resistant to outliers, unlike Standard Deviation.
+    """
+    if df is None or len(df) == 0:
+        return df
 
-  function getPulsState(puls_phi) {
-    var pc = data && data.metadata && data.metadata.puls_cycle;
-    if (!pc) return { r1: 13.65, mag: 17.1, teff: 6490, col: FALLBACK_COL };
-    var fp = ((puls_phi % 1 + 1) % 1) * (pc.Np - 1);
-    var i0 = Math.floor(fp) % pc.Np;
-    var i1 = (i0 + 1) % pc.Np;
-    var t  = fp - Math.floor(fp);
-    function lerp(a, b, f) { return a + (b - a) * f; }
-    return {
-      r1:  lerp(pc.r1[i0],    pc.r1[i1],    t),
-      mag: lerp(pc.v_mag[i0], pc.v_mag[i1], t),
-      teff: pc.teff ? lerp(pc.teff[i0], pc.teff[i1], t) : null,
-      col:  pc.color1[Math.round(fp) % pc.Np],
-    };
-  }
+    df_work = df.copy()
 
-  // ── phase-fold observational data ──────────────────────────────────────────
+    # 1. Calculate Phase
+    df_work['Temp_Phase'] = (df_work['BJD'] % period) / period
 
-  function prepareObservationalData() {
-    // 1. phase-fold Pilecki data on orbital period, fine-tune offset from companion
-    var raw_phases = [];
-    for (var i = 0; i < PILECKI_RV_RAW.length; i++) {
-      var hjd = PILECKI_RV_RAW[i][0] + 2450000.0;
-      raw_phases.push((((hjd - T0_ORB) % P_ORB_D) / P_ORB_D + 1) % 1);
-    }
+    # 2. Bin the data
+    df_work['Bin_ID'] = pd.cut(df_work['Temp_Phase'], bins=bins)
 
-    var best_d = 0, best_sse = Infinity;
-    for (var d = 0; d < 1000; d++) {
-      var delta = d / 1000;
-      var sse = 0;
-      for (var j = 0; j < PILECKI_RV_RAW.length; j++) {
-        var phi = (raw_phases[j] + delta) % 1;
-        var model = -K2 * Math.sin(2 * Math.PI * phi) + GAMMA_SYS;
-        var res = model - PILECKI_RV_RAW[j][3];
-        sse += res * res;
-      }
-      if (sse < best_sse) { best_sse = sse; best_d = delta; }
-    }
-    phase_offset = best_d;
+    # 3. Calculate Local Median
+    # The 'center' of the data in this bin
+    local_median = df_work.groupby('Bin_ID')['Mag'].transform('median')
 
-    // 2. store pulsation-corrected Cepheid RVs and raw companion RVs
-    var Np = v_puls_cycle.length;
-    pilecki_phased = [];
-    for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
-      var row = PILECKI_RV_RAW[pi];
-      var hjd_pi = row[0] + 2450000.0;
-      // pulsation phase at this observation using fitted T0_PULS
-      var pp = (((hjd_pi - T0_PULS) % P_PULS) / P_PULS + 1) % 1;
-      var pidx = Math.round(pp * Np) % Np;
-      var rv1_corrected = row[1] - v_puls_cycle[pidx];
-      pilecki_phased.push({
-        display_phase: (raw_phases[pi] + phase_offset) % 1,
-        rv1:  rv1_corrected,
-        rv2:  row[3],
-        err1: row[2],
-        err2: row[4]
-      });
-    }
+    # 4. Calculate MAD (Median Absolute Deviation)
+    # How far is each point from the median?
+    df_work['Abs_Diff'] = np.abs(df_work['Mag'] - local_median)
+    # What is the median of those distances?
+    local_mad = df_work.groupby('Bin_ID')['Abs_Diff'].transform('median')
 
-    // 3. OGLE V-band scatter phase-folded at P_puls
-    var weights = [];
-    var max_w = 0;
-    for (var oi = 0; oi < OGLE_V_RAW.length; oi++) {
-      var w = 1 / (OGLE_V_RAW[oi][2] * OGLE_V_RAW[oi][2]);
-      weights.push(w);
-      if (w > max_w) max_w = w;
-    }
-    ogle_phased = [];
-    for (var oi2 = 0; oi2 < OGLE_V_RAW.length; oi2++) {
-      var r = OGLE_V_RAW[oi2];
-      ogle_phased.push({
-        phase: (((r[0] + 2450000) % P_PULS) / P_PULS + 1) % 1,
-        mag:   r[1],
-        alpha: 0.18 + 0.64 * (weights[oi2] / max_w)
-      });
-    }
-  }
+    # Scale MAD to approximate Sigma (Standard Normal Distribution)
+    # Sigma approx = 1.4826 * MAD
+    local_sigma_robust = local_mad * 1.4826
 
-  // ── rv plot (orbital mode) ─────────────────────────────────────────────────
+    # 5. Create Threshold
+    # We still respect the reported error bars as a minimum floor
+    # If the scatter is smaller than the error bars, use the error bars.
+    min_floor = 3 * df_work['Err'].median()
+    threshold = np.maximum(sigma * local_sigma_robust, min_floor)
 
-  function drawRVPlot(orbitPhi, puls_phi) {
-    var box = getPlotRect();
-    if (!box || !rv1.length) return;
-    var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
+    # 6. Apply Mask
+    mask = df_work['Abs_Diff'] < threshold
 
-    // apply phase_offset + 0.25 geometric correction (cos parameterization puts phi=0 at quadrature,
-    // but rv model is K·sin(2πφ) which is zero at phi=0; the 0.25 aligns the two conventions)
-    var cursor_phi = (orbitPhi + phase_offset + 0.25) % 1;
-    var rvI = Math.round(cursor_phi * RV_N) % RV_N;
+    # Debugging: Print how tight the clipping is
+    # avg_thresh = threshold.mean()
+    # print(f"      [Debug] Average Clipping Threshold: +/- {avg_thresh:.3f} mag")
 
-    var inset = 28, padTop = 26, padBottom = 36;
-    var drawH = ph - padTop - padBottom;
-    var range = rv_abs_max - rv_abs_min;
-    var yScale = drawH / range;
-    var plotW = pw - 2 * inset;
-    var nPts = 600;
-    var step = plotW / nPts;
+    return df[mask].reset_index(drop=True)
 
-    var rvToY = function(v) { return py + padTop + (rv_abs_max - v) * yScale; };
+# ==========================================
+# MAIN LOADING PIPELINE
+# ==========================================
 
-    ctx.save();
+def fetch_and_clean_multiband(target_config, bands=['I', 'V']):
+    observatory = EarthLocation.of_site('Las Campanas Observatory')
+    base_url = "https://www.astrouw.edu.pl/ogle/ogle4/OCVS/lmc/cep/phot"
 
-    // ── RV color bands between curves ──
-    // approach band (rv1 > rv2 -> Cepheid approaching faster): warm amber tint
-    // recession band (rv2 > rv1): cool red tint
-    for (var kb = 0; kb < nPts; kb++) {
-      var ri_b = Math.round(kb / nPts * RV_N) % RV_N;
-      var y1b = rvToY(rv1[ri_b] + GAMMA_SYS);
-      var y2b = rvToY(rv2[ri_b] + GAMMA_SYS);
-      var yTop = Math.min(y1b, y2b);
-      var yBot = Math.max(y1b, y2b);
-      var bandH = yBot - yTop;
-      if (bandH < 1) continue;
-      // amber where Cepheid is above companion (rv1>rv2), red otherwise
-      var col_b = (rv1[ri_b] > rv2[ri_b])
-        ? 'rgba(196,162,88,0.07)'
-        : 'rgba(248,113,113,0.07)';
-      ctx.fillStyle = col_b;
-      ctx.fillRect(px + inset + kb * step, yTop, step + 0.5, bandH);
-    }
+    data_store = {}
+    print(f"🚀 Processing Data for {target_config.name}")
 
-    // delta-rv >= 40 green shading (on top of color bands)
-    for (var k = 0; k < nPts; k++) {
-      var ri = Math.round(k / nPts * RV_N) % RV_N;
-      if (rvDelta[ri] >= RV_THRESH) {
-        ctx.fillStyle = 'rgba(134,239,172,0.07)';
-        ctx.fillRect(px + inset + k * step, py + padTop, step + 0.5, drawH);
-      }
-    }
+    for band in bands:
+        url = f"{base_url}/{band}/{target_config.name}.dat"
+        try:
+            # --- 1. FETCH ---
+            df = pd.read_csv(url, delim_whitespace=True, names=['HJD_Raw', 'Mag', 'Err'], comment='#')
+            raw_count = len(df)
 
-    // gamma line
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 7]);
-    ctx.beginPath();
-    ctx.moveTo(px + inset, rvToY(GAMMA_SYS));
-    ctx.lineTo(px + pw - inset, rvToY(GAMMA_SYS));
-    ctx.stroke();
-    ctx.setLineDash([]);
+            # --- 2. TIME & PHYSICS CORRECTION ---
+            if df['HJD_Raw'].mean() < 2400000:
+                df['HJD_UTC'] = df['HJD_Raw'] + 2450000.0
+            else:
+                df['HJD_UTC'] = df['HJD_Raw']
 
-    // model curves
-    var drawCurve = function(arr, color) {
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2.5;
-      ctx.lineJoin = 'round';
-      for (var k2 = 0; k2 <= nPts; k2++) {
-        var ri2 = Math.round(k2 / nPts * RV_N) % RV_N;
-        var cx2 = px + inset + k2 * step;
-        var cy2 = rvToY(arr[ri2] + GAMMA_SYS);
-        k2 === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
-      }
-      ctx.stroke();
-    };
-    drawCurve(rv1, '#ffe4a0');
-    drawCurve(rv2, '#f87171');
+            t = Time(df['HJD_UTC'], format='jd', scale='utc', location=observatory)
+            ltt = t.light_travel_time(target_config.coords)
+            df['BJD'] = t.tdb.jd + ltt.value
 
-    // pilecki scatter with error bars
-    for (var pi2 = 0; pi2 < pilecki_phased.length; pi2++) {
-      var pp = pilecki_phased[pi2];
-      var dpx = px + inset + pp.display_phase * plotW;
-      var errPx = pp.err1 !== undefined ? pp.err1 * yScale : 2 * yScale;
-      var errPx2 = pp.err2 !== undefined ? pp.err2 * yScale : 2 * yScale;
-      ctx.globalAlpha = 0.92;
-      // cepheid error bar
-      ctx.strokeStyle = 'rgba(255,228,160,0.5)';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(dpx, rvToY(pp.rv1) - errPx);
-      ctx.lineTo(dpx, rvToY(pp.rv1) + errPx);
-      ctx.moveTo(dpx - 3, rvToY(pp.rv1) - errPx);
-      ctx.lineTo(dpx + 3, rvToY(pp.rv1) - errPx);
-      ctx.moveTo(dpx - 3, rvToY(pp.rv1) + errPx);
-      ctx.lineTo(dpx + 3, rvToY(pp.rv1) + errPx);
-      ctx.stroke();
-      // companion error bar
-      ctx.strokeStyle = 'rgba(248,113,113,0.5)';
-      ctx.beginPath();
-      ctx.moveTo(dpx, rvToY(pp.rv2) - errPx2);
-      ctx.lineTo(dpx, rvToY(pp.rv2) + errPx2);
-      ctx.moveTo(dpx - 3, rvToY(pp.rv2) - errPx2);
-      ctx.lineTo(dpx + 3, rvToY(pp.rv2) - errPx2);
-      ctx.moveTo(dpx - 3, rvToY(pp.rv2) + errPx2);
-      ctx.lineTo(dpx + 3, rvToY(pp.rv2) + errPx2);
-      ctx.stroke();
-      // cepheid dot
-      ctx.beginPath();
-      ctx.arc(dpx, rvToY(pp.rv1), 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffe4a0';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      // companion dot
-      ctx.beginPath();
-      ctx.arc(dpx, rvToY(pp.rv2), 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#f87171';
-      ctx.fill();
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
+            # --- 3. BASIC CLEANING (Error bars) ---
+            # Remove garbage points with massive error bars first
+            df = df[df['Err'] < 3 * df['Err'].mean()]
 
-    // cursor line at current orbital phase (shifted by phase_offset to match data)
-    var curX = px + inset + cursor_phi * plotW;
-    ctx.save();
-    ctx.strokeStyle = 'rgba(96,165,250,0.65)';
-    ctx.shadowBlur = 6;
-    ctx.shadowColor = '#60a5fa';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([3, 4]);
-    ctx.beginPath();
-    ctx.moveTo(curX, py + padTop);
-    ctx.lineTo(curX, py + ph - padBottom);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
+            # --- 4. ADVANCED CLEANING (Phased Sigma Clipping) ---
+            # This is the new part that fixes your issue
+            df_clean = clean_outliers_phased(df, target_config.p_puls, sigma=Physics.SIGMA_CLIP)
 
-    // ── tracking dots on cursor, target-sight: outer ring + bright center ──
-    // companion: orbital model only
-    var compY = rvToY(rv2[rvI] + GAMMA_SYS);
-    ctx.save();
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = '#f87171';
-    ctx.strokeStyle = '#f87171';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(curX, compY, 7, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#f87171';
-    ctx.beginPath();
-    ctx.arc(curX, compY, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+            data_store[band] = df_clean.reset_index(drop=True)
+            print(f"   ✅ {band}-band: {len(df_clean)}/{raw_count} epochs retained (Removed {raw_count - len(df_clean)} outliers)")
 
-    // cepheid: orbital model + pulsation RV at current pulsation phase
-    var puls_ph = puls_phi;
-    var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
-    var v_puls_now = PULS_C[0]
-      + PULS_C[1] * Math.cos(2 * Math.PI * puls_ph)
-      + PULS_C[2] * Math.sin(2 * Math.PI * puls_ph)
-      + PULS_C[3] * Math.cos(4 * Math.PI * puls_ph)
-      + PULS_C[4] * Math.sin(4 * Math.PI * puls_ph);
-    var cepY = rvToY(rv1[rvI] + GAMMA_SYS + v_puls_now);
-    ctx.save();
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = '#ffe4a0';
-    ctx.strokeStyle = '#ffe4a0';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(curX, cepY, 7, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#ffe4a0';
-    ctx.beginPath();
-    ctx.arc(curX, cepY, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+        except Exception as e:
+            print(f"   ❌ Error {band}-band: {e}")
+            data_store[band] = None
 
-    // y-axis label and ticks, hidden on mobile to prevent overlap with plot
-    if (!getStarArea().mobile) {
-      // y-axis label, rotated "km s⁻¹"
-      ctx.save();
-      ctx.translate(px + 10, py + padTop + drawH / 2);
-      ctx.rotate(-Math.PI / 2);
-      ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('km s\u207B\u00B9', 0, 0);
-      ctx.restore();
+    return data_store
 
-      // y-axis ticks, brighter, larger font
-      ctx.font = '10px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = 'right';
-      var ts = 20;
-      for (var tv = Math.ceil(rv_abs_min / ts) * ts; tv <= Math.floor(rv_abs_max / ts) * ts; tv += ts) {
-        var tly = rvToY(tv);
-        if (tly > py + padTop + 6 && tly < py + ph - padBottom - 4)
-          ctx.fillText(tv.toFixed(0), px + inset - 4, tly);
-      }
-    }
+def plot_diagnostics(data_dict, target_config):
+    """Visual confirmation of the cleaning"""
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-    // x-axis phase labels and attribution, hidden on mobile to prevent overlap
-    if (!getStarArea().mobile) {
-      ctx.textBaseline = 'top';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.font = '10px \'JetBrains Mono\', monospace';
-      for (var xp = 0; xp <= 1; xp += 0.25) {
-        ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 5);
-      }
+    for band, color in [('I', 'r'), ('V', 'g')]:
+        if data_dict.get(band) is not None:
+            df = data_dict[band]
 
-      // attribution
-      ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = 'rgba(255,255,255,0.14)';
-      ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
-    }
+            # Phased Plot
+            phase = (df['BJD'] % target_config.p_puls) / target_config.p_puls
+            axes[0].errorbar(phase, df['Mag'], yerr=df['Err'], fmt='.', color=color, alpha=0.4, label=f'{band}')
 
-    // canvas legend, replaces #rv-legend HTML element, always drawn on canvas
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.textBaseline = 'top';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(96,165,250,0.55)';
-    ctx.fillText('RADIAL VELOCITIES (KM/S) - ORBITAL PHASE', px + inset, py + 6);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#ffe4a0';
-    ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
-    ctx.fillStyle = '#f87171';
-    ctx.fillText('\u2014 Companion', px + pw - inset, py + 18);
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 30);
+            # Raw Time Series
+            axes[1].errorbar(df['BJD'], df['Mag'], yerr=df['Err'], fmt='.', color=color, alpha=0.4)
 
-    ctx.restore();
-  }
+    axes[0].invert_yaxis()
+    axes[0].set_title("Phased Light Curve (Cleaned)")
+    axes[0].set_xlabel("Phase")
 
-  // ── light curve (pulsation mode) ───────────────────────────────────────────
+    axes[1].invert_yaxis()
+    axes[1].set_title("Time Series (BJD)")
+    axes[1].set_xlabel("Date (BJD)")
 
-  function drawLightCurve(puls_phi) {
-    var box = getPlotRect();
-    var pc = data && data.metadata && data.metadata.puls_cycle;
-    if (!box || !pc) return;
-    var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
+    plt.legend()
+    plt.show()
 
-    var inset = 16, padTop = 22, padBottom = 40;
-    var drawH = ph - padTop - padBottom;
-    var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
-    var midMag = (bounds.minV + bounds.maxV) / 2;
-    // nPts render columns; n_cycles = total pulsation cycles visible in window
-    var nPts     = 480;
-    var n_cycles = 2;
-    var step     = (pw - inset * 2) / nPts;
-    var Np       = pc.Np;
-    var phi_cur  = puls_phi;
+# ==========================================
+# EXECUTION
+# ==========================================
+# Assumes 'current_target' is defined from Phase 0
+lc_data = fetch_and_clean_multiband(current_target)
+plot_diagnostics(lc_data, current_target)
 
-    // magnitude → y: bright (small mag) maps UP, standard astro convention
-    var magToY = function(m) {
-      return py + padTop + drawH / 2 - ((m - midMag) * (drawH / magRange) * 0.72);
-    };
+df_i = lc_data['I']
+df_v = lc_data['V']
 
-    ctx.save();
+import matplotlib.animation as animation
+from matplotlib.patches import Circle
+import math
 
-    // y-axis label
-    ctx.save();
-    ctx.translate(px + 10, py + padTop + drawH / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(96,165,250,0.4)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('V mag  \u2191 bright', 0, 0);
-    ctx.restore();
+# ==========================================
+# PHASE 1: KINEMATICS & ANIMATION
+# ==========================================
 
-    // ogle scatter, phase-based x offset from center
-    for (var oi = 0; oi < ogle_phased.length; oi++) {
-      var op = ogle_phased[oi];
-      var dp = op.phase - phi_cur;
-      dp = dp - Math.round(dp); // wrap to [-0.5, 0.5]
-      var px_off = dp * nPts / n_cycles; // pixel offset from center
+def calculate_orbital_elements(target):
+    """Calculates orbital separation (a) in Solar Radii using Kepler's 3rd Law."""
+    P_sec = target.p_orb * Physics.DAY_SEC.value
+    M_total_kg = (target.m1 + target.m2) * Physics.M_SUN.value
 
-      for (var c = -3; c <= 3; c++) {
-        var off = px_off + c * (nPts / n_cycles);
-        if (off >= -nPts / 2 && off <= nPts / 2) {
-          var ox = px + pw / 2 + off * step;
-          var oy = magToY(op.mag);
-          ctx.beginPath();
-          ctx.arc(ox, oy, 2, 0, Math.PI * 2);
-          ctx.fillStyle = '#60a5fa';
-          ctx.globalAlpha = op.alpha;
-          ctx.fill();
+    # Kepler's 3rd law: a^3 = G * M * P^2 / (4 * pi^2)
+    a_cubed = (Physics.G.value * M_total_kg * P_sec**2) / (4 * math.pi**2)
+    a_meters = a_cubed**(1/3)
+    a_rsun = a_meters / Physics.R_SUN.value
+
+    # Distances from barycenter
+    a1 = a_rsun * (target.m2 / (target.m1 + target.m2))
+    a2 = a_rsun * (target.m1 / (target.m1 + target.m2))
+
+    return a_rsun, a1, a2
+
+def generate_binary_cepheid_gif(target, filename="cepheid_binary.gif", duration_days=None, fps=24):
+    print(f"🎬 Initializing Animation for {target.name}...")
+
+    a_tot, a1, a2 = calculate_orbital_elements(target)
+    print(f"   • Orbital Separation: {a_tot:.2f} R_sun")
+
+    # Setup Figure
+    fig, ax = plt.subplots(figsize=(8, 8), facecolor='black')
+    ax.set_facecolor('black')
+
+    # Plot limits based on separation
+    lim = a_tot * 1.2
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_aspect('equal')
+    ax.axis('off') # Hide axes for cinematic look
+
+    # Draw orbit trails (circular assumption)
+    orbit1 = Circle((0, 0), a1, color='white', fill=False, linestyle=':', alpha=0.3)
+    orbit2 = Circle((0, 0), a2, color='white', fill=False, linestyle=':', alpha=0.3)
+    ax.add_patch(orbit1)
+    ax.add_patch(orbit2)
+
+    # Draw Barycenter
+    ax.plot(0, 0, marker='+', color='white', markersize=10, alpha=0.5)
+
+    # Initialize Stars (Using simplified colors based on Teff)
+    # Cepheid (Yellow-White), Companion (Red-Orange)
+    star1 = Circle((a1, 0), target.r1, color='#FFD700', zorder=10)
+    star2 = Circle((-a2, 0), target.r2, color='#FF8C00', zorder=10)
+    ax.add_patch(star1)
+    ax.add_patch(star2)
+
+    # Title overlay
+    title_text = ax.text(0.5, 0.95, f"{target.name} System\nTime: 0.00 Days",
+                         color='white', ha='center', va='top',
+                         transform=ax.transAxes, fontsize=14, fontfamily='monospace')
+
+    # Animation parameters
+    if duration_days is None:
+        duration_days = target.p_orb  # Animate one full orbit by default
+
+    frames = int(fps * (duration_days / (target.p_orb / 10))) # Number of frames
+    time_step = duration_days / frames
+
+    # The pulsation amplitude visually (fraction of radius).
+    # In reality this is ~5-15%, we use 15% to make it visible.
+    pulsation_amplitude = 0.15
+
+    def update(frame):
+        t = frame * time_step
+
+        # 1. Update Orbital Positions (Angles)
+        theta_orb = 2 * math.pi * (t / target.p_orb)
+
+        # Star 1 (Cepheid)
+        x1 = a1 * math.cos(theta_orb)
+        y1 = a1 * math.sin(theta_orb)
+        star1.center = (x1, y1)
+
+        # Star 2 (Companion is 180 degrees offset)
+        x2 = a2 * math.cos(theta_orb + math.pi)
+        y2 = a2 * math.sin(theta_orb + math.pi)
+        star2.center = (x2, y2)
+
+        # 2. Update Cepheid Radius (Pulsation)
+        # Using a simple sine wave; you could link this to an interpolated function from df_v
+        phase_puls = 2 * math.pi * (t / target.p_puls)
+        current_r1 = target.r1 * (1 + pulsation_amplitude * math.sin(phase_puls))
+        star1.radius = current_r1
+
+        # 3. Update Text
+        title_text.set_text(f"{target.name} System\nTime: {t:.2f} Days")
+
+        return star1, star2, title_text
+
+    print("   ⏳ Rendering frames (this may take a minute)...")
+    anim = animation.FuncAnimation(fig, update, frames=frames, interval=1000/fps, blit=True)
+
+    # Save as GIF
+    anim.save(filename, writer='pillow', fps=fps)
+    print(f"✅ Animation saved to {filename}")
+    plt.close()
+
+# ==========================================
+# EXECUTE ANIMATION
+# ==========================================
+#generate_binary_cepheid_gif(current_target, filename="cepheid_binary.gif", duration_days=current_target.p_orb, fps=30)
+
+from scipy.optimize import curve_fit
+
+# ==========================================
+# PHASE 2: LIGHT CURVE TEMPLATE FITTING
+# ==========================================
+
+def fourier_series(phase, a0, *args):
+    """
+    Mathematical model for the Cepheid light curve.
+    args expects pairs of (a_k, b_k) for each harmonic.
+    """
+    result = a0
+    n_harmonics = len(args) // 2
+    for k in range(1, n_harmonics + 1):
+        ak = args[2*(k-1)]
+        bk = args[2*(k-1) + 1]
+        result += ak * np.cos(2 * np.pi * k * phase) + bk * np.sin(2 * np.pi * k * phase)
+    return result
+
+def fit_cepheid_template(df, period, n_harmonics=4, band_name="Band"):
+    """Fits a Fourier series to the phased light curve data."""
+    print(f"📈 Fitting {n_harmonics}-harmonic Fourier template for {band_name}...")
+
+    # 1. Calculate phase for the data
+    phase = (df['BJD'] % period) / period
+
+    # 2. Setup initial guesses: [Mean Mag, a1, b1, a2, b2, ...]
+    # We guess 0.0 for the amplitude components to start
+    p0 = [df['Mag'].mean()] + [0.0, 0.0] * n_harmonics
+
+    # 3. Perform the least-squares fit, weighting by photometric errors
+    try:
+        popt, pcov = curve_fit(
+            fourier_series,
+            phase,
+            df['Mag'],
+            p0=p0,
+            sigma=df['Err'],
+            absolute_sigma=True
+        )
+        print(f"   ✅ Fit successful! Mean Magnitude (A0): {popt[0]:.3f}")
+        return popt
+    except RuntimeError:
+        print(f"   ❌ Fit failed to converge for {band_name}.")
+        return None
+
+def plot_fitted_template(df, popt, period, band_name, color):
+    """Visualizes the data overlaid with the continuous mathematical template."""
+    phase = (df['BJD'] % period) / period
+
+    # Create a smooth array of phases from 0 to 1 for the template line
+    smooth_phase = np.linspace(0, 1, 500)
+    smooth_mag = fourier_series(smooth_phase, *popt)
+
+    plt.figure(figsize=(8, 5))
+    # Plot raw data
+    plt.errorbar(phase, df['Mag'], yerr=df['Err'], fmt='.', color=color, alpha=0.3, label='OGLE Data')
+    # Double the phase (0 to 2) to show the cycle repeating
+    plt.errorbar(phase + 1.0, df['Mag'], yerr=df['Err'], fmt='.', color=color, alpha=0.3)
+
+    # Plot smooth template
+    plt.plot(smooth_phase, smooth_mag, color='black', linewidth=2, label=f'Fourier Fit (N={len(popt)//2})')
+    plt.plot(smooth_phase + 1.0, smooth_mag, color='black', linewidth=2)
+
+    plt.gca().invert_yaxis()
+    plt.title(f"{current_target.name} - {band_name} Band Template Fit")
+    plt.xlabel("Pulsation Phase")
+    plt.ylabel("Magnitude")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+# ==========================================
+# EXECUTION
+# ==========================================
+# Fit the I-band and V-band
+popt_i = fit_cepheid_template(df_i, current_target.p_puls, n_harmonics=5, band_name='I')
+popt_v = fit_cepheid_template(df_v, current_target.p_puls, n_harmonics=5, band_name='V')
+
+# Plot the V-band to verify the fit looks good
+#if popt_v is not None:
+    #plot_fitted_template(df_v, popt_v, current_target.p_puls, 'V', 'green')
+
+from scipy.optimize import curve_fit
+
+# ==========================================
+# PHASE 2: LIGHT CURVE TEMPLATE FITTING
+# ==========================================
+
+def fourier_series(phase, a0, *args):
+    """
+    Mathematical model for the Cepheid light curve.
+    args expects pairs of (a_k, b_k) for each harmonic.
+    """
+    result = a0
+    n_harmonics = len(args) // 2
+    for k in range(1, n_harmonics + 1):
+        ak = args[2*(k-1)]
+        bk = args[2*(k-1) + 1]
+        result += ak * np.cos(2 * np.pi * k * phase) + bk * np.sin(2 * np.pi * k * phase)
+    return result
+
+def fit_cepheid_template(df, period, n_harmonics=4, band_name="Band"):
+    """Fits a Fourier series to the phased light curve data."""
+    print(f"📈 Fitting {n_harmonics}-harmonic Fourier template for {band_name}...")
+
+    # 1. Calculate phase for the data
+    phase = (df['BJD'] % period) / period
+
+    # 2. Setup initial guesses: [Mean Mag, a1, b1, a2, b2, ...]
+    # We guess 0.0 for the amplitude components to start
+    p0 = [df['Mag'].mean()] + [0.0, 0.0] * n_harmonics
+
+    # 3. Perform the least-squares fit, weighting by photometric errors
+    try:
+        popt, pcov = curve_fit(
+            fourier_series,
+            phase,
+            df['Mag'],
+            p0=p0,
+            sigma=df['Err'],
+            absolute_sigma=True
+        )
+        print(f"   ✅ Fit successful! Mean Magnitude (A0): {popt[0]:.3f}")
+        return popt
+    except RuntimeError:
+        print(f"   ❌ Fit failed to converge for {band_name}.")
+        return None
+
+def plot_fitted_template(df, popt, period, band_name, color):
+    """Visualizes the data overlaid with the continuous mathematical template."""
+    phase = (df['BJD'] % period) / period
+
+    # Create a smooth array of phases from 0 to 1 for the template line
+    smooth_phase = np.linspace(0, 1, 500)
+    smooth_mag = fourier_series(smooth_phase, *popt)
+
+    plt.figure(figsize=(8, 5))
+    # Plot raw data
+    plt.errorbar(phase, df['Mag'], yerr=df['Err'], fmt='.', color=color, alpha=0.3, label='OGLE Data')
+    # Double the phase (0 to 2) to show the cycle repeating
+    plt.errorbar(phase + 1.0, df['Mag'], yerr=df['Err'], fmt='.', color=color, alpha=0.3)
+
+    # Plot smooth template
+    plt.plot(smooth_phase, smooth_mag, color='black', linewidth=2, label=f'Fourier Fit (N={len(popt)//2})')
+    plt.plot(smooth_phase + 1.0, smooth_mag, color='black', linewidth=2)
+
+    plt.gca().invert_yaxis()
+    plt.title(f"{current_target.name} - {band_name} Band Template Fit")
+    plt.xlabel("Pulsation Phase")
+    plt.ylabel("Magnitude")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+# ==========================================
+# EXECUTION
+# ==========================================
+# Fit the I-band and V-band
+popt_i = fit_cepheid_template(df_i, current_target.p_puls, n_harmonics=5, band_name='I')
+popt_v = fit_cepheid_template(df_v, current_target.p_puls, n_harmonics=5, band_name='V')
+
+# Plot the V-band to verify the fit looks good
+if popt_v is not None:
+    plot_fitted_template(df_v, popt_v, current_target.p_puls, 'V', 'green')
+
+# Plot the V-band to verify the fit looks good
+if popt_i is not None:
+    plot_fitted_template(df_i, popt_i, current_target.p_puls, 'I', 'red')
+
+import matplotlib.animation as animation
+from matplotlib.patches import Circle, Ellipse
+import matplotlib.colors as mcolors
+import numpy as np
+
+# ==========================================
+# PHASE 3: DATA-DRIVEN ANIMATION
+# ==========================================
+
+def teff_to_hex(teff):
+    """
+    Approximates the visible RGB color of a star based on its temperature.
+    Uses a simplified blackbody color mapping.
+    """
+    # Clip temperature to valid visualization range
+    t = max(3000, min(teff, 10000))
+
+    # Normalize temperature to a 0-1 scale between 4000K (Orange) and 8000K (White/Blue-white)
+    norm = (t - 4000) / (8000 - 4000)
+    norm = max(0, min(norm, 1))
+
+    # Interpolate between an orange-red and a hot white
+    c_cool = np.array(mcolors.to_rgb('#ff8c00')) # 4000K
+    c_hot = np.array(mcolors.to_rgb('#f4f6ff'))  # 8000K
+
+    c_current = c_cool + norm * (c_hot - c_cool)
+    return mcolors.to_hex(c_current)
+
+def vi_index_to_teff(v_minus_i):
+    """
+    Empirical approximation converting (V-I) color index to Teff for Cepheids.
+    Consistent with CepheidSimulator.vi_to_teff: 9500 - 5000*(V-I).
+    Yields ~7000K at V-I=0.5, ~4500K at V-I=1.0.
+    """
+    return 9500 - 5000 * v_minus_i
+
+def generate_data_driven_gif(target, popt_v, popt_i, filename="cepheid_binary.gif", duration_days=None, fps=24):
+    print(f"🎬 Initializing Data-Driven Animation for {target.name}...")
+
+    # 1. Orbital Setup
+    a_tot, a1, a2 = calculate_orbital_elements(target)
+    inclination_rad = np.radians(target.inclination_deg)
+    ax.set_facecolor('black')
+
+    lim = a_tot * 1.2
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+    # Draw Inclined Orbit Trails
+    # An inclined circular orbit appears as an ellipse with height scaled by cos(i)
+    orbit1 = Ellipse((0, 0), width=a1*2, height=a1*2*np.cos(inclination_rad),
+                     color='white', fill=False, linestyle=':', alpha=0.3)
+    orbit2 = Ellipse((0, 0), width=a2*2, height=a2*2*np.cos(inclination_rad),
+                     color='white', fill=False, linestyle=':', alpha=0.3)
+    ax.add_patch(orbit1)
+    ax.add_patch(orbit2)
+    ax.plot(0, 0, marker='+', color='white', markersize=10, alpha=0.5) # Barycenter
+
+    # 3. Initialize Stars
+    companion_color = teff_to_hex(target.teff2)
+    star2 = Circle((0, 0), target.r2, color=companion_color, zorder=10)
+    star1 = Circle((0, 0), target.r1, color='#ffffff', zorder=11) # Color will update dynamically
+    ax.add_patch(star2)
+    ax.add_patch(star1)
+
+    # Info Overlay
+    info_text = ax.text(0.05, 0.95, "", color='white', ha='left', va='top',
+                        transform=ax.transAxes, fontsize=12, fontfamily='monospace')
+
+    # Animation Time Settings
+    if duration_days is None:
+        duration_days = target.p_orb
+    frames = int(fps * duration_days)
+    time_step = 1.0 / fps # 1 day per second in the animation
+
+    # Extract mean magnitude to calculate relative radius changes
+    mean_mag_v = popt_v[0]
+    # For a rough visual, a 0.5 mag amplitude might correspond to a ~10-15% radius change
+    radius_scale_factor = target.r1 * 0.2
+
+    def update(frame):
+        t = frame * time_step
+
+        # --- ORBITAL KINEMATICS ---
+        theta = 2 * np.pi * (t / target.p_orb)
+
+        # Apply inclination to the y-axis
+        x1 = a1 * np.cos(theta)
+        y1 = a1 * np.sin(theta) * np.cos(inclination_rad)
+        star1.center = (x1, y1)
+
+        x2 = a2 * np.cos(theta + np.pi)
+        y2 = a2 * np.sin(theta + np.pi) * np.cos(inclination_rad)
+        star2.center = (x2, y2)
+
+        # Add a pseudo-3D z-ordering based on the y-position before inclination
+        y1_true = a1 * np.sin(theta)
+        if y1_true > 0:
+            star1.set_zorder(9)
+            star2.set_zorder(11)
+        else:
+            star1.set_zorder(11)
+            star2.set_zorder(9)
+
+        # --- PHOTOMETRY, COLOR, & RADIUS ---
+        phase_puls = (t % target.p_puls) / target.p_puls
+
+        # Calculate instantaneous magnitudes using our Fourier fits
+        mag_v = fourier_series(phase_puls, *popt_v)
+        mag_i = fourier_series(phase_puls, *popt_i)
+
+        # Color Index to Temperature to Hex Color
+        v_minus_i = mag_v - mag_i
+        current_teff = vi_index_to_teff(v_minus_i)
+        star1.set_color(teff_to_hex(current_teff))
+
+        # Magnitude to Radius (Brighter = negative magnitude delta = larger radius in this visual)
+        # Note: In real Cepheids, max brightness happens near minimum radius, but we'll
+        # invert the magnitude curve to visually represent the pulsation pressure wave.
+        delta_mag = mean_mag_v - mag_v
+        current_r1 = target.r1 + (delta_mag * radius_scale_factor)
+        star1.radius = current_r1
+
+        # --- UPDATE TEXT ---
+        info_str = (
+            f"Time: {t:.1f} d\n"
+            f"Puls Phase: {phase_puls:.2f}\n"
+            f"V-Mag: {mag_v:.2f}\n"
+            f"(V-I): {v_minus_i:.2f}\n"
+            f"T_eff: ~{current_teff:.0f}K"
+        )
+        info_text.set_text(info_str)
+
+        return star1, star2, info_text, orbit1, orbit2
+
+    print(f"   ⏳ Rendering {frames} frames...")
+    anim = animation.FuncAnimation(fig, update, frames=frames, interval=1000/fps, blit=True)
+    anim.save(filename, writer='pillow', fps=fps)
+    print(f"✅ Saved visually accurate data-driven animation to {filename}!")
+    plt.close()
+
+# ==========================================
+# EXECUTE DATA-DRIVEN ANIMATION
+# ==========================================
+# Ensure popt_v and popt_i were successfully generated in Phase 2
+#if popt_v is not None and popt_i is not None:
+    #generate_data_driven_gif(current_target, popt_v, popt_i, filename="cepheid_inclined_data.gif", duration_days=current_target.p_orb, fps=15)
+
+import matplotlib.animation as animation
+from matplotlib.patches import Circle, Ellipse
+import matplotlib.colors as mcolors
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ==========================================
+# PHASE 3: DATA-DRIVEN ANIMATION (LOW-RAM VIDEO VERSION)
+# ==========================================
+
+def generate_data_driven_video(target, popt_v, popt_i, filename="cepheid_binary.mp4", duration_days=None, fps=30):
+    print(f"🎬 Initializing Low-RAM Data-Driven Video for {target.name}...")
+
+    # 1. Orbital Setup
+    a_tot, a1, a2 = calculate_orbital_elements(target)
+    inclination_rad = np.radians(target.inclination_deg)
+
+    # THE RAM FIX: Explicitly lower DPI to web-standard (100)
+    fig, ax = plt.subplots(figsize=(8, 8), facecolor='black', dpi=100)
+    fig.patch.set_facecolor('black')
+
+    # Explicit plot limits (Fixed to 150 R_sun for stability)
+    lim = 150
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+    # Draw Inclined Orbit Trails
+    orbit1 = Ellipse((0, 0), width=a1*2, height=a1*2*np.cos(inclination_rad),
+                     color='white', fill=False, linestyle=':', alpha=0.3)
+    orbit2 = Ellipse((0, 0), width=a2*2, height=a2*2*np.cos(inclination_rad),
+                     color='white', fill=False, linestyle=':', alpha=0.3)
+    ax.add_patch(orbit1)
+    ax.add_patch(orbit2)
+    ax.plot(0, 0, marker='+', color='white', markersize=10, alpha=0.5)
+
+    # 3. Initialize Stars
+    companion_color = teff_to_hex(target.teff2)
+    star2 = Circle((0, 0), target.r2, color=companion_color, zorder=10)
+    star1 = Circle((0, 0), target.r1, color='#ffffff', zorder=11)
+    ax.add_patch(star2)
+    ax.add_patch(star1)
+
+    # Info Overlay
+    info_text = ax.text(0.05, 0.95, "", color='white', ha='left', va='top',
+                        transform=ax.transAxes, fontsize=12, fontfamily='monospace')
+
+    # Animation Time Settings
+    if duration_days is None:
+        duration_days = target.p_orb
+    frames = int(fps * duration_days)
+    time_step = 1.0 / fps
+
+    mean_mag_v = popt_v[0]
+    radius_scale_factor = target.r1 * 0.2
+
+    def update(frame):
+        t = frame * time_step
+
+        # --- ORBITAL KINEMATICS ---
+        theta = 2 * np.pi * (t / target.p_orb)
+
+        x1 = a1 * np.cos(theta)
+        y1 = a1 * np.sin(theta) * np.cos(inclination_rad)
+        star1.center = (x1, y1)
+
+        x2 = a2 * np.cos(theta + np.pi)
+        y2 = a2 * np.sin(theta + np.pi) * np.cos(inclination_rad)
+        star2.center = (x2, y2)
+
+        y1_true = a1 * np.sin(theta)
+        if y1_true > 0:
+            star1.set_zorder(9)
+            star2.set_zorder(11)
+        else:
+            star1.set_zorder(11)
+            star2.set_zorder(9)
+
+        # --- PHOTOMETRY, COLOR, & RADIUS ---
+        phase_puls = (t % target.p_puls) / target.p_puls
+
+        mag_v = fourier_series(phase_puls, *popt_v)
+        mag_i = fourier_series(phase_puls, *popt_i)
+
+        v_minus_i = mag_v - mag_i
+        current_teff = vi_index_to_teff(v_minus_i)
+        star1.set_color(teff_to_hex(current_teff))
+
+        delta_mag = mean_mag_v - mag_v
+        current_r1 = target.r1 + (delta_mag * radius_scale_factor)
+        star1.radius = current_r1
+
+        # --- UPDATE TEXT ---
+        info_str = (
+            f"Time: {t:.1f} d\n"
+            f"Puls Phase: {phase_puls:.2f}\n"
+            f"V-Mag: {mag_v:.2f}\n"
+            f"(V-I): {v_minus_i:.2f}\n"
+            f"T_eff: ~{current_teff:.0f}K"
+        )
+        info_text.set_text(info_str)
+
+        return star1, star2, info_text, orbit1, orbit2
+
+    print(f"   ⏳ Streaming {frames} frames directly to disk via FFmpeg...")
+    anim = animation.FuncAnimation(fig, update, frames=frames, interval=1000/fps, blit=True)
+
+    # THE RAM FIX: FFmpeg streams directly to disk
+    writer = animation.FFMpegWriter(fps=fps, bitrate=1800)
+    anim.save(filename, writer=writer)
+
+    print(f"✅ Saved visually accurate data-driven video to {filename}!")
+
+    # THE RAM FIX: Explicitly close the figure to flush memory
+    plt.close(fig)
+
+"""# Documentation: `master_data.json`
+
+The exported JSON file contains all the pre-calculated physics and animation data required to render the Cepheid binary system in a web frontend. It is structured into three main sections.
+
+### 1. `metadata`
+Global constants and configuration parameters for the system.
+
+| Key | Type | Description |
+| :--- | :--- | :--- |
+| `name` | String | Name of the target (e.g., "OGLE-LMC-CEP-1347"). |
+| `p_orb` | Float | Orbital period in days. |
+| `p_puls` | Float | Pulsation period of the Cepheid in days. |
+| `r2` | Float | Radius of the companion star (Star 2) in Solar Radii ($R_\odot$). |
+| `color2` | String | Hex color code for the companion star (static). |
+| `orbital_separation_rsun` | Float | Semi-major axis of the binary system in Solar Radii ($R_\odot$). |
+| `inclination_deg` | Float | Orbital inclination in degrees (fixed at 57.0°). |
+| `total_frames` | Integer | Total number of frames in the simulation arrays. |
+| `dt` | Float | Time step between frames in days. |
+
+---
+
+### 2. `physics_frames`
+Time-series arrays representing the **physically accurate** simulation. All arrays have a length equal to `total_frames`.
+
+| Key | Type (Array) | Description |
+| :--- | :--- | :--- |
+| `t` | Float | Simulation time in days. |
+| `x1`, `y1`, `z1` | Float | Cartesian coordinates of the Cepheid (Star 1) in Solar Radii. $Z$ represents depth for layering. |
+| `x2`, `y2`, `z2` | Float | Cartesian coordinates of the Companion (Star 2) in Solar Radii. |
+| `r1` | Float | Instantaneous radius of the Cepheid in Solar Radii (pulsating). |
+| `color1` | String | Hex color of the Cepheid, varying with Temperature. |
+| `v_mag` | Float | Instantaneous V-band magnitude (for UI text/graphs). |
+
+---
+
+### 3. `composite_frames`
+Time-series arrays for the **"Composite/Cheat" mode**. In this mode, the pulsation frequency is artificially increased to show exactly 15 pulsation cycles per orbital revolution, allowing viewers to see the pulsation more clearly alongside the orbital motion.
+
+| Key | Type (Array) | Description |
+| :--- | :--- | :--- |
+| `r1` | Float | Radius of the Cepheid in composite mode. |
+| `color1` | String | Hex color of the Cepheid in composite mode. |
+| `v_mag` | Float | V-band magnitude in composite mode. |
+
+"""
+
+# ==========================================
+# EXECUTE DATA-DRIVEN ANIMATION
+# ==========================================
+#if popt_v is not None and popt_i is not None:
+    #generate_data_driven_video(current_target, popt_v, popt_i, filename="cepheid_inclined_data.mp4", duration_days=current_target.p_orb, fps=30)
+
+import matplotlib.animation as animation
+from matplotlib.patches import Circle, Ellipse
+import matplotlib.colors as mcolors
+import numpy as np
+import matplotlib.pyplot as plt
+
+def generate_dashboard_video(target, df_v, popt_v, popt_i, filename="cepheid_dashboard_dynamic.mp4", duration_days=None, fps=30):
+    print(f"🎬 Initializing Low-RAM Video Render for {target.name}...")
+
+    a_tot, a1, a2 = calculate_orbital_elements(target)
+    inclination_rad = np.radians(target.inclination_deg)
+
+    # FORCE the DPI down to a web-friendly 100 so we don't render an 8K video
+    fig, (ax_orbit, ax_lc) = plt.subplots(1, 2, figsize=(14, 6), facecolor='#111111', dpi=100)
+    fig.patch.set_facecolor('#111111')
+
+    # ... [Keep all the exact same drawing and setup code from Phase 4 here] ...
+
+    # --- LEFT PANEL: ORBIT ---
+    ax_orbit.set_facecolor('#111111')
+    lim = a_tot * 1.2
+    ax_orbit.set_xlim(-lim, lim)
+    ax_orbit.set_ylim(-lim, lim)
+    ax_orbit.set_aspect('equal')
+    ax_orbit.axis('off')
+
+    orbit1 = Ellipse((0, 0), width=a1*2, height=a1*2*np.cos(inclination_rad), color='white', fill=False, linestyle=':', alpha=0.3)
+    orbit2 = Ellipse((0, 0), width=a2*2, height=a2*2*np.cos(inclination_rad), color='white', fill=False, linestyle=':', alpha=0.3)
+    ax_orbit.add_patch(orbit1)
+    ax_orbit.add_patch(orbit2)
+    ax_orbit.plot(0, 0, marker='+', color='white', markersize=10, alpha=0.5)
+
+    companion_color = teff_to_hex(target.teff2)
+    star2 = Circle((0, 0), target.r2, color=companion_color, zorder=10)
+    star1 = Circle((0, 0), target.r1, color='#ffffff', zorder=11)
+    ax_orbit.add_patch(star2)
+    ax_orbit.add_patch(star1)
+
+    info_text = ax_orbit.text(0.05, 0.95, "", color='white', ha='left', va='top', transform=ax_orbit.transAxes, fontsize=12, fontfamily='monospace')
+
+    # --- RIGHT PANEL: LIGHT CURVE ---
+    ax_lc.set_facecolor('#111111')
+    ax_lc.tick_params(colors='white')
+    ax_lc.spines['bottom'].set_color('white')
+    ax_lc.spines['top'].set_color('white')
+    ax_lc.spines['right'].set_color('white')
+    ax_lc.spines['left'].set_color('white')
+
+    # NEW: X-axis represents relative phase around "now"
+    ax_lc.set_xlim(-0.5, 0.5)
+
+    # FIXED: Explicit Y-limits for the light curve so data doesn't disappear
+    ax_lc.set_ylim(16, 18)
+
+    ax_lc.set_xlabel("Relative Pulsation Phase (0 = Now)", color='white', fontsize=12)
+    ax_lc.set_ylabel("V-band Magnitude", color='white', fontsize=12)
+    ax_lc.set_title(f"{target.name} V-band Light Curve", color='white', fontsize=14)
+    ax_lc.invert_yaxis()
+
+    raw_phase = (df_v['BJD'] % target.p_puls) / target.p_puls
+
+    # NEW: Initialize empty artists. We use `plot` with `.` instead of `errorbar`
+    # because it is vastly easier to animate in real-time.
+    raw_pts, = ax_lc.plot([], [], '.', color='gray', alpha=0.4, zorder=1, label="Raw Data")
+    model_line, = ax_lc.plot([], [], color='#2ecc71', linewidth=2, zorder=2, label="Fourier Model")
+
+    # NEW: The red dot and line stay permanently locked at x = 0
+    lc_dot, = ax_lc.plot([0], [0], 'o', color='#e74c3c', markersize=10, zorder=4, markeredgecolor='white', markeredgewidth=1.5)
+    lc_vline = ax_lc.axvline(x=0, color='#e74c3c', linestyle='--', alpha=0.5, zorder=3)
+
+    ax_lc.legend(loc='upper right', facecolor='#222222', edgecolor='white', labelcolor='white')
+
+    if duration_days is None:
+        duration_days = target.p_orb
+    frames = int(fps * duration_days)
+    time_step = 1.0 / fps
+
+    mean_mag_v = popt_v[0]
+    radius_scale_factor = target.r1 * 0.2
+
+    def update(frame):
+        t = frame * time_step
+
+        theta = 2 * np.pi * (t / target.p_orb)
+        x1 = a1 * np.cos(theta)
+        y1 = a1 * np.sin(theta) * np.cos(inclination_rad)
+        star1.center = (x1, y1)
+
+        x2 = a2 * np.cos(theta + np.pi)
+        y2 = a2 * np.sin(theta + np.pi) * np.cos(inclination_rad)
+        star2.center = (x2, y2)
+
+        y1_true = a1 * np.sin(theta)
+        if y1_true > 0:
+            star1.set_zorder(9)
+            star2.set_zorder(11)
+        else:
+            star1.set_zorder(11)
+            star2.set_zorder(9)
+
+        phase_puls = (t % target.p_puls) / target.p_puls
+        mag_v = fourier_series(phase_puls, *popt_v)
+        mag_i = fourier_series(phase_puls, *popt_i)
+
+        v_minus_i = mag_v - mag_i
+        current_teff = vi_index_to_teff(v_minus_i)
+        star1.set_color(teff_to_hex(current_teff))
+
+        delta_mag = mean_mag_v - mag_v
+        current_r1 = target.r1 + (delta_mag * radius_scale_factor)
+        star1.radius = current_r1
+
+        # ==========================================
+        # NEW: DYNAMIC TREADMILL GRAPH LOGIC
+        # ==========================================
+
+        # 1. Slide raw points left and wrap them cleanly between -0.5 and 0.5
+        rel_phase = (raw_phase - phase_puls + 0.5) % 1.0 - 0.5
+        raw_pts.set_data(rel_phase, df_v['Mag'])
+
+        # 2. Shift the smooth model curve to match the new relative window
+        x_smooth = np.linspace(-0.5, 0.5, 500)
+        true_phases = (x_smooth + phase_puls) % 1.0
+        smooth_mag = [fourier_series(p, *popt_v) for p in true_phases]
+        model_line.set_data(x_smooth, smooth_mag)
+
+        # 3. Update only the Y-position of the dot (X is locked at 0)
+        lc_dot.set_data([0], [mag_v])
+
+        info_str = (
+            f"Time: {t:.1f} d\n"
+            f"Puls Phase: {phase_puls:.2f}\n"
+            f"V-Mag: {mag_v:.2f}\n"
+            f"(V-I): {v_minus_i:.2f}\n"
+            f"T_eff: ~{current_teff:.0f}K"
+        )
+        info_text.set_text(info_str)
+
+        # NEW: Ensure you return the new artists so blit=True renders them!
+        return star1, star2, info_text, orbit1, orbit2, raw_pts, model_line, lc_dot, lc_vline
+
+    print(f"   ⏳ Streaming {frames} frames directly to disk via FFmpeg...")
+    plt.tight_layout()
+    anim = animation.FuncAnimation(fig, update, frames=frames, interval=1000/fps, blit=True)
+
+    # NEW WRITER: FFmpeg streams directly to disk, using almost zero RAM!
+    writer = animation.FFMpegWriter(fps=fps, bitrate=1800)
+    anim.save(filename, writer=writer)
+
+    print(f"✅ Saved full dashboard video to {filename}!")
+
+    # CRITICAL: Close the figure to free up whatever RAM it did use
+    plt.close(fig)
+
+# ==========================================
+# EXECUTE
+# ==========================================
+file_save_mp4 = 'CEP_1347_Animated.mp4'
+file_save_gif = 'CEP_1347_Animated.gif'
+if popt_v is not None and popt_i is not None:
+    generate_dashboard_video(current_target, df_v, popt_v, popt_i, filename=f'{file_save_mp4}', duration_days=current_target.p_orb, fps=30)
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import matplotlib.colors as mcolors
+from matplotlib.patches import Circle, Ellipse
+from matplotlib.gridspec import GridSpec
+
+class CepheidSimulator:
+    def __init__(self, target, popt_v, popt_i, df_v):
+        """
+        A unified physics engine for the Cepheid Binary System.
+
+        Args:
+            target (TargetConfig): The physical parameters of the system.
+            popt_v (array): Fourier coefficients for V-band.
+            popt_i (array): Fourier coefficients for I-band.
+            df_v (DataFrame): Raw V-band data for the treadmill plot.
+        """
+        self.target = target
+        self.popt_v = popt_v
+        self.popt_i = popt_i
+        self.df_v = df_v
+
+        # Physics Constants
+        self.INCLINATION = np.radians(target.inclination_deg)
+        self.PHASE_SHIFT = 0.0 # Adjust to align model with data if needed
+
+    @staticmethod
+    def fourier_series(phase, a0, *args):
+        """Vectorized Fourier series calculation."""
+        result = np.full_like(phase, a0)
+        n_harmonics = len(args) // 2
+        for k in range(1, n_harmonics + 1):
+            ak = args[2*(k-1)]
+            bk = args[2*(k-1) + 1]
+            # numpy broadcasting handles the arrays automatically
+            result += ak * np.cos(2 * np.pi * k * phase) + bk * np.sin(2 * np.pi * k * phase)
+        return result
+
+    @staticmethod
+    def teff_to_hex(teff):
+        """
+        Maps Teff to a physically accurate RGB hex color using a Blackbody lookup approximation.
+        Data source: Mitchell Charity / Tanner Helland algorithms for sRGB.
+        """
+        # Clamping
+        t = np.clip(teff, 1000, 40000)
+
+        # Interpolated lookup table for speed and accuracy (Planckian Locus approximation)
+        # Format: (Temp, R, G, B) normalized 0-1
+        lookup_temps = np.array([1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000])
+        lookup_colors = np.array([
+            [1.0, 0.22, 0.0],   # 1000K (Very Red)
+            [1.0, 0.55, 0.08],  # 2000K (Orange-Red)
+            [1.0, 0.76, 0.45],  # 3000K (Warm Orange)
+            [1.0, 0.90, 0.70],  # 4000K (Yellowish - The "Peach" zone)
+            [1.0, 0.98, 0.92],  # 5000K (White-Yellow)
+            [1.0, 1.0, 1.0],    # 6000K (Pure White)
+            [0.9, 0.95, 1.0],   # 7000K (Cool White)
+            [0.8, 0.9, 1.0],    # 8000K (Light Blue)
+            [0.75, 0.85, 1.0],  # 9000K
+            [0.70, 0.80, 1.0],  # 10000K (Blue)
+            [0.60, 0.75, 1.0],  # 15000K
+            [0.55, 0.70, 1.0],  # 20000K
+            [0.50, 0.65, 1.0],  # 30000K
+            [0.45, 0.60, 1.0]   # 40000K (Deep Blue)
+        ])
+
+        # Vectorized interpolation
+        if np.isscalar(t):
+            r = np.interp(t, lookup_temps, lookup_colors[:, 0])
+            g = np.interp(t, lookup_temps, lookup_colors[:, 1])
+            b = np.interp(t, lookup_temps, lookup_colors[:, 2])
+            return mcolors.to_hex((r, g, b))
+        else:
+            # If input is array, return array of RGBs
+            r = np.interp(t, lookup_temps, lookup_colors[:, 0])
+            g = np.interp(t, lookup_temps, lookup_colors[:, 1])
+            b = np.interp(t, lookup_temps, lookup_colors[:, 2])
+            # Stack to get (N, 3)
+            return np.stack([r, g, b], axis=1)
+
+    def vi_to_teff(self, v_mag, i_mag):
+        """Approximates Teff from V-I index."""
+        vi = v_mag - i_mag
+        # Empirical relation: Hotter (smaller V-I) -> Higher Teff
+        # (V-I)=0.4 -> ~7500K, (V-I)=1.0 -> ~4500K
+        return 9500 - 5000 * vi
+
+    def precompute_physics(self, fps=30, duration_days=None):
+        """
+        Pre-calculates all physics frames before rendering.
+        Returns a dictionary of arrays.
+        """
+        if duration_days is None:
+            duration_days = self.target.p_orb
+
+        n_frames = int(fps * duration_days)
+        times = np.linspace(0, duration_days, n_frames)
+
+        # 1. Orbital Kinematics
+        theta = 2 * np.pi * (times / self.target.p_orb)
+
+        # 2. Pulsation Physics
+        puls_phase = (times % self.target.p_puls) / self.target.p_puls
+
+        # 3. Photometry (Vectorized)
+        mag_v = self.fourier_series(puls_phase, *self.popt_v)
+        mag_i = self.fourier_series(puls_phase, *self.popt_i)
+
+        # 4. Temperature & Color
+        teff = self.vi_to_teff(mag_v, mag_i)
+
+        # 5. Physical Radius (Stefan-Boltzmann: L ~ R^2 T^4)
+        # R ~ sqrt(L) / T^2
+        # log L ~ -0.4 * M_bol (approx M_v)
+        # R_proportional ~ 10^(-0.2 * M_v) / T^2
+        r_proxy = (10**(-0.2 * mag_v)) / (teff**2)
+        # Normalize to the target's average radius
+        radius_curve = self.target.r1 * (r_proxy / np.mean(r_proxy))
+
+        return {
+            'times': times,
+            'theta': theta,
+            'puls_phase': puls_phase,
+            'mag_v': mag_v,
+            'teff': teff,
+            'radius': radius_curve,
+            'n_frames': n_frames
         }
-      }
-    }
-    ctx.globalAlpha = 1;
 
-    // fourier fit treadmill, scrolls with phi_cur, phase-indexed into puls_cycle
-    ctx.beginPath();
-    ctx.strokeStyle = '#60a5fa';
-    ctx.lineWidth = 3;
-    ctx.lineJoin = 'round';
-    for (var k = -nPts / 2; k <= nPts / 2; k++) {
-      var k_phase = ((phi_cur + k * n_cycles / nPts) % 1 + 1) % 1;
-      var fi = Math.floor(k_phase * Np) % Np;
-      var lx = px + pw / 2 + k * step;
-      var ly = magToY(pc.v_mag[fi]);
-      k === -nPts / 2 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly);
-    }
-    ctx.stroke();
+    def generate_video(self, filename="cepheid_website_palette.mp4", fps=30):
+        print(f"🎬 Pre-computing physics for {self.target.name} (Website Style)...")
+        data = self.precompute_physics(fps=fps)
 
-    // cursor dot on photometric curve
-    var cur_fi = Math.round(phi_cur * Np) % Np;
-    ctx.beginPath();
-    ctx.arc(px + pw / 2, magToY(pc.v_mag[cur_fi]), 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(96,165,250,0.9)';
-    ctx.fill();
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.30)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(px + pw / 2, py + padTop);
-    ctx.lineTo(px + pw / 2, py + ph);
-    ctx.stroke();
-    ctx.restore();
+        # --- PALETTE CONFIGURATION ---
+        C_BG = '#ffffff'
+        C_TEXT = '#111827'
+        C_ORBIT = '#e5e7eb'
+        C_GRID = '#9ca3af'
+        C_COMPANION = '#2563eb'
+        C_ACCENT = '#2563eb'
+        C_RAW = '#9ca3af'
+        C_INDICATOR = '#ef4444'
 
-    // title
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(96,165,250,0.55)';
-    ctx.textAlign = 'left';
-    ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + 12, py + 14);
+        # Calculate Orbit Geometry
+        a_rsun, a1, a2 = 138.8, 49.7, 89.1
+        # Recalculating efficiently
+        P_sec = self.target.p_orb * 86400
+        M_tot = (self.target.m1 + self.target.m2) * 1.989e30
+        G = 6.674e-11
+        a_m = ((G * M_tot * P_sec**2) / (4 * np.pi**2))**(1/3)
+        a_rsun = a_m / 6.957e8
+        a1 = a_rsun * (self.target.m2 / (self.target.m1 + self.target.m2))
+        a2 = a_rsun * (self.target.m1 / (self.target.m1 + self.target.m2))
 
-    // legend top-right
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#60a5fa';
-    ctx.fillText('Fourier fit', px + pw - inset, py + padTop + 10);
-    ctx.fillStyle = 'rgba(96,165,250,0.5)';
-    ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
+        # Setup Plot
+        fig = plt.figure(figsize=(14, 6), facecolor=C_BG, dpi=100)
+        gs = GridSpec(1, 2, figure=fig, width_ratios=[1, 1.2])
+        ax_orb = fig.add_subplot(gs[0])
+        ax_lc = fig.add_subplot(gs[1])
 
-    // ── radius vs phase mini-curve (bottom strip) ──
-    var rMin = Infinity, rMax = -Infinity;
-    for (var ri = 0; ri < Np; ri++) {
-      if (pc.r1[ri] < rMin) rMin = pc.r1[ri];
-      if (pc.r1[ri] > rMax) rMax = pc.r1[ri];
-    }
-    var rRange = Math.max(0.01, rMax - rMin);
-    var rH = 32, rY = py + ph - rH - 4;
-    var rToY2 = function(r) { return rY + rH - (r - rMin) / rRange * rH; };
+        # --- ORBIT SETUP ---
+        ax_orb.set_facecolor(C_BG)
+        # UPDATED ZOOM: Matching the user's test frame (0.8 instead of 1.1)
+        lim = a_rsun * 0.8
+        ax_orb.set_xlim(-lim, lim)
+        ax_orb.set_ylim(-lim, lim)
+        ax_orb.set_aspect('equal')
+        ax_orb.axis('off')
 
-    ctx.fillStyle = 'rgba(255,255,255,0.03)';
-    ctx.fillRect(px + inset, rY, pw - inset * 2, rH);
+        # Static Orbit Trails
+        for r_orb in [a1, a2]:
+            orbit = Ellipse((0, 0), width=r_orb*2, height=r_orb*2*np.cos(self.INCLINATION),
+                            color=C_ORBIT, fill=False, linestyle='-', linewidth=1.5)
+            ax_orb.add_patch(orbit)
 
-    // radius treadmill synced to phi_cur
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba(134,239,172,0.92)';
-    ctx.lineWidth = 1.5;
-    ctx.lineJoin = 'round';
-    for (var rk = -nPts / 2; rk <= nPts / 2; rk++) {
-      var rk_phase = ((phi_cur + rk * n_cycles / nPts) % 1 + 1) % 1;
-      var rfi = Math.floor(rk_phase * Np) % Np;
-      var rlx = px + pw / 2 + rk * step;
-      var rly = rToY2(pc.r1[rfi]);
-      rk === -nPts / 2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
-    }
-    ctx.stroke();
+        # Stars
+        # Companion (Star 2) - Fixed Blue
+        star2 = Circle((0, 0), self.target.r2, color=C_COMPANION, zorder=10)
+        # Cepheid (Star 1) - Dynamic fill, dark edge for visibility on white
+        star1 = Circle((0, 0), self.target.r1, facecolor='white', edgecolor=C_TEXT, linewidth=0.5, zorder=11)
 
-    // cursor dot on radius curve
-    var cur_r1 = pc.r1[Math.round(phi_cur * Np) % Np];
-    ctx.beginPath();
-    ctx.arc(px + pw / 2, rToY2(cur_r1), 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(134,239,172,0.9)';
-    ctx.fill();
+        ax_orb.add_patch(star2)
+        ax_orb.add_patch(star1)
 
-    // R label and live value
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(134,239,172,0.55)';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 3);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(134,239,172,0.8)';
-    ctx.fillText(cur_r1.toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 3);
+        # Info Text
+        info_text = ax_orb.text(0.05, 0.95, "Initializing...", color=C_TEXT,
+                                transform=ax_orb.transAxes, fontsize=12, fontfamily='monospace', va='top')
 
-    ctx.restore();
-  }
+        # --- LIGHT CURVE SETUP ---
+        ax_lc.set_facecolor(C_BG)
+        ax_lc.tick_params(axis='x', colors=C_TEXT)
+        ax_lc.tick_params(axis='y', colors=C_TEXT)
+        for spine in ax_lc.spines.values(): spine.set_color(C_GRID)
 
-  function drawStar(spx, spy, pr, col, is_cepheid, brightness) {
-    ctx.save();
-    var c = col || FALLBACK_COL;
-    var b = (brightness !== undefined) ? Math.max(0, Math.min(1, brightness)) : 0.5;
+        ax_lc.set_xlim(-0.5, 0.5)
+        ax_lc.set_ylim(data['mag_v'].max()+0.1, data['mag_v'].min()-0.1)
+        ax_lc.set_xlabel("Phase (Relative)", color=C_TEXT)
+        ax_lc.set_ylabel("V Magnitude", color=C_TEXT)
+        ax_lc.set_title(f"{self.target.name} - V-Band", color=C_TEXT, loc='left')
 
-    // bloom: fixed radius, linear alpha only, single gradient pass
-    var bloom_r = pr * 3.2;
-    var bloom_a = is_cepheid ? (0.07 + b * 0.13) : 0.06;
-    var grad = ctx.createRadialGradient(spx, spy, pr * 0.5, spx, spy, bloom_r);
-    grad.addColorStop(0,   hexToRgba(c, bloom_a));
-    grad.addColorStop(0.5, hexToRgba(c, bloom_a * 0.35));
-    grad.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(spx, spy, bloom_r, 0, Math.PI * 2);
-    ctx.fill();
+        # Treadmill Artists
+        raw_phase_static = (self.df_v['BJD'] % self.target.p_puls) / self.target.p_puls
 
-    // subtle core glow
-    ctx.shadowBlur  = pr * (is_cepheid ? 1.8 + b * 1.2 : 1.4);
-    ctx.shadowColor = c;
+        raw_points, = ax_lc.plot([], [], '.', color=C_RAW, alpha=0.5, markersize=4)
+        model_line, = ax_lc.plot([], [], color=C_ACCENT, linewidth=2)
+        indicator_dot, = ax_lc.plot([0], [0], 'o', color=C_INDICATOR, markersize=8, markeredgecolor='white')
 
-    // disc
-    ctx.fillStyle = c;
-    ctx.beginPath();
-    ctx.arc(spx, spy, pr, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
+        # Pre-calculate smooth model curve
+        model_phase_x = np.linspace(0, 1, 200)
 
-  // ── main loop ──────────────────────────────────────────────────────────────
+        def update(frame_idx):
+            # Look up physics
+            t = data['times'][frame_idx]
+            theta = data['theta'][frame_idx]
+            curr_puls_phase = data['puls_phase'][frame_idx]
+            curr_mag = data['mag_v'][frame_idx]
+            curr_r1 = data['radius'][frame_idx]
+            curr_teff = data['teff'][frame_idx]
 
-  var ORBIT_DURATION_S  = 120.0; // wall-clock seconds per simulated orbit
-  var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
-  // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
-  // decoupled from ORBIT_DURATION_S so slowing the orbit doesn't also slow pulsation
-  var REALTIME_PULS_S   = 0.35; // wall-clock seconds per pulsation cycle in realtime mode
+            # 1. Update Orbit Position
+            x1 = a1 * np.cos(theta)
+            y1 = a1 * np.sin(theta) * np.cos(self.INCLINATION)
+            star1.center = (x1, y1)
 
-  function animate(now) {
-    if (!data || !data.physics_frames) { requestAnimationFrame(animate); return; }
-    // if canvas has no size yet (element not laid out), resize and wait one frame
-    if (simCanvas.width === 0 || simCanvas.height === 0) {
-      resize();
-      requestAnimationFrame(animate);
-      return;
-    }
-    var p = data.physics_frames;
-    var dpr = window.devicePixelRatio || 1;
-    var cw = simCanvas.width / dpr;
-    var ch = simCanvas.height / dpr;
+            x2 = a2 * np.cos(theta + np.pi)
+            y2 = a2 * np.sin(theta + np.pi) * np.cos(self.INCLINATION)
+            star2.center = (x2, y2)
 
-    ctx.clearRect(0, 0, cw, ch);
+            # Z-Order
+            y1_true = a1 * np.sin(theta)
+            if y1_true > 0:
+                star1.set_zorder(9)
+                star2.set_zorder(11)
+            else:
+                star1.set_zorder(11)
+                star2.set_zorder(9)
 
-    // wall-clock delta, capped at 100ms to avoid jumps after tab switch
-    if (lastTime === null) lastTime = now;
-    var dt_ms = Math.min(now - lastTime, 100);
-    lastTime = now;
+            # 2. Update Star Properties
+            star1.radius = curr_r1
+            # Note: We use set_facecolor so we don't overwrite the edge color
+            star1.set_facecolor(self.teff_to_hex(curr_teff))
 
-    // advance orbital phase: 0→1 in ORBIT_DURATION_S wall seconds
-    orbitPhase = (orbitPhase + (dt_ms / 1000) / ORBIT_DURATION_S) % 1;
+            # 3. Update Light Curve Treadmill
+            shifted_phase = (raw_phase_static - curr_puls_phase + 0.5) % 1.0 - 0.5
+            raw_points.set_data(shifted_phase, self.df_v['Mag'])
 
-    // pulsation clock: only advance in pulsation and realtime modes.
-    // in orbital mode, pulsation phase is derived from orbital time (physically correct).
-    if (currentMode !== 'orbital') {
-      var puls_rate_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
-      pulsTime += (dt_ms / 1000) / puls_rate_s * P_PULS;
-    }
+            window_x = np.linspace(-0.5, 0.5, 100)
+            abs_phase_window = (window_x + curr_puls_phase) % 1.0
+            window_y = self.fourier_series(abs_phase_window, *self.popt_v)
+            model_line.set_data(window_x, window_y)
 
-    // pulsation phase 0-1:
-    // orbital mode  → tied to orbital time: one P_PULS per 1/85.3 of the orbit
-    // pulsation/realtime → independent pulsTime clock
-    var puls_phi = (currentMode === 'orbital')
-      ? ((orbitPhase * P_ORB_D % P_PULS) / P_PULS + 1) % 1
-      : ((pulsTime % P_PULS) / P_PULS + 1) % 1;
+            # Indicator
+            indicator_dot.set_data([0], [curr_mag])
 
-    var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
+            # Text
+            info_str = (
+                f"Epoch: {t:.1f} d\n"
+                f"Phase: {curr_puls_phase:.2f}\n"
+                f"Mag:   {curr_mag:.2f}\n"
+                f"T_eff: {curr_teff:.0f} K"
+            )
+            info_text.set_text(info_str)
 
-    if (currentMode === 'pulsation') {
-      // pulsation view: freeze orbital positions at center
-      x1 = 0; y1 = 0; z1 = 0;
-      x2 = 99999; y2 = 0; z2 = -1;
-    } else {
-      // orbital / realtime: interpolated positions from skeleton or full data
-      var orb = lerpFrame(p, orbitPhase * (p.x1.length - 1));
-      x1 = orb.x1; y1 = orb.y1; z1 = orb.z1;
-      x2 = orb.x2; y2 = orb.y2; z2 = orb.z2;
-    }
+            return star1, star2, raw_points, model_line, indicator_dot, info_text
 
-    // star state from puls_cycle (stable 480-frame resolution regardless of orbital dataset)
-    var ps = getPulsState(puls_phi);
-    r1   = ps.r1;
-    mag  = ps.mag;
-    teff = ps.teff;
-    col1 = ps.col;
+        print(f"   ⏳ Streaming {data['n_frames']} frames to disk...")
+        anim = animation.FuncAnimation(fig, update, frames=data['n_frames'], interval=1000/fps, blit=True)
 
-    // brightness for bloom
-    var mag_range = bounds.maxV - bounds.minV;
-    var brightness = mag_range > 0 ? 1 - (mag - bounds.minV) / mag_range : 0.5;
+        writer = animation.FFMpegWriter(fps=fps, bitrate=2000)
+        anim.save(filename, writer=writer)
+        print(f"   ✅ Saved optimized video: {filename}")
+        plt.close(fig)
 
-    // star drawing area
-    var star = getStarArea();
-    var sw = star.w, sh = star.h;
+# --- EXECUTION ---
+# Ensure variables from previous cells exist
+if 'popt_v' in globals() and 'popt_i' in globals():
+    sim = CepheidSimulator(current_target, popt_v, popt_i, df_v)
+    sim.generate_video("CEP_1347_Website.mp4", fps=30)
+else:
+    print("⚠️ Missing Fourier fits. Please run the fitting cell (Phase 2) first.")
 
-    var zoom, cx, cy;
-    if (currentMode === 'pulsation') {
-      zoom = (Math.min(sw, sh) * 0.14) / maxR1;
-      cx = sw / 2;
-      cy = sh * 0.35;
-    } else {
-      zoom = (Math.min(sw, sh) * 0.32) / bounds.a2;
-      cx = sw / 2;
-      cy = sh / 2;
-    }
+import json
+import numpy as np
+import matplotlib.colors as mcolors
 
-    // screen positions
-    var s1x = cx + x1 * zoom, s1y = cy + y1 * zoom;
-    var s2x = cx + x2 * zoom, s2y = cy + y2 * zoom;
-    var pr1 = Math.max(2, r1 * zoom);
-    var pr2 = Math.max(2, COMPANION_RAD * zoom);
+# Re-defining or Extending the Simulator to include JSON Export
+class CepheidExporter(CepheidSimulator):
+    def export_to_json(self, filename="master_data.json"):
+        print(f"💾 Starting JSON Export for {self.target.name}...")
 
-    // ── orbital ellipses ──
-    if (currentMode !== 'pulsation') {
-      ctx.save();
-      ctx.lineWidth = 2;
-      ctx.setLineDash([7, 9]);
-      ctx.strokeStyle = 'rgba(248,113,113,0.55)';
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * COS_I, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(196,162,88,0.55)';
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * COS_I, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
+        # --- 1. Sampling Configuration ---
+        # Requirement: P_puls sampled at least 120 times.
+        samples_per_puls = 120
+        # Total duration is exactly one orbital period
+        duration = self.target.p_orb
 
-      // barycenter
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy);
-      ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5);
-      ctx.stroke();
-      ctx.restore();
-    }
+        # Calculate time step dt
+        dt = self.target.p_puls / samples_per_puls
 
-    // ── plots ──
-    if (currentMode === 'pulsation') {
-      drawLightCurve(puls_phi);
-    } else {
-      drawRVPlot(orbitPhase, puls_phi);
-    }
+        # Total frames for one full orbit
+        n_frames = int(duration / dt)
+        times = np.linspace(0, duration, n_frames)
 
-    // clip all star-area drawing so nothing bleeds into the plot region below
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, 0, sw, star.h);
-    ctx.clip();
+        print(f"   • Time step: {dt:.5f} days")
+        print(f"   • Total Frames: {n_frames}")
 
-    // ── trails: cinematic tapered lines ──
-    if (currentMode !== 'pulsation') {
-      trail1.push({ x: s1x, y: s1y, col: col1 || FALLBACK_COL });
-      trail2.push({ x: s2x, y: s2y });
-      if (trail1.length > TRAIL_LEN) trail1.shift();
-      if (trail2.length > TRAIL_LEN) trail2.shift();
+        # --- 2. Orbital Kinematics (Center-of-Mass) ---
+        # Recalculate orbital elements (using stored logic)
+        # Kepler's 3rd Law -> Semi-major axis
+        P_sec = self.target.p_orb * 86400
+        M_tot = (self.target.m1 + self.target.m2) * 1.989e30
+        G = 6.674e-11
+        a_m = ((G * M_tot * P_sec**2) / (4 * np.pi**2))**(1/3)
+        a_rsun = a_m / 6.957e8
 
-      ctx.save();
-      // Cepheid trail, temperature-coloured tapered stroke
-      if (trail1.length > 2) {
-        for (var ti = 1; ti < trail1.length; ti++) {
-          var tf = ti / trail1.length;           // 0=tail, 1=head
-          var tw = tf * tf * 3.5;               // quadratic taper: thin tail, thick head
-          var ta = tf * tf * 0.55;
-          ctx.beginPath();
-          ctx.moveTo(trail1[ti-1].x, trail1[ti-1].y);
-          ctx.lineTo(trail1[ti].x,   trail1[ti].y);
-          ctx.strokeStyle = hexToRgba(trail1[ti].col, ta);
-          ctx.lineWidth   = tw;
-          ctx.lineCap     = 'round';
-          ctx.stroke();
+        # Distances from barycenter
+        a1 = a_rsun * (self.target.m2 / (self.target.m1 + self.target.m2))
+        a2 = a_rsun * (self.target.m1 / (self.target.m1 + self.target.m2))
+
+        theta = 2 * np.pi * (times / self.target.p_orb)
+        inclination = np.radians(self.target.inclination_deg)
+        x1 = a1 * np.cos(theta)
+        y1_raw = a1 * np.sin(theta)
+        y1 = y1_raw * np.cos(inclination) # Visual Y
+        z1 = y1_raw * np.sin(inclination) # Depth Z (for layering)
+
+        # Star 2 (Companion)
+        x2 = a2 * np.cos(theta + np.pi)
+        y2_raw = a2 * np.sin(theta + np.pi)
+        y2 = y2_raw * np.cos(inclination)
+        z2 = y2_raw * np.sin(inclination)
+
+        # --- 3. Real Physics Mode ---
+        puls_phase_real = (times % self.target.p_puls) / self.target.p_puls
+
+        # Vectorized Fourier Calculation
+        mag_v_real = self.fourier_series(puls_phase_real, *self.popt_v)
+        mag_i_real = self.fourier_series(puls_phase_real, *self.popt_i)
+
+        # Teff & Color
+        teff_real = self.vi_to_teff(mag_v_real, mag_i_real)
+
+        # Convert Teff -> RGB Array -> Hex Strings
+        rgb_real = self.teff_to_hex(teff_real)
+        colors_hex_real = [mcolors.to_hex(c) for c in rgb_real]
+
+        # Physical Radius (Relative Variation)
+        # R ~ 10^(-0.2 * Mag) / T^2
+        r_proxy = (10**(-0.2 * mag_v_real)) / (teff_real**2)
+        r1_real = self.target.r1 * (r_proxy / np.mean(r_proxy))
+
+        # --- 4. Composite Cheat Mode ---
+        # Requirement: Exactly 15 cycles per orbit
+        n_composite_cycles = 15
+        composite_phase = (times / self.target.p_orb) * n_composite_cycles
+        # Wrap phase 0-1 for Fourier input
+        composite_phase_wrapped = composite_phase % 1.0
+
+        # Recalculate Physics for Composite Mode
+        mag_v_comp = self.fourier_series(composite_phase_wrapped, *self.popt_v)
+        mag_i_comp = self.fourier_series(composite_phase_wrapped, *self.popt_i)
+
+        teff_comp = self.vi_to_teff(mag_v_comp, mag_i_comp)
+        rgb_comp = self.teff_to_hex(teff_comp)
+        colors_hex_comp = [mcolors.to_hex(c) for c in rgb_comp]
+
+        r_proxy_comp = (10**(-0.2 * mag_v_comp)) / (teff_comp**2)
+        r1_comp = self.target.r1 * (r_proxy_comp / np.mean(r_proxy_comp))
+
+        # --- 5. Construct JSON Structure ---
+        output_data = {
+            "metadata": {
+                "name": self.target.name,
+                "p_orb": self.target.p_orb,
+                "p_puls": self.target.p_puls,
+                "r2": self.target.r2,
+                "color2": "#3b82f6", # Fixed website blue
+                "orbital_separation_rsun": a_rsun,
+                "inclination_deg": 57.0,
+                "total_frames": n_frames,
+                "dt": dt
+            },
+            "physics_frames": {
+                "t": times.tolist(),
+                "x1": x1.tolist(),
+                "y1": y1.tolist(),
+                "z1": z1.tolist(),
+                "x2": x2.tolist(),
+                "y2": y2.tolist(),
+                "z2": z2.tolist(),
+                "r1": r1_real.tolist(),
+                "color1": colors_hex_real,
+                "v_mag": mag_v_real.tolist()
+            },
+            "composite_frames": {
+                "r1": r1_comp.tolist(),
+                "v_mag": mag_v_comp.tolist(),
+                "color1": colors_hex_comp
+            }
         }
-      }
-      // Companion trail, red, same taper
-      if (trail2.length > 2) {
-        for (var ti2 = 1; ti2 < trail2.length; ti2++) {
-          var tf2 = ti2 / trail2.length;
-          var tw2 = tf2 * tf2 * 2.8;
-          var ta2 = tf2 * tf2 * 0.45;
-          ctx.beginPath();
-          ctx.moveTo(trail2[ti2-1].x, trail2[ti2-1].y);
-          ctx.lineTo(trail2[ti2].x,   trail2[ti2].y);
-          ctx.strokeStyle = 'rgba(248,113,113,' + ta2.toFixed(3) + ')';
-          ctx.lineWidth   = tw2;
-          ctx.lineCap     = 'round';
-          ctx.stroke();
-        }
-      }
-      ctx.restore();
-    }
 
-    // ── stars (z-sorted) ──
-    if (z1 < z2) {
-      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
-      drawStar(s1x, s1y, pr1, col1, true, brightness);
-    } else {
-      drawStar(s1x, s1y, pr1, col1, true, brightness);
-      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
-    }
+        # --- 6. Write to File ---
+        with open(filename, 'w') as f:
+            json.dump(output_data, f, indent=None) # Compact JSON (no indent)
 
-    // ── star labels: always-on, dark pill background ──
-    if (currentMode !== 'pulsation') {
-      ctx.save();
-      ctx.font = '12px \'JetBrains Mono\', monospace';
-      ctx.textBaseline = 'middle';
+        print(f"✅ Successfully exported {filename} ({len(json.dumps(output_data))/1024:.1f} KB)")
+        return filename
 
-      var drawLabel = function(lx, ly, text, fgCol) {
-        var pad = 5, tw = ctx.measureText(text).width;
-        var rx = lx, ry = ly - 9, rw = tw + pad*2, rh = 18;
-        ctx.fillStyle = 'rgba(7,9,26,0.72)';
-        ctx.beginPath();
-        ctx.roundRect(rx, ry, rw, rh, 3);
-        ctx.fill();
-        ctx.fillStyle = fgCol;
-        ctx.globalAlpha = 0.92;
-        ctx.fillText(text, lx + pad, ly);
-        ctx.globalAlpha = 1;
-      };
+# Execute Export
+if 'popt_v' in globals() and 'popt_i' in globals():
+    exporter = CepheidExporter(current_target, popt_v, popt_i, df_v)
+    exporter.export_to_json("master_data2.json")
+else:
+    print("⚠️ Missing Fourier fits. Run Phase 2 first.")
 
-      drawLabel(s1x + pr1 + 9, s1y, 'Cepheid',   '#ffe4a0');
-      drawLabel(s2x + pr2 + 9, s2y, 'Companion', '#f87171');
-      ctx.restore();
-    }
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle, Ellipse
+from matplotlib.gridspec import GridSpec
+import numpy as np
 
-    ctx.restore(); // end star-area clip
+def generate_test_frame(target, filename="test_frame_zoom.png"):
+    print(f"📸 Generating Test Frame for {target.name}...")
 
-    // ── mobile separator ──
-    if (star.mobile) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, sh + 10);
-      ctx.lineTo(sw, sh + 10);
-      ctx.stroke();
-      ctx.restore();
-    }
+    # --- PALETTE ---
+    C_BG = '#ffffff'
+    C_ORBIT = '#e5e7eb'
+    C_COMPANION = '#2563eb'
+    C_TEXT = '#111827'
 
-    // ── hud ──
-    if (hud.mag) hud.mag.innerText = mag.toFixed(1);
-    if (hud.teff) hud.teff.innerText = teff !== null ? Math.round(teff) + ' K' : '~6490 K';
-    var swatch = document.getElementById('hud-teff-swatch');
-    if (swatch && col1) swatch.style.background = col1;
-    if (hud.rad) hud.rad.innerText = r1.toFixed(1) + ' R\u2609';
+    # --- GEOMETRY ---
+    # Re-calculate geometry locally for the test frame
+    P_sec = target.p_orb * 86400
+    M_tot = (target.m1 + target.m2) * 1.989e30
+    G = 6.674e-11
+    a_m = ((G * M_tot * P_sec**2) / (4 * np.pi**2))**(1/3)
+    a_rsun = a_m / 6.957e8
+    a1 = a_rsun * (target.m2 / (target.m1 + target.m2))
+    a2 = a_rsun * (target.m1 / (target.m1 + target.m2))
 
-    if (currentMode === 'pulsation') {
-      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> Pulsation phase';
-      if (hud.phase) hud.phase.innerText = puls_phi.toFixed(3);
-    } else {
-      var orbLabel = currentMode === 'realtime'
-        ? '\u03C6<sub>orb</sub> Orbital phase \u00B7 puls \u00D785'
-        : '\u03C6<sub>orb</sub> Orbital phase';
-      if (hud.phaseLabel) hud.phaseLabel.innerHTML = orbLabel;
-      if (hud.phase) hud.phase.innerText = orbitPhase.toFixed(3);
-    }
+    inclination = np.radians(target.inclination_deg)
+    fig = plt.figure(figsize=(8, 8), facecolor=C_BG, dpi=100)
+    ax = fig.add_subplot(111)
+    ax.set_facecolor(C_BG)
 
-    // ── guided first-loop captions ──
-    if (currentMode === 'orbital' || currentMode === 'realtime') {
-      if (captionStartTime === null) captionStartTime = now;
-      var elapsed = now - captionStartTime;
-      var starArea = getStarArea();
-      var capY = Math.min(starArea.h * 0.82, starArea.h - 50);
-      var maxCapW = starArea.w - 40; // leave margin on both sides
-      ctx.font = '11px \'JetBrains Mono\', monospace';
+    # --- ZOOM SETTING IS HERE ---
+    # We set the limit to 1.1x the semi-major axis
+    lim = a_rsun * 0.8
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_aspect('equal')
+    ax.axis('off')
 
-      // word-wrap helper: returns array of lines fitting within maxW
-      function wrapText(text, maxW) {
-        var words = text.split(' ');
-        var lines = [];
-        var cur = '';
-        for (var wi = 0; wi < words.length; wi++) {
-          var test = cur ? cur + ' ' + words[wi] : words[wi];
-          if (ctx.measureText(test).width > maxW && cur) {
-            lines.push(cur);
-            cur = words[wi];
-          } else {
-            cur = test;
-          }
-        }
-        if (cur) lines.push(cur);
-        return lines;
-      }
+    # Draw Orbits
+    for r_orb in [a1, a2]:
+        orbit = Ellipse((0, 0), width=r_orb*2, height=r_orb*2*np.cos(inclination),
+                        color=C_ORBIT, fill=False, linestyle='-', linewidth=1.5)
+        ax.add_patch(orbit)
 
-      for (var ci = 0; ci < CAPTIONS.length; ci++) {
-        var cap = CAPTIONS[ci];
-        var age = elapsed - cap.t;
-        if (age < 0 || age > cap.dur + 800) continue;
-        var alpha = age < 400 ? age / 400
-                  : age > cap.dur ? Math.max(0, 1 - (age - cap.dur) / 800)
-                  : 1;
-        if (alpha <= 0) continue;
-        ctx.save();
-        ctx.globalAlpha = alpha * 0.88;
-        ctx.font = '11px \'JetBrains Mono\', monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        var lines = wrapText(cap.text, maxCapW - 24);
-        var lineH = 17;
-        var pillH = lines.length * lineH + 10;
-        var pillW = 0;
-        for (var li = 0; li < lines.length; li++) {
-          var lw = ctx.measureText(lines[li]).width + 24;
-          if (lw > pillW) pillW = lw;
-        }
-        var capX = starArea.w / 2;
-        var pillY = capY - pillH / 2;
-        ctx.fillStyle = 'rgba(7,9,26,0.80)';
-        ctx.beginPath();
-        ctx.roundRect(capX - pillW / 2, pillY, pillW, pillH, 4);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(226,221,212,0.92)';
-        for (var li2 = 0; li2 < lines.length; li2++) {
-          ctx.fillText(lines[li2], capX, pillY + 5 + lineH * li2 + lineH / 2);
-        }
-        ctx.restore();
-      }
-    }
+    # Draw Stars (Arbitrary positions for test)
+    # Star 1 at (a1, 0)
+    x1 = a1
+    y1 = 0
+    star1 = Circle((x1, y1), target.r1, facecolor='white', edgecolor=C_TEXT, linewidth=0.5, zorder=11)
 
-    requestAnimationFrame(animate);
-  }
+    # Star 2 at (-a2, 0)
+    x2 = -a2
+    y2 = 0
+    star2 = Circle((x2, y2), target.r2, color=C_COMPANION, zorder=10)
 
-  // ── mode switching ─────────────────────────────────────────────────────────
+    ax.add_patch(star1)
+    ax.add_patch(star2)
 
-  window.setMode = function(mode) {
-    if (!MODES.has(mode)) return;
-    currentMode = mode;
-    trail1 = []; trail2 = [];
-    lastTime = null;
-    pulsTime = 0;
+    # Overlay Text to confirm Zoom
+    ax.text(0, lim*0.9, f"Zoom Limit: {lim:.1f} R_sun", ha='center', color=C_TEXT)
 
-    document.querySelectorAll('.btn-mode').forEach(function(b) {
-      b.style.background = 'transparent';
-      b.style.color = 'rgba(255,255,255,0.4)';
-      b.style.boxShadow = 'none';
-    });
-    var btn = document.getElementById('btn-' + mode);
-    if (btn) {
-      btn.style.background = 'rgba(255,255,255,0.18)';
-      btn.style.color = '#ffffff';
-      btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
-    }
-  };
+    plt.savefig(filename, bbox_inches='tight')
+    print(f"✅ Test frame saved to {filename}")
+    plt.show()
 
-  // ── resize ─────────────────────────────────────────────────────────────────
+# Execute
+generate_test_frame(current_target)
 
-  function resize() {
-    var dpr = window.devicePixelRatio || 1;
-    var rect = simCanvas.getBoundingClientRect();
-    simCanvas.width = rect.width * dpr;
-    simCanvas.height = rect.height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    trail1 = []; trail2 = [];
-  }
-
-  // ── init ───────────────────────────────────────────────────────────────────
-
-  async function init() {
-    if (!simCanvas || !ctx) return;
-    try {
-      // stage 1: boot JSON, starts sim immediately
-
-      // sequence loading lines: each fades in, holds, fades out, then next starts
-      // fade-in 0.4s → hold 0.8s → fade-out 0.4s, 3s between line starts
-      var loadLines = [
-        document.getElementById('sll-0'),
-        document.getElementById('sll-1'),
-        document.getElementById('sll-2'),
-        document.getElementById('sll-3')
-      ];
-      var loadTimers = [];
-      loadLines.forEach(function(el, idx) {
-        if (!el) return;
-        var t0 = idx * 3000; // each line starts 3s after the previous
-        loadTimers.push(setTimeout(function() { el.style.opacity = '1'; }, t0));
-        loadTimers.push(setTimeout(function() { el.style.opacity = '0'; }, t0 + 2400));
-      });
-
-      var scriptEl = document.querySelector('script[data-boot-json]');
-      var bootUrl  = (scriptEl && scriptEl.dataset.bootJson) || '/data/master_data_boot.json';
-      var fullUrl  = (scriptEl && scriptEl.dataset.fullJson) || '/data/master_data.json';
-
-      var r = await fetch(bootUrl);
-      if (!r.ok) throw new Error('HTTP ' + r.status + ' loading boot JSON');
-      data = await r.json();
-      var p = data.physics_frames;
-      var req = ['v_mag', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'r1'];
-      for (var ri = 0; ri < req.length; ri++) {
-        if (!Array.isArray(p[req[ri]])) throw new Error('Missing: physics_frames.' + req[ri]);
-      }
-
-      for (var mi = 0; mi < p.v_mag.length; mi++) {
-        if (p.v_mag[mi] < bounds.minV) bounds.minV = p.v_mag[mi];
-        if (p.v_mag[mi] > bounds.maxV) bounds.maxV = p.v_mag[mi];
-      }
-      // refine bounds from puls_cycle (full cycle, high resolution)
-      var pc_init = data.metadata && data.metadata.puls_cycle;
-      if (pc_init) {
-        for (var pci = 0; pci < pc_init.Np; pci++) {
-          if (pc_init.v_mag[pci] < bounds.minV) bounds.minV = pc_init.v_mag[pci];
-          if (pc_init.v_mag[pci] > bounds.maxV) bounds.maxV = pc_init.v_mag[pci];
-        }
-        maxR1 = Math.max(maxR1, Math.max.apply(null, pc_init.r1));
-      }
-      bounds.a1 = Math.max.apply(null, p.x1.map(Math.abs));
-      bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
-      maxR1 = Math.max.apply(null, p.r1);
-
-      buildRV();
-      prepareObservationalData();
-
-      // boot JSON is now uniformly sampled across the full orbit,
-      // so orbitPhase can start at 0 without any positional desync.
-      orbitPhase = 0;
-
-      if (preview) {
-        // cancel any pending line timers and clear all lines immediately
-        loadTimers.forEach(function(t) { clearTimeout(t); });
-        loadLines.forEach(function(el) { if (el) el.style.opacity = '0'; });
-        preview.style.opacity = '0';
-        setTimeout(function() { preview.style.display = 'none'; }, 650);
-      }
-      simCanvas.style.opacity = '1';
-      if (plotUI) plotUI.style.opacity = '1';
-
-      window.addEventListener('resize', resize);
-      resize();
-      setMode('orbital');
-      requestAnimationFrame(animate);
-
-      // stage 2: fetch full JSON in background, swap seamlessly
-      fetch(fullUrl).then(function(r2) {
-        if (!r2.ok) return;
-        return r2.json();
-      }).then(function(fullData) {
-        if (!fullData) return;
-        // orbitPhase is normalized 0-1, no rescaling needed, just swap data
-        data = fullData;
-        var p2 = data.physics_frames;
-        bounds.minV = 99; bounds.maxV = -99;
-        for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
-          if (p2.v_mag[mi2] < bounds.minV) bounds.minV = p2.v_mag[mi2];
-          if (p2.v_mag[mi2] > bounds.maxV) bounds.maxV = p2.v_mag[mi2];
-        }
-        var pc_full = data.metadata && data.metadata.puls_cycle;
-        if (pc_full) {
-          for (var pci2 = 0; pci2 < pc_full.Np; pci2++) {
-            if (pc_full.v_mag[pci2] < bounds.minV) bounds.minV = pc_full.v_mag[pci2];
-            if (pc_full.v_mag[pci2] > bounds.maxV) bounds.maxV = pc_full.v_mag[pci2];
-          }
-          maxR1 = Math.max.apply(null, pc_full.r1);
-        }
-        bounds.a1 = Math.max.apply(null, p2.x1.map(Math.abs));
-        bounds.a2 = Math.max.apply(null, p2.x2.map(Math.abs));
-        maxR1 = Math.max.apply(null, p2.r1);
-        buildRV();
-        prepareObservationalData();
-      }).catch(function(e) {
-        console.warn('Full data load failed, running on boot data:', e);
-      });
-
-    } catch (e) {
-      console.error('Cepheid sim init error:', e);
-    }
-  }
-
-  init();
-})();
+!ffmpeg -i CEP_1347_Website.mp4 -vf "fps=30,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 CEP-1347_Website.gif
