@@ -1241,7 +1241,7 @@
 
     if (frame_dur >= 0) {
       accum_t += dt;
-      var steps = frame_dur > 0 ? Math.floor(accum_t / frame_dur) : 1;
+      var steps = frame_dur > 0 ? Math.floor(accum_t / frame_dur) : Math.max(1, Math.floor(dt));
       if (steps > 0) {
         accum_t = frame_dur > 0 ? accum_t % frame_dur : 0;
         var prev_fi = cur_fi;
