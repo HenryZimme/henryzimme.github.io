@@ -51,7 +51,7 @@ const featured_objects = [
     simbad_id: "HD344787",
     pipeline: true,
     type: "Active Investigation  |  Northern Sky",
-    writeup: "At the 247th AAS meeting, I watched Dupree &amp; MacLeod present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like binary star Polaris? Is it alone, or is something else there, invisible and waiting to be found?"
+    writeup: "At the 247th AAS meeting, I watched Dupree &amp; MacLeod present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris? Is it alone, or is something else there, invisible and waiting to be found?"
   }
 ];
 
@@ -800,6 +800,7 @@ const mobile_nav = document.getElementById('nav-mobile');
 function toggle_mobile_nav() {
   const open = mobile_nav.classList.toggle('open');
   hamburger_btn.classList.toggle('open', open);
+  hamburger_btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   document.body.style.overflow = open ? 'hidden' : '';
   // prevent starfield interaction while menu is open
   canvas.style.pointerEvents = open ? 'none' : 'auto';
@@ -870,6 +871,7 @@ document.querySelectorAll('.card-toggle').forEach(function(btn) {
     const open = card.classList.toggle('card-open');
     expand.style.maxHeight = open ? expand.scrollHeight + 'px' : '0';
     btn.textContent = open ? 'Read less \u2191' : 'Read more \u2193';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
 });
 
