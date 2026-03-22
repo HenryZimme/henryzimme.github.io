@@ -930,10 +930,12 @@
     var rot_ph = frm.rot_ph[fi];
     var in_gap = rot_ph >= meta.gap_start_ph && rot_ph < meta.gap_end_ph;
     var gs     = meta.gap_start_ph, ge = meta.gap_end_ph;
+    // on mobile portrait the right panel is below the scene, not beside it
+    var dial_panel_top = MOBILE_PORTRAIT ? HEADER_H + SCENE_H : HEADER_H;
 
     // panel background
     ctx.save();
-    ctx.beginPath(); ctx.rect(RIGHT_X, HEADER_H, RIGHT_W, DIAL_CY - HEADER_H + R + 30);
+    ctx.beginPath(); ctx.rect(RIGHT_X, dial_panel_top, RIGHT_W, DIAL_CY - dial_panel_top + R + 30);
     ctx.fillStyle = C_BG; ctx.fill();
     ctx.restore();
 
@@ -1024,7 +1026,7 @@
     ctx.save();
     ctx.font      = '9px JetBrains Mono, monospace';
     ctx.textAlign = 'center'; ctx.fillStyle = C_DIM;
-    ctx.fillText('ROTATIONAL PHASE', cx, HEADER_H + 18);
+    ctx.fillText('ROTATIONAL PHASE', cx, dial_panel_top + 18);
     ctx.restore();
   }
 
