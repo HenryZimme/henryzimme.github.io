@@ -1148,14 +1148,19 @@
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var date_start = new Date(meta.date_start + 'T00:00:00Z');
     var frames_per_day = 24 / meta.frame_stride_h;
+    var last_label_x = -999;
+    var min_label_gap = MOBILE_PORTRAIT ? 38 : 28;
     for (var d = 0; d <= meta.n_days; d++) {
       var fi_d = Math.round(d * frames_per_day);
       if (fi_d < fi_min || fi_d > fi_max) continue;
       var tx = Math.round(x0 + (fi_d - fi_min) / (fi_max - fi_min) * (W - 1));
       ctx.beginPath(); ctx.moveTo(tx, PHASE_Y - 3); ctx.lineTo(tx, PHASE_Y + PHASE_H + 3); ctx.stroke();
-      var dt = new Date(date_start.getTime() + d * 86400000);
-      var lbl = months[dt.getUTCMonth()] + ' ' + dt.getUTCDate();
-      ctx.fillText(lbl, tx, y0 + H - 3);
+      if (Math.abs(tx - last_label_x) >= min_label_gap) {
+        var dt = new Date(date_start.getTime() + d * 86400000);
+        var lbl = months[dt.getUTCMonth()] + ' ' + dt.getUTCDate();
+        ctx.fillText(lbl, tx, y0 + H - 3);
+        last_label_x = tx;
+      }
     }
     ctx.restore();
 
