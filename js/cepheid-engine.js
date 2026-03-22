@@ -9,7 +9,8 @@
   var P_PULS        = 0.69001; // days
   var T0_ORB        = 2459050.0; // orbital reference epoch HJD (Pilecki+ 2022 Table 1)
   var T0_PULS       = 2459510.64947; // pulsation reference epoch HJD (Fourier r=2 fit to Pilecki RVs)
-  var COS_I         = Math.cos(57 * Math.PI / 180); // orbital inclination: squashes ellipse minor axis; K1/K2 already embed sin(i)
+  var SIN_I         = Math.sin(57 * Math.PI / 180);
+  var COS_I         = Math.cos(57 * Math.PI / 180); // orbital inclination projection factor
   var K1            = 28.5;   // km/s (Pilecki+ 2022 Table 1)
   var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
   var RV_THRESH     = 40;
@@ -319,7 +320,7 @@
     for (var oi2 = 0; oi2 < OGLE_V_RAW.length; oi2++) {
       var r = OGLE_V_RAW[oi2];
       ogle_phased.push({
-        phase: ((((r[0] + 2450000) - T0_PULS) % P_PULS + P_PULS) % P_PULS) / P_PULS,
+        phase: (((r[0] + 2450000) % P_PULS) / P_PULS + 1) % 1,
         mag:   r[1],
         alpha: 0.18 + 0.64 * (weights[oi2] / max_w)
       });
@@ -749,8 +750,8 @@
 
   var ORBIT_DURATION_S  = 120.0; // wall-clock seconds per simulated orbit
   var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
-  // realtime: pulsation runs ~4x faster than the true P_puls/P_orb ratio (1.41s would be exact)
-  // deliberately sped up so pulsation is visible alongside the orbit without slowing the orbit down
+  // realtime: physically correct ratio P_puls/P_orb relative to orbit speed
+  // decoupled from ORBIT_DURATION_S so slowing the orbit doesn't also slow pulsation
   var REALTIME_PULS_S   = 0.35; // wall-clock seconds per pulsation cycle in realtime mode
 
   function animate(now) {
