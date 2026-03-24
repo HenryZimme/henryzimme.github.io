@@ -18,7 +18,23 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
   <link rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/css/style.css"></noscript></head>
+  <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
+  <style>
+    /* research card deep-link from modal */
+    .modal-card-link {
+      display: inline-block;
+      margin-top: 10px;
+      margin-left: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      text-decoration: none;
+      opacity: 0.82;
+      transition: opacity 0.15s;
+    }
+    .modal-card-link:hover { opacity: 1; }
+  </style></head>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preload" as="fetch" href="/data/stars.json" crossorigin>
 
@@ -40,6 +56,7 @@
     <h2 class="modal-name" id="modal-name"></h2>
     <p class="modal-body" id="modal-body"></p>
     <a class="modal-simbad" id="modal-simbad" href="#" target="_blank" rel="noopener">View on SIMBAD</a>
+    <a class="modal-card-link" id="modal-card-link" href="#" style="display:none">View Research Card ↓</a>
   </div>
 </div>
 
@@ -71,7 +88,7 @@
   <section id="hero">
     <p class="hero-eyebrow">Phillips Academy Andover, Class of 2027</p>
     <h1 class="hero-name">Henry<br>Zimmerman</h1>
-    <p class="hero-tagline">Astrophysicist • Writer • Runner.</p>
+    <p class="hero-tagline">Astrophysics Researcher • Writer • Runner.</p>
     <div class="hero-arrow">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M4 7l6 6 6-6" stroke="rgba(196,162,88,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -131,7 +148,7 @@
       <p class="research-intro">My work may begin with data, but it never ends there. Every result is a question about what to ask next, and the best questions are the ones that make the current model harder to defend.</p>
       <div class="research-cards">
 
-        <div class="research-card">
+        <div class="research-card" id="card-cep1347">
           <div class="card-id">Primary Research, VLT Proposal In Prep</div>
           <h3 class="card-title">First Asteroseismic Evidence of Merger Origin in a Binary Cepheid &rarr; VLT Spectroscopic Follow-Up</h3>
           <p class="card-summary">After six years of OGLE photometry revealed a candidate rotational signal suggesting merger spindown, my own window function analysis identified it as a 1-year sampling alias, a diagnostic that drove the pivot to a VLT/ESPRESSO spectroscopic proposal with Dr. Bogumił Pilecki, where chemical abundances will provide a template for identifying merger-origin Cepheids.</p>
@@ -167,7 +184,7 @@
           </div>
         </div>
 
-        <div class="research-card">
+        <div class="research-card" id="card-cindygraber">
           <div class="card-id">Ongoing, with Dr. José Zorrilla and Caroline Odden</div>
           <h3 class="card-title">Rotation Period and Taxonomy of 7605 Cindygraber</h3>
           <p class="card-summary">I am coordinating a multi-site Slooh campaign with citizen scientists remotely operating telescopes across three continents to determine the rotation period and taxonomy of main-belt asteroid 7605 Cindygraber, using a custom open-source scheduler to optimize observing cadence under variable site conditions.</p>
@@ -207,7 +224,7 @@
           </div>
         </div>
 
-        <div class="research-card">
+        <div class="research-card" id="card-usgr">
           <div class="card-id">Completed, with Dr. José Zorrilla</div>
           <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
           <p class="card-summary">Multi-band photometry of classical Cepheid U Sagittarii confirmed its 6.74-day period and produced a 40.8% vs. 1.9% V-to-I distance error gap, a direct demonstration of how interstellar dust corrupts Cepheid distance measurements.</p>
