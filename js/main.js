@@ -409,51 +409,67 @@ function draw_canvas_legend() {
   if (hint_alpha > 0 && hint_target) {
     const s = hint_target;
     const sx = s.x, sy = s.y;
-    const label_w = 120, label_h = 34;
+    const is_mobile = canvas.width <= 740;
+
+    // scale everything for mobile vs desktop
+    const font_name  = is_mobile ? '500 13px "JetBrains Mono", monospace' : '500 12px "JetBrains Mono", monospace';
+    const font_sub   = is_mobile ? '400 12px "JetBrains Mono", monospace' : '400 11px "JetBrains Mono", monospace';
+    const label_w    = is_mobile ? 138 : 124;
+    const label_h    = is_mobile ? 40  : 36;
+    const offset     = is_mobile ? 100 : 92;  // px from star center to label center
+    const glow_gap   = is_mobile ? 26  : 24;  // tip clearance from star center
+    const ah         = is_mobile ? 9   : 7;   // arrowhead size
+    const shaft_w    = is_mobile ? 1.6 : 1.2;
+    const head_w     = is_mobile ? 2.0 : 1.5;
+
     // place label left of star if on right half of canvas, otherwise right
     const label_left = sx > canvas.width * 0.55;
     const lx = label_left
-      ? Math.max(label_w / 2 + 8, sx - 90)
-      : Math.min(canvas.width - label_w / 2 - 8, sx + 90);
-    const ly = sy - 40;
+      ? Math.max(label_w / 2 + 8, sx - offset)
+      : Math.min(canvas.width - label_w / 2 - 8, sx + offset);
+    const ly = sy - 42;
     const short_name = (s.obj_data.name || '').split(' | ')[0].trim();
 
     // tail starts from label bottom-center, tip stops outside glow ring
     const tail_x = lx, tail_y = ly + label_h / 2 + 4;
     const dx = sx - tail_x, dy = sy - tail_y;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const tip_x = tail_x + dx * (1 - 24 / dist);
-    const tip_y = tail_y + dy * (1 - 24 / dist);
+    const tip_x = tail_x + dx * (1 - glow_gap / dist);
+    const tip_y = tail_y + dy * (1 - glow_gap / dist);
     const angle = Math.atan2(dy, dx);
-    const ah = 7;
 
     ctx.save();
     ctx.globalAlpha = hint_alpha;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // backdrop pill behind text
-    ctx.fillStyle = 'rgba(7,9,26,0.62)';
+    // backdrop pill — slightly more opaque for visibility
+    ctx.fillStyle = 'rgba(7,9,26,0.72)';
     ctx.beginPath();
     ctx.roundRect(lx - label_w / 2, ly - label_h / 2, label_w, label_h, 5);
     ctx.fill();
 
+    // thin border on pill for extra definition
+    ctx.strokeStyle = 'rgba(196,162,88,0.22)';
+    ctx.lineWidth = 0.75;
+    ctx.stroke();
+
     // star name in its legend color
-    ctx.font = '500 11px "JetBrains Mono", monospace';
+    ctx.font = font_name;
     ctx.fillStyle = s.color;
-    ctx.fillText(short_name, lx, ly - 8);
+    ctx.fillText(short_name, lx, ly - 9);
 
     // subtitle
-    ctx.font = '400 10px "JetBrains Mono", monospace';
-    ctx.fillStyle = 'rgba(226,221,212,0.88)';
-    ctx.fillText('click to explore', lx, ly + 8);
+    ctx.font = font_sub;
+    ctx.fillStyle = 'rgba(226,221,212,0.92)';
+    ctx.fillText(is_mobile ? 'tap to explore' : 'click to explore', lx, ly + 9);
 
     // arrow shaft
     ctx.beginPath();
     ctx.moveTo(tail_x, tail_y);
     ctx.lineTo(tip_x, tip_y);
-    ctx.strokeStyle = 'rgba(196,162,88,0.80)';
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(196,162,88,0.88)';
+    ctx.lineWidth = shaft_w;
     ctx.stroke();
 
     // arrowhead
@@ -462,8 +478,8 @@ function draw_canvas_legend() {
     ctx.lineTo(tip_x - ah * Math.cos(angle - 0.42), tip_y - ah * Math.sin(angle - 0.42));
     ctx.moveTo(tip_x, tip_y);
     ctx.lineTo(tip_x - ah * Math.cos(angle + 0.42), tip_y - ah * Math.sin(angle + 0.42));
-    ctx.strokeStyle = 'rgba(196,162,88,0.95)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(196,162,88,1.0)';
+    ctx.lineWidth = head_w;
     ctx.stroke();
 
     ctx.restore();
@@ -910,17 +926,19 @@ let hint_target = null; // set once in pick_hint_target after catalog loads
 // (left ~42% of canvas, bottom 55% of height).
 function pick_hint_target() {
   if (!featured_stars.length) { hint_target = null; return; }
-  const label_w = 120, label_h = 34;
+  const is_mobile = canvas.width <= 740;
+  const label_w = is_mobile ? 138 : 124;
+  const label_h = is_mobile ? 40  : 36;
+  const offset  = is_mobile ? 100 : 92;
   const safe = featured_stars.filter(s => {
     // vertical: clear nav (90px) and legend (90px from bottom)
     if (s.y < 90 || s.y > canvas.height - 90) return false;
     // compute label x based on which side has room
     const label_left = s.x > canvas.width * 0.55;
     const lx = label_left
-      ? Math.max(label_w / 2 + 8, s.x - 90)
-      : Math.min(canvas.width - label_w / 2 - 8, s.x + 90);
-    const label_top  = s.y - 40 - label_h / 2;
-    const label_bot  = s.y - 40 + label_h / 2;
+      ? Math.max(label_w / 2 + 8, s.x - offset)
+      : Math.min(canvas.width - label_w / 2 - 8, s.x + offset);
+    const label_bot      = s.y - 42 + label_h / 2;
     const label_left_edge = lx - label_w / 2;
     // hero text occupies roughly left 42% of canvas, below 45% of height
     const in_hero_col  = label_left_edge < canvas.width * 0.42;
