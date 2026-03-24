@@ -46,7 +46,7 @@ const featured_objects = [
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243&view=VOP",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
-    writeup: "19243 Bunting has no confirmed synodic rotation period. I am determining it through multi-band photometry coordinated as part of my astrophysics coursework, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
+    writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
   },
   {
     name: "HD 344787 | v = 9.32",
