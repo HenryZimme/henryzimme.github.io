@@ -405,23 +405,65 @@ function draw_canvas_legend() {
     x += legend_col_w;
   }
 
-  // 'click to explore' load hint
-  if (hint_alpha > 0) {
+  // arrow hint pointing at a featured star — only draw once catalog and star positions are ready
+  if (hint_alpha > 0 && catalog_loaded && featured_stars.length > 0) {
+    // pick rightmost featured star in upper region (y < 72% avoids hero text at bottom)
+    let target = null;
+    for (const s of featured_stars) {
+      if (s.y < canvas.height * 0.72) {
+        if (!target || s.x > target.x) target = s;
+      }
+    }
+    if (!target) target = featured_stars.reduce((a, b) => a.x > b.x ? a : b);
+
+    const sx = target.x, sy = target.y;
+    // label sits to the left of the star (star is on the right side of canvas)
+    const lx = Math.max(60, sx - 108);
+    const ly = sy - 38;
+    const short_name = (target.obj_data.name || '').split(' | ')[0].trim();
+
+    // arrow: tail from below label, tip stops just outside star glow
+    const tail_x = lx, tail_y = ly + 16;
+    const dx = sx - tail_x, dy = sy - tail_y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const tip_x = tail_x + dx * (1 - 22 / dist);
+    const tip_y = tail_y + dy * (1 - 22 / dist);
+    const angle = Math.atan2(dy, dx);
+    const ah = 6;
+
     ctx.save();
-    ctx.font = '400 14px "JetBrains Mono", monospace';
-    ctx.textBaseline = 'middle';
-    const hint_text = 'click to explore';
-    const hint_tw = ctx.measureText(hint_text).width;
-    const hint_cx = canvas.width / 2;
-    const hint_cy = canvas.height - 38;
-    // faint backdrop for legibility over bright stars
-    ctx.fillStyle = 'rgba(7,9,26,' + hint_alpha * 0.55 + ')';
-    ctx.beginPath();
-    ctx.roundRect(hint_cx - hint_tw / 2 - 14, hint_cy - 12, hint_tw + 28, 24, 4);
-    ctx.fill();
+    ctx.globalAlpha = hint_alpha;
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.95 + ')';
-    ctx.fillText(hint_text, hint_cx, hint_cy);
+    ctx.textBaseline = 'middle';
+
+    // star name in its legend color
+    ctx.font = '500 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = target.color;
+    ctx.fillText(short_name, lx, ly - 6);
+
+    // subtitle
+    ctx.font = '400 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = 'rgba(226,221,212,0.60)';
+    ctx.fillText('click to explore', lx, ly + 8);
+
+    // arrow shaft
+    ctx.beginPath();
+    ctx.moveTo(tail_x, tail_y);
+    ctx.lineTo(tip_x, tip_y);
+    ctx.strokeStyle = 'rgba(196,162,88,0.50)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // arrowhead
+    ctx.beginPath();
+    ctx.moveTo(tip_x, tip_y);
+    ctx.lineTo(tip_x - ah * Math.cos(angle - 0.45), tip_y - ah * Math.sin(angle - 0.45));
+    ctx.moveTo(tip_x, tip_y);
+    ctx.lineTo(tip_x - ah * Math.cos(angle + 0.45), tip_y - ah * Math.sin(angle + 0.45));
+    ctx.strokeStyle = 'rgba(196,162,88,0.75)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
     ctx.restore();
   }
   ctx.restore(); // matches ctx.save() at top of draw_canvas_legend
