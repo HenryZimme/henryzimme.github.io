@@ -408,10 +408,20 @@ function draw_canvas_legend() {
   // 'click to explore' load hint
   if (hint_alpha > 0) {
     ctx.save();
-    ctx.font = '400 12px "JetBrains Mono", monospace';
+    ctx.font = '400 14px "JetBrains Mono", monospace';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.9 + ')';
-    ctx.fillText('click to explore', pad_x, canvas.height - pad_y - row_h / 2 - 22);
+    const hint_text = 'click to explore';
+    const hint_tw = ctx.measureText(hint_text).width;
+    const hint_cx = canvas.width / 2;
+    const hint_cy = canvas.height - 38;
+    // faint backdrop for legibility over bright stars
+    ctx.fillStyle = 'rgba(7,9,26,' + hint_alpha * 0.55 + ')';
+    ctx.beginPath();
+    ctx.roundRect(hint_cx - hint_tw / 2 - 14, hint_cy - 12, hint_tw + 28, 24, 4);
+    ctx.fill();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.95 + ')';
+    ctx.fillText(hint_text, hint_cx, hint_cy);
     ctx.restore();
   }
   ctx.restore(); // matches ctx.save() at top of draw_canvas_legend
@@ -529,6 +539,7 @@ function on_click(e) {
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
   if (hover_star.featured) {
     close_popover();
+    dismiss_hint();
     open_modal(hover_star.obj_data);
   } else {
     // ctrl/cmd+click: bypass confirmation and open directly
@@ -569,6 +580,7 @@ function on_touch_start(e) {
 
   if (best) {
     e.preventDefault();
+    dismiss_hint();
     open_modal(best.obj_data);
     return;
   }
@@ -584,6 +596,7 @@ function on_touch_start(e) {
 
   if (best_named) {
     e.preventDefault();
+    dismiss_hint();
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
     open_popover(best_named.name, url, tx, ty);
   }
@@ -843,20 +856,29 @@ back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavi
 
 // -- canvas hint: "click to explore" fades in then out --
 let hint_alpha = 0;
+let hint_dismissed = false;
+
+function dismiss_hint() {
+  if (hint_dismissed) return;
+  hint_dismissed = true;
+  const t1 = performance.now();
+  (function fade_out(t) {
+    hint_alpha = Math.max(0, 1 - (t - t1) / 500);
+    if (hint_alpha > 0) requestAnimationFrame(fade_out);
+  })(t1);
+}
+
 setTimeout(() => {
   const t0 = performance.now();
   (function fade_in(t) {
-    hint_alpha = Math.min(1, (t - t0) / 900);
+    if (hint_dismissed) return;
+    hint_alpha = Math.min(1, (t - t0) / 700);
     if (hint_alpha < 1) requestAnimationFrame(fade_in);
   })(t0);
   setTimeout(() => {
-    const t1 = performance.now();
-    (function fade_out(t) {
-      hint_alpha = Math.max(0, 1 - (t - t1) / 1100);
-      if (hint_alpha > 0) requestAnimationFrame(fade_out);
-    })(t1);
-  }, 5000);
-}, 2200);
+    dismiss_hint();
+  }, 2500);
+}, 1200);
 
 (function() {
   const u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
