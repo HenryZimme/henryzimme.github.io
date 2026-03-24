@@ -1076,7 +1076,7 @@
     .book-shelf {
       display: flex;
       align-items: flex-end;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 5px;
       padding-bottom: 0;
       overflow-x: auto;
