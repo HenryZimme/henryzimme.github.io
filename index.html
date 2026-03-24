@@ -703,9 +703,7 @@
     }
   }, { rootMargin: '200px' });
   simObserver.observe(document.getElementById('cepheid-sim'));
-</script>
-</body>
-<script>
+
   new IntersectionObserver((entries, obs) => {
     if (!entries[0].isIntersecting) return;
     obs.disconnect();
@@ -715,4 +713,5 @@
     document.head.appendChild(s);
   }, { rootMargin: '300px' }).observe(document.getElementById('research'));
 </script>
+</body>
 </html>
