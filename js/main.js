@@ -367,26 +367,32 @@ function draw_canvas_legend() {
     legend_col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
   }
 
+  const total_legend_w = items.length * legend_col_w;
+  const two_rows = legend_col_w > 0 && total_legend_w > canvas.width - pad_x * 2;
+  const items_per_row = two_rows ? Math.ceil(items.length / 2) : items.length;
   let x = pad_x;
-  const y = canvas.height - pad_y - row_h / 2;
+  const y_bottom = canvas.height - pad_y - row_h / 2;
+  const y_top    = two_rows ? y_bottom - row_h - 4 : y_bottom;
 
   for (let i = 0; i < items.length; i++) {
     const it = items[i];
+    if (two_rows && i === items_per_row) x = pad_x;
+    const row_y = (two_rows && i >= items_per_row) ? y_bottom : y_top;
     const cx = x + dot_r;
 
     // pulsing dot — use bucket 0..4 mapped across LUT for variety
     const lut_i = Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1));
     const pulse = 0.5 + 0.5 * twinkle_sin_lut[lut_i];
-    const glow = ctx.createRadialGradient(cx, y, 0, cx, y, dot_r * 3);
+    const glow = ctx.createRadialGradient(cx, row_y, 0, cx, row_y, dot_r * 3);
     glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
     glow.addColorStop(1, hex_to_rgba(it.color, 0));
     ctx.beginPath();
-    ctx.arc(cx, y, dot_r * 3, 0, Math.PI * 2);
+    ctx.arc(cx, row_y, dot_r * 3, 0, Math.PI * 2);
     ctx.fillStyle = glow;
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(cx, y, dot_r, 0, Math.PI * 2);
+    ctx.arc(cx, row_y, dot_r, 0, Math.PI * 2);
     ctx.fillStyle = it.color;
     ctx.globalAlpha = 0.8 + 0.2 * pulse;
     ctx.fill();
@@ -394,7 +400,7 @@ function draw_canvas_legend() {
 
     // label
     ctx.fillStyle = 'rgba(200,215,245,0.52)';
-    ctx.fillText(it.label, cx + dot_r + gap, y);
+    ctx.fillText(it.label, cx + dot_r + gap, row_y);
 
     x += legend_col_w;
   }
@@ -402,9 +408,9 @@ function draw_canvas_legend() {
   // 'click to explore' load hint
   if (hint_alpha > 0) {
     ctx.save();
-    ctx.font = '300 10px "JetBrains Mono", monospace';
+    ctx.font = '400 12px "JetBrains Mono", monospace';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.6 + ')';
+    ctx.fillStyle = 'rgba(196,162,88,' + hint_alpha * 0.9 + ')';
     ctx.fillText('click to explore', pad_x, canvas.height - pad_y - row_h / 2 - 22);
     ctx.restore();
   }
@@ -849,7 +855,7 @@ setTimeout(() => {
       hint_alpha = Math.max(0, 1 - (t - t1) / 1100);
       if (hint_alpha > 0) requestAnimationFrame(fade_out);
     })(t1);
-  }, 3000);
+  }, 5000);
 }, 2200);
 
 (function() {
