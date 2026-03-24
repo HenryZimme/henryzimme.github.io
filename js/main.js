@@ -17,6 +17,7 @@ const featured_objects = [
     ra_deg: 83.625,
     dec_deg: -69.27,
     simbad_id: "OGLE+LMC+CEP+1347",
+    card_url: "#card-cep1347",
     type: "Binary Cepheid Variable  |  Large Magellanic Cloud",
     writeup: "My primary research target. I analyzed six years of OGLE photometry for this double-overtone binary Cepheid in the LMC, built a pipeline to isolate residual signals, and found that a candidate rotational signature consistent with merger spindown was a 1/yr sampling alias of the ground-based cadence. I am now Co-Investigator and primary author of the Science Justification for a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki to test the merger scenario through chemical abundances."
   },
@@ -25,6 +26,7 @@ const featured_objects = [
     ra_deg: 277.972,
     dec_deg: -19.125,
     simbad_id: "U+Sgr",
+    card_url: "#card-usgr",
     type: "Classical Cepheid Variable  |  Open Cluster M25",
     writeup: "My first independent research target. I performed multi-band (V and I) differential photometry of this classical Cepheid in open cluster M25 and measured a 40.8% distance error in V-band versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths. Color index correlation (r = 0.85) provided independent evidence for the kappa-mechanism."
   },
@@ -33,6 +35,7 @@ const featured_objects = [
     ra_deg: 163.5,
     dec_deg: 14.2,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605&view=VOP",
+    card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
     writeup: "7605 Cindygraber has no confirmed synodic rotation period. I am coordinating a multi-site Slooh campaign with citizen scientists operating telescopes remotely in Chile, Australia, and the Canary Islands to measure it. I built an open-source scheduler integrating orbital ephemerides and site visibility constraints to optimize cadence, and am extracting spectra from diffraction grating images to constrain taxonomic classification. Marker position and magnitude are indicative."
   },
@@ -41,6 +44,7 @@ const featured_objects = [
     ra_deg: 210.0,
     dec_deg: 8.5,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243&view=VOP",
+    card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
     writeup: "19243 Bunting has no confirmed synodic rotation period. I am determining it through multi-band photometry coordinated as part of my astrophysics coursework, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
   },
@@ -694,6 +698,27 @@ function open_modal(obj) {
     link.href = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id)}`;
     link.textContent = 'View on SIMBAD';
   }
+  // show "View Research Card" link if this object maps to a card
+  const card_link = document.getElementById('modal-card-link');
+  if (obj.card_url) {
+    card_link.href = obj.card_url;
+    card_link.style.display = '';
+    card_link.onclick = (e) => {
+      e.preventDefault();
+      close_modal();
+      const card_el = document.querySelector(obj.card_url);
+      if (card_el) {
+        card_el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // expand the card if not already open
+        if (!card_el.classList.contains('card-open')) {
+          const toggle = card_el.querySelector('.card-toggle');
+          if (toggle) toggle.click();
+        }
+      }
+    };
+  } else {
+    card_link.style.display = 'none';
+  }
   modal.classList.add('visible');
 }
 
@@ -849,7 +874,7 @@ document.querySelectorAll('.book-spine').forEach(spine => {
 })();
 
 // -- scroll-spy & url updater --
-const nav_sections = ['stars','about', 'research', 'cepheid-sim', 'writing', 'highlights', 'bookshelf'];
+const nav_sections = ['hero','about', 'research', 'cepheid-sim', 'writing', 'highlights', 'bookshelf'];
 const nav_links_array = Array.from(document.querySelectorAll('.nav-links a'));
 
 const observerOptions = {
@@ -998,5 +1023,22 @@ document.querySelectorAll('.card-toggle').forEach(function(btn) {
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
 });
+
+// on-load hash routing for direct research card links (e.g. henryzimmerman.net/#card-cep1347)
+const card_ids = ['card-cep1347', 'card-cindygraber', 'card-usgr'];
+const hash_target = window.location.hash.slice(1); // strip leading #
+if (card_ids.includes(hash_target)) {
+  const card_el = document.getElementById(hash_target);
+  if (card_el) {
+    // slight delay so page layout is stable before scrolling
+    setTimeout(() => {
+      card_el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!card_el.classList.contains('card-open')) {
+        const toggle = card_el.querySelector('.card-toggle');
+        if (toggle) toggle.click();
+      }
+    }, 300);
+  }
+}
 
 init();
