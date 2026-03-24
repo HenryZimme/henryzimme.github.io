@@ -405,62 +405,64 @@ function draw_canvas_legend() {
     x += legend_col_w;
   }
 
-  // arrow hint pointing at a featured star — only draw once catalog and star positions are ready
-  if (hint_alpha > 0 && catalog_loaded && featured_stars.length > 0) {
-    // pick rightmost featured star in upper region (y < 72% avoids hero text at bottom)
-    let target = null;
-    for (const s of featured_stars) {
-      if (s.y < canvas.height * 0.72) {
-        if (!target || s.x > target.x) target = s;
-      }
-    }
-    if (!target) target = featured_stars.reduce((a, b) => a.x > b.x ? a : b);
+  // arrow hint pointing at a randomly chosen safe featured star
+  if (hint_alpha > 0 && hint_target) {
+    const s = hint_target;
+    const sx = s.x, sy = s.y;
+    const label_w = 120, label_h = 34;
+    // place label left of star if on right half of canvas, otherwise right
+    const label_left = sx > canvas.width * 0.55;
+    const lx = label_left
+      ? Math.max(label_w / 2 + 8, sx - 90)
+      : Math.min(canvas.width - label_w / 2 - 8, sx + 90);
+    const ly = sy - 40;
+    const short_name = (s.obj_data.name || '').split(' | ')[0].trim();
 
-    const sx = target.x, sy = target.y;
-    // label sits to the left of the star (star is on the right side of canvas)
-    const lx = Math.max(60, sx - 108);
-    const ly = sy - 38;
-    const short_name = (target.obj_data.name || '').split(' | ')[0].trim();
-
-    // arrow: tail from below label, tip stops just outside star glow
-    const tail_x = lx, tail_y = ly + 16;
+    // tail starts from label bottom-center, tip stops outside glow ring
+    const tail_x = lx, tail_y = ly + label_h / 2 + 4;
     const dx = sx - tail_x, dy = sy - tail_y;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const tip_x = tail_x + dx * (1 - 22 / dist);
-    const tip_y = tail_y + dy * (1 - 22 / dist);
+    const tip_x = tail_x + dx * (1 - 24 / dist);
+    const tip_y = tail_y + dy * (1 - 24 / dist);
     const angle = Math.atan2(dy, dx);
-    const ah = 6;
+    const ah = 7;
 
     ctx.save();
     ctx.globalAlpha = hint_alpha;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    // backdrop pill behind text
+    ctx.fillStyle = 'rgba(7,9,26,0.62)';
+    ctx.beginPath();
+    ctx.roundRect(lx - label_w / 2, ly - label_h / 2, label_w, label_h, 5);
+    ctx.fill();
+
     // star name in its legend color
     ctx.font = '500 11px "JetBrains Mono", monospace';
-    ctx.fillStyle = target.color;
-    ctx.fillText(short_name, lx, ly - 6);
+    ctx.fillStyle = s.color;
+    ctx.fillText(short_name, lx, ly - 8);
 
     // subtitle
     ctx.font = '400 10px "JetBrains Mono", monospace';
-    ctx.fillStyle = 'rgba(226,221,212,0.60)';
+    ctx.fillStyle = 'rgba(226,221,212,0.88)';
     ctx.fillText('click to explore', lx, ly + 8);
 
     // arrow shaft
     ctx.beginPath();
     ctx.moveTo(tail_x, tail_y);
     ctx.lineTo(tip_x, tip_y);
-    ctx.strokeStyle = 'rgba(196,162,88,0.50)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(196,162,88,0.80)';
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
     // arrowhead
     ctx.beginPath();
     ctx.moveTo(tip_x, tip_y);
-    ctx.lineTo(tip_x - ah * Math.cos(angle - 0.45), tip_y - ah * Math.sin(angle - 0.45));
+    ctx.lineTo(tip_x - ah * Math.cos(angle - 0.42), tip_y - ah * Math.sin(angle - 0.42));
     ctx.moveTo(tip_x, tip_y);
-    ctx.lineTo(tip_x - ah * Math.cos(angle + 0.45), tip_y - ah * Math.sin(angle + 0.45));
-    ctx.strokeStyle = 'rgba(196,162,88,0.75)';
+    ctx.lineTo(tip_x - ah * Math.cos(angle + 0.42), tip_y - ah * Math.sin(angle + 0.42));
+    ctx.strokeStyle = 'rgba(196,162,88,0.95)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -705,6 +707,7 @@ function on_resize() {
   legend_col_w = 0; // remeasure legend on next draw
   reproject();
   refresh_hero_cache(); // Bug 2 / Opt 7: re-measure after layout change
+  if (catalog_loaded) pick_hint_target(); // revalidate hint target after viewport change
 }
 
 // ── init: fetch catalog, build stars, start loop ───────────────
@@ -731,6 +734,7 @@ function init() {
     .then(catalog => {
       build_stars(catalog);
       catalog_loaded = true;
+      pick_hint_target();
     })
     .catch(err => console.error('Star catalog load error:', err));
 }
@@ -896,9 +900,37 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-// -- canvas hint: "click to explore" fades in then out --
+// -- canvas hint: arrow pointing at a randomly chosen safe featured star --
 let hint_alpha = 0;
 let hint_dismissed = false;
+let hint_target = null; // set once in pick_hint_target after catalog loads
+
+// pick a random featured star whose label zone won't overlap nav, hero text, or legend.
+// safe zone: y between 90 and canvas.height-90, label box clears hero text column
+// (left ~42% of canvas, bottom 55% of height).
+function pick_hint_target() {
+  if (!featured_stars.length) { hint_target = null; return; }
+  const label_w = 120, label_h = 34;
+  const safe = featured_stars.filter(s => {
+    // vertical: clear nav (90px) and legend (90px from bottom)
+    if (s.y < 90 || s.y > canvas.height - 90) return false;
+    // compute label x based on which side has room
+    const label_left = s.x > canvas.width * 0.55;
+    const lx = label_left
+      ? Math.max(label_w / 2 + 8, s.x - 90)
+      : Math.min(canvas.width - label_w / 2 - 8, s.x + 90);
+    const label_top  = s.y - 40 - label_h / 2;
+    const label_bot  = s.y - 40 + label_h / 2;
+    const label_left_edge = lx - label_w / 2;
+    // hero text occupies roughly left 42% of canvas, below 45% of height
+    const in_hero_col  = label_left_edge < canvas.width * 0.42;
+    const in_hero_vert = label_bot > canvas.height * 0.45;
+    if (in_hero_col && in_hero_vert) return false;
+    return true;
+  });
+  const pool = safe.length ? safe : featured_stars;
+  hint_target = pool[Math.floor(Math.random() * pool.length)];
+}
 
 function dismiss_hint() {
   if (hint_dismissed) return;
