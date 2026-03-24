@@ -894,7 +894,7 @@ const observer = new IntersectionObserver((entries) => {
       });
       
       // 2. Silently update the browser's URL bar without jumping the page
-      history.replaceState(null, null, '#' + id);
+      history.replaceState(null, null, id === 'hero' ? '/' : '#' + id);
     }
   });
 }, observerOptions);
