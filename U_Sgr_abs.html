@@ -370,7 +370,7 @@
         Distance calculation using Leavitt's law were accurate for I<sub>c</sub> but inaccurate for V<sub>c</sub> (δ = 40.77%). Future studies can further explore the Kappa-mechanism after adjusting for dust extinction.
       </p>
 
-      <h3>Radial Velocity &amp; Radius — Hocdé et al. (2026)</h3>
+      <h3>Radial Velocity &amp; Radius derived from Hocdé et al. (2026, arXiv:2603.11748)</h3>
 
       <p>
         The simulation above now includes a reconstructed radial velocity (RV) curve derived using the method of <a href="https://arxiv.org/abs/2603.11748" target="_blank" rel="noopener">Hocdé et al. (2026)</a>. That paper calibrates tight empirical relations between the Fourier parameters of the V-band light curve and the Fourier parameters of the RV curve, using a sample of 81 short-period Galactic Cepheids. The reconstruction requires only the pulsation period and the LC amplitude ratios R<sub>21</sub> and R<sub>31</sub>.
@@ -443,7 +443,7 @@
       var PULS_SPEED_S = 4.0;    // wall-clock seconds per full pulsation cycle
       var FPS_CAP      = 40;
 
-      // berdnikov et al. 2014 model — johnson v-band (vizier j/pasp/126/521)
+      // berdnikov et al. 2014 model, johnson v-band (vizier j/pasp/126/521)
       var V_MAG = [6.337,6.337,6.339,6.342,6.346,6.351,6.356,6.362,6.369,6.375,6.382,6.389,6.396,6.403,6.410,6.417,6.423,6.430,6.436,6.441,6.447,6.453,6.458,6.464,6.469,6.475,6.480,6.486,6.492,6.498,6.505,6.511,6.518,6.525,6.532,6.539,6.546,6.554,6.561,6.568,6.575,6.581,6.588,6.594,6.599,6.604,6.609,6.613,6.617,6.621,6.623,6.626,6.628,6.629,6.631,6.632,6.632,6.633,6.633,6.634,6.635,6.635,6.636,6.637,6.639,6.641,6.643,6.646,6.650,6.654,6.658,6.664,6.670,6.676,6.683,6.691,6.699,6.707,6.716,6.726,6.735,6.745,6.754,6.764,6.773,6.783,6.792,6.801,6.809,6.817,6.825,6.832,6.839,6.845,6.851,6.857,6.862,6.867,6.871,6.875,6.880,6.884,6.888,6.892,6.896,6.901,6.905,6.910,6.915,6.921,6.926,6.932,6.938,6.944,6.950,6.956,6.963,6.969,6.976,6.982,6.988,6.994,7.000,7.005,7.010,7.015,7.020,7.025,7.029,7.034,7.038,7.041,7.045,7.048,7.052,7.055,7.057,7.060,7.062,7.064,7.066,7.067,7.067,7.067,7.066,7.065,7.063,7.060,7.056,7.051,7.045,7.039,7.031,7.022,7.013,7.002,6.991,6.979,6.966,6.953,6.938,6.924,6.908,6.893,6.877,6.860,6.844,6.827,6.809,6.792,6.774,6.756,6.738,6.719,6.701,6.682,6.663,6.643,6.624,6.604,6.585,6.565,6.546,6.527,6.508,6.489,6.471,6.454,6.438,6.422,6.407,6.394,6.382,6.371,6.362,6.354,6.348,6.343,6.339,6.337];
 
       // teff mapped from v mag onto spectroscopic range (simbad fe/h table, 2023-2024 refs)
@@ -553,7 +553,7 @@
         ctx.restore();
       }
 
-      // scrolling light curve with RV curve and radius strip — current phase always centered
+      // scrolling light curve with RV curve and radius strip, current phase always centered
       function draw_light_curve(phi) {
         var box = get_plot_rect();
         if (!box) return;
@@ -576,7 +576,7 @@
         ctx.save();
 
         // ═══════════════════════════════════════════════════════════════════
-        // PANEL 1 — V-band light curve
+        // PANEL 1: V-band light curve
         // ═══════════════════════════════════════════════════════════════════
         var pad_top_lc = 20, pad_bot_lc = 36;
         var draw_h_lc  = lc_h - pad_top_lc - pad_bot_lc;
@@ -658,7 +658,7 @@
         ctx.stroke();
 
         // ═══════════════════════════════════════════════════════════════════
-        // PANEL 2 — Radial velocity curve (Hocdé 2026)
+        // PANEL 2: Radial velocity curve (Hocdé 2026, arXiv:2603.11748)
         // ═══════════════════════════════════════════════════════════════════
         var pad_top_rv = 18, pad_bot_rv = 12;
         var draw_h_rv  = rv_h - pad_top_rv - pad_bot_rv;
@@ -743,7 +743,7 @@
         ctx.stroke();
 
         // ═══════════════════════════════════════════════════════════════════
-        // PANEL 3 — Radius (Baade-Wesselink)
+        // PANEL 3: Radius (Baade-Wesselink)
         // ═══════════════════════════════════════════════════════════════════
         var r_rng = r_max - r_min;
         var ry = rad_py, rh = rad_h;
@@ -789,10 +789,10 @@
         ctx.restore();
       }
 
-      // visibility flag — set by IntersectionObserver in init()
+      // visibility flag: set by IntersectionObserver in init()
       var visible = false;
 
-      // main loop — only runs while canvas is in the viewport
+      // main loop : only runs while canvas is in the viewport
       function animate(now) {
         if (!visible) return;
         requestAnimationFrame(animate);
@@ -855,7 +855,7 @@
           resize();
           last_t = null;
         });
-        // only animate while the canvas is visible — saves battery on scroll/tab switch
+        // only animate while the canvas is visible : saves battery on scroll/tab switch
         var observer = new IntersectionObserver(function(entries) {
           visible = entries[0].isIntersecting;
           if (visible) {
