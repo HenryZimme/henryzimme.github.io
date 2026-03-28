@@ -12,6 +12,15 @@
   var COS_I         = Math.cos(57 * Math.PI / 180); // orbital inclination: squashes ellipse minor axis; K1/K2 already embed sin(i)
   var K1            = 28.5;   // km/s (Pilecki+ 2022 Table 1)
   var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
+  // projection factor: converts radial velocity to pulsation velocity.
+  // p = 1.27 (Merand+ 2005 CHARA; consistent with Trahin+ 2021 mean
+  // p = 1.26 +/- 0.07 across 63 Galactic Cepheids, no period dependence).
+  // NOTE: calibrated on fundamental-mode Cepheids. CEP-1347 is a first-
+  // overtone pulsator (P_1O = 0.69 d); no overtone-specific calibration
+  // exists. The radius curve *shape* is independent of p; only the
+  // amplitude scales linearly. ~5% systematic uncertainty.
+  var P_FACTOR       = 1.27;
+  var R_MEAN         = 13.65;  // R_sun, from Pilecki+ 2022 eclipsing binary solution
   var RV_THRESH     = 40;
   var RV_N          = 2400;
   var TRAIL_LEN     = 200;
@@ -228,6 +237,42 @@
     rv_abs_max += 12;
   }
 
+  // ── radius from RV integration (Baade-Wesselink) ──────────────────────────
+  // dR/dt = -p * Vr(t), integrated over pulsation phase.
+  // PULS_C = [a0, a1, b1, a2, b2] in cos/sin convention.
+  // the periodic integral of Vr(phi) drops a0 (secular drift, ~0).
+  // integral of cos(2k*pi*phi) d(phi) = sin(2k*pi*phi) / (2k*pi)
+  // integral of sin(2k*pi*phi) d(phi) = -cos(2k*pi*phi) / (2k*pi)
+  // scale factor converts km/s * days -> R_sun.
+
+  var BW_SCALE = P_FACTOR * P_PULS * 86400 / R_SUN_KM; // ~0.109
+
+  function computeRadius(phi) {
+    // puls_c coefficients (duplicated from buildRV for locality)
+    var a1 =  3.3790, b1 = -15.6020;
+    var a2 = -4.3673, b2 =  -3.2070;
+    var twopi  = 2 * Math.PI;
+    var fourpi = 4 * Math.PI;
+    var theta1 = twopi * phi;
+    var theta2 = fourpi * phi;
+    // periodic part of integral(Vr, dphi)
+    var integ = (a1 / twopi)  * Math.sin(theta1)
+              - (b1 / twopi)  * Math.cos(theta1)
+              + (a2 / fourpi) * Math.sin(theta2)
+              - (b2 / fourpi) * Math.cos(theta2);
+    return R_MEAN - BW_SCALE * integ;
+  }
+
+  // precompute radius bounds for display scaling
+  var radius_min = Infinity, radius_max = -Infinity;
+  (function() {
+    for (var i = 0; i < 200; i++) {
+      var r = computeRadius(i / 200);
+      if (r < radius_min) radius_min = r;
+      if (r > radius_max) radius_max = r;
+    }
+  })();
+
   // ── orbital position interpolation ────────────────────────────────────────
 
   function lerpFrame(p, i_fp) {
@@ -250,14 +295,18 @@
 
   function getPulsState(puls_phi) {
     var pc = data && data.metadata && data.metadata.puls_cycle;
-    if (!pc) return { r1: 13.65, mag: 17.1, teff: 6490, col: FALLBACK_COL };
+    if (!pc) return { r1: R_MEAN, mag: 17.1, teff: 6490, col: FALLBACK_COL };
     var fp = ((puls_phi % 1 + 1) % 1) * (pc.Np - 1);
     var i0 = Math.floor(fp) % pc.Np;
     var i1 = (i0 + 1) % pc.Np;
     var t  = fp - Math.floor(fp);
     function lerp(a, b, f) { return a + (b - a) * f; }
     return {
-      r1:  lerp(pc.r1[i0],    pc.r1[i1],    t),
+      // radius from BW integration of pulsation RV (replaces JSON magnitude-proxy).
+      // note: PULS_C epoch (T0_PULS) may differ from JSON LC epoch (T0_ORB)
+      // by ~0.60 in phase. shape is correct; phase alignment is approximate
+      // until the JSON exporter is reconciled.
+      r1:  computeRadius(puls_phi),
       mag: lerp(pc.v_mag[i0], pc.v_mag[i1], t),
       teff: pc.teff ? lerp(pc.teff[i0], pc.teff[i1], t) : null,
       col:  pc.color1[Math.round(fp) % pc.Np],
@@ -675,12 +724,9 @@
     ctx.fillStyle = 'rgba(96,165,250,0.5)';
     ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
 
-    // ── radius vs phase mini-curve (bottom strip) ──
-    var rMin = Infinity, rMax = -Infinity;
-    for (var ri = 0; ri < Np; ri++) {
-      if (pc.r1[ri] < rMin) rMin = pc.r1[ri];
-      if (pc.r1[ri] > rMax) rMax = pc.r1[ri];
-    }
+    // ── radius vs phase mini-curve (bottom strip, BW-integrated) ──
+    var rMin = radius_min;
+    var rMax = radius_max;
     var rRange = Math.max(0.01, rMax - rMin);
     var rH = 32, rY = py + ph - rH - 4;
     var rToY2 = function(r) { return rY + rH - (r - rMin) / rRange * rH; };
@@ -695,15 +741,14 @@
     ctx.lineJoin = 'round';
     for (var rk = -nPts / 2; rk <= nPts / 2; rk++) {
       var rk_phase = ((phi_cur + rk * n_cycles / nPts) % 1 + 1) % 1;
-      var rfi = Math.floor(rk_phase * Np) % Np;
       var rlx = px + pw / 2 + rk * step;
-      var rly = rToY2(pc.r1[rfi]);
+      var rly = rToY2(computeRadius(rk_phase));
       rk === -nPts / 2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
     }
     ctx.stroke();
 
     // cursor dot on radius curve
-    var cur_r1 = pc.r1[Math.round(phi_cur * Np) % Np];
+    var cur_r1 = computeRadius(phi_cur);
     ctx.beginPath();
     ctx.arc(px + pw / 2, rToY2(cur_r1), 3.5, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(134,239,172,0.9)';
@@ -1132,11 +1177,11 @@
           if (pc_init.v_mag[pci] < bounds.minV) bounds.minV = pc_init.v_mag[pci];
           if (pc_init.v_mag[pci] > bounds.maxV) bounds.maxV = pc_init.v_mag[pci];
         }
-        maxR1 = Math.max(maxR1, Math.max.apply(null, pc_init.r1));
+        maxR1 = Math.max(maxR1, radius_max);
       }
       bounds.a1 = Math.max.apply(null, p.x1.map(Math.abs));
       bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
-      maxR1 = Math.max.apply(null, p.r1);
+      maxR1 = radius_max;
 
       buildRV();
       prepareObservationalData();
@@ -1180,11 +1225,11 @@
             if (pc_full.v_mag[pci2] < bounds.minV) bounds.minV = pc_full.v_mag[pci2];
             if (pc_full.v_mag[pci2] > bounds.maxV) bounds.maxV = pc_full.v_mag[pci2];
           }
-          maxR1 = Math.max.apply(null, pc_full.r1);
+          maxR1 = radius_max;
         }
         bounds.a1 = Math.max.apply(null, p2.x1.map(Math.abs));
         bounds.a2 = Math.max.apply(null, p2.x2.map(Math.abs));
-        maxR1 = Math.max.apply(null, p2.r1);
+        maxR1 = radius_max;
         buildRV();
         prepareObservationalData();
       }).catch(function(e) {
