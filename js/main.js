@@ -785,6 +785,24 @@ window.addEventListener('click', on_click);
 window.addEventListener('resize', on_resize);
 window.addEventListener('touchstart', on_touch_start, { passive: false });
 
+// -- tab visibility: restart rAF loop and refresh caches on tab return --
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  // Bug B fix: viewport rect may be stale after tab switch
+  refresh_hero_cache();
+  // Bug A fix: IntersectionObserver can fire isIntersecting:false while tab is
+  // hidden, killing the rAF loop. Re-derive hero_visible from actual geometry
+  // and restart the loop if it died.
+  if (hero_el) {
+    const r = hero_el.getBoundingClientRect();
+    const in_view = r.bottom > 0 && r.top < window.innerHeight;
+    hero_visible = in_view;
+    if (hero_visible && !raf_id) {
+      raf_id = requestAnimationFrame(draw);
+    }
+  }
+});
+
 // -- bookshelf touch toggle --
 // tap to expand; tap again or tap another spine to collapse
 document.querySelectorAll('.book-spine').forEach(spine => {
