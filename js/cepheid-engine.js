@@ -130,6 +130,7 @@
   var ogle_phased    = [];
   var pilecki_phased = [];
   var phase_offset   = 0;
+  var PULS_LC_OFFSET = 0; // epoch offset between JSON puls_cycle and OGLE T0_ORB fold; computed by computeLCOffset()
 
   var trail1 = [], trail2 = [];
 
@@ -320,6 +321,88 @@
     };
   }
 
+  // ── LC phase-offset computation ────────────────────────────────────────────
+  // Solves the 9x9 weighted normal equations for a 4th-order Fourier fit to
+  // the OGLE photometry (folded at T0_ORB), finds its minimum-magnitude phase
+  // phi_fit, then finds the minimum-magnitude phase phi_json in pc.v_mag.
+  // PULS_LC_OFFSET = phi_json - phi_fit shifts the treadmill lookup so the
+  // Fourier curve's minimum lands at the same screen position as the scatter.
+
+  function solveLeastSquares(A, b, n) {
+    // Gaussian elimination with partial pivoting; operates on augmented [A|b]
+    var M = [];
+    for (var i = 0; i < n; i++) { M[i] = A[i].slice(); M[i].push(b[i]); }
+    for (var col = 0; col < n; col++) {
+      var maxRow = col;
+      for (var row = col + 1; row < n; row++) {
+        if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
+      }
+      var tmp = M[col]; M[col] = M[maxRow]; M[maxRow] = tmp;
+      if (Math.abs(M[col][col]) < 1e-12) continue;
+      for (var row2 = col + 1; row2 < n; row2++) {
+        var f = M[row2][col] / M[col][col];
+        for (var c = col; c <= n; c++) M[row2][c] -= f * M[col][c];
+      }
+    }
+    var x = [];
+    for (var i2 = n - 1; i2 >= 0; i2--) {
+      x[i2] = M[i2][n];
+      for (var j = i2 + 1; j < n; j++) x[i2] -= M[i2][j] * x[j];
+      x[i2] /= M[i2][i2];
+    }
+    return x;
+  }
+
+  function computeLCOffset(pc) {
+    // 4th-order Fourier: a0 + sum_{k=1}^{4} [a_k cos(2πkφ) + b_k sin(2πkφ)]
+    // 9 parameters: [a0, a1, b1, a2, b2, a3, b3, a4, b4]
+    var ord = 4, np = 2 * ord + 1;
+    var XtWX = [], XtWy = [];
+    for (var i = 0; i < np; i++) { XtWX[i] = []; for (var j = 0; j < np; j++) XtWX[i][j] = 0; XtWy[i] = 0; }
+
+    for (var oi = 0; oi < OGLE_V_RAW.length; oi++) {
+      var r   = OGLE_V_RAW[oi];
+      var phi = ((((r[0] + 2450000) - T0_ORB) % P_PULS + P_PULS) % P_PULS) / P_PULS;
+      var mag = r[1];
+      var w   = 1 / (r[2] * r[2]);
+      // design vector
+      var xv = [1];
+      for (var k = 1; k <= ord; k++) {
+        xv.push(Math.cos(2 * Math.PI * k * phi));
+        xv.push(Math.sin(2 * Math.PI * k * phi));
+      }
+      for (var a = 0; a < np; a++) {
+        XtWy[a] += w * xv[a] * mag;
+        for (var b = 0; b < np; b++) XtWX[a][b] += w * xv[a] * xv[b];
+      }
+    }
+
+    var coeffs = solveLeastSquares(XtWX, XtWy, np);
+
+    // find phase of minimum magnitude in the Fourier fit (max light)
+    var nSearch = 2000;
+    var minFitMag = Infinity, phi_fit_min = 0;
+    for (var s = 0; s < nSearch; s++) {
+      var phi_s = s / nSearch;
+      var mag_s = coeffs[0];
+      for (var k2 = 1; k2 <= ord; k2++) {
+        mag_s += coeffs[2 * k2 - 1] * Math.cos(2 * Math.PI * k2 * phi_s);
+        mag_s += coeffs[2 * k2]     * Math.sin(2 * Math.PI * k2 * phi_s);
+      }
+      if (mag_s < minFitMag) { minFitMag = mag_s; phi_fit_min = phi_s; }
+    }
+
+    // find phase of minimum magnitude in JSON puls_cycle
+    var phi_json_min = 0, minJsonMag = Infinity;
+    for (var ji = 0; ji < pc.Np; ji++) {
+      if (pc.v_mag[ji] < minJsonMag) { minJsonMag = pc.v_mag[ji]; phi_json_min = ji / pc.Np; }
+    }
+
+    // offset: shift treadmill lookup so its minimum aligns with scatter minimum
+    // PULS_LC_OFFSET = phi_json_min - phi_fit_min (mod 1)
+    return ((phi_json_min - phi_fit_min) % 1 + 1) % 1;
+  }
+
   // ── phase-fold observational data ──────────────────────────────────────────
 
   function prepareObservationalData() {
@@ -386,6 +469,10 @@
         alpha: 0.18 + 0.64 * (weights[oi2] / max_w)
       });
     }
+
+    // compute LC phase offset from 4th-order weighted Fourier fit to OGLE data
+    var pc_off = data && data.metadata && data.metadata.puls_cycle;
+    if (pc_off) PULS_LC_OFFSET = computeLCOffset(pc_off);
   }
 
   // ── rv plot (orbital mode) ─────────────────────────────────────────────────
@@ -696,7 +783,7 @@
     ctx.lineJoin = 'round';
     for (var k = -nPts / 2; k <= nPts / 2; k++) {
       var k_phase = ((phi_cur + k * n_cycles / nPts) % 1 + 1) % 1;
-      var fi = Math.floor(k_phase * Np) % Np;
+      var fi = Math.floor(((k_phase + PULS_LC_OFFSET) % 1 + 1) % 1 * Np) % Np;
       var lx = px + pw / 2 + k * step;
       var ly = magToY(pc.v_mag[fi]);
       k === -nPts / 2 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly);
@@ -704,7 +791,7 @@
     ctx.stroke();
 
     // cursor dot on photometric curve
-    var cur_fi = Math.round(phi_cur * Np) % Np;
+    var cur_fi = Math.floor(((phi_cur + PULS_LC_OFFSET) % 1 + 1) % 1 * Np) % Np;
     ctx.beginPath();
     ctx.arc(px + pw / 2, magToY(pc.v_mag[cur_fi]), 3.5, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(96,165,250,0.9)';
