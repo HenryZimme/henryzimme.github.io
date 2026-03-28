@@ -805,6 +805,22 @@
     ctx.stroke();
     ctx.restore();
 
+    // y-axis magnitude ticks (bright = small mag = top; faint = large mag = bottom)
+    if (!getStarArea().mobile) {
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      var magStep = 0.1;
+      var tickMin = Math.ceil(bounds.minV / magStep) * magStep;
+      var tickMax = Math.floor(bounds.maxV / magStep) * magStep;
+      for (var tm = tickMin; tm <= tickMax + 1e-9; tm += magStep) {
+        var tmy = magToY(tm);
+        if (tmy > py + padTop + 4 && tmy < py + ph - padBottom - 4)
+          ctx.fillText(tm.toFixed(1), px + inset - 2, tmy);
+      }
+    }
+
     // title
     ctx.font = '9px \'JetBrains Mono\', monospace';
     ctx.fillStyle = 'rgba(96,165,250,0.55)';
