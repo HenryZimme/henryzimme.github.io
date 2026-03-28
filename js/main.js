@@ -157,7 +157,7 @@ function build_stars(catalog) {
     const f_freq   = 1.2 + fi * 0.2;
     const f_bucket_f = (f_freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
     const f_bucket   = Math.min(TWINKLE_BUCKETS - 2, Math.max(0, Math.floor(f_bucket_f)));
-    const f_lerp     = f_bucket_f - f_bucket;
+    const f_lerp     = Math.min(1, Math.max(0, f_bucket_f - f_bucket));
     star_data.push({
       x: pos.x,
       y: pos.y,
@@ -305,7 +305,8 @@ function draw_named_star(s) {
 function draw_featured_star(s) {
   const is_pipeline = s.obj_data && s.obj_data.pipeline;
   // Bug 1: star_twinkle returns [0.56, 1.0]; remap to [0, 1] for correct pulse range
-  const pulse = (star_twinkle(s) - 0.56) / 0.44;
+  // clamp as defense — out-of-range twinkle values would produce negative radii
+  const pulse = Math.max(0, Math.min(1, (star_twinkle(s) - 0.56) / 0.44));
   const glow_r = 16 + pulse * 5;
   const c = s.color;
   const glow_alpha = is_pipeline ? 0.22 : 0.45;
