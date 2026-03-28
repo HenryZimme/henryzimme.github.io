@@ -725,7 +725,7 @@
     if (!box || !pc) return;
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-    var inset = 16, padTop = 22, padBottom = 40;
+    var inset = 28, padTop = 22, padBottom = 40;
     var drawH = ph - padTop - padBottom;
     var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
     var midMag = (bounds.minV + bounds.maxV) / 2;
@@ -736,7 +736,8 @@
     var Np       = pc.Np;
     var phi_cur  = puls_phi;
 
-    // magnitude → y: bright (small mag) maps UP, standard astro convention
+    // magnitude → y: faint (large mag) maps UP, bright (small mag) maps DOWN.
+    // standard astronomical magnitude axis convention.
     var magToY = function(m) {
       return py + padTop + drawH / 2 - ((m - midMag) * (drawH / magRange) * 0.72);
     };
@@ -751,7 +752,7 @@
     ctx.fillStyle = 'rgba(96,165,250,0.4)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('V mag  \u2191 bright', 0, 0);
+    ctx.fillText('V mag  \u2191 faint', 0, 0);
     ctx.restore();
 
     // ogle scatter, phase-based x offset from center
