@@ -238,7 +238,8 @@
   }
 
   // ── radius from RV integration (Baade-Wesselink) ──────────────────────────
-  // dR/dt = -p * Vr(t), integrated over pulsation phase.
+  // dR/dt = p * Vr(t) [positive Vr = receding = expanding = dR>0]
+  // integrated over pulsation phase.
   // PULS_C = [a0, a1, b1, a2, b2] in cos/sin convention.
   // the periodic integral of Vr(phi) drops a0 (secular drift, ~0).
   // integral of cos(2k*pi*phi) d(phi) = sin(2k*pi*phi) / (2k*pi)
@@ -247,20 +248,27 @@
 
   var BW_SCALE = P_FACTOR * P_PULS * 86400 / R_SUN_KM; // ~0.109
 
+  // epoch correction: PULS_C is anchored to T0_PULS, but the JSON LC
+  // (v_mag, teff, color) is anchored to T0_ORB. shift radius phase so
+  // both align when indexed by the same phi_cur.
+  // offset = frac((T0_PULS - T0_ORB) / P_PULS) = 0.5997
+  var PULS_EPOCH_OFFSET = ((T0_PULS - T0_ORB) / P_PULS % 1 + 1) % 1; // 0.5997
+
   function computeRadius(phi) {
+    var phi_corr = phi - PULS_EPOCH_OFFSET;
     // puls_c coefficients (duplicated from buildRV for locality)
     var a1 =  3.3790, b1 = -15.6020;
     var a2 = -4.3673, b2 =  -3.2070;
     var twopi  = 2 * Math.PI;
     var fourpi = 4 * Math.PI;
-    var theta1 = twopi * phi;
-    var theta2 = fourpi * phi;
+    var theta1 = twopi * phi_corr;
+    var theta2 = fourpi * phi_corr;
     // periodic part of integral(Vr, dphi)
     var integ = (a1 / twopi)  * Math.sin(theta1)
               - (b1 / twopi)  * Math.cos(theta1)
               + (a2 / fourpi) * Math.sin(theta2)
               - (b2 / fourpi) * Math.cos(theta2);
-    return R_MEAN - BW_SCALE * integ;
+    return R_MEAN + BW_SCALE * integ;
   }
 
   // precompute radius bounds for display scaling
@@ -303,9 +311,8 @@
     function lerp(a, b, f) { return a + (b - a) * f; }
     return {
       // radius from BW integration of pulsation RV (replaces JSON magnitude-proxy).
-      // note: PULS_C epoch (T0_PULS) may differ from JSON LC epoch (T0_ORB)
-      // by ~0.60 in phase. shape is correct; phase alignment is approximate
-      // until the JSON exporter is reconciled.
+      // epoch-corrected via PULS_EPOCH_OFFSET to align PULS_C (T0_PULS)
+      // with JSON LC (T0_ORB).
       r1:  computeRadius(puls_phi),
       mag: lerp(pc.v_mag[i0], pc.v_mag[i1], t),
       teff: pc.teff ? lerp(pc.teff[i0], pc.teff[i1], t) : null,
