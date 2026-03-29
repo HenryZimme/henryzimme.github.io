@@ -399,12 +399,9 @@
 
     /* plot panel: 40% of viewport in film mode (648px star area at 1080p) */
     html.film-mode #hud-plot-container { height: 40vh; }
-    html.film-mode #orb-params {
-      bottom: calc(40vh - 2px);
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      color: rgba(255,255,255,0.28);
-    }
+
+    html.film-mode #sim-preview { display: none !important; }
+    html.film-mode #orb-params  { display: none !important; }
 
     /* film watermark: bottom-right, subtle, can be cropped */
     #film-watermark {
@@ -661,9 +658,14 @@
         document.body.appendChild(s);
 
         // update diag bar: shows actual canvas pixel dimensions every second
-        var diag = document.getElementById('film-diag');
+        var diag   = document.getElementById('film-diag');
         var nodiag = window.location.search.indexOf('nodiag') !== -1;
-        if (nodiag && diag) diag.style.display = 'none';
+        var clean  = window.location.search.indexOf('clean')  !== -1;
+        if ((nodiag || clean) && diag) diag.style.display = 'none';
+        if (clean) {
+          var wm = document.getElementById('film-watermark');
+          if (wm) wm.style.display = 'none';
+        }
         function updateDiag() {
           var c = document.getElementById('simCanvas');
           if (!c || !diag || nodiag) return;
