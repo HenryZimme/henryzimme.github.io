@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OGLE-LMC-CEP-1347 | Henry Zimmerman</title>
+  <meta name="description" content="Interactive simulation of OGLE-LMC-CEP-1347, the lowest-mass classical Cepheid in a double-lined eclipsing binary. Built from OGLE-IV photometry and Pilecki+ 2022 spectroscopy.">
+  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #07091a;
+      --gold:         #c4a258;
+      --gold-dim:     rgba(196,162,88,0.25);
+      --text:         #e2ddd4;
+      --text-dim:     rgba(226,221,212,0.72);
+      --panel-border: rgba(196,162,88,0.2);
+      --red:          #f87171;
+      --blue:         #60a5fa;
+      --green:        #86efac;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'EB Garamond', serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── nav ── */
+    nav {
+      position: fixed;
+      top: 0; width: 100%;
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+      background: linear-gradient(to bottom, var(--bg) 70%, transparent 100%);
+    }
+
+    .nav-name {
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
+
+    /* ── sim viewport ── */
+    #sim-section {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 500px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    #simCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    /* loading overlay */
+    #sim-preview {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      pointer-events: none;
+      transition: opacity 0.65s ease;
+    }
+
+    .sim-load-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(196,162,88,0.55);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    /* HUD: stats top-left, inside star area */
+    #hud-stats {
+      position: absolute;
+      top: 72px; left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .hud-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.30);
+      width: 70px;
+    }
+
+    .hud-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+    }
+
+    #hud-teff-swatch {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .hud-phase-row {
+      margin-top: 4px;
+    }
+
+    /* mode buttons: positioned above the plot panel */
+    #mode-bar {
+      position: absolute;
+      /* vertically: at 62vh, horizontally centered */
+      bottom: calc(38vh + 18px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .btn-mode {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-mode:hover { color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.35); }
+
+    /* orbital params strip */
+    #orb-params {
+      position: absolute;
+      bottom: calc(38vh - 2px);
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      color: rgba(255,255,255,0.22);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* plot panel: bottom 38% of viewport, drawn into by canvas */
+    #hud-plot-container {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 0;
+      height: 38vh;
+      /* transparent — canvas draws into this region */
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* scroll indicator */
+    #scroll-hint {
+      position: absolute;
+      bottom: 20px;
+      right: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.20);
+      z-index: 10;
+      animation: pulse-hint 3s ease-in-out infinite;
+    }
+    @keyframes pulse-hint {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* ── photosensitivity modal ── */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(7,9,26,0.88);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal-overlay.active { display: flex; }
+
+    #modal-box {
+      background: #0d1030;
+      border: 1px solid var(--panel-border);
+      padding: 36px 40px;
+      max-width: 400px;
+      width: calc(100% - 40px);
+    }
+
+    #modal-box h2 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    #modal-box p {
+      font-size: 16px;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+      line-height: 1.55;
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 8px 18px;
+      cursor: pointer;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text-dim);
+      transition: all 0.2s;
+    }
+    .modal-btn:hover { color: var(--text); border-color: var(--gold-dim); }
+    .modal-btn.confirm {
+      border-color: rgba(248,113,113,0.4);
+      color: var(--red);
+    }
+    .modal-btn.confirm:hover { background: rgba(248,113,113,0.08); }
+
+    /* ── explanation section ── */
+    #explanation {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 100px 24px 100px;
+    }
+
+    .exp-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-bottom: 12px;
+    }
+
+    .exp-title {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 400;
+      line-height: 1.1;
+      margin: 0 0 32px;
+      color: var(--text);
+    }
+
+    .article-divider {
+      border: 0;
+      border-top: 1px solid var(--panel-border);
+      margin: 40px 0;
+    }
+
+    .exp-body p {
+      font-size: 20px;
+      margin-bottom: 28px;
+      color: var(--text-dim);
+    }
+
+    .exp-body p:first-child { color: var(--text); }
+
+    /* parameter table */
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 40px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    .param-table th {
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--panel-border);
+      font-weight: 400;
+    }
+
+    .param-table td {
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.08);
+      color: var(--text-dim);
+      vertical-align: top;
+    }
+
+    .param-table td:first-child {
+      color: rgba(255,255,255,0.45);
+      width: 55%;
+    }
+
+    .param-table td:last-child {
+      text-align: right;
+      color: var(--text);
+    }
+
+    /* mode guide */
+    .mode-guide {
+      margin: 40px 0;
+    }
+
+    .mode-item {
+      display: flex;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.08);
+    }
+
+    .mode-item:first-child { border-top: 1px solid rgba(196,162,88,0.08); }
+
+    .mode-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      width: 90px;
+      flex-shrink: 0;
+      padding-top: 3px;
+    }
+
+    .mode-desc {
+      font-size: 17px;
+      color: var(--text-dim);
+    }
+
+    /* references */
+    .ref-list {
+      margin-top: 40px;
+      list-style: none;
+    }
+
+    .ref-list li {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,0.30);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.05);
+      line-height: 1.5;
+    }
+
+    .ref-list a {
+      color: rgba(196,162,88,0.55);
+      text-decoration: none;
+    }
+    .ref-list a:hover { color: var(--gold); }
+
+    /* footer nav */
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* back to top */
+    #back-to-top {
+      position: fixed;
+      bottom: 40px; right: 40px;
+      background: none;
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      width: 44px; height: 44px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 100;
+    }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+    #back-to-top:hover { border-color: var(--gold); }
+
+    /* mobile */
+    @media (max-width: 740px) {
+      nav { padding: 20px; }
+
+      #hud-stats { top: 64px; left: 12px; }
+      .hud-label { width: 56px; }
+
+      #mode-bar {
+        bottom: calc(42vh + 14px);
+        gap: 4px;
+      }
+      .btn-mode { font-size: 9px; padding: 5px 10px; }
+
+      #orb-params { display: none; }
+
+      #hud-plot-container { height: 42vh; }
+
+      #scroll-hint { display: none; }
+
+      #explanation { padding: 60px 20px 80px; }
+      .exp-body p { font-size: 18px; }
+      .footer-nav { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- nav -->
+  <nav>
+    <a href="https://www.henryzimmerman.net" class="nav-name">Henry Zimmerman</a>
+    <a href="https://www.henryzimmerman.net#research" class="nav-back">← Back to Research</a>
+  </nav>
+
+  <!-- photosensitivity modal (shown before real-time mode activates) -->
+  <div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
+    <div id="modal-box">
+      <h2 id="modal-heading">⚠ Photosensitivity Warning</h2>
+      <p>Real-time mode renders the Cepheid pulsating at the true physical frequency ratio: approximately 85 pulsation cycles per orbit. This produces rapid brightness changes that may affect people with photosensitive epilepsy or migraines.</p>
+      <div class="modal-btns">
+        <button class="modal-btn" id="modal-cancel">Cancel</button>
+        <button class="modal-btn confirm" id="modal-confirm">I understand, continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- sim viewport -->
+  <section id="sim-section" aria-label="Interactive simulation of OGLE-LMC-CEP-1347">
+
+    <canvas id="simCanvas"></canvas>
+
+    <!-- loading sequence -->
+    <div id="sim-preview">
+      <span class="sim-load-line" id="sll-0">Loading OGLE-IV photometry &middot; 187 epochs</span>
+      <span class="sim-load-line" id="sll-1">Fitting Fourier model &middot; P<sub style="font-size:8px">1</sub> = 0.690 d</span>
+      <span class="sim-load-line" id="sll-2">Computing orbital solution &middot; Pilecki+ 2022</span>
+      <span class="sim-load-line" id="sll-3">Initialising Baade-Wesselink integration</span>
+    </div>
+
+    <!-- live HUD stats -->
+    <div id="hud-stats" aria-live="polite" aria-atomic="false">
+      <div class="hud-row">
+        <span class="hud-label">V mag</span>
+        <span class="hud-val" id="hud-mag">--</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">T<sub>eff</sub></span>
+        <span class="hud-val" id="hud-teff">-- K</span>
+        <span id="hud-teff-swatch"></span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">R&#x2081; / R&#x2609;</span>
+        <span class="hud-val" id="hud-rad">--</span>
+      </div>
+      <div class="hud-row hud-phase-row">
+        <span class="hud-label" id="hud-phase-label">&phi;<sub>orb</sub> Orbital phase</span>
+        <span class="hud-val" id="hud-phase">--</span>
+      </div>
+    </div>
+
+    <!-- mode buttons -->
+    <div id="mode-bar">
+      <button class="btn-mode" id="btn-orbital"    onclick="setMode('orbital')">Orbital</button>
+      <button class="btn-mode" id="btn-pulsation"  onclick="setMode('pulsation')">Pulsation</button>
+      <button class="btn-mode" id="btn-realtime"   onclick="requestRealtime()">Real-Time &#9888;</button>
+    </div>
+
+    <!-- orbital param strip -->
+    <div id="orb-params">
+      P<sub>orb</sub> = 58.85 d &nbsp;&middot;&nbsp;
+      K&#x2081; = 28.5 km s&#x207B;&#xB9; &nbsp;&middot;&nbsp;
+      K&#x2082; = 51.6 km s&#x207B;&#xB9; &nbsp;&middot;&nbsp;
+      P<sub>puls</sub> = 0.690 d
+    </div>
+
+    <!-- transparent div that the canvas uses for plot-area geometry -->
+    <div id="hud-plot-container"></div>
+
+    <div id="scroll-hint">scroll for explanation &darr;</div>
+
+  </section>
+
+  <!-- explanation -->
+  <section id="explanation">
+    <div class="exp-meta">Binary Cepheid &middot; Large Magellanic Cloud</div>
+    <h1 class="exp-title">OGLE-LMC-CEP-1347</h1>
+
+    <hr class="article-divider">
+
+    <div class="exp-body">
+
+      <p>What does a star that should not exist look like? OGLE-LMC-CEP-1347, a binary Cepheid variable in the Large Magellanic Cloud some 165,000 light-years away, offers a rare window into that question. The simulation above &mdash; built from six years of OGLE-IV photometry and spectroscopic radial velocities from Pilecki et al. (2022) &mdash; shows the Cepheid (amber) and its companion (red) orbiting in 58.85 days, the tightest orbit known for any Cepheid.</p>
+
+      <p>Cepheids are used as the primary rung of the cosmic distance ladder: a Cepheid's pulsation period predicts its intrinsic luminosity, so measuring how bright it appears tells you how far away it is. What makes CEP-1347 exceptional is that it breaks the evolutionary model underpinning all of that. A star massive enough to become a Cepheid (3.41 M&#x2609;) should first swell into a red giant &mdash; expanding far enough to disrupt any 59-day orbit it might have been in. That CEP-1347 is still here, pulsating inside a compact binary, is the anomaly that makes it worth studying.</p>
+
+      <p>The leading explanation is a stellar merger: the Cepheid formed from the coalescence of two lower-mass stars in a former inner triple system, with the current companion as the surviving outer star. Its mass, compact orbit, mass ratio, and an inferred ~0.9 Gyr age discrepancy between the components all point in the same direction. A pending VLT/ESPRESSO proposal &mdash; targeting Li I 6707 &#x212B;, C/N ratio, and &alpha;-element abundances &mdash; aims to test whether the Cepheid's photosphere carries the chemical fingerprint of that event.</p>
+
+    </div>
+
+    <!-- parameter table -->
+    <hr class="article-divider">
+    <div class="exp-meta" style="margin-bottom:20px">System Parameters</div>
+    <table class="param-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th style="text-align:right">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Cepheid mass M&#x2081;</td><td>3.41 &pm; 0.08 M&#x2609;</td></tr>
+        <tr><td>Companion mass M&#x2082;</td><td>1.89 &pm; 0.04 M&#x2609;</td></tr>
+        <tr><td>Orbital period P<sub>orb</sub></td><td>58.85 &pm; 0.08 d</td></tr>
+        <tr><td>1st-overtone period P<sub>1</sub></td><td>0.690 d</td></tr>
+        <tr><td>2nd-overtone period P<sub>2</sub></td><td>0.556 d</td></tr>
+        <tr><td>Cepheid mean radius R&#x2081;</td><td>13.65 R&#x2609;</td></tr>
+        <tr><td>Companion radius R&#x2082;</td><td>12.51 R&#x2609;</td></tr>
+        <tr><td>Orbital inclination i</td><td>57&deg;</td></tr>
+        <tr><td>Cepheid RV semi-amplitude K&#x2081;</td><td>28.5 km s&#x207B;&#xB9;</td></tr>
+        <tr><td>Companion RV semi-amplitude K&#x2082;</td><td>51.56 km s&#x207B;&#xB9;</td></tr>
+        <tr><td>Systemic velocity &gamma;</td><td>239.97 km s&#x207B;&#xB9;</td></tr>
+        <tr><td>System V magnitude</td><td>17.08 (OGLE-IV weighted mean)</td></tr>
+        <tr><td>Distance (LMC)</td><td>~49.6 kpc (~165,000 ly)</td></tr>
+      </tbody>
+    </table>
+
+    <!-- mode guide -->
+    <hr class="article-divider">
+    <div class="exp-meta" style="margin-bottom:20px">Simulation Modes</div>
+    <div class="mode-guide">
+      <div class="mode-item">
+        <div class="mode-label">Orbital</div>
+        <div class="mode-desc">The two stars orbit their common barycenter over the 58.85-day period. The radial velocity curves below are plotted in real time, with 9 Pilecki+ 2022 spectroscopic measurements overplotted. The Cepheid's velocity includes both orbital and pulsation contributions; the model curves show the orbital component only.</div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-label">Pulsation</div>
+        <div class="mode-desc">Isolates the Cepheid's radial pulsation over one 16.6-hour cycle. The OGLE-IV V-band light curve (187 epochs, phase-folded) is shown alongside a Fourier model fit. Below it, a Baade-Wesselink radius curve is computed by analytically integrating the pulsation radial velocity &mdash; the same technique used to measure Cepheid angular diameters via interferometry.</div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-label">Real-Time &#9888;</div>
+        <div class="mode-desc">Both motions simultaneously, at their true physical frequency ratio: 85.3 pulsation cycles per orbit. The Cepheid completes roughly 85 pulsations for every time the two stars orbit each other. Rapid brightness changes are produced; see the photosensitivity warning above.</div>
+      </div>
+    </div>
+
+    <!-- physics note -->
+    <hr class="article-divider">
+    <div class="exp-meta" style="margin-bottom:16px">Physics Notes</div>
+    <div class="exp-body">
+      <p style="font-size:17px">Orbital positions are interpolated from a precomputed skeleton derived from the Pilecki+ 2022 double-lined solution. The Cepheid radius is computed analytically via Baade-Wesselink integration of a 2nd-order Fourier fit to the pulsation radial velocity residuals (R&sup2; = 0.927), using projection factor p = 1.27 (calibrated on fundamental-mode Cepheids; ~5% systematic for this first-overtone pulsator). The light curve and temperature color are derived from phase-folded OGLE-IV photometry. All physical parameters are from Espinoza-Arancibia &amp; Pilecki (2025, ApJ 981 L35) and Pilecki et al. (2022, ApJ 940 L48).</p>
+    </div>
+
+    <!-- references -->
+    <hr class="article-divider">
+    <div class="exp-meta" style="margin-bottom:16px">Data &amp; References</div>
+    <ul class="ref-list">
+      <li>Espinoza-Arancibia &amp; Pilecki 2025, ApJ 981 L35 &mdash; <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener">doi:10.3847/2041-8213/adb96b</a></li>
+      <li>Pilecki et al. 2022, ApJ 940 L48 &mdash; <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener">doi:10.3847/2041-8213/ac9fcc</a></li>
+      <li>Martin et al. 2024, A&amp;A 683 L6 &mdash; Li-rich double-mode Cepheid survey</li>
+      <li>OGLE-IV V-band photometry: 187 epochs, HJD 2455260&ndash;2459660</li>
+      <li>Simulation code: H. Zimmerman (Phillips Academy Andover / CAMK Warsaw)</li>
+    </ul>
+
+    <footer class="footer-nav">
+      <a href="https://www.henryzimmerman.net#research" class="nav-back">← Back to Research</a>
+      <a href="https://www.henryzimmerman.net/1347_methods" class="nav-back">Methods &amp; Diagnostic Analysis →</a>
+    </footer>
+  </section>
+
+  <button id="back-to-top" aria-label="Back to top">&#8593;</button>
+
+  <!-- modal logic -->
+  <script>
+    var modal = document.getElementById('modal-overlay');
+
+    function requestRealtime() {
+      modal.classList.add('active');
+    }
+
+    document.getElementById('modal-cancel').addEventListener('click', function() {
+      modal.classList.remove('active');
+    });
+
+    document.getElementById('modal-confirm').addEventListener('click', function() {
+      modal.classList.remove('active');
+      if (typeof setMode === 'function') setMode('realtime');
+    });
+
+    // close on outside click
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.classList.remove('active');
+    });
+  </script>
+
+  <!-- back to top -->
+  <script>
+    var btt = document.getElementById('back-to-top');
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 300) btt.classList.add('visible');
+      else btt.classList.remove('visible');
+    });
+    btt.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+
+  <!-- sim engine: update src to match your deployed path -->
+  <script
+    src="/js/cepheid-engine.js"
+    data-boot-json="/data/master_data_boot.json"
+    data-full-json="/data/master_data.json"
+  ></script>
+
+</body>
+</html>
