@@ -1,4 +1,26 @@
 (function() {
+  // ── film-mode auto-trigger ─────────────────────────────────────────────────
+  // ?film in the URL activates film mode without needing devtools.
+  // runs first — before any classList.contains('film-mode') read in this file.
+  if (/[?&]film\b/.test(window.location.search)) {
+    document.documentElement.classList.add('film-mode');
+  }
+
+  // hide all interactive HUD elements so nothing reads as a webpage during recording.
+  // injected once at module load, before the canvas is visible.
+  // selectors are intentionally broad to survive any class-name refactors.
+  (function injectFilmCSS() {
+    if (!document.documentElement.classList.contains('film-mode')) return;
+    var s = document.createElement('style');
+    s.textContent = [
+      '.btn-mode { display: none !important; }',
+      '#hud-readout, .hud-readout, #hud-panel, .hud-panel { display: none !important; }',
+      '#hud-mag, #hud-teff, #hud-rad, #hud-phase, #hud-phase-label, #hud-teff-swatch { display: none !important; }',
+      '.psw-warning, .scroll-hint, .ui-overlay, #photosensitivity-warning { display: none !important; }',
+    ].join('\n');
+    document.head.appendChild(s);
+  }());
+
   // ── config ──────────────────────────────────────────────────────────────────
   var MODES         = new Set(['orbital', 'pulsation', 'realtime']);
   var COMPANION_RAD = 12.51;   // R_sun (Espinoza-Arancibia & Pilecki 2025)
