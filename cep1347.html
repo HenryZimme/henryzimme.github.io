@@ -379,8 +379,10 @@
     /* mobile */
     /* ── film mode (?film query param) ── */
     /* hides all chrome, locks to full-viewport canvas, 1920x1080 capture ready */
-    html.film-mode body        { overflow: hidden; }
+    html.film-mode body        { overflow: hidden; cursor: none; }
+    html.film-mode *           { cursor: none !important; }
     html.film-mode nav         { display: none !important; }
+    html.film-mode #hud-stats  { display: none !important; }
     html.film-mode #explanation { display: none !important; }
     html.film-mode #back-to-top { display: none !important; }
     html.film-mode #scroll-hint { display: none !important; }
@@ -395,17 +397,14 @@
       top: 0; left: 0;
     }
 
-    /* plot panel: 30% of viewport in film mode (756px star area at 1080p) */
-    html.film-mode #hud-plot-container { height: 30vh; }
+    /* plot panel: 40% of viewport in film mode (648px star area at 1080p) */
+    html.film-mode #hud-plot-container { height: 40vh; }
     html.film-mode #orb-params {
-      bottom: calc(30vh - 2px);
+      bottom: calc(40vh - 2px);
       font-size: 10px;
       letter-spacing: 0.12em;
       color: rgba(255,255,255,0.28);
     }
-
-    /* hud: slightly more prominent in film mode */
-    html.film-mode #hud-stats  { top: 20px; left: 24px; }
 
     /* film watermark: bottom-right, subtle, can be cropped */
     #film-watermark {
