@@ -126,7 +126,7 @@
   var captionStartTime = null;
   var CAPTIONS = [
     { t: 0,    dur: 5000, text: 'OGLE-LMC-CEP-1347: a pulsating Cepheid in an eclipsing binary, ~165,000 light-years away in the LMC' },
-    { t: 7000, dur: 5000, text: 'The radial velocity curves encode both stars\u2019 orbital motion \u2014 pulsation-corrected from Pilecki+ 2022 spectroscopy' },
+    { t: 7000, dur: 5000, text: 'The radial velocity curves encode both stars\u2019 orbital motion' },
   ];
 
   var ogle_phased    = [];
