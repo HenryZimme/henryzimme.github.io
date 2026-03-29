@@ -23,7 +23,7 @@
   var R_MEAN         = 13.65;  // R_sun, from Pilecki+ 2022 eclipsing binary solution
   var RV_THRESH     = 40;
   var RV_N          = 2400;
-  var TRAIL_LEN     = 1800;
+  var TRAIL_LEN     = 300;
   var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
 
   // ── starfield: static LMC background, generated once on first resize ──────
@@ -1000,7 +1000,6 @@
     var ch = simCanvas.height / dpr;
 
     ctx.clearRect(0, 0, cw, ch);
-    drawBgStars(cw, ch);
 
     // wall-clock delta, capped at 100ms to avoid jumps after tab switch
     if (lastTime === null) lastTime = now;
@@ -1081,6 +1080,8 @@
     ctx.beginPath();
     ctx.rect(0, 0, sw, star.h);
     ctx.clip();
+
+    drawBgStars(sw, star.h);
 
     // ── orbital ellipses (inside clip so they can't bleed into plot) ──
     if (currentMode !== 'pulsation') {
@@ -1192,14 +1193,22 @@
 
     ctx.restore(); // end star-area clip
 
-    // ── object id label (top-left of star area, always visible) ──
-    ctx.save();
-    ctx.font = '10px \'JetBrains Mono\', monospace';
-    ctx.textBaseline = 'top';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255,255,255,0.38)';
-    ctx.fillText('OGLE-LMC-CEP-1347  \u00B7  LMC', 10, 10);
-    ctx.restore();
+    // ── object id label (top-left of star area, always visible; fades after 8s in film mode) ──
+    var idAlpha = 1;
+    if (document.documentElement.classList.contains('film-mode') && captionStartTime !== null) {
+      var idElapsed = now - captionStartTime;
+      idAlpha = idElapsed < 8000 ? 1 : Math.max(0, 1 - (idElapsed - 8000) / 2000);
+    }
+    if (idAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = idAlpha;
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(255,255,255,0.38)';
+      ctx.fillText('OGLE-LMC-CEP-1347  \u00B7  LMC', 10, 10);
+      ctx.restore();
+    }
 
     // ── mobile separator ──
     if (star.mobile) {
@@ -1440,5 +1449,5 @@
     }
   }
 
-  init();
+  document.fonts.ready.then(function() { init(); });
 })();
