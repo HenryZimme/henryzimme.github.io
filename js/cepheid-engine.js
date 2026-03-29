@@ -174,12 +174,14 @@
     var dpr = window.devicePixelRatio || 1;
     var w = simCanvas.width / dpr;
     var h = simCanvas.height / dpr;
-    if (window.innerWidth <= 740) {
-      var plot = getPlotRect();
-      var star_h = plot ? plot.py - 30 : h * 0.6;
-      return { w: w, h: star_h, full_h: h, mobile: true };
-    }
-    return { w: w, h: h, full_h: h, mobile: false };
+    var isMob = window.innerWidth <= 740;
+    var plot = getPlotRect();
+    // Always constrain star area height to the top of the plot whenever the
+    // plot sits inside the canvas bounds — prevents orbital ellipses and
+    // trails from bleeding over the RV/LC panel on any viewport width.
+    var gap = isMob ? 30 : 4;
+    var star_h = (plot && plot.py > 0 && plot.py < h) ? plot.py - gap : h;
+    return { w: w, h: star_h, full_h: h, mobile: isMob };
   }
 
   // ── rv precomputation ──────────────────────────────────────────────────────
