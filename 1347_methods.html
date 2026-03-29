@@ -147,12 +147,12 @@
 
   <div class="article-content">
     <h2>1. The Theoretical Motivator: Chandrasekhar and the Kappa Mechanism</h2>
-    <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism driving its pulsation. How do the non-linear dynamics of Cepheid pulsation fare when embedded in binary systems with extreme tidal forces? After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I searched for an observational perspective on tidal impacts in high-mass variables, yet found a significant gap in the literature.</p>
+    <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism, specifically whether the non-linear dynamics of Cepheid pulsation survive intact inside a binary with extreme tidal forces. After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I searched for an observational perspective on tidal impacts in high-mass variables, yet found a significant gap in the literature.</p>
     
-    <p>At the 247th AAS Meeting, I discussed this gap for several hours with Dr. Barry Madore. The consensus was that while tidal impacts were theoretically inevitable in short period systems, none had been found yet. This was because to become Cepheids, stars would first have to survive Red Giant Branch expansion, which would consume any close companions.  Finding a Cepheid in a short-period orbit that had not yet undergone mass transfer is exceedingly rare, as evidenced by Neilson et al. (2015). Following the discovery of OGLE-LMC-CEP-1347 by Bogumił Pilecki ($P_{orb} = 58.85d$), I realized this target represented a rare opportunity to test these structural predictions observationally.</p>
+    <p>At the 247th AAS Meeting, I discussed this gap for several hours with Dr. Barry Madore. The consensus was that while tidal impacts were theoretically inevitable in short period systems, none had been found yet. This was because to become Cepheids, stars would first have to survive Red Giant Branch expansion, which would consume any close companions. Neilson et al. (2015) documented how rarely Cepheids survive short-period orbits without prior mass transfer. Following the discovery of OGLE-LMC-CEP-1347 by Bogumił Pilecki ($P_{orb} = 58.85d$), I realized this target was a rare chance to test those structural predictions directly.</p>
 
 
-    <p>To isolate the residuals, I fit and subtracted multiple Fourier series to the $1O$ and $2O$ pulsation modes. Because the star is in a tight orbit, I applied a barycentric correction ($t_{corr} = t_{obs} - z/c$) using orbital parameters from Pilecki et al. (2022). This pipeline achieved a residual precision of ~0.01 mag RMS, which is comparable to a low-amplitude non-radial mode.</p>
+    <p>To isolate the residuals, I fit and subtracted multiple Fourier series to the $1O$ and $2O$ pulsation modes. Because the star is in a tight orbit, I applied a barycentric correction ($t_{corr} = t_{obs} - z/c$) using orbital parameters from Pilecki et al. (2022). This pipeline achieved a residual precision of ~0.01 mag RMS. That is comparable to the amplitude of a low-amplitude non-radial mode, which set the sensitivity floor for what the photometry could plausibly detect.</p>
 
     <figure>
       <img src="images/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.png" alt="Period-folded OGLE I-band light curve of OGLE-LMC-CEP-1347, first overtone mode.">
@@ -160,7 +160,7 @@
     </figure>
 
     <h2>2. The Madore Reanalysis & Bayesian Model Selection</h2>
-    <p>Initial searches for phase-locked amplitude modulation yielded null results. However, following a reanalysis suggested by Dr. Barry Madore, I performed a deeper interrogation of the residual power spectrum. Using simultaneous weighted dual-domain fitting across the OGLE $V$ and $I$ bands, I identified a symmetric frequency triplet with a spacing of $\Delta f \approx 0.0074$ c/d. The ΔBIC surface, however, showed significance concentrated at two isolated epochs rather than persisting across the full baseline, a pattern more consistent with transient window function interactions than a coherent stellar mode.</p>
+    <p>Initial searches for phase-locked amplitude modulation yielded null results. However, following a reanalysis suggested by Dr. Barry Madore, I performed a deeper interrogation of the residual power spectrum. Using simultaneous weighted dual-domain fitting across the OGLE $V$ and $I$ bands, I identified a symmetric frequency triplet with a spacing of $\Delta f \approx 0.0074$ c/d. The ΔBIC surface, however, showed significance concentrated at two isolated epochs rather than persisting across the full baseline. That looked like a window function artifact, not a coherent stellar mode.</p>
 
     <figure>
       <img src="images/CEP-1347_dynamic_spectrum.png" alt="Dynamic spectrum of residual frequencies.">
@@ -172,25 +172,23 @@
 
     <figure>
       <img src="images/CEP_1347_residual_frequency_analysis_orbital.jpeg" alt="Residual amplitude binned by orbital phase.">
-      <figcaption>Figure 3: Lomb-Scargle periodogram of residuals (log-scale) centered on $f_1$. The absence of coherent power at the orbital sidebands ($f_1 \pm f_{orb}$) establishes a robust upper limit on tidal interaction. The sensitivity limit ($\sim$14 mmag) is comparable to the predicted 0.1% tidal signal, motivating the transition to spectroscopic velocity diagnostics.</figcaption>
+      <figcaption>Figure 3: Lomb-Scargle periodogram of residuals (log-scale) centered on $f_1$. The absence of coherent power at the orbital sidebands ($f_1 \pm f_{orb}$) establishes a firm upper limit on tidal interaction. The sensitivity limit ($\sim$14 mmag) is comparable to the predicted 0.1% tidal signal, motivating the transition to spectroscopic velocity diagnostics.</figcaption>
     </figure>
 
     <h2>4. Window Function Diagnostic: The "Null" Discovery</h2>
-    <p>The dual-domain analysis had produced a concrete result: a candidate rotation period of 135 ± 15 days, over five σ longer than the 58.85-day orbit and superficially consistent with the tidal synchronization picture. This was a stopping point I chose not to take. The ΔBIC surface had shown significance concentrated at two isolated epochs rather than persisting across the full baseline, a pattern that did not look like a coherent stellar mode, and I wanted to understand why before attaching a physical interpretation to the period.</p>
+    <p>The dual-domain analysis had produced a concrete result: a candidate rotation period of 135 ± 15 days, over five σ longer than the 58.85-day orbit and superficially consistent with the tidal synchronization picture. This was a stopping point I chose not to take. The ΔBIC surface had shown significance concentrated at two isolated epochs rather than persisting across the full baseline, and I wanted to understand why before attaching a physical interpretation to the period.</p>
 
     <p>The statistical favorability for the rotational model required a check against the sampling artifacts of the OGLE cadence. I modeled the spectral window using exact timestamps and unit weights. The result was definitive: the candidate splitting $\Delta f \approx 0.0074$ c/d aligned almost perfectly with an integer multiple of the $1/yr$ ($\approx 0.0027$ c/d) sampling alias.</p>
 
-    
-
-    <p>This result demonstrates that the apparent rotational signal is entirely explained by the OGLE spectral window. The peak of the residual power spectrum sits within measurement uncertainty of the central window peak, and the ±1/yr sidelobes align with secondary residual peaks to the same precision. The ±2/yr sidelobes are also recovered. Residual power remains at other frequencies, but none clears a significance threshold consistent with a coherent astrophysical signal. The so-called 135-day "rotation" was an artifact of the Earth's orbit, not the underlying Cepheid physics. Identifying this alias before publication ensured the integrity of the merger-origin hypothesis was not diluted by a false rotational claim.</p>
-
     <figure>
       <img src="images/CEP-1347_alias_zoomed.png" alt="Spectral window overlay on residual periodogram.">
-      <figcaption>Figure 4: Direct comparison of the residual periodogram and the spectral window. The alignment with the 1/yr aliases strongly suggested that the candidate signal was an observational artifact.</figcaption>
+      <figcaption>Figure 4: Direct comparison of the residual periodogram and the spectral window. The alignment with the 1/yr aliases confirms that the candidate signal was an observational artifact.</figcaption>
     </figure>
 
+    <p>This result demonstrates that the apparent rotational signal is entirely explained by the OGLE spectral window. The peak of the residual power spectrum sits within measurement uncertainty of the central window peak, and the ±1/yr sidelobes align with secondary residual peaks to the same precision. The ±2/yr sidelobes are also recovered. Residual power remains at other frequencies, but none clears a significance threshold consistent with a coherent astrophysical signal. The so-called 135-day "rotation" was an artifact of the Earth's orbit, not the underlying Cepheid physics. Had the alias gone undiagnosed, the merger-origin hypothesis would have been published alongside a false rotational claim.</p>
+
     <h2>5. Spectroscopic Follow-up and Future Work</h2>
-    <p>This photometric aliasing problem is the primary driver for our transition to high-resolution spectroscopy. By obtaining phase-constrained spectra with ESPRESSO, we can test the merger hypothesis directly against these abundance signatures, bypassing the sampling limits that make ground-based photometric period searches unreliable for this system. As Co-Investigator and lead author of the Science Justification, I am currently preparing a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki.</p>
+    <p>This photometric aliasing problem is the primary driver for our transition to high-resolution spectroscopy. By obtaining phase-constrained spectra with ESPRESSO, we can test the merger hypothesis directly against these abundance signatures. The spectroscopic approach sidesteps the sampling limits that make ground-based photometric period searches unreliable for this system. As Co-Investigator and lead author of the Science Justification, I am currently preparing a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki.</p>
     
   </div>
 </main>
