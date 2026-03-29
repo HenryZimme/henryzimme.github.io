@@ -23,7 +23,7 @@
   var R_MEAN         = 13.65;  // R_sun, from Pilecki+ 2022 eclipsing binary solution
   var RV_THRESH     = 40;
   var RV_N          = 2400;
-  var TRAIL_LEN     = 300;
+  var TRAIL_LEN     = 450;
   var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
 
   // ── starfield: static LMC background, generated once on first resize ──────
@@ -172,14 +172,14 @@
   // times are in ms; designed for 60s film-mode orbit (one full orbit = 60,000ms)
   var captionStartTime = null;
   var CAPTIONS = [
-    { t:     0, dur: 6000, text: 'OGLE-LMC-CEP-1347 \u00B7 Large Magellanic Cloud \u00B7 ~165,000 light-years' },
+    { t:     0, dur: 6000, text: 'OGLE-LMC-CEP-1347, Large Magellanic Cloud, ~165,000 light-years' },
     { t:  8000, dur: 6000, text: 'The tightest orbit ever measured for a classical Cepheid: 58.85 days' },
     { t: 16000, dur: 6000, text: 'Radial velocity curves encode the orbital motion of both stars' },
-    { t: 24000, dur: 6000, text: 'Cepheid mass: 3.41 M\u2609 \u00B7 Companion: 1.89 M\u2609 \u00B7 Mass ratio 1.8:1' },
-    { t: 33000, dur: 6000, text: 'A star this massive should have disrupted its own orbit as a red giant\u2014it didn\u2019t' },
+    { t: 24000, dur: 6000, text: 'Cepheid mass 3.41 M\u2609, companion 1.89 M\u2609, mass ratio 1.8:1' },
+    { t: 33000, dur: 6000, text: 'A star this massive should have disrupted its own orbit as a red giant. It did not.' },
     { t: 42000, dur: 6000, text: 'Leading explanation: the Cepheid formed from a stellar merger in a former triple system' },
-    { t: 51000, dur: 6000, text: 'Pulsation period: 0.690 days \u00B7 85 pulsations per orbit \u00B7 Baade-Wesselink radius: 13.65 R\u2609' },
-    { t: 57000, dur: 5000, text: 'Pilecki et al. 2022 \u00B7 Espinoza-Arancibia & Pilecki 2025 \u00B7 OGLE-IV photometry' },
+    { t: 51000, dur: 6000, text: 'Pulsation period 0.690 days, 85 pulsations per orbit, Baade-Wesselink radius 13.65 R\u2609' },
+    { t: 57000, dur: 5000, text: 'Pilecki et al. 2022, Espinoza-Arancibia & Pilecki 2025, OGLE-IV photometry' },
   ];
 
   var ogle_phased    = [];
@@ -544,7 +544,7 @@
     var rvI = Math.round(cursor_phi * RV_N) % RV_N;
 
     var isMob = getStarArea().mobile;
-    var inset = isMob ? 8 : 44, padTop = 26, padBottom = isMob ? 10 : 46;
+    var inset = isMob ? 8 : 44, padTop = 26, padBottom = isMob ? 10 : 36;
     var drawH = ph - padTop - padBottom;
     var range = rv_abs_max - rv_abs_min;
     var yScale = drawH / range;
@@ -754,14 +754,12 @@
       }
       ctx.textAlign = 'center'; // reset
 
-      // attribution: hidden in film mode (redundant with watermark + captions)
-      if (!document.documentElement.classList.contains('film-mode')) {
-        ctx.font = '9px \'JetBrains Mono\', monospace';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillStyle = 'rgba(255,255,255,0.35)';
-        ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
-      }
+      // attribution
+      ctx.font = '9px \'JetBrains Mono\', monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
     }
 
     // canvas legend, replaces #rv-legend HTML element, always drawn on canvas
@@ -1096,18 +1094,39 @@
 
     drawBgStars(sw, star.h);
 
+    // ── faint LMC haze: elliptical diffuse glow suggesting the parent galaxy ──
+    if (currentMode !== 'pulsation') {
+      ctx.save();
+      var hazeX = sw * 0.62, hazeY = star.h * 0.28;
+      var hazeRx = sw * 0.38, hazeRy = star.h * 0.22;
+      var haze = ctx.createRadialGradient(hazeX, hazeY, 0, hazeX, hazeY, Math.max(hazeRx, hazeRy));
+      haze.addColorStop(0,   'rgba(160,180,255,0.038)');
+      haze.addColorStop(0.5, 'rgba(140,160,240,0.018)');
+      haze.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.scale(1, hazeRy / hazeRx);
+      ctx.fillStyle = haze;
+      ctx.beginPath();
+      ctx.arc(hazeX, hazeY * (hazeRx / hazeRy), hazeRx, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.restore();
+    }
+
     // ── orbital ellipses (inside clip so they can't bleed into plot) ──
     if (currentMode !== 'pulsation') {
       ctx.save();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(248,113,113,0.42)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 7]);
+      ctx.strokeStyle = 'rgba(248,113,113,0.78)';
       ctx.beginPath();
       ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * COS_I, 0, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(196,162,88,0.42)';
+      ctx.strokeStyle = 'rgba(196,162,88,0.78)';
       ctx.beginPath();
       ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * COS_I, 0, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.setLineDash([]);
       ctx.restore();
 
       // barycenter
@@ -1217,7 +1236,7 @@
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
       ctx.fillStyle = 'rgba(255,255,255,0.38)';
-      ctx.fillText('OGLE-LMC-CEP-1347  \u00B7  LMC', 10, 10);
+      ctx.fillText('OGLE-LMC-CEP-1347  /  LMC', 10, 10);
       ctx.restore();
     }
 
@@ -1258,7 +1277,7 @@
       var starArea = getStarArea();
       var capY = Math.min(starArea.h * 0.82, starArea.h - 50);
       var maxCapW = starArea.w - 40; // leave margin on both sides
-      ctx.font = '13px \'JetBrains Mono\', monospace';
+      ctx.font = '15px \'JetBrains Mono\', monospace';
 
       // word-wrap helper: returns array of lines fitting within maxW
       function wrapText(text, maxW) {
@@ -1288,7 +1307,7 @@
         if (alpha <= 0) continue;
         ctx.save();
         ctx.globalAlpha = alpha * 0.88;
-        ctx.font = '13px \'JetBrains Mono\', monospace';
+        ctx.font = '15px \'JetBrains Mono\', monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         var lines = wrapText(cap.text, maxCapW - 24);
