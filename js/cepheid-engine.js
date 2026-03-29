@@ -1630,7 +1630,7 @@
           ctx.font = '12px \'JetBrains Mono\', monospace';
           ctx.fillStyle = 'rgba(226,221,212,0.58)';
           ctx.letterSpacing = '0.08em';
-          ctx.fillText('CLASSICAL CEPHEID  \u00B7  DOUBLE-LINED ECLIPSING BINARY  \u00B7  LMC', ecX, ecY - 10);
+          ctx.fillText('CLASSICAL CEPHEID  \u00B7  DOUBLE-LINED SPECTROSCOPIC BINARY  \u00B7  LMC', ecX, ecY - 10);
 
           // divider
           ctx.strokeStyle = 'rgba(255,255,255,0.10)';
