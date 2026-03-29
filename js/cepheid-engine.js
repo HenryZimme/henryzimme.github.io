@@ -544,7 +544,7 @@
     var rvI = Math.round(cursor_phi * RV_N) % RV_N;
 
     var isMob = getStarArea().mobile;
-    var inset = isMob ? 8 : 44, padTop = 26, padBottom = isMob ? 10 : 36;
+    var inset = isMob ? 8 : 44, padTop = 26, padBottom = isMob ? 10 : 46;
     var drawH = ph - padTop - padBottom;
     var range = rv_abs_max - rv_abs_min;
     var yScale = drawH / range;
@@ -754,12 +754,14 @@
       }
       ctx.textAlign = 'center'; // reset
 
-      // attribution
-      ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
+      // attribution: hidden in film mode (redundant with watermark + captions)
+      if (!document.documentElement.classList.contains('film-mode')) {
+        ctx.font = '9px \'JetBrains Mono\', monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
+      }
     }
 
     // canvas legend, replaces #rv-legend HTML element, always drawn on canvas
@@ -1097,17 +1099,15 @@
     // ── orbital ellipses (inside clip so they can't bleed into plot) ──
     if (currentMode !== 'pulsation') {
       ctx.save();
-      ctx.lineWidth = 2;
-      ctx.setLineDash([7, 9]);
-      ctx.strokeStyle = 'rgba(248,113,113,0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(248,113,113,0.42)';
       ctx.beginPath();
       ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * COS_I, 0, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(196,162,88,0.55)';
+      ctx.strokeStyle = 'rgba(196,162,88,0.42)';
       ctx.beginPath();
       ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * COS_I, 0, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.restore();
 
       // barycenter
