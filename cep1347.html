@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OGLE-LMC-CEP-1347 | Henry Zimmerman</title>
   <meta name="description" content="Interactive simulation of OGLE-LMC-CEP-1347, the lowest-mass classical Cepheid in a double-lined eclipsing binary. Built from OGLE-IV photometry and Pilecki+ 2022 spectroscopy.">
+  <meta property="og:title" content="OGLE-LMC-CEP-1347 — Interactive Binary Cepheid Simulation">
+  <meta property="og:description" content="The lowest-mass classical Cepheid in a double-lined eclipsing binary, orbiting in 58.85 days. Built from OGLE-IV photometry and Pilecki+ 2022 spectroscopy.">
+  <meta property="og:url" content="https://www.henryzimmerman.net/1347">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://www.henryzimmerman.net/img/1347-preview.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#07091a">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -382,7 +389,7 @@
     html.film-mode body        { overflow: hidden; cursor: none; }
     html.film-mode *           { cursor: none !important; }
     html.film-mode nav         { display: none !important; }
-    html.film-mode #hud-stats  { display: none !important; }
+    html.film-mode #hud-stats  { top: 20px; }
     html.film-mode #explanation { display: none !important; }
     html.film-mode #back-to-top { display: none !important; }
     html.film-mode #scroll-hint { display: none !important; }
@@ -466,7 +473,7 @@
     <a href="https://www.henryzimmerman.net#research" class="nav-back">← Back to Research</a>
   </nav>
 
-  <div id="film-watermark">henryzimmerman.net &nbsp;&middot;&nbsp; OGLE-LMC-CEP-1347</div>
+  <div id="film-watermark">henryzimmerman.net &nbsp;&middot;&nbsp; OGLE-LMC-CEP-1347 &nbsp;&middot;&nbsp; 2026</div>
   <div id="film-diag" aria-hidden="true"></div>
 
   <!-- epilepsy modal -->
@@ -491,7 +498,7 @@
       <span class="sim-load-line" id="sll-0">Loading OGLE-IV photometry &middot; 187 epochs</span>
       <span class="sim-load-line" id="sll-1">Fitting Fourier model &middot; P<sub style="font-size:8px">1</sub> = 0.690 d</span>
       <span class="sim-load-line" id="sll-2">Computing orbital solution &middot; Pilecki+ 2022</span>
-      <span class="sim-load-line" id="sll-3">Initialising Baade-Wesselink integration</span>
+      <span class="sim-load-line" id="sll-3">Initializing Baade-Wesselink integration</span>
     </div>
 
     <!-- live HUD stats: matches index.html structure exactly -->
@@ -528,7 +535,7 @@
     <div id="orb-params">
       P<sub>orb</sub> = 58.85 d &nbsp;&middot;&nbsp;
       K&#x2081; = 28.5 km s&#x207B;&#xB9; &nbsp;&middot;&nbsp;
-      K&#x2082; = 51.6 km s&#x207B;&#xB9; &nbsp;&middot;&nbsp;
+      K&#x2082; = 51.56 km s&#x207B;&#xB9; &nbsp;&middot;&nbsp;
       P<sub>puls</sub> = 0.690 d
     </div>
 
@@ -548,11 +555,11 @@
 
     <div class="exp-body">
 
-      <p>What does a star that should not exist look like? OGLE-LMC-CEP-1347, a binary Cepheid variable in the Large Magellanic Cloud some 165,000 light-years away, offers a rare window into that question. The simulation above &mdash; built from six years of OGLE-IV photometry and spectroscopic radial velocities from Pilecki et al. (2022) &mdash; shows the Cepheid (amber) and its companion (red) orbiting in 58.85 days, the tightest orbit known for any Cepheid.</p>
+      <p>What does a star that should not exist look like? OGLE-LMC-CEP-1347, a binary Cepheid variable in the Large Magellanic Cloud some 165,000 light-years away, offers a rare window into that question. The simulation above &mdash; built from OGLE-IV photometry spanning 2010&ndash;2016 (187 epochs) and spectroscopic radial velocities from Pilecki et al. (2022) &mdash; shows the Cepheid (amber) and its companion (red) orbiting in 58.85 days, the tightest orbit known for any Cepheid (Pilecki et al. 2022).</p>
 
       <p>Cepheids are used as the primary rung of the cosmic distance ladder: a Cepheid's pulsation period predicts its intrinsic luminosity, so measuring how bright it appears tells you how far away it is. What makes CEP-1347 exceptional is that it breaks the evolutionary model underpinning all of that. A star massive enough to become a Cepheid (3.41 M&#x2609;) should first swell into a red giant &mdash; expanding far enough to disrupt any 59-day orbit it might have been in. That CEP-1347 is still here, pulsating inside a compact binary, is the anomaly that makes it worth studying.</p>
 
-      <p>The leading explanation is a stellar merger: the Cepheid formed from the coalescence of two lower-mass stars in a former inner triple system, with the current companion as the surviving outer star. Its mass, compact orbit, mass ratio, and an inferred ~0.9 Gyr age discrepancy between the components all point in the same direction. A pending VLT/ESPRESSO proposal &mdash; targeting Li I 6707 &#x212B;, C/N ratio, and &alpha;-element abundances &mdash; aims to test whether the Cepheid's photosphere carries the chemical fingerprint of that event.</p>
+      <p>The leading explanation is a stellar merger: the Cepheid formed from the coalescence of two lower-mass stars in a former inner triple system, with the current companion as the surviving outer star. Its mass, compact orbit, mass ratio, and an inferred ~0.9 Gyr age discrepancy between the components all point in the same direction. A pending VLT spectroscopic proposal aims to test whether the Cepheid's photosphere retains a chemical fingerprint of that event through detailed abundance analysis.</p>
 
     </div>
 
