@@ -25,6 +25,8 @@
   var RV_N          = 2400;
   var TRAIL_LEN     = 200;
   var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
+  // fourier r=2 fit to pilecki rv residuals (r²=0.927); [a0, a1, b1, a2, b2]
+  var PULS_C        = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
 
   // ── embedded observational data ────────────────────────────────────────────
   // 187 OGLE-IV V-band observations [hjd-2450000, v_mag, err]
@@ -123,8 +125,8 @@
   // guided first-loop captions
   var captionStartTime = null;
   var CAPTIONS = [
-    { t: 0,    dur: 4500, text: 'A Cepheid, one of the brightest variable stars' },
-    { t: 6000, dur: 5000, text: 'The radial velocity curves below encode both stars\' motion, measured from Earth' },
+    { t: 0,    dur: 5000, text: 'OGLE-LMC-CEP-1347: a pulsating Cepheid in an eclipsing binary, ~165,000 light-years away in the LMC' },
+    { t: 7000, dur: 5000, text: 'The radial velocity curves encode both stars\u2019 orbital motion \u2014 pulsation-corrected from Pilecki+ 2022 spectroscopy' },
   ];
 
   var ogle_phased    = [];
@@ -191,7 +193,6 @@
 
     // pulsation RV model: Fourier r=2 fit directly to Pilecki RV residuals (R²=0.927)
     // coeffs: [a0, a1, b1, a2, b2] from chi2-minimised fit over phi0 grid
-    var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
     var Np = 120;
     v_puls_cycle = [];
     for (var i = 0; i < Np; i++) {
@@ -637,7 +638,6 @@
 
     // cepheid: orbital model + pulsation RV at current pulsation phase
     var puls_ph = puls_phi;
-    var PULS_C = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
     var v_puls_now = PULS_C[0]
       + PULS_C[1] * Math.cos(2 * Math.PI * puls_ph)
       + PULS_C[2] * Math.sin(2 * Math.PI * puls_ph)
@@ -701,7 +701,7 @@
       ctx.font = '9px \'JetBrains Mono\', monospace';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
     }
 
@@ -1139,6 +1139,15 @@
 
     ctx.restore(); // end star-area clip
 
+    // ── object id label (top-left of star area, always visible) ──
+    ctx.save();
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    ctx.fillText('OGLE-LMC-CEP-1347  \u00B7  LMC', 10, 10);
+    ctx.restore();
+
     // ── mobile separator ──
     if (star.mobile) {
       ctx.save();
@@ -1314,7 +1323,7 @@
           if (pc_init.v_mag[pci] < bounds.minV) bounds.minV = pc_init.v_mag[pci];
           if (pc_init.v_mag[pci] > bounds.maxV) bounds.maxV = pc_init.v_mag[pci];
         }
-        maxR1 = Math.max(maxR1, radius_max);
+        maxR1 = radius_max;
       }
       bounds.a1 = Math.max.apply(null, p.x1.map(Math.abs));
       bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
