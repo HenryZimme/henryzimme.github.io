@@ -52,20 +52,30 @@
         y: rand() * ch,
         r: isBright ? 1.7 + rand() * 0.9 : (rand() < 0.65 ? 0.7 : 1.1),
         a: isBright ? 0.38 + rand() * 0.22 : 0.10 + rand() * 0.20,
-        c: col
+        c: col,
+        dep: 0.06 + rand() * 0.22,  // parallax depth factor (low=far, barely moves)
+        twp: 2.2 + rand() * 4.2,    // twinkle period in seconds
+        twf: rand() * Math.PI * 2,  // twinkle phase offset
       });
     }
   }
-  function drawBgStars(cw, ch) {
+  // par_tx/par_ty: camera tx/ty passed in so each star drifts at s.dep fraction of camera motion
+  // (bg stars are inside the camera transform, so they get the full cam motion; we counter-shift
+  // by (1-dep)*cam to make farther stars appear to drift less — simulating parallax depth)
+  // t_s: wall-clock seconds for twinkle oscillation
+  function drawBgStars(cw, ch, par_tx, par_ty, t_s) {
     ensureBgStars(cw, ch);
     if (!bgStars) return;
     ctx.save();
     for (var i = 0; i < bgStars.length; i++) {
       var s = bgStars[i];
-      ctx.globalAlpha = s.a;
+      // twinkle: ±8% alpha oscillation, slow, unique period per star
+      var twinkle = 1 + 0.08 * Math.sin(2 * Math.PI * t_s / s.twp + s.twf);
+      ctx.globalAlpha = Math.max(0, s.a * twinkle);
       ctx.fillStyle = s.c || '#ffffff';
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      // parallax counter-shift: stars with low dep move less than camera
+      ctx.arc(s.x + par_tx * (s.dep - 1), s.y + par_ty * (s.dep - 1), s.r, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -170,6 +180,11 @@
   var filmFadeStartTime = null; // for film-mode fade-in and end card timing
   var filmStartTime = null;
   var filmCurrentMode = null;
+
+  // film-mode pulsation shockwave rings: emitted at each radius peak
+  var puls_rings      = [];
+  var prev_r1         = null;  // previous frame radius for peak detection
+  var puls_was_rising = false;
 
   var FILM_SEGMENTS = [
     { start: 0,  end: 15, mode: 'pulsation' },
@@ -1091,8 +1106,7 @@
   // apply ken burns camera transform inside the star-area clip.
   // pivot is mode-aware: pulsation pivots on the star (sh*0.35), orbital on area center (sh/2).
   // result: zoom pushes INTO the relevant subject rather than toward an arbitrary center.
-  function applyFilmCamera(cam_t_s, mode, sw, sh) {
-    var cam     = getCamState(cam_t_s);
+  function applyFilmCamera(cam, mode, sw, sh) {
     var pivot_x = sw / 2;
     var pivot_y = (mode === 'pulsation') ? sh * 0.35 : sh / 2;
     ctx.translate(pivot_x + cam.tx, pivot_y + cam.ty);
@@ -1224,20 +1238,26 @@
     // film-mode ken burns: scale/translate around star-area center.
     // applied after clip so the crop boundary stays fixed to the viewport.
     // no-op in normal mode.
+    var film_cam   = { zoom: 1, tx: 0, ty: 0 };
+    var film_t_s   = 0;
     if (isFilm && filmStartTime !== null) {
-      var cam_t_s = (now - filmStartTime) / 1000;
-      applyFilmCamera(cam_t_s, currentMode, sw, sh);
+      film_t_s = (now - filmStartTime) / 1000;
+      film_cam = getCamState(film_t_s);
+      applyFilmCamera(film_cam, currentMode, sw, sh);
     }
 
-    drawBgStars(sw, star.h);
+    drawBgStars(sw, star.h, film_cam.tx, film_cam.ty, now / 1000);
 
     // ── faint LMC haze: elliptical diffuse glow suggesting the parent galaxy ──
-    if (currentMode !== 'pulsation') {
+    // in film mode: visible in pulsation segments too (star IS in the LMC), opacity boosted
+    if (currentMode !== 'pulsation' || isFilm) {
+      var haze_a0 = isFilm ? 0.13  : 0.038;
+      var haze_a1 = isFilm ? 0.062 : 0.018;
       var hazeX = sw * 0.62, hazeY = star.h * 0.28;
       var hazeRx = sw * 0.38, hazeRy = star.h * 0.22;
       var haze = ctx.createRadialGradient(hazeX, hazeY, 0, hazeX, hazeY, hazeRx);
-      haze.addColorStop(0,   'rgba(160,180,255,0.038)');
-      haze.addColorStop(0.5, 'rgba(140,160,240,0.018)');
+      haze.addColorStop(0,   'rgba(160,180,255,' + haze_a0 + ')');
+      haze.addColorStop(0.5, 'rgba(140,160,240,' + haze_a1 + ')');
       haze.addColorStop(1,   'rgba(0,0,0,0)');
       ctx.save();
       ctx.scale(1, hazeRy / hazeRx);
@@ -1287,8 +1307,8 @@
       if (trail1.length > 2) {
         for (var ti = 1; ti < trail1.length; ti++) {
           var tf = ti / trail1.length;           // 0=tail, 1=head
-          var tw = tf * tf * 3.5;               // quadratic taper: thin tail, thick head
-          var ta = tf * tf * 0.55;
+          var tw = tf * tf * (isFilm ? 5.5 : 3.5);  // film: wider, more luminous
+          var ta = tf * tf * (isFilm ? 0.75 : 0.55);
           ctx.beginPath();
           ctx.moveTo(trail1[ti-1].x, trail1[ti-1].y);
           ctx.lineTo(trail1[ti].x,   trail1[ti].y);
@@ -1302,8 +1322,8 @@
       if (trail2.length > 2) {
         for (var ti2 = 1; ti2 < trail2.length; ti2++) {
           var tf2 = ti2 / trail2.length;
-          var tw2 = tf2 * tf2 * 2.8;
-          var ta2 = tf2 * tf2 * 0.45;
+          var tw2 = tf2 * tf2 * (isFilm ? 4.4 : 2.8);
+          var ta2 = tf2 * tf2 * (isFilm ? 0.65 : 0.45);
           ctx.beginPath();
           ctx.moveTo(trail2[ti2-1].x, trail2[ti2-1].y);
           ctx.lineTo(trail2[ti2].x,   trail2[ti2].y);
@@ -1323,6 +1343,54 @@
     } else {
       drawStar(s1x, s1y, pr1, col1, true, brightness);
       drawStar(s2x, s2y, pr2, '#f87171', false, 0.5);
+    }
+
+    // ── pulsation shockwave rings (film mode only) ──
+    // detect radius peak (rising→falling edge) and emit an expanding pressure ring.
+    // coordinates are pre-camera so the ring scales naturally with the ken burns zoom.
+    if (isFilm && currentMode === 'pulsation') {
+      if (prev_r1 !== null) {
+        if (r1 > prev_r1) {
+          puls_was_rising = true;
+        } else if (r1 < prev_r1 && puls_was_rising) {
+          puls_rings.push({ born_ms: now, x: s1x, y: s1y, r_start: pr1, col: col1 || FALLBACK_COL });
+          puls_was_rising = false;
+        }
+      }
+      prev_r1 = r1;
+
+      // prune expired rings
+      puls_rings = puls_rings.filter(function(rg) { return now - rg.born_ms < 1700; });
+
+      for (var ri = 0; ri < puls_rings.length; ri++) {
+        var rg = puls_rings[ri];
+        var rg_age = (now - rg.born_ms) / 1000; // seconds since emission
+        // expand from star edge; reach ~2.4x at end of lifetime
+        var rg_r  = rg.r_start * (1 + rg_age * 0.85);
+        var rg_a  = Math.max(0, 0.48 * (1 - rg_age / 1.7));
+        if (rg_a <= 0) continue;
+        ctx.save();
+        // outer ring: bright, color-matched to star temperature
+        ctx.globalAlpha = rg_a;
+        ctx.strokeStyle = rg.col;
+        ctx.lineWidth = Math.max(0.4, 2.4 * (1 - rg_age / 1.7));
+        ctx.shadowBlur  = 6;
+        ctx.shadowColor = rg.col;
+        ctx.beginPath();
+        ctx.arc(rg.x, rg.y, rg_r, 0, Math.PI * 2);
+        ctx.stroke();
+        // inner echo ring: half expansion rate, lower opacity — suggests harmonics
+        var rg_r2 = rg.r_start * (1 + rg_age * 0.38);
+        ctx.globalAlpha = rg_a * 0.28;
+        ctx.lineWidth = Math.max(0.3, 1.2 * (1 - rg_age / 1.7));
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(rg.x, rg.y, rg_r2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    } else {
+      prev_r1 = null; // reset when not in pulsation film mode
     }
 
     // ── star labels: fade out after 15s in film mode, always-on otherwise ──
