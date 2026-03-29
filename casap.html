@@ -4,13 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Welcome to the absurdly holistic chaos">
-    <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C.A.S.A.P.: Sensory Overload</title>
+    <title>C.A.S.A.P. Phase 13: Sensory Overload</title>
     <style>
         :root {
             --primary: #1a1a2e;
@@ -207,6 +201,199 @@
             <div style="font-size: 12px; color: #999; margin-top: 12px;">Confidence interval: Unshakable.</div>
         </div>
     </div>
-    <script src="casap.js" defer></script>
+
+    <script>
+        // --- NEW: THE COLOR SCRAMBLER ---
+        function getRandomColor() {
+            return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        }
+        let colorInterval = setInterval(() => {
+            document.documentElement.style.setProperty('--primary', getRandomColor());
+            document.documentElement.style.setProperty('--bg-start', getRandomColor());
+            document.documentElement.style.setProperty('--accent', getRandomColor());
+            document.documentElement.style.setProperty('--hostile', getRandomColor());
+        }, 2500); // Changes every 2.5 seconds
+
+        // --- NEW: THE ATTENTION DEFICIT BLUR ---
+        let blurTimer;
+        const formEl = document.getElementById('formContainer');
+        
+        function resetBlur() {
+            formEl.style.filter = 'blur(0px)';
+            clearTimeout(blurTimer);
+            blurTimer = setTimeout(() => {
+                formEl.style.filter = 'blur(8px)';
+            }, 1500); // Blur if mouse stops for 1.5 seconds
+        }
+        
+        document.addEventListener('mousemove', resetBlur);
+        document.addEventListener('keydown', resetBlur);
+        resetBlur(); // Init
+
+        // --- THE POLTERGEIST SCROLL ---
+        let scrollInterval = setInterval(() => {
+            const scrollAmount = (Math.random() - 0.5) * 800; 
+            window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+        }, Math.random() * 2000 + 2000);
+
+        // --- The Shuffling States ---
+        const states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+        const stateSelect = document.getElementById('shufflingState');
+        function renderStates() {
+            let shuffled = [...states].sort(() => 0.5 - Math.random());
+            stateSelect.innerHTML = '<option value="" disabled selected>Attempt to select...</option>';
+            shuffled.forEach(s => {
+                let o = document.createElement('option'); o.value = s; o.innerText = s; stateSelect.appendChild(o);
+            });
+        }
+        renderStates();
+        let stateInterval = setInterval(renderStates, 800);
+
+        // --- The Extracurricular Trap ---
+        document.getElementById('sleepTrap').addEventListener('change', function() {
+            if(this.checked) { alert("FATAL ERROR: Top applicants do not sleep. Purging application data."); location.reload(); }
+        });
+
+        // --- The Spinning Essay Box ---
+        const essayBox = document.getElementById('essayBox');
+        let currentAngle = 0;
+        essayBox.addEventListener('input', function() {
+            currentAngle += 2; 
+            this.style.transform = `rotate(${currentAngle}deg)`;
+        });
+
+        // --- The Panic Timer ---
+        let timeLeft = 179; 
+        const timerDisplay = document.getElementById('panicTimer');
+        let countdownInterval = setInterval(() => {
+            if (timeLeft <= 0) timeLeft = 299; 
+            let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            let s = (timeLeft % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `PORTAL CLOSES IN: ${m}:${s}`;
+            timeLeft--;
+        }, 1000);
+
+        // --- The Horrible Phone Slider ---
+        const phoneSlider = document.getElementById('phoneSlider');
+        const phoneDisplay = document.getElementById('phoneDisplay');
+        phoneSlider.addEventListener('input', function() {
+            let val = this.value.toString();
+            phoneDisplay.innerText = `${val.slice(0,3)}-${val.slice(3,6)}-${val.slice(6,10)}`;
+        });
+
+        // --- The Fleeing Checkbox ---
+        const checkLabel = document.getElementById('movingCheckboxLabel');
+        const checkArea = document.getElementById('checkboxArea');
+        checkLabel.addEventListener('mouseover', function() {
+            if(document.getElementById('fleeingCheck').checked) return;
+            const aRect = checkArea.getBoundingClientRect(); const lRect = checkLabel.getBoundingClientRect();
+            checkLabel.style.top = (Math.random() * (aRect.height - lRect.height)) + 'px';
+            checkLabel.style.left = (Math.random() * (aRect.width - lRect.width)) + 'px';
+        });
+
+        // --- Shrinking / Fleeing Submit Button ---
+        const submitBtn = document.getElementById('movingSubmit');
+        const wrapper = document.getElementById('submitWrapper');
+        let scale = 1.0;
+        submitBtn.addEventListener('mouseover', function(e) {
+            const wRect = wrapper.getBoundingClientRect(); const bRect = submitBtn.getBoundingClientRect();
+            scale = Math.max(0.3, scale - 0.1); 
+            submitBtn.style.top = (Math.random() * (wRect.height - (bRect.height / scale))) + 'px';
+            submitBtn.style.left = (Math.random() * (wRect.width - (bRect.width / scale))) + 'px';
+            submitBtn.style.transform = `scale(${scale})`;
+        });
+
+        // --- Résumé-Frogger ---
+        const gameArea = document.getElementById('gameArea');
+        const frog = document.getElementById('frog');
+        const startBtn = document.getElementById('startGame');
+        const gameCheckbox = document.getElementById('gameVerified');
+
+        let frogY = 120, frogX = 50, gameInterval, gameRunning = false;
+        const obstacles = [];
+        const obstacleLabels = ["AUTO-REJECT", "YIELD PROTECTION", "LEGACY"];
+
+        startBtn.addEventListener('click', function() {
+            gameArea.style.display = 'block'; startBtn.style.display = 'none'; gameRunning = true;
+            spawnObstacles(); document.addEventListener('keydown', moveFrog); gameArea.focus(); 
+        });
+
+        function moveFrog(e) {
+            if (!gameRunning) return;
+            if(["w","a","s","d","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)){ e.preventDefault(); }
+            const speed = 15;
+            switch(e.key.toLowerCase()) {
+                case 'w': case 'arrowup': frogY -= speed; break;
+                case 's': case 'arrowdown': frogY += speed; break;
+                case 'a': case 'arrowleft': frogX -= 5; break;
+                case 'd': case 'arrowright': frogX += 5; break;
+            }
+            frogY = Math.max(0, Math.min(120, frogY)); frogX = Math.max(0, Math.min(95, frogX));
+            frog.style.top = frogY + 'px'; frog.style.left = frogX + '%'; checkCollision();
+        }
+
+        function spawnObstacles() {
+            for (let i = 0; i < 3; i++) {
+                const obs = document.createElement('div'); obs.classList.add('obstacle'); obs.innerText = obstacleLabels[i];
+                obs.style.top = (35 + i * 30) + 'px'; obs.style.left = Math.random() * 100 + '%'; obs.style.width = (80 + Math.random() * 50) + 'px';
+                gameArea.appendChild(obs);
+                obstacles.push({ el: obs, speed: (1.5 + Math.random() * 2) * (i % 2 === 0 ? 1 : -1), left: parseFloat(obs.style.left) });
+            }
+            gameInterval = setInterval(() => {
+                obstacles.forEach(obs => {
+                    obs.left += obs.speed; if (obs.left > 100) obs.left = -20; if (obs.left < -20) obs.left = 100;
+                    obs.el.style.left = obs.left + '%';
+                });
+                checkCollision();
+            }, 20);
+        }
+
+        function checkCollision() {
+            if (!gameRunning) return;
+            if (frogY <= 20) { endGame(true); return; }
+            const fRect = frog.getBoundingClientRect(); const obsEls = document.querySelectorAll('.obstacle');
+            obsEls.forEach(obs => {
+                const oRect = obs.getBoundingClientRect();
+                if (fRect.left < oRect.right - 5 && fRect.right > oRect.left + 5 && fRect.top < oRect.bottom - 5 && fRect.bottom > oRect.top + 5) { endGame(false); }
+            });
+        }
+
+        function endGame(win) {
+            gameRunning = false; clearInterval(gameInterval); document.removeEventListener('keydown', moveFrog);
+            if (win) {
+                frog.innerText = "✅"; document.getElementById('goal').innerText = "PORTAL REACHED"; gameCheckbox.checked = true; 
+            } else {
+                alert("ATS BOT HAS DISCARDED YOUR APPLICATION. START OVER.");
+                frogY = 120; frogX = 50; frog.style.top = frogY + 'px'; frog.style.left = frogX + '%';
+                gameRunning = true; document.addEventListener('keydown', moveFrog); spawnObstacles();
+            }
+        }
+
+        // --- FINAL SUBMISSION ---
+        document.getElementById('casapForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            if(!document.getElementById('gameVerified').checked) { alert("You must bypass the ATS bots."); return; }
+            
+            // STOP THE MADNESS
+            clearInterval(colorInterval);
+            clearInterval(scrollInterval);
+            clearInterval(stateInterval);
+            clearInterval(countdownInterval);
+            clearTimeout(blurTimer);
+            document.removeEventListener('mousemove', resetBlur);
+            document.removeEventListener('keydown', resetBlur);
+            
+            // Normalize colors for the win screen
+            document.documentElement.style.setProperty('--primary', '#1a1a2e');
+            document.documentElement.style.setProperty('--bg-start', '#f0fbf7');
+            formEl.style.filter = 'none';
+
+            document.getElementById('panicTimer').style.display = 'none';
+            document.getElementById('formContainer').style.display = 'none';
+            
+            window.scrollTo(0,0);
+            document.getElementById('resultContainer').style.display = 'flex';
+        });
+    </script>
 </body>
 </html>
