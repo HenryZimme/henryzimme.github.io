@@ -1,5 +1,3 @@
-<script>
-
 /* ===============================
    PHASE SYSTEM (controls escalation)
 ================================= */
@@ -259,5 +257,3 @@ document.getElementById('casapForm').addEventListener('submit', function (e) {
 
     document.getElementById('resultContainer').style.display = 'flex';
 });
-
-</script>
