@@ -167,7 +167,8 @@
   var rv_abs_min = 0, rv_abs_max = 0;
   var v_puls_cycle = [];
   var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
-  var filmFadeStartTime = null; // for film-mode fade-in and end card timing
+  var filmFadeStartTime  = null; // for film-mode fade-in and end card timing
+  var filmCountdownStart = null; // set on first frame in film mode; countdown runs for 5s before animation
 
   // guided first-loop captions
   // times are in ms; designed for 60s film-mode orbit (one full orbit = 60,000ms)
@@ -1008,7 +1009,64 @@
     }
     // capture first-frame timestamp for film-mode fade-in and end card
     var isFilm = document.documentElement.classList.contains('film-mode');
-    if (isFilm && filmFadeStartTime === null) filmFadeStartTime = now;
+    if (isFilm && filmCountdownStart === null) filmCountdownStart = now;
+
+    // ── film-mode countdown: 5s before animation begins ──────────────────────
+    var COUNTDOWN_MS = 5000;
+    if (isFilm && filmCountdownStart !== null) {
+      var cdElapsed = now - filmCountdownStart;
+      if (cdElapsed < COUNTDOWN_MS) {
+        // black background
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.fillStyle = '#07091a';
+        ctx.fillRect(0, 0, cw, ch);
+
+        var secsLeft = Math.ceil((COUNTDOWN_MS - cdElapsed) / 1000);
+        var cdFrac   = (cdElapsed % 1000) / 1000; // 0→1 within each second
+        // alpha: flash in at start of each second, fade toward end
+        var cdAlpha  = cdFrac < 0.15 ? cdFrac / 0.15 : Math.max(0.35, 1 - (cdFrac - 0.15) / 0.85);
+
+        ctx.save();
+        ctx.textAlign  = 'center';
+        ctx.textBaseline = 'middle';
+
+        // label
+        ctx.font = '13px \'JetBrains Mono\', monospace';
+        ctx.fillStyle = 'rgba(196,162,88,' + (cdAlpha * 0.65).toFixed(3) + ')';
+        ctx.fillText('RECORDING STARTS IN', cw / 2, ch / 2 - 62);
+
+        // big number
+        ctx.font = 'bold 96px \'JetBrains Mono\', monospace';
+        ctx.fillStyle = 'rgba(226,221,212,' + cdAlpha.toFixed(3) + ')';
+        ctx.fillText(secsLeft, cw / 2, ch / 2);
+
+        // thin progress arc around number
+        var arcR = 80, arcCx = cw / 2, arcCy = ch / 2;
+        var arcFrac = cdElapsed / COUNTDOWN_MS;
+        ctx.strokeStyle = 'rgba(196,162,88,' + (cdAlpha * 0.45).toFixed(3) + ')';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(arcCx, arcCy, arcR, -Math.PI / 2, -Math.PI / 2 + arcFrac * 2 * Math.PI);
+        ctx.stroke();
+        // track ring (dim)
+        ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(arcCx, arcCy, arcR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // hint at bottom
+        ctx.font = '11px \'JetBrains Mono\', monospace';
+        ctx.fillStyle = 'rgba(255,255,255,0.22)';
+        ctx.fillText('START YOUR SCREEN RECORDER NOW', cw / 2, ch / 2 + 68);
+
+        ctx.restore();
+        requestAnimationFrame(animate);
+        return; // don't advance physics or draw anything else
+      }
+      // countdown done — arm fade start on the first post-countdown frame
+      if (filmFadeStartTime === null) filmFadeStartTime = now;
+    }
     var p = data.physics_frames;
     var dpr = window.devicePixelRatio || 1;
     var cw = simCanvas.width / dpr;
