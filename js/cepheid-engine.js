@@ -757,7 +757,7 @@
       ctx.fillStyle = 'rgba(96,165,250,0.55)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('V mag  \u2191 faint', 0, 0);
+      ctx.fillText('V mag', 0, 0);
       ctx.restore();
     }
 
