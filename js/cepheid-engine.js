@@ -168,10 +168,42 @@
   var v_puls_cycle = [];
   var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
   var filmFadeStartTime = null; // for film-mode fade-in and end card timing
+  var filmStartTime = null;
+  var filmCurrentMode = null;
+
+  var FILM_SEGMENTS = [
+    { start: 0,  end: 15, mode: 'pulsation' },
+    { start: 15, end: 42, mode: 'orbital' },
+    { start: 42, end: 62, mode: 'pulsation' },
+    { start: 62, end: 75, mode: 'orbital' }
+  ];
+
+  function filmModeForTime(t) {
+    for (var i = FILM_SEGMENTS.length - 1; i >= 0; i--) {
+      if (t >= FILM_SEGMENTS[i].start) return FILM_SEGMENTS[i].mode;
+    }
+    return FILM_SEGMENTS[0].mode;
+  }
+
+  function updateFilmTimeline(now) {
+    if (!document.documentElement.classList.contains('film-mode')) return;
+    if (filmStartTime === null) filmStartTime = now;
+    if (captionStartTime === null) captionStartTime = now;
+    if (filmFadeStartTime === null) filmFadeStartTime = now;
+
+    var t = (now - filmStartTime) / 1000;
+    var nextMode = filmModeForTime(t);
+
+    if (filmCurrentMode !== nextMode) {
+      filmCurrentMode = nextMode;
+      setMode(nextMode);
+    }
+  }
 
   // guided first-loop captions
   // times are in ms; designed for 60s film-mode orbit (one full orbit = 60,000ms)
   var captionStartTime = null;
+
   var CAPTIONS = [
     { t:     0, dur: 6000, text: 'OGLE-LMC-CEP-1347, Large Magellanic Cloud, ~165,000 light-years' },
     { t:  8000, dur: 6000, text: 'The tightest orbit ever measured for a classical Cepheid: 58.85 days' },
@@ -1008,7 +1040,9 @@
     }
     // capture first-frame timestamp for film-mode fade-in and end card
     var isFilm = document.documentElement.classList.contains('film-mode');
+    if (isFilm) updateFilmTimeline(now);
     if (isFilm && filmFadeStartTime === null) filmFadeStartTime = now;
+
     var p = data.physics_frames;
     var dpr = window.devicePixelRatio || 1;
     var cw = simCanvas.width / dpr;
@@ -1548,8 +1582,14 @@
 
       window.addEventListener('resize', resize);
       resize();
-      setMode('orbital');
+      if (document.documentElement.classList.contains('film-mode')) {
+        setMode('pulsation');
+        filmCurrentMode = 'pulsation';
+      } else {
+        setMode('orbital');
+      }
       requestAnimationFrame(animate);
+
 
       // stage 2: fetch full JSON in background, swap seamlessly
       fetch(fullUrl).then(function(r2) {
