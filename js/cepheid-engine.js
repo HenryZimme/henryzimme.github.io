@@ -48,17 +48,19 @@
               : tint < 0.90 ? '#ffeedd'   // warm foreground stars
               :                '#aaccff';  // faint blue
       var r_val = isBright ? 1.7 + rand() * 0.9 : (rand() < 0.65 ? 0.7 : 1.1);
+      var base_a = isBright ? 0.38 + rand() * 0.22 : 0.10 + rand() * 0.20;
       bgStars.push({
         x: rand() * cw,
         y: rand() * ch,
         r: r_val,
-        a: isBright ? 0.38 + rand() * 0.22 : 0.10 + rand() * 0.20,
+        a: base_a,
         c: col,
         dep: 0.06 + rand() * 0.22,  // parallax depth factor (low=far, barely moves)
         twp: 2.2 + rand() * 4.2,    // twinkle period in seconds
         twf: rand() * Math.PI * 2,  // twinkle phase offset
-        // diffraction spike: only on bright stars (telescope secondary mirror struts effect)
-        spike_len: (isBright && rand() < 0.72) ? r_val * 4.0 + rand() * 5.0 : 0,
+        // diffraction spike length: only on bright stars; scales with brightness proxy (s.a)
+        // a 4-vane spider produces 4 spikes (cross), longer for brighter stars
+        spike_len: isBright ? 10 + base_a * 52 + rand() * 8 : 0,
       });
     }
   }
@@ -80,24 +82,32 @@
       ctx.beginPath();
       ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
       ctx.fill();
-      // diffraction spikes on bright stars (4-arm cross, suggests telescope optics)
+      // diffraction spikes: 4-arm cross (4-vane spider pattern).
+      // each arm is a sub-pixel-wide filled rectangle with a gradient approximating
+      // the sinc² falloff from Fraunhofer diffraction by a thin rectangular obstruction:
+      // I(r) ∝ sinc²(r/r0), approximated by a steep-initial then long-tail gradient.
+      // no diagonal arms — a 4-vane spider produces exactly 4 perpendicular spikes.
       if (s.spike_len > 0) {
-        var sl = s.spike_len;
-        ctx.strokeStyle = s.c || '#ffffff';
-        ctx.lineWidth   = 0.55;
-        // primary arms (horizontal / vertical)
-        ctx.globalAlpha = eff_a * 0.42;
-        ctx.beginPath();
-        ctx.moveTo(sx - sl, sy); ctx.lineTo(sx + sl, sy);
-        ctx.moveTo(sx, sy - sl); ctx.lineTo(sx, sy + sl);
-        ctx.stroke();
-        // diagonal arms (shorter, fainter — secondary struts)
-        var sd = sl * 0.52;
-        ctx.globalAlpha = eff_a * 0.16;
-        ctx.beginPath();
-        ctx.moveTo(sx - sd, sy - sd); ctx.lineTo(sx + sd, sy + sd);
-        ctx.moveTo(sx + sd, sy - sd); ctx.lineTo(sx - sd, sy + sd);
-        ctx.stroke();
+        var sl   = s.spike_len;
+        var sa   = eff_a * 0.68; // spike peak alpha: slightly below star disc alpha
+        var arms = [[1,0],[-1,0],[0,1],[0,-1]]; // right, left, down, up
+        for (var ai = 0; ai < arms.length; ai++) {
+          var ax = arms[ai][0], ay = arms[ai][1];
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.rotate(Math.atan2(ay, ax));
+          // gradient along spike arm: sinc²-like falloff
+          var grad = ctx.createLinearGradient(0, 0, sl, 0);
+          grad.addColorStop(0.00, hexToRgba(s.c || '#ffffff', sa));
+          grad.addColorStop(0.06, hexToRgba(s.c || '#ffffff', sa * 0.68));
+          grad.addColorStop(0.20, hexToRgba(s.c || '#ffffff', sa * 0.22));
+          grad.addColorStop(0.50, hexToRgba(s.c || '#ffffff', sa * 0.06));
+          grad.addColorStop(1.00, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grad;
+          // 0.55px height — sub-pixel thin, as a real diffraction spike would be
+          ctx.fillRect(0, -0.275, sl, 0.55);
+          ctx.restore();
+        }
       }
     }
     ctx.globalAlpha = 1;
@@ -210,15 +220,15 @@
   var last_ring_time  = null;  // wall-clock ms of last ring emission (time-based trigger)
 
   var FILM_SEGMENTS = [
-    { start: 0,  end: 15, mode: 'pulsation' },
-    { start: 15, end: 42, mode: 'orbital' },
-    { start: 42, end: 62, mode: 'pulsation' },
-    { start: 62, end: 92, mode: 'orbital' }   // extended: zoom-out sequence + end card
+    { start:  0, end:  5, mode: 'pulsation' },
+    { start:  5, end: 13, mode: 'orbital'   },
+    { start: 13, end: 17, mode: 'pulsation' },
+    { start: 17, end: 25, mode: 'orbital'   }   // zoom-out sequence + end card hold
   ];
 
   // film-mode only: ken burns camera state
   var cam_dissolve_start = null;
-  var CAM_DISSOLVE_DUR   = 900; // ms
+  var CAM_DISSOLVE_DUR   = 400; // ms
 
   // ken burns keyframes: zoom scales the star area, tx/ty pan content in px (at zoom=1).
   // positive tx shifts content right, positive ty shifts content down.
@@ -226,30 +236,24 @@
   // matched to FILM_SEGMENTS: pulsation (0-15s), orbital (15-42s), pulsation (42-62s), orbital (62-75s).
   // pivot is mode-aware (see applyFilmCamera): pulsation pivots on the star (sh*0.35), orbital on center.
   var CAM_KEYFRAMES = [
-    // act 1 — pulsation (0–15s): open wide, push in on the breathing star
-    { t:  0, zoom: 1.00, tx:   0, ty:   0 },
-    { t:  6, zoom: 1.42, tx:   0, ty:   0 }, // push in — star dominates frame
-    { t: 14, zoom: 1.20, tx:   0, ty:   0 }, // ease back before orbital cut
+    // pulsation (0–5s): open, push in on the breathing star
+    { t:  0.0, zoom: 1.00, tx:  0, ty:  0 },
+    { t:  2.0, zoom: 1.45, tx:  0, ty:  0 }, // push into star
+    { t:  4.5, zoom: 1.20, tx:  0, ty:  0 }, // ease back before cut
 
-    // act 2 — orbital (15–42s): pull back to reveal the binary, drift with the orbit
-    { t: 16, zoom: 0.86, tx:   0, ty:   0 }, // wide reveal — both stars, full ellipses
-    { t: 22, zoom: 0.96, tx:   0, ty:   0 }, // settle
-    { t: 30, zoom: 1.10, tx:  48, ty: -12 }, // drift right, following Cepheid arc
-    { t: 40, zoom: 1.00, tx:   0, ty:   0 }, // return to center before pulsation cut
+    // orbital (5–13s): pull back to reveal the binary, drift
+    { t:  5.5, zoom: 0.82, tx:  0, ty:  0 }, // wide reveal
+    { t:  8.0, zoom: 1.00, tx: 32, ty: -8 }, // drift following Cepheid arc
+    { t: 12.0, zoom: 0.88, tx:  0, ty:  0 }, // settle before cut
 
-    // act 3 — pulsation (42–62s): tightest zoom — intimate, maximum drama
-    { t: 44, zoom: 1.55, tx:   0, ty:   0 }, // deep push — star fills frame
-    { t: 56, zoom: 1.32, tx:   0, ty:   0 }, // begin slow pull-out
-    { t: 62, zoom: 1.08, tx:   0, ty:   0 }, // pulling back, preparing final cut
+    // pulsation (13–17s): hardest push — intimate, maximum drama
+    { t: 13.5, zoom: 1.55, tx:  0, ty:  0 }, // deep push
+    { t: 16.5, zoom: 1.10, tx:  0, ty:  0 }, // begin pull-out
 
-    // act 4 — orbital (62–75s): wide final shot — full system, cosmic scale
-    { t: 64, zoom: 0.88, tx:   0, ty:   0 }, // widest frame — full orbit visible
-    { t: 68, zoom: 0.88, tx:   0, ty:   0 }, // hold 4s
-
-    // act 5 — zoom-out sequence (68–79s): pull back until the Cepheid is a dot among stars
-    // target zoom: r1*zoom_base*cam_zoom ≈ 1.5px → cam_zoom ≈ 0.022 at typical viewport
-    { t: 79, zoom: 0.020, tx:   0, ty:   0 }, // 11s pull-back — system shrinks to two dots
-    { t: 92, zoom: 0.020, tx:   0, ty:   0 }, // hold through end card
+    // orbital zoom-out (17–25s): brief wide, then rapid pull to dot, end card hold
+    { t: 17.5, zoom: 0.85, tx:  0, ty:  0 }, // settle wide
+    { t: 19.5, zoom: 0.018, tx: 0, ty:  0 }, // rapid pull — system becomes two dots
+    { t: 25.0, zoom: 0.018, tx: 0, ty:  0 }, // hold through end card
   ];
 
   function filmModeForTime(t) {
@@ -280,21 +284,18 @@
   var captionStartTime = null;
 
   var CAPTIONS = [
-    // act 1: pulsation (0–15s) — star breathing, audience oriented
-    { t:     0, dur: 5500, text: 'OGLE-LMC-CEP-1347  \u00B7  Large Magellanic Cloud  \u00B7  ~165,000 light-years' },
-    { t:  7500, dur: 6000, text: 'A Cepheid variable: expanding and contracting every 0.690 days, changing temperature and brightness with each breath' },
+    // pulsation (0–5s): orient
+    { t:   200, dur: 4000, text: 'OGLE-LMC-CEP-1347  \u00B7  Large Magellanic Cloud  \u00B7  165,000 light-years' },
 
-    // act 2: orbital (15–42s) — the binary mystery introduced
-    { t: 16000, dur: 6000, text: 'Its companion orbits in just 58.85 days \u2014 the tightest orbit ever measured for a classical Cepheid' },
-    { t: 24000, dur: 6500, text: 'Cepheid: 3.41 M\u2609, companion: 1.89 M\u2609, separation: 0.52 AU \u00B7 radial velocities from Pilecki et al. 2022' },
-    { t: 33000, dur: 7500, text: 'A star this massive should have swallowed its companion when it expanded as a red giant. It did not.' },
+    // orbital (5–13s): the binary and the problem
+    { t:  5800, dur: 5000, text: 'The shortest orbital period ever measured for a classical Cepheid: 58.85 days' },
+    { t: 11500, dur: 4000, text: 'At this separation, the Cepheid should have engulfed its companion as a red giant. It did not.' },
 
-    // act 3: pulsation (42–62s) — hypothesis and physics
-    { t: 43000, dur: 7000, text: 'Leading explanation: the Cepheid formed from a stellar merger inside a former triple system, skipping the red giant phase entirely' },
-    { t: 52000, dur: 6500, text: 'Baade-Wesselink radius 13.65 R\u2609 \u00B7 85 pulsations per orbit \u00B7 projection factor p\u202F=\u202F1.27' },
+    // pulsation (13–17s): the answer
+    { t: 13500, dur: 3500, text: 'Most likely it formed from a stellar merger in a former triple system \u2014 never passing through the red giant phase' },
 
-    // act 4: orbital (62–75s) — credits before end card
-    { t: 62500, dur: 6000, text: 'Pilecki et al. 2022, ApJ 940 L48  \u00B7  Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35  \u00B7  OGLE-IV photometry' },
+    // zoom-out (17s+): credits before end card
+    { t: 17500, dur: 2200, text: 'Pilecki et al. 2022  \u00B7  Espinoza-Arancibia & Pilecki 2025  \u00B7  OGLE-IV' },
   ];
 
   var ogle_phased    = [];
@@ -1157,7 +1158,7 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  var ORBIT_DURATION_S  = (document.documentElement.classList.contains('film-mode')) ? 60.0 : 120.0;
+  var ORBIT_DURATION_S  = (document.documentElement.classList.contains('film-mode')) ? 16.0 : 120.0;
   var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
   // realtime: pulsation runs ~4x faster than the true P_puls/P_orb ratio (1.41s would be exact)
   // deliberately sped up so pulsation is visible alongside the orbit without slowing the orbit down
@@ -1684,9 +1685,9 @@
         ctx.restore();
       }
 
-      // end card: fades in at 75s — the zoom-out is nearly complete, system is two tiny dots
+      // end card: fades in at 17s — zoom-out is underway, system shrinking to dots
       // overlay is semi-transparent so the live starfield shows through behind the credits
-      var EC_START = 75000, EC_FADE = 1800, EC_TEXT_DELAY = 700;
+      var EC_START = 17000, EC_FADE = 1400, EC_TEXT_DELAY = 600;
       var ecAge = filmElapsed - EC_START;
       if (ecAge > 0) {
         // subtle dark scrim — legibility without blacking out the cosmos
