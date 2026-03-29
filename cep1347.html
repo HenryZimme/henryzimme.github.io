@@ -154,8 +154,8 @@
     /* mode buttons: positioned above the plot panel */
     #mode-bar {
       position: absolute;
-      /* vertically: at 62vh, horizontally centered */
-      bottom: calc(38vh + 18px);
+      /* sits just above the plot panel */
+      bottom: calc(28vh + 18px);
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -181,7 +181,7 @@
     /* orbital params strip */
     #orb-params {
       position: absolute;
-      bottom: calc(38vh - 2px);
+      bottom: calc(28vh - 2px);
       left: 0; right: 0;
       text-align: center;
       font-family: 'JetBrains Mono', monospace;
@@ -193,12 +193,12 @@
       z-index: 10;
     }
 
-    /* plot panel: bottom 38% of viewport, drawn into by canvas */
+    /* plot panel: bottom 28% of viewport, drawn into by canvas */
     #hud-plot-container {
       position: absolute;
       left: 0; right: 0;
       bottom: 0;
-      height: 38vh;
+      height: 28vh;
       /* transparent — canvas draws into this region */
       pointer-events: none;
       z-index: 5;
@@ -221,66 +221,6 @@
       0%, 100% { opacity: 0.5; }
       50% { opacity: 1; }
     }
-
-    /* ── photosensitivity modal ── */
-    #modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(7,9,26,0.88);
-      z-index: 500;
-      align-items: center;
-      justify-content: center;
-    }
-    #modal-overlay.active { display: flex; }
-
-    #modal-box {
-      background: #0d1030;
-      border: 1px solid var(--panel-border);
-      padding: 36px 40px;
-      max-width: 400px;
-      width: calc(100% - 40px);
-    }
-
-    #modal-box h2 {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--gold);
-      margin-bottom: 16px;
-    }
-
-    #modal-box p {
-      font-size: 16px;
-      color: var(--text-dim);
-      margin-bottom: 28px;
-      line-height: 1.55;
-    }
-
-    .modal-btns {
-      display: flex;
-      gap: 12px;
-    }
-
-    .modal-btn {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 8px 18px;
-      cursor: pointer;
-      border: 1px solid var(--panel-border);
-      background: transparent;
-      color: var(--text-dim);
-      transition: all 0.2s;
-    }
-    .modal-btn:hover { color: var(--text); border-color: var(--gold-dim); }
-    .modal-btn.confirm {
-      border-color: rgba(248,113,113,0.4);
-      color: var(--red);
-    }
-    .modal-btn.confirm:hover { background: rgba(248,113,113,0.08); }
 
     /* ── explanation section ── */
     #explanation {
@@ -444,14 +384,14 @@
       .hud-label { width: 56px; }
 
       #mode-bar {
-        bottom: calc(42vh + 14px);
+        bottom: calc(32vh + 14px);
         gap: 4px;
       }
       .btn-mode { font-size: 9px; padding: 5px 10px; }
 
       #orb-params { display: none; }
 
-      #hud-plot-container { height: 42vh; }
+      #hud-plot-container { height: 32vh; }
 
       #scroll-hint { display: none; }
 
@@ -469,14 +409,14 @@
     <a href="https://www.henryzimmerman.net#research" class="nav-back">← Back to Research</a>
   </nav>
 
-  <!-- photosensitivity modal (shown before real-time mode activates) -->
-  <div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
-    <div id="modal-box">
-      <h2 id="modal-heading">⚠ Photosensitivity Warning</h2>
-      <p>Real-time mode renders the Cepheid pulsating at the true physical frequency ratio: approximately 85 pulsation cycles per orbit. This produces rapid brightness changes that may affect people with photosensitive epilepsy or migraines.</p>
-      <div class="modal-btns">
-        <button class="modal-btn" id="modal-cancel">Cancel</button>
-        <button class="modal-btn confirm" id="modal-confirm">I understand, continue</button>
+  <!-- photosensitivity modal: matches index.html pattern exactly -->
+  <div id="epilepsy-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(7,9,26,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+    <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
+      <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
+      <p style="font-size:13px;color:rgba(226,221,212,0.85);line-height:1.7;margin-bottom:1.5rem;">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
+      <div style="display:flex;gap:1rem;">
+        <button onclick="document.getElementById('epilepsy-modal').style.display='none';" style="flex:1;padding:0.6rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">Cancel</button>
+        <button onclick="document.getElementById('epilepsy-modal').style.display='none';window.setMode('realtime');" style="flex:1;padding:0.6rem;background:rgba(196,162,88,0.12);border:1px solid rgba(196,162,88,0.4);border-radius:6px;color:#c4a258;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">I understand, continue</button>
       </div>
     </div>
   </div>
@@ -494,23 +434,25 @@
       <span class="sim-load-line" id="sll-3">Initialising Baade-Wesselink integration</span>
     </div>
 
-    <!-- live HUD stats -->
+    <!-- live HUD stats: matches index.html structure exactly -->
     <div id="hud-stats" aria-live="polite" aria-atomic="false">
       <div class="hud-row">
-        <span class="hud-label">V mag</span>
+        <span class="hud-label">V-band mag</span>
         <span class="hud-val" id="hud-mag">--</span>
       </div>
       <div class="hud-row">
-        <span class="hud-label">T<sub>eff</sub></span>
-        <span class="hud-val" id="hud-teff">-- K</span>
-        <span id="hud-teff-swatch"></span>
+        <span class="hud-label">T<sub>eff</sub> Cepheid</span>
+        <span style="display:flex;align-items:center;gap:6px;">
+          <span class="hud-val" id="hud-teff">-- K</span>
+          <span id="hud-teff-swatch" style="display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--gold);transition:background 0.3s;"></span>
+        </span>
       </div>
       <div class="hud-row">
-        <span class="hud-label">R&#x2081; / R&#x2609;</span>
-        <span class="hud-val" id="hud-rad">--</span>
+        <span class="hud-label">R&#8321; Cepheid</span>
+        <span class="hud-val" id="hud-rad">-- R&#9737;</span>
       </div>
       <div class="hud-row hud-phase-row">
-        <span class="hud-label" id="hud-phase-label">&phi;<sub>orb</sub> Orbital phase</span>
+        <span class="hud-label" id="hud-phase-label">&#966;<sub>orb</sub> orbital</span>
         <span class="hud-val" id="hud-phase">--</span>
       </div>
     </div>
@@ -519,7 +461,7 @@
     <div id="mode-bar">
       <button class="btn-mode" id="btn-orbital"    onclick="setMode('orbital')">Orbital</button>
       <button class="btn-mode" id="btn-pulsation"  onclick="setMode('pulsation')">Pulsation</button>
-      <button class="btn-mode" id="btn-realtime"   onclick="requestRealtime()">Real-Time &#9888;</button>
+      <button class="btn-mode" id="btn-realtime"   onclick="document.getElementById('epilepsy-modal').style.display='flex'">Real-Time &#9888;</button>
     </div>
 
     <!-- orbital param strip -->
@@ -625,29 +567,6 @@
 
   <button id="back-to-top" aria-label="Back to top">&#8593;</button>
 
-  <!-- modal logic -->
-  <script>
-    var modal = document.getElementById('modal-overlay');
-
-    function requestRealtime() {
-      modal.classList.add('active');
-    }
-
-    document.getElementById('modal-cancel').addEventListener('click', function() {
-      modal.classList.remove('active');
-    });
-
-    document.getElementById('modal-confirm').addEventListener('click', function() {
-      modal.classList.remove('active');
-      if (typeof setMode === 'function') setMode('realtime');
-    });
-
-    // close on outside click
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) modal.classList.remove('active');
-    });
-  </script>
-
   <!-- back to top -->
   <script>
     var btt = document.getElementById('back-to-top');
@@ -660,12 +579,18 @@
     });
   </script>
 
-  <!-- sim engine: update src to match your deployed path -->
-  <script
-    src="/js/cepheid-engine.js"
-    data-boot-json="/data/master_data_boot.json"
-    data-full-json="/data/master_data.json"
-  ></script>
+  <!-- lazy-load sim engine when canvas enters viewport (matches index.html pattern) -->
+  <script>
+    new IntersectionObserver(function(entries, obs) {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      var s = document.createElement('script');
+      s.src = '/js/cepheid-engine.js';
+      s.dataset.bootJson = '/data/master_data_boot.json';
+      s.dataset.fullJson = '/data/master_data.json';
+      document.body.appendChild(s);
+    }, { rootMargin: '200px' }).observe(document.getElementById('simCanvas'));
+  </script>
 
 </body>
 </html>
