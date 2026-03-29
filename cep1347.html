@@ -432,7 +432,7 @@
       z-index: 300;
       pointer-events: none;
     }
-    html.film-mode #film-diag { display: block; }
+    html.film-mode #film-diag { display: none; }
 
     @media (max-width: 740px) {
       nav { padding: 20px; }
@@ -657,18 +657,18 @@
         s.dataset.fullJson = '/data/master_data.json';
         document.body.appendChild(s);
 
-        // update diag bar: shows actual canvas pixel dimensions every second
+        // update diag bar: shown only when ?diag is explicitly in the URL
         var diag   = document.getElementById('film-diag');
-        var nodiag = window.location.search.indexOf('nodiag') !== -1;
+        var showDiag = window.location.search.indexOf('diag') !== -1;
         var clean  = window.location.search.indexOf('clean')  !== -1;
-        if ((nodiag || clean) && diag) diag.style.display = 'none';
+        if (showDiag && !clean && diag) diag.style.display = 'block';
         if (clean) {
           var wm = document.getElementById('film-watermark');
           if (wm) wm.style.display = 'none';
         }
         function updateDiag() {
           var c = document.getElementById('simCanvas');
-          if (!c || !diag || nodiag) return;
+          if (!c || !diag || !showDiag || clean) return;
           var dpr = window.devicePixelRatio || 1;
           var w = Math.round(c.width / dpr);
           var h = Math.round(c.height / dpr);
