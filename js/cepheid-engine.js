@@ -38,14 +38,21 @@
     };
     var rand = rng(0xdeadbeef);
     bgStars = [];
-    var n = Math.round(cw * ch / 2500); // ~830 stars at 1920×1080 CSS-px equivalent
+    var n = Math.round(cw * ch / 1400); // ~1500 stars at 1920×1080 — denser LMC field
     for (var i = 0; i < n; i++) {
-      var isBright = rand() < 0.08;
+      var isBright = rand() < 0.10;
+      // LMC tint: bias slightly toward blue-white for cluster character
+      var tint = rand();
+      var col = tint < 0.55 ? '#ffffff'
+              : tint < 0.78 ? '#ddeeff'   // blue-white
+              : tint < 0.90 ? '#ffeedd'   // warm foreground stars
+              :                '#aaccff';  // faint blue
       bgStars.push({
         x: rand() * cw,
         y: rand() * ch,
-        r: isBright ? 1.6 + rand() * 0.8 : (rand() < 0.7 ? 0.8 : 1.2),
-        a: isBright ? 0.35 + rand() * 0.20 : 0.12 + rand() * 0.22
+        r: isBright ? 1.7 + rand() * 0.9 : (rand() < 0.65 ? 0.7 : 1.1),
+        a: isBright ? 0.38 + rand() * 0.22 : 0.10 + rand() * 0.20,
+        c: col
       });
     }
   }
@@ -56,7 +63,7 @@
     for (var i = 0; i < bgStars.length; i++) {
       var s = bgStars[i];
       ctx.globalAlpha = s.a;
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = s.c || '#ffffff';
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
@@ -549,6 +556,10 @@
 
     ctx.save();
 
+    // ── plot panel background (prevents canvas bg showing through at curve crossings) ──
+    ctx.fillStyle = 'rgba(7,9,26,0.72)';
+    ctx.fillRect(px, py, pw, ph);
+
     // ── RV color bands between curves ──
     // approach band (rv1 > rv2 -> Cepheid approaching faster): warm amber tint
     // recession band (rv2 > rv1): cool red tint
@@ -562,8 +573,8 @@
       if (bandH < 1) continue;
       // amber where Cepheid is above companion (rv1>rv2), red otherwise
       var col_b = (rv1[ri_b] > rv2[ri_b])
-        ? 'rgba(196,162,88,0.07)'
-        : 'rgba(248,113,113,0.07)';
+        ? 'rgba(196,162,88,0.11)'
+        : 'rgba(248,113,113,0.11)';
       ctx.fillStyle = col_b;
       ctx.fillRect(px + inset + kb * step, yTop, step + 0.5, bandH);
     }
@@ -572,7 +583,7 @@
     for (var k = 0; k < nPts; k++) {
       var ri = Math.round(k / nPts * RV_N) % RV_N;
       if (rvDelta[ri] >= RV_THRESH) {
-        ctx.fillStyle = 'rgba(134,239,172,0.07)';
+        ctx.fillStyle = 'rgba(134,239,172,0.09)';
         ctx.fillRect(px + inset + k * step, py + padTop, step + 0.5, drawH);
       }
     }
@@ -756,7 +767,7 @@
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(96,165,250,0.65)';
-    ctx.fillText('RADIAL VELOCITIES (KM/S) - ORBITAL PHASE', px + inset, py + 6);
+    ctx.fillText('RADIAL VELOCITIES (KM/S) \u00B7 ORBITAL PHASE', px + inset, py + 6);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#ffe4a0';
     ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
@@ -954,20 +965,20 @@
     var c = col || FALLBACK_COL;
     var b = (brightness !== undefined) ? Math.max(0, Math.min(1, brightness)) : 0.5;
 
-    // bloom: fixed radius, linear alpha only, single gradient pass
-    var bloom_r = pr * 3.2;
-    var bloom_a = is_cepheid ? (0.07 + b * 0.13) : 0.06;
-    var grad = ctx.createRadialGradient(spx, spy, pr * 0.5, spx, spy, bloom_r);
+    // bloom: tighter radius so disc color stays readable, alpha lifted slightly to compensate
+    var bloom_r = pr * 2.5;
+    var bloom_a = is_cepheid ? (0.10 + b * 0.18) : 0.08;
+    var grad = ctx.createRadialGradient(spx, spy, pr * 0.4, spx, spy, bloom_r);
     grad.addColorStop(0,   hexToRgba(c, bloom_a));
-    grad.addColorStop(0.5, hexToRgba(c, bloom_a * 0.35));
+    grad.addColorStop(0.4, hexToRgba(c, bloom_a * 0.45));
     grad.addColorStop(1,   'rgba(0,0,0,0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(spx, spy, bloom_r, 0, Math.PI * 2);
     ctx.fill();
 
-    // subtle core glow
-    ctx.shadowBlur  = pr * (is_cepheid ? 1.8 + b * 1.2 : 1.4);
+    // core glow: halved shadowBlur so amber disc wins over white scatter
+    ctx.shadowBlur  = pr * (is_cepheid ? 0.9 + b * 0.6 : 0.7);
     ctx.shadowColor = c;
 
     // disc
@@ -1057,7 +1068,7 @@
       cx = sw / 2;
       cy = sh * 0.35;
     } else {
-      zoom = (Math.min(sw, sh) * 0.32) / bounds.a2;
+      zoom = (Math.min(sw, sh) * 0.50) / bounds.a2;
       cx = sw / 2;
       cy = sh / 2;
     }
