@@ -38,7 +38,7 @@
     };
     var rand = rng(0xdeadbeef);
     bgStars = [];
-    var n = Math.round(cw * ch / 1400); // ~1500 stars at 1920×1080 — denser LMC field
+    var n = Math.round(cw * ch / 900); // ~2300 stars at 1920×1080 — denser LMC field
     for (var i = 0; i < n; i++) {
       var isBright = rand() < 0.10;
       // LMC tint: bias slightly toward blue-white for cluster character
@@ -167,6 +167,7 @@
   var rv_abs_min = 0, rv_abs_max = 0;
   var v_puls_cycle = [];
   var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
+  var filmFadeStartTime = null; // for film-mode fade-in and end card timing
 
   // guided first-loop captions
   // times are in ms; designed for 60s film-mode orbit (one full orbit = 60,000ms)
@@ -175,7 +176,7 @@
     { t:     0, dur: 6000, text: 'OGLE-LMC-CEP-1347, Large Magellanic Cloud, ~165,000 light-years' },
     { t:  8000, dur: 6000, text: 'The tightest orbit ever measured for a classical Cepheid: 58.85 days' },
     { t: 16000, dur: 6000, text: 'Radial velocity curves encode the orbital motion of both stars' },
-    { t: 24000, dur: 6000, text: 'Cepheid mass 3.41 M\u2609, companion 1.89 M\u2609, mass ratio 1.8:1' },
+    { t: 24000, dur: 6000, text: 'Cepheid 3.41 M\u2609, companion 1.89 M\u2609, total separation 0.52 AU' },
     { t: 33000, dur: 6000, text: 'A star this massive should have disrupted its own orbit as a red giant. It did not.' },
     { t: 42000, dur: 6000, text: 'Leading explanation: the Cepheid formed from a stellar merger in a former triple system' },
     { t: 51000, dur: 6000, text: 'Pulsation period 0.690 days, 85 pulsations per orbit, Baade-Wesselink radius 13.65 R\u2609' },
@@ -1005,6 +1006,9 @@
       requestAnimationFrame(animate);
       return;
     }
+    // capture first-frame timestamp for film-mode fade-in and end card
+    var isFilm = document.documentElement.classList.contains('film-mode');
+    if (isFilm && filmFadeStartTime === null) filmFadeStartTime = now;
     var p = data.physics_frames;
     var dpr = window.devicePixelRatio || 1;
     var cw = simCanvas.width / dpr;
@@ -1096,10 +1100,9 @@
 
     // ── faint LMC haze: elliptical diffuse glow suggesting the parent galaxy ──
     if (currentMode !== 'pulsation') {
-      ctx.save();
       var hazeX = sw * 0.62, hazeY = star.h * 0.28;
       var hazeRx = sw * 0.38, hazeRy = star.h * 0.22;
-      var haze = ctx.createRadialGradient(hazeX, hazeY, 0, hazeX, hazeY, Math.max(hazeRx, hazeRy));
+      var haze = ctx.createRadialGradient(hazeX, hazeY, 0, hazeX, hazeY, hazeRx);
       haze.addColorStop(0,   'rgba(160,180,255,0.038)');
       haze.addColorStop(0.5, 'rgba(140,160,240,0.018)');
       haze.addColorStop(1,   'rgba(0,0,0,0)');
@@ -1109,7 +1112,6 @@
       ctx.beginPath();
       ctx.arc(hazeX, hazeY * (hazeRx / hazeRy), hazeRx, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
       ctx.restore();
     }
 
@@ -1221,6 +1223,34 @@
       ctx.restore();
     }
 
+    // ── scale bar: 0.1 AU (orbital/realtime only) ──────────────────────────────
+    // a_total = a1+a2 = (K1+K2)*P/(2π*sin i) = 0.516 AU; 1 AU = 215.032 R_sun
+    // zoom maps R_sun → px, so 0.1 AU = 21.503 R_sun → 21.503*zoom px
+    if (currentMode !== 'pulsation') {
+      var scaleRsun = 0.1 * 215.032;   // 21.503 R_sun = 0.1 AU
+      var scalePx   = scaleRsun * zoom;
+      var sbX = 18, sbY = star.h - 20;
+      var sbTickH = 5;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.50)';
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'square';
+      ctx.beginPath();
+      ctx.moveTo(sbX,          sbY);
+      ctx.lineTo(sbX + scalePx, sbY);
+      ctx.moveTo(sbX,          sbY - sbTickH);
+      ctx.lineTo(sbX,          sbY + sbTickH);
+      ctx.moveTo(sbX + scalePx, sbY - sbTickH);
+      ctx.lineTo(sbX + scalePx, sbY + sbTickH);
+      ctx.stroke();
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('0.1 AU', sbX + scalePx / 2, sbY - sbTickH - 2);
+      ctx.restore();
+    }
+
     ctx.restore(); // end star-area clip
 
     // ── object id label (top-left of star area, always visible; fades after 8s in film mode) ──
@@ -1311,24 +1341,102 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         var lines = wrapText(cap.text, maxCapW - 24);
-        var lineH = 17;
-        var pillH = lines.length * lineH + 10;
+        var lineH = 19;
+        var pillH = lines.length * lineH + 12;
         var pillW = 0;
         for (var li = 0; li < lines.length; li++) {
-          var lw = ctx.measureText(lines[li]).width + 24;
+          var lw = ctx.measureText(lines[li]).width + 28;
           if (lw > pillW) pillW = lw;
         }
         var capX = starArea.w / 2;
         var pillY = capY - pillH / 2;
-        ctx.fillStyle = 'rgba(7,9,26,0.80)';
+        ctx.fillStyle = 'rgba(7,9,26,0.82)';
         ctx.beginPath();
-        ctx.roundRect(capX - pillW / 2, pillY, pillW, pillH, 4);
+        ctx.roundRect(capX - pillW / 2, pillY, pillW, pillH, 5);
         ctx.fill();
         ctx.fillStyle = 'rgba(226,221,212,0.92)';
         for (var li2 = 0; li2 < lines.length; li2++) {
-          ctx.fillText(lines[li2], capX, pillY + 5 + lineH * li2 + lineH / 2);
+          ctx.fillText(lines[li2], capX, pillY + 6 + lineH * li2 + lineH / 2);
         }
         ctx.restore();
+      }
+    }
+
+    // ── film-mode: fade-in (0–2500ms) and end card (after 63.5s) ──
+    if (isFilm && filmFadeStartTime !== null) {
+      var filmElapsed = now - filmFadeStartTime;
+
+      // fade-in: black overlay dissolves to transparent over first 2.5s
+      if (filmElapsed < 2500) {
+        var fadeA = 1 - filmElapsed / 2500;
+        ctx.save();
+        ctx.globalAlpha = fadeA;
+        ctx.fillStyle = '#07091a';
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.restore();
+      }
+
+      // end card: fades in at 63.5s (after last caption fully clears at ~62.8s)
+      var EC_START = 63500, EC_FADE = 1400, EC_TEXT_DELAY = 800;
+      var ecAge = filmElapsed - EC_START;
+      if (ecAge > 0) {
+        // dark background overlay
+        var ecBgA = Math.min(1, ecAge / EC_FADE);
+        ctx.save();
+        ctx.globalAlpha = ecBgA * 0.97;
+        ctx.fillStyle = '#07091a';
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.restore();
+
+        // text fades in slightly after background
+        var ecTextA = Math.max(0, Math.min(1, (ecAge - EC_TEXT_DELAY) / EC_FADE));
+        if (ecTextA > 0) {
+          ctx.save();
+          ctx.globalAlpha = ecTextA;
+          var ecX = cw / 2, ecY = ch / 2;
+          ctx.textAlign = 'center';
+
+          // amber accent line above title
+          ctx.strokeStyle = 'rgba(196,162,88,0.40)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ecX - 220, ecY - 72);
+          ctx.lineTo(ecX + 220, ecY - 72);
+          ctx.stroke();
+
+          // object name
+          ctx.font = '500 38px \'EB Garamond\', serif';
+          ctx.fillStyle = 'rgba(196,162,88,0.97)';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('OGLE-LMC-CEP-1347', ecX, ecY - 44);
+
+          // subtitle
+          ctx.font = '12px \'JetBrains Mono\', monospace';
+          ctx.fillStyle = 'rgba(226,221,212,0.58)';
+          ctx.letterSpacing = '0.08em';
+          ctx.fillText('CLASSICAL CEPHEID  \u00B7  DOUBLE-LINED ECLIPSING BINARY  \u00B7  LMC', ecX, ecY - 10);
+
+          // divider
+          ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ecX - 220, ecY + 10);
+          ctx.lineTo(ecX + 220, ecY + 10);
+          ctx.stroke();
+
+          // citations
+          ctx.font = '11px \'JetBrains Mono\', monospace';
+          ctx.fillStyle = 'rgba(226,221,212,0.48)';
+          ctx.fillText('Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35', ecX, ecY + 32);
+          ctx.fillText('Pilecki et al. 2022, ApJ 940 L48  \u00B7  OGLE-IV photometry', ecX, ecY + 50);
+
+          // author line
+          ctx.font = '11px \'JetBrains Mono\', monospace';
+          ctx.fillStyle = 'rgba(196,162,88,0.52)';
+          ctx.fillText('Simulation by H. Zimmerman  \u00B7  henryzimmerman.net', ecX, ecY + 88);
+
+          ctx.restore();
+        }
       }
     }
 
