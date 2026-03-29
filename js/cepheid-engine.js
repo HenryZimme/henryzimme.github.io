@@ -488,7 +488,7 @@
     var rvI = Math.round(cursor_phi * RV_N) % RV_N;
 
     var isMob = getStarArea().mobile;
-    var inset = isMob ? 8 : 28, padTop = 26, padBottom = isMob ? 10 : 36;
+    var inset = isMob ? 8 : 44, padTop = 26, padBottom = isMob ? 10 : 36;
     var drawH = ph - padTop - padBottom;
     var range = rv_abs_max - rv_abs_min;
     var yScale = drawH / range;
@@ -661,10 +661,10 @@
     if (!getStarArea().mobile) {
       // y-axis label, rotated "km s⁻¹"
       ctx.save();
-      ctx.translate(px + 10, py + padTop + drawH / 2);
+      ctx.translate(px + 14, py + padTop + drawH / 2);
       ctx.rotate(-Math.PI / 2);
-      ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('km s\u207B\u00B9', 0, 0);
@@ -687,7 +687,7 @@
     if (!getStarArea().mobile) {
       ctx.textBaseline = 'top';
       ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
       ctx.font = '10px \'JetBrains Mono\', monospace';
       for (var xp = 0; xp <= 1; xp += 0.25) {
         ctx.textAlign = xp === 0 ? 'left' : xp === 1 ? 'right' : 'center';
@@ -699,22 +699,22 @@
       ctx.font = '9px \'JetBrains Mono\', monospace';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = 'rgba(255,255,255,0.14)';
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
       ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
     }
 
     // canvas legend, replaces #rv-legend HTML element, always drawn on canvas
-    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.font = '10px \'JetBrains Mono\', monospace';
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(96,165,250,0.55)';
+    ctx.fillStyle = 'rgba(96,165,250,0.65)';
     ctx.fillText('RADIAL VELOCITIES (KM/S) - ORBITAL PHASE', px + inset, py + 6);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#ffe4a0';
     ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
     ctx.fillStyle = '#f87171';
     ctx.fillText('\u2014 Companion', px + pw - inset, py + 18);
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 30);
 
     ctx.restore();
@@ -754,7 +754,7 @@
       ctx.translate(px + 10, py + padTop + drawH / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(96,165,250,0.4)';
+      ctx.fillStyle = 'rgba(96,165,250,0.55)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('V mag  \u2191 faint', 0, 0);
@@ -829,16 +829,17 @@
     }
 
     // title
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(96,165,250,0.55)';
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(96,165,250,0.65)';
     ctx.textAlign = 'left';
     ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, py + 14);
 
     // legend top-right
+    ctx.font = '10px \'JetBrains Mono\', monospace';
     ctx.textAlign = 'right';
     ctx.fillStyle = '#60a5fa';
     ctx.fillText('Fourier fit', px + pw - inset, py + padTop + 10);
-    ctx.fillStyle = 'rgba(96,165,250,0.5)';
+    ctx.fillStyle = 'rgba(96,165,250,0.60)';
     ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
 
     // ── radius vs phase mini-curve (bottom strip, BW-integrated) ──
@@ -873,7 +874,7 @@
 
     // R label and live value
     ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(134,239,172,0.55)';
+    ctx.fillStyle = 'rgba(134,239,172,0.70)';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 3);
