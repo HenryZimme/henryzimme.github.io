@@ -1,399 +1,942 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C.A.S.A.P. Phase 13: Sensory Overload</title>
-    <style>
-        :root {
-            --primary: #1a1a2e;
-            --accent: #1D9E75;
-            --hostile: #c0392b;
-            --bg-start: #e0e5ec;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>C.A.S.A.P. Phase 13: Sensory Overload</title>
+  <style>
+    :root {
+      --primary: #1a1a2e;
+      --accent: #1D9E75;
+      --hostile: #c0392b;
+      --bg-start: #e0e5ec;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 150vh; 
-            font-family: 'Courier New', Courier, monospace;
-            background-color: var(--bg-start);
-            color: var(--primary);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            overflow-x: hidden;
-            transition: background-color 0.5s ease, color 0.5s ease;
-        }
+    /* Optional: user‑preferences barriers */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+      #formContainer {
+        filter: none !important;
+      }
+      html, body {
+        scroll-behavior: auto;
+      }
+    }
+    @media (prefers-contrast: high) {
+      body {
+        background-color: #000;
+        color: #fff;
+      }
+      #formContainer {
+        background: #111;
+        border-color: #444;
+      }
+    }
 
-        /* The Panic Timer */
-        #panicTimer { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--hostile); color: white; text-align: center; padding: 10px; font-size: 18px; font-weight: bold; z-index: 1000; letter-spacing: 2px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); transition: background-color 0.5s ease;}
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 150vh;
+      font-family: "Courier New", Courier, monospace;
+      background-color: var(--bg-start);
+      color: var(--primary);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: hidden;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
 
-        #formContainer { 
-            background: white; 
-            padding: 40px; 
-            border: 5px solid var(--accent); 
-            box-shadow: 10px 10px 0px rgba(0,0,0,0.2); 
-            max-width: 700px; 
-            width: 100%; 
-            margin: 80px 20px 100px 20px; 
-            overflow: hidden; 
-            transition: filter 0.3s ease, border-color 0.5s ease;
-        }
+    /* --- Panic Timer / Heads‑Up UI --- */
+    #panicTimer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: var(--hostile);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      z-index: 1000;
+      letter-spacing: 2px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      transition: background-color 0.5s ease;
+    }
 
-        h1 { font-size: 24px; text-align: center; color: var(--hostile); margin-bottom: 5px; text-transform: uppercase; transition: color 0.5s ease;}
-        p.subtitle { text-align: center; font-size: 12px; margin-bottom: 30px; font-style: italic;}
-        .section-title { font-size: 16px; font-weight: bold; border-bottom: 2px dashed var(--accent); padding-bottom: 8px; margin-top: 30px; margin-bottom: 20px; color: var(--primary); background: rgba(0,0,0,0.05); padding: 5px; transition: color 0.5s ease, border-color 0.5s ease;}
+    #formContainer {
+      background: white;
+      padding: 40px;
+      border: 5px solid var(--accent);
+      box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.2);
+      max-width: 700px;
+      width: 100%;
+      margin: 80px 20px 100px 20px;
+      overflow: hidden;
+      transition: filter 0.3s ease, border-color 0.5s ease;
+    }
 
-        .form-group { margin-bottom: 25px; }
-        label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
-        input[type="text"], select { width: 100%; padding: 10px; border: 2px solid var(--primary); box-sizing: border-box; font-family: inherit; transition: border-color 0.5s ease;}
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      color: var(--hostile);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      transition: color 0.5s ease;
+    }
 
-        /* Sliders */
-        .slider-container { position: relative; padding-bottom: 25px; }
-        input[type="range"] { width: 100%; cursor: pointer; }
-        .slider-labels { display: flex; justify-content: space-between; font-size: 11px; margin-top: 5px; font-weight: bold;}
+    p.subtitle {
+      text-align: center;
+      font-size: 12px;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
 
-        /* The Spinning Essay */
-        #essayBox { width: 100%; height: 100px; resize: none; padding: 10px; border: 2px solid var(--primary); font-family: inherit; transition: transform 0.1s linear, border-color 0.5s ease; }
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      border-bottom: 2px dashed var(--accent);
+      padding-bottom: 8px;
+      margin-top: 30px;
+      margin-bottom: 20px;
+      color: var(--primary);
+      background: rgba(0, 0, 0, 0.05);
+      padding: 5px 8px;
+      border-radius: 4px;
+      transition: color 0.5s ease, border-color 0.5s ease;
+    }
 
-        /* Extracurricular Trap */
-        .ec-list { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+    .form-group {
+      margin-bottom: 25px;
+    }
 
-        /* The Horrible Phone Slider */
-        input[type="range"].phone-slider { width: 100%; cursor: crosshair; }
-        #phoneDisplay { font-size: 18px; text-align: center; margin-top: 10px; font-weight: bold; color: var(--hostile); background: rgba(0,0,0,0.05); padding: 10px; border: 2px solid var(--accent); transition: color 0.5s ease, border-color 0.5s ease;}
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
 
-        /* Audio Captcha */
-        .fake-audio { width: 100%; height: 40px; background: rgba(0,0,0,0.1); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 10px;}
+    input[type="text"],
+    select,
+    input[type="range"],
+    input[type="color"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: inherit;
+      transition: border-color 0.5s ease;
+    }
 
-        /* Interactive Frogger */
-        #gameArea { width: 100%; height: 150px; border: 2px solid var(--primary); background-color: #222; position: relative; overflow: hidden; margin-top: 10px; display: none;}
-        #frog { width: 25px; height: 25px; background-color: var(--accent); position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); border-radius: 4px; z-index: 10; font-size: 12px; color: white; display: flex; align-items: center; justify-content: center;}
-        .obstacle { position: absolute; height: 25px; background-color: var(--hostile); border-radius: 2px; color: white; font-size: 10px; padding: 2px; box-sizing: border-box; display: flex; align-items: center;}
-        #goal { width: 100%; height: 30px; background-color: var(--accent); position: absolute; top: 0; left: 0; text-align: center; color: white; line-height: 30px; font-weight: bold; letter-spacing: 1px;}
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+      transition: border-color 0.5s ease;
+    }
 
-        /* Moving Checkbox Area */
-        #checkboxArea { height: 60px; border: 2px solid var(--primary); position: relative; background: rgba(0,0,0,0.02); margin-bottom: 20px; overflow: hidden;}
-        #movingCheckboxLabel { position: absolute; top: 20px; left: 20px; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s ease;}
+    /* Slider scaffolding */
+    .slider-container {
+      position: relative;
+      padding-bottom: 25px;
+    }
 
-        /* Shrinking/Moving Submit Button */
-        #submitWrapper { position: relative; height: 150px; margin-top: 30px; border-top: 2px solid var(--accent); padding-top: 20px;}
-        #movingSubmit { position: absolute; padding: 15px 30px; background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; font-family: inherit; transition: all 0.1s; font-size: 16px; top: 40px; left: 35%;}
-        
-        /* Result Styles */
-        #resultContainer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f0fbf7; justify-content: center; align-items: center; flex-direction: column; z-index: 2000; }
-        .result-card { background-color: #ffffff; box-shadow: 0 10px 25px rgba(29, 158, 117, 0.15); padding: 30px; font-family: monospace; border: 2px solid #1D9E75; border-radius: 12px; text-align: center; max-width: 400px; }
-    </style>
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    /* Essay box: spinning */
+    #essayBox {
+      transition: transform 0.1s linear, border-color 0.5s ease;
+    }
+
+    /* Extracurricular trap */
+    .ec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    /* Phone number slider */
+    input[type="range"].phone-slider {
+      width: 100%;
+      cursor: crosshair;
+    }
+
+    #phoneDisplay {
+      font-size: 18px;
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+      color: var(--hostile);
+      background: rgba(0, 0, 0, 0.05);
+      padding: 10px;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      transition: color 0.5s ease, border-color 0.5s ease;
+    }
+
+    /* Audio CAPTCHA */
+    .fake-audio {
+      width: 100%;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.1);
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    /* Frogger game */
+    #gameArea {
+      width: 100%;
+      height: 150px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      background-color: #222;
+      position: relative;
+      overflow: hidden;
+      margin-top: 10px;
+      background-image: linear-gradient(0deg, rgba(0,0,0,0.1) 0%, transparent 100%);
+      display: none;
+    }
+
+    #goal {
+      width: 100%;
+      height: 30px;
+      background-color: var(--accent);
+      position: absolute;
+      top: 0;
+      left: 0;
+      text-align: center;
+      color: white;
+      line-height: 30px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    #frog {
+      width: 25px;
+      height: 25px;
+      background-color: var(--accent);
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 4px;
+      z-index: 10;
+      font-size: 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .obstacle {
+      position: absolute;
+      height: 25px;
+      background-color: var(--hostile);
+      border-radius: 2px;
+      color: white;
+      font-size: 10px;
+      padding: 2px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    /* Moving Checkbox */
+    #checkboxArea {
+      height: 60px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      position: relative;
+      background: rgba(0, 0, 0, 0.02);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    #movingCheckboxLabel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      will-change: top, left;
+    }
+
+    /* Submit button */
+    #submitWrapper {
+      position: relative;
+      height: 150px;
+      margin-top: 30px;
+      border-top: 2px solid var(--accent);
+      padding-top: 20px;
+    }
+
+    #movingSubmit {
+      position: absolute;
+      padding: 15px 30px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: inherit;
+      transition: all 0.1s;
+      font-size: 16px;
+      top: 40px;
+      left: 35%;
+    }
+
+    /* Success result */
+    #resultContainer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f0fbf7;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 2000;
+    }
+
+    .result-card {
+      background-color: #ffffff;
+      box-shadow: 0 10px 25px rgba(29, 158, 117, 0.15);
+      padding: 30px;
+      font-family: monospace;
+      border: 2px solid #1D9E75;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+    }
+  </style>
 </head>
 <body>
 
-    <div id="panicTimer">PORTAL CLOSES IN: 02:59</div>
+<div id="panicTimer" aria-live="polite" aria-atomic="true">PORTAL CLOSES IN: 02:59</div>
 
-    <div id="formContainer">
-        <h1>C.A.S.A.P. PHASE 13</h1>
-        <p class="subtitle">Sensory Annihilation & Engagement Verification<br>Keep moving your mouse to maintain visual clarity.</p>
+<div id="formContainer">
+  <h1>C.A.S.A.P. PHASE 13</h1>
+  <p class="subtitle">Sensory Annihilation & Engagement Verification<br>Keep moving your mouse to maintain visual clarity.</p>
 
-        <form id="casapForm">
-            
-            <div class="section-title">I. Demographic Obfuscation</div>
+  <form id="casapForm" novalidate="novalidate">
 
-            <div class="form-group">
-                <label>Select Your State of Residence:</label>
-                <select id="shufflingState" required size="5" style="height: 120px;"></select>
-            </div>
+    <div class="section-title">I. Demographic Obfuscation</div>
 
-            <div class="form-group">
-                <label>Enter Phone Number (Precision Required):</label>
-                <input type="range" min="1000000000" max="9999999999" value="5555555555" class="phone-slider" id="phoneSlider">
-                <div id="phoneDisplay">555-555-5555</div>
-            </div>
-
-            <div class="form-group">
-                <label>Date of Birth Confirmation (Required):</label>
-                <input type="color" value="#8e44ad" style="width: 100px; height: 50px; cursor: pointer; border: 2px solid #ccc;">
-            </div>
-
-            <div class="section-title">II. Psychological State Extraction</div>
-
-            <div class="form-group slider-container">
-                <label>Current Anxiety Level Induced by this Application:</label>
-                <input type="range" min="0" max="100" value="50">
-                <div class="slider-labels">
-                    <span>Mild Concern</span><span>Impending Doom</span><span>Vibrating Cellularly</span>
-                </div>
-            </div>
-
-            <div class="form-group slider-container">
-                <label>Self-Perceived "Imposter Syndrome" Metric:</label>
-                <input type="range" min="0" max="100" value="75">
-                <div class="slider-labels">
-                    <span>Slight Doubt</span><span>Fraudulent</span><span>Three Raccoons in a Trench Coat</span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Regarding the 'Exactly 3 Cats' Institutional Requirement:</label>
-                <select required>
-                    <option value="">Select current status...</option>
-                    <option>I satisfy the feline quota.</option>
-                    <option>I have 2 cats and am sourcing a third.</option>
-                    <option>I am a dog person (Auto-Reject).</option>
-                </select>
-            </div>
-
-            <div class="section-title">III. Holistic Excellence</div>
-
-            <div class="form-group">
-                <label>Extracurricular Activities (Select all that apply):</label>
-                <div class="ec-list">
-                    <label><input type="checkbox"> Founded a non-profit that operates on 3 continents</label>
-                    <label><input type="checkbox"> First-author publication in Nature at age 14</label>
-                    <label><input type="checkbox"> Varsity sports captain / Olympic alternate</label>
-                    <label style="color: var(--hostile);"><input type="checkbox" id="sleepTrap"> Maintain a healthy sleep schedule (8+ hours/night)</label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Personal Statement (250 words max):</label>
-                <textarea id="essayBox" placeholder="Begin typing your authentic truth here..." required></textarea>
-            </div>
-
-            <div class="section-title">IV. ATS Verification</div>
-
-            <div class="form-group">
-                <label>Audio CAPTCHA Challenge:</label>
-                <div class="fake-audio">▶ [ Audio Player Emulating Silence ] 🔊</div>
-                <input type="text" placeholder="Type the silence here..." required>
-            </div>
-
-            <div class="form-group">
-                <label>Résumé Transfer Protocol (Frogger):</label>
-                <button type="button" id="startGame" style="padding: 8px 15px; font-family: inherit; font-weight: bold; cursor: pointer; margin-bottom: 10px;">Initiate ATS Evasion</button>
-                <div id="gameArea">
-                    <div id="goal">INBOX</div>
-                    <div id="frog">📄</div>
-                </div>
-                <input type="checkbox" id="gameVerified" required style="display: none;">
-            </div>
-
-            <div class="section-title">V. Final Consent</div>
-
-            <div class="form-group">
-                <div id="checkboxArea">
-                    <label id="movingCheckboxLabel">
-                        <input type="checkbox" required id="fleeingCheck"> I am worthy of admission.
-                    </label>
-                </div>
-            </div>
-
-            <div id="submitWrapper">
-                <button type="submit" id="movingSubmit">FINALIZE TRANSMISSION</button>
-            </div>
-        </form>
+    <div class="form-group">
+      <label for="shufflingState">Select Your State of Residence:</label>
+      <select id="shufflingState" required size="5" style="height: 120px;"></select>
     </div>
 
-    <div id="resultContainer">
-        <div class="result-card">
-            <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Posterior probability that this applicant is stressing too much:</div>
-            <div style="font-size: 80px; font-weight: bold; color: #1D9E75; line-height: 1;">99.9%</div>
-            <div style="font-size: 12px; color: #999; margin-top: 12px;">Confidence interval: Unshakable.</div>
-        </div>
+    <div class="form-group">
+      <label for="phoneSlider">Enter Phone Number (Precision Required):</label>
+      <input type="range"
+             id="phoneSlider"
+             min="1000000000"
+             max="9999999999"
+             value="5555555555"
+             class="phone-slider"
+             aria-describedby="phoneDisplay">
+      <div id="phoneDisplay">555-555-5555</div>
     </div>
 
-    <script>
-        // --- NEW: THE COLOR SCRAMBLER ---
-        function getRandomColor() {
-            return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-        }
-        let colorInterval = setInterval(() => {
-            document.documentElement.style.setProperty('--primary', getRandomColor());
-            document.documentElement.style.setProperty('--bg-start', getRandomColor());
-            document.documentElement.style.setProperty('--accent', getRandomColor());
-            document.documentElement.style.setProperty('--hostile', getRandomColor());
-        }, 2500); // Changes every 2.5 seconds
+    <div class="form-group">
+      <label for="dobColor">Date of Birth Confirmation (Color Select):</label>
+      <input type="color"
+             id="dobColor"
+             value="#8e44ad"
+             style="width: 100px; height: 50px; cursor: pointer; border: 2px solid #ccc;">
+    </div>
 
-        // --- NEW: THE ATTENTION DEFICIT BLUR ---
-        let blurTimer;
-        const formEl = document.getElementById('formContainer');
-        
-        function resetBlur() {
+    <div class="section-title">II. Psychological State Extraction</div>
+
+    <div class="form-group slider-container">
+      <label for="anxietySlider">Current Anxiety Level Induced by this Application:</label>
+      <input type="range"
+             id="anxietySlider"
+             min="0"
+             max="100"
+             value="50"
+             aria-valuetext="50%">
+      <div class="slider-labels">
+        <span>Mild Concern</span><span>Impending Doom</span><span>Vibrating Cellularly</span>
+      </div>
+    </div>
+
+    <div class="form-group slider-container">
+      <label for="imposterSlider">Self-Perceived "Imposter Syndrome" Metric:</label>
+      <input type="range"
+             id="imposterSlider"
+             min="0"
+             max="100"
+             value="75"
+             aria-valuetext="75%">
+      <div class="slider-labels">
+        <span>Slight Doubt</span><span>Fraudulent</span><span>Three Raccoons in a Trench Coat</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="catsSelect">Regarding the "Exactly 3 Cats" Institutional Requirement:</label>
+      <select id="catsSelect" required>
+        <option value="">Select current status...</option>
+        <option value="satisfied">I satisfy the feline quota.</option>
+        <option value="sourcing">I have 2 cats and am sourcing a third.</option>
+        <option value="dog">I am a dog person (Auto‑Reject).</option>
+      </select>
+    </div>
+
+    <div class="section-title">III. Holistic Excellence</div>
+
+    <div class="form-group">
+      <label>Extracurricular Activities (Select all that apply):</label>
+      <div class="ec-list">
+        <label>
+          <input type="checkbox" id="ec_nonprofit"> Founded a non‑profit that operates on 3 continents
+        </label>
+        <label>
+          <input type="checkbox" id="ec_publication"> First‑author publication in Nature at age 14
+        </label>
+        <label>
+          <input type="checkbox" id="ec_sports"> Varsity sports captain / Olympic alternate
+        </label>
+        <label style="color: var(--hostile);">
+          <input type="checkbox" id="sleepTrap"> Maintain a healthy sleep schedule (8+ hours/night)
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="essayBox">Personal Statement (250 words max):</label>
+      <textarea id="essayBox"
+                placeholder="Begin typing your authentic truth here..."
+                required
+                aria-describedby="essayHint"></textarea>
+      <div id="essayHint" style="font-size: 11px; margin-top: 5px; color: #666;">
+        Characters remaining: <span id="essayCount">250</span>
+      </div>
+    </div>
+
+    <div class="section-title">IV. ATS Verification</div>
+
+    <div class="form-group">
+      <label for="audioCaptcha">Audio CAPTCHA Challenge:</label>
+      <div class="fake-audio">▶ [Audio Player Emulating Silence] 🔊</div>
+      <input type="text"
+             id="audioCaptcha"
+             placeholder="Type the silence here..."
+             required>
+    </div>
+
+    <div class="form-group">
+      <div>
+        <label>Résumé Transfer Protocol (Frogger):</label>
+        <button type="button"
+                id="startGame"
+                style="padding: 8px 15px; font-family: inherit; font-weight: bold; cursor: pointer; margin: 10px 0;">
+          Initiate ATS Evasion
+        </button>
+      </div>
+
+      <div id="gameArea" role="region" aria-label="Résumé-Frogger game area">
+        <div id="goal" aria-hidden="true">INBOX</div>
+        <div id="frog" aria-hidden="true">📄</div>
+      </div>
+      <input type="checkbox" id="gameVerified" required style="display: none;">
+    </div>
+
+    <div class="section-title">V. Final Consent</div>
+
+    <div class="form-group">
+      <div id="checkboxArea">
+        <label id="movingCheckboxLabel">
+          <input type="checkbox" required id="fleeingCheck"> I am worthy of admission.
+        </label>
+      </div>
+    </div>
+
+    <div id="submitWrapper">
+      <button type="submit" id="movingSubmit">FINALIZE TRANSMISSION</button>
+    </div>
+  </form>
+</div>
+
+<div id="resultContainer" aria-live="polite">
+  <div class="result-card">
+    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">
+      Posterior probability that this applicant is stressing too much:
+    </div>
+    <div style="font-size: 80px; font-weight: bold; color: #1D9E75; line-height: 1;">99.9%</div>
+    <div style="font-size: 12px; color: #999; margin-top: 12px;">Confidence interval: Unshakable.</div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM ELEMENTS ---
+    const formEl = document.getElementById('formContainer');
+    const panicTimer = document.getElementById('panicTimer');
+    const phoneSlider = document.getElementById('phoneSlider');
+    const phoneDisplay = document.getElementById('phoneDisplay');
+    const fleeingCheck = document.getElementById('fleeingCheck');
+    const movingCheckboxLabel = document.getElementById('movingCheckboxLabel');
+    const movingSubmit = document.getElementById('movingSubmit');
+    const submitWrapper = document.getElementById('submitWrapper');
+    const casapForm = document.getElementById('casapForm');
+    const gameVerified = document.getElementById('gameVerified');
+    const gameArea = document.getElementById('gameArea');
+    const startGame = document.getElementById('startGame');
+    const frog = document.getElementById('frog');
+    const essayBox = document.getElementById('essayBox');
+    const essayCount = document.getElementById('essayCount');
+    const stateSelect = document.getElementById('shufflingState');
+
+    const progress = document.createElement('div');
+    progress.style.cssText = "position: fixed; top: 50px; left: 0; width: 0%; height: 5px; background: var(--hostile); z-index: 999; transition: width 1.2s;";
+    document.body.appendChild(progress);
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // --- STATE & PHASE VARIABLES ---
+    let colorPhase = 0;
+    let blurPhase = 0;
+    let hellPhase = 0;
+    let gameRunning = false;
+    let gameInterval = null;
+    let gameLevel = 0;
+    let obstacles = [];
+    let frogY = 120, frogX = 50;
+    let currentAngle = 0;
+    let essayChars = 250;
+
+    const obstacleLabels = ["AUTO-REJECT", "YIELD PROTECTION", "LEGACY", "EARLY ACTION", "DEADFERN", "SUPPLEMENTAL ESSAY"];
+
+    // --- UTILITY FUNCTIONS ---
+    const getRandomColor = () => {
+      return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    };
+
+    const setTheme = (opts) => {
+      for (const key in opts) {
+        document.documentElement.style.setProperty(key, opts[key]);
+      }
+    };
+
+    const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
+
+    const display = (el, show) => {
+      el.style.display = show ? 'block' : 'none';
+    };
+
+    const alert = (msg) => {
+      if (!reduceMotion) {
+        window.alert("ADMISSIONS AUTOMATON: " + msg);
+      }
+    };
+
+    // --- APPLICANT HELL ESCALATION ---
+    const rampUpStress = (phase) => {
+      // Phase 0–1: cosmetic chaos
+      if (phase === 0) {
+        colorPhase = setInterval(() => {
+          setTheme({
+            '--primary': getRandomColor(),
+            '--bg-start': getRandomColor(),
+            '--accent': getRandomColor(),
+            '--hostile': getRandomColor(),
+          });
+        }, 2500);
+      }
+
+      // Phase 1: blur‑on‑inactivity + shake
+      if (phase === 1) {
+        let lastActive = Date.now();
+        let shakeIntensity = 0;
+        const blurTimer = setTimeout(() => {
+          formEl.style.filter = 'blur(8px)';
+        }, 1500);
+
+        const resetHell = () => {
+          lastActive = Date.now();
+          if (!reduceMotion) {
             formEl.style.filter = 'blur(0px)';
-            clearTimeout(blurTimer);
-            blurTimer = setTimeout(() => {
-                formEl.style.filter = 'blur(8px)';
-            }, 1500); // Blur if mouse stops for 1.5 seconds
-        }
-        
-        document.addEventListener('mousemove', resetBlur);
-        document.addEventListener('keydown', resetBlur);
-        resetBlur(); // Init
+          }
+          clearTimeout(blurTimer);
+          setTimeout(() => {
+            if (Date.now() - lastActive > 1000) {
+              formEl.style.filter = 'blur(4px)';
+            }
+          }, 1500);
+        };
 
-        // --- THE POLTERGEIST SCROLL ---
-        let scrollInterval = setInterval(() => {
-            const scrollAmount = (Math.random() - 0.5) * 800; 
-            window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
-        }, Math.random() * 2000 + 2000);
+        document.addEventListener('mousemove', resetHell);
+        document.addEventListener('keydown', resetHell);
+        resetHell();
 
-        // --- The Shuffling States ---
-        const states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
-        const stateSelect = document.getElementById('shufflingState');
-        function renderStates() {
-            let shuffled = [...states].sort(() => 0.5 - Math.random());
-            stateSelect.innerHTML = '<option value="" disabled selected>Attempt to select...</option>';
-            shuffled.forEach(s => {
-                let o = document.createElement('option'); o.value = s; o.innerText = s; stateSelect.appendChild(o);
-            });
-        }
-        renderStates();
-        let stateInterval = setInterval(renderStates, 800);
-
-        // --- The Extracurricular Trap ---
-        document.getElementById('sleepTrap').addEventListener('change', function() {
-            if(this.checked) { alert("FATAL ERROR: Top applicants do not sleep. Purging application data."); location.reload(); }
-        });
-
-        // --- The Spinning Essay Box ---
-        const essayBox = document.getElementById('essayBox');
-        let currentAngle = 0;
-        essayBox.addEventListener('input', function() {
-            currentAngle += 2; 
-            this.style.transform = `rotate(${currentAngle}deg)`;
-        });
-
-        // --- The Panic Timer ---
-        let timeLeft = 179; 
-        const timerDisplay = document.getElementById('panicTimer');
-        let countdownInterval = setInterval(() => {
-            if (timeLeft <= 0) timeLeft = 299; 
-            let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            let s = (timeLeft % 60).toString().padStart(2, '0');
-            timerDisplay.innerText = `PORTAL CLOSES IN: ${m}:${s}`;
-            timeLeft--;
+        // Add subtle shake over time
+        shakeInterval = setInterval(() => {
+          shakeIntensity = Math.min(0.8, 0.3 + 0.1 * Math.random());
+          document.body.style.transform = `translateX(${(Math.random() - 0.5) * shakeIntensity}px)`;
         }, 1000);
+      }
 
-        // --- The Horrible Phone Slider ---
-        const phoneSlider = document.getElementById('phoneSlider');
-        const phoneDisplay = document.getElementById('phoneDisplay');
-        phoneSlider.addEventListener('input', function() {
-            let val = this.value.toString();
-            phoneDisplay.innerText = `${val.slice(0,3)}-${val.slice(3,6)}-${val.slice(6,10)}`;
-        });
+      // Phase 2: field distortion + injected nonsense
+      if (phase === 2) {
+        let injected = 0;
+        const extraFieldsHtml = [
+          `<p style="color: var(--hostile);">We legally require your fingerprints. Type "SUBMIT" to agree.</p>` +
+            `<input type="text" placeholder="Enter here">`,
+          `<p style="color: var(--hostile);">How many hours did you weep last week? (Numeric only)</p>` +
+            `<input type="number" min="0" max="168">`,
+        ];
 
-        // --- The Fleeing Checkbox ---
-        const checkLabel = document.getElementById('movingCheckboxLabel');
-        const checkArea = document.getElementById('checkboxArea');
-        checkLabel.addEventListener('mouseover', function() {
-            if(document.getElementById('fleeingCheck').checked) return;
-            const aRect = checkArea.getBoundingClientRect(); const lRect = checkLabel.getBoundingClientRect();
-            checkLabel.style.top = (Math.random() * (aRect.height - lRect.height)) + 'px';
-            checkLabel.style.left = (Math.random() * (aRect.width - lRect.width)) + 'px';
-        });
-
-        // --- Shrinking / Fleeing Submit Button ---
-        const submitBtn = document.getElementById('movingSubmit');
-        const wrapper = document.getElementById('submitWrapper');
-        let scale = 1.0;
-        submitBtn.addEventListener('mouseover', function(e) {
-            const wRect = wrapper.getBoundingClientRect(); const bRect = submitBtn.getBoundingClientRect();
-            scale = Math.max(0.3, scale - 0.1); 
-            submitBtn.style.top = (Math.random() * (wRect.height - (bRect.height / scale))) + 'px';
-            submitBtn.style.left = (Math.random() * (wRect.width - (bRect.width / scale))) + 'px';
-            submitBtn.style.transform = `scale(${scale})`;
-        });
-
-        // --- Résumé-Frogger ---
-        const gameArea = document.getElementById('gameArea');
-        const frog = document.getElementById('frog');
-        const startBtn = document.getElementById('startGame');
-        const gameCheckbox = document.getElementById('gameVerified');
-
-        let frogY = 120, frogX = 50, gameInterval, gameRunning = false;
-        const obstacles = [];
-        const obstacleLabels = ["AUTO-REJECT", "YIELD PROTECTION", "LEGACY"];
-
-        startBtn.addEventListener('click', function() {
-            gameArea.style.display = 'block'; startBtn.style.display = 'none'; gameRunning = true;
-            spawnObstacles(); document.addEventListener('keydown', moveFrog); gameArea.focus(); 
-        });
-
-        function moveFrog(e) {
-            if (!gameRunning) return;
-            if(["w","a","s","d","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)){ e.preventDefault(); }
-            const speed = 15;
-            switch(e.key.toLowerCase()) {
-                case 'w': case 'arrowup': frogY -= speed; break;
-                case 's': case 'arrowdown': frogY += speed; break;
-                case 'a': case 'arrowleft': frogX -= 5; break;
-                case 'd': case 'arrowright': frogX += 5; break;
+        const labels = document.querySelectorAll('label');
+        const driftLabels = () => {
+          labels.forEach(label => {
+            if (Math.random() < 0.25) {
+              label.style.transform = `rotate(${(Math.random() - 0.5) * 8}deg)`;
             }
-            frogY = Math.max(0, Math.min(120, frogY)); frogX = Math.max(0, Math.min(95, frogX));
-            frog.style.top = frogY + 'px'; frog.style.left = frogX + '%'; checkCollision();
-        }
+          });
+        };
+        setInterval(() => {
+          if (injected < 2) {
+            const idx = Math.floor(Math.random() * extraFieldsHtml.length);
+            const frag = document.createElement('div');
+            frag.style.marginTop = '15px';
+            frag.innerHTML = extraFieldsHtml[idx];
+            casapForm.insertBefore(frag, casapForm.firstChild);
+            injected++;
+          } else {
+            driftLabels();
+          }
+        }, 12000);
 
-        function spawnObstacles() {
-            for (let i = 0; i < 3; i++) {
-                const obs = document.createElement('div'); obs.classList.add('obstacle'); obs.innerText = obstacleLabels[i];
-                obs.style.top = (35 + i * 30) + 'px'; obs.style.left = Math.random() * 100 + '%'; obs.style.width = (80 + Math.random() * 50) + 'px';
-                gameArea.appendChild(obs);
-                obstacles.push({ el: obs, speed: (1.5 + Math.random() * 2) * (i % 2 === 0 ? 1 : -1), left: parseFloat(obs.style.left) });
-            }
-            gameInterval = setInterval(() => {
-                obstacles.forEach(obs => {
-                    obs.left += obs.speed; if (obs.left > 100) obs.left = -20; if (obs.left < -20) obs.left = 100;
-                    obs.el.style.left = obs.left + '%';
-                });
-                checkCollision();
-            }, 20);
-        }
+        driftLabels(); // first pulse
+      }
 
-        function checkCollision() {
-            if (!gameRunning) return;
-            if (frogY <= 20) { endGame(true); return; }
-            const fRect = frog.getBoundingClientRect(); const obsEls = document.querySelectorAll('.obstacle');
-            obsEls.forEach(obs => {
-                const oRect = obs.getBoundingClientRect();
-                if (fRect.left < oRect.right - 5 && fRect.right > oRect.left + 5 && fRect.top < oRect.bottom - 5 && fRect.bottom > oRect.top + 5) { endGame(false); }
-            });
-        }
+      // Phase 3: "final submission hellscape"
+      if (phase === 3) {
+        // Make submit button jittery and tiny
+        const rw = submitWrapper.getBoundingClientRect();
+        movingSubmit.style.transform = 'scale(0.7)';
+        movingSubmit.style.left = Math.random() * rw.width + 'px';
+        movingSubmit.style.top = Math.random() * rw.height + 'px';
 
-        function endGame(win) {
-            gameRunning = false; clearInterval(gameInterval); document.removeEventListener('keydown', moveFrog);
-            if (win) {
-                frog.innerText = "✅"; document.getElementById('goal').innerText = "PORTAL REACHED"; gameCheckbox.checked = true; 
-            } else {
-                alert("ATS BOT HAS DISCARDED YOUR APPLICATION. START OVER.");
-                frogY = 120; frogX = 50; frog.style.top = frogY + 'px'; frog.style.left = frogX + '%';
-                gameRunning = true; document.addEventListener('keydown', moveFrog); spawnObstacles();
-            }
-        }
+        // Blinking background during last seconds
+        const blinker = setInterval(() => {
+          document.body.style.backgroundColor = Math.random() > 0.8 ? '#000000' : '#000000';
+        }, 200);
 
-        // --- FINAL SUBMISSION ---
-        document.getElementById('casapForm').addEventListener('submit', function(e) {
-            e.preventDefault(); 
-            if(!document.getElementById('gameVerified').checked) { alert("You must bypass the ATS bots."); return; }
-            
-            // STOP THE MADNESS
-            clearInterval(colorInterval);
-            clearInterval(scrollInterval);
-            clearInterval(stateInterval);
-            clearInterval(countdownInterval);
-            clearTimeout(blurTimer);
-            document.removeEventListener('mousemove', resetBlur);
-            document.removeEventListener('keydown', resetBlur);
-            
-            // Normalize colors for the win screen
-            document.documentElement.style.setProperty('--primary', '#1a1a2e');
-            document.documentElement.style.setProperty('--bg-start', '#f0fbf7');
-            formEl.style.filter = 'none';
+        // Restore after 3 seconds
+        setTimeout(() => {
+          clearInterval(blinker);
+          document.body.style.backgroundColor = '#000000';
+        }, 3000);
+      }
+    };
 
-            document.getElementById('panicTimer').style.display = 'none';
-            document.getElementById('formContainer').style.display = 'none';
-            
-            window.scrollTo(0,0);
-            document.getElementById('resultContainer').style.display = 'flex';
+    // --- 1. COLOR SCRAMBLER ---
+    rampUpStress(0);
+
+    // --- 2. ATTENTION DEFICIT BLUR ---
+    if (!reduceMotion) {
+      rampUpStress(1);
+    }
+
+    // --- 3. POLTERGEIST SCROLL ---
+    if (!reduceMotion) {
+      const scrollInterval2 = setInterval(() => {
+        const scrollAmount = (Math.random() - 0.5) * 400;
+        window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+      }, Math.random() * 1500 + 1500);
+    }
+
+    // --- 4. SHUFFLING STATES ---
+    const states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+
+    const renderStates = () => {
+      const shuffled = [...states].sort(() => 0.5 - Math.random());
+      stateSelect.innerHTML = `<option value="" disabled selected>Attempt to select…</option>`;
+      shuffled.forEach(state => {
+        const o = document.createElement('option');
+        o.value = state;
+        o.innerText = state;
+        stateSelect.appendChild(o);
+      });
+    };
+    renderStates();
+    const stateInterval = setInterval(renderStates, 800);
+
+    // --- 5. EXTRACURRICULAR TRAP (SLEEP) ---
+    document.getElementById('sleepTrap').addEventListener('change', function () {
+      if (this.checked) {
+        alert("FATAL ERROR: Top applicants do not sleep. Purging application data.");
+        location.reload();
+      }
+    });
+
+    // --- 6. SPINNING ESSAY BOX & COUNT ---
+    essayBox.addEventListener('input', () => {
+      essayChars = 250 - essayBox.value.length;
+      essayCount.textContent = essayChars;
+      if (essayChars < 0) {
+        essayBox.value = essayBox.value.slice(0, 250);
+        essayChars = 0;
+        essayCount.textContent = 0;
+      }
+
+      if (!reduceMotion) {
+        currentAngle += 2;
+        essayBox.style.transform = `rotate(${currentAngle}deg)`;
+      }
+    });
+
+    // --- 7. PANIC TIMER (02:59 loop) ---
+    let timeLeft = 179; // 2:59
+    const countdownInterval = setInterval(() => {
+      if (timeLeft <= 0) {
+        timeLeft = 299; // 4:59
+      }
+      const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const s = (timeLeft % 60).toString().padStart(2, '0');
+      panicTimer.innerText = `PORTAL CLOSES IN: ${m}:${s}`;
+      timeLeft--;
+
+      // PHASE escalation every 45 seconds
+      const elapsed = 299 - timeLeft;
+      if (elapsed > 0 && elapsed % 45 === 0 && hellPhase < 3) {
+        hellPhase = Math.min(3, hellPhase + 1);
+        rampUpStress(hellPhase);
+      }
+    }, 1000);
+
+    // --- 8. PHONE SLIDER ---
+    phoneSlider.addEventListener('input', () => {
+      const val = phoneSlider.value.toString();
+      const part1 = val.slice(0, 3) || '000';
+      const part2 = val.slice(3, 6) || '000';
+      const part3 = val.slice(6, 10) || '0000';
+      phoneDisplay.innerText = `${part1}-${part2}-${part3}`;
+    });
+
+    // --- 9. FLEEING CHECKBOX (HELLO! I AM WORTHY) ---
+    movingCheckboxLabel.addEventListener('mouseover', () => {
+      if (fleeingCheck.checked) return;
+      const aRect = document.getElementById('checkboxArea').getBoundingClientRect();
+      const lRect = movingCheckboxLabel.getBoundingClientRect();
+      const newTop = Math.random() * (aRect.height - lRect.height);
+      const newLeft = Math.random() * (aRect.width - lRect.width);
+      movingCheckboxLabel.style.top = newTop + 'px';
+      movingCheckboxLabel.style.left = newLeft + 'px';
+    });
+
+    // --- 10. SHRINKING / FLEEING SUBMIT BUTTON ---
+    movingSubmit.addEventListener('mouseover', (e) => {
+      const wRect = submitWrapper.getBoundingClientRect();
+      const bRect = movingSubmit.getBoundingClientRect();
+      const scale = Math.max(0.5, parseFloat(movingSubmit.style.transform.replace(/^scale\((.*)\)$/, '$1')) - 0.08);
+      movingSubmit.style.transform = `scale(${scale})`;
+      const newTop = Math.random() * (wRect.height - (bRect.height / scale));
+      const newLeft = Math.random() * (wRect.width - (bRect.width / scale));
+      movingSubmit.style.top = newTop + 'px';
+      movingSubmit.style.left = newLeft + 'px';
+    });
+
+    // --- 11. FROGGER GAME (Résumé-ATS Protocol) ---
+    const spawnObstacles = () => {
+      obstacles = [];
+      const obstaclesContainer = document.querySelectorAll('.obstacle');
+      obstaclesContainer.forEach(o => o.remove());
+      const lanes = [35, 65, 95];
+      for (let i = 0; i < 3; i++) {
+        const obs = document.createElement('div');
+        obs.classList.add('obstacle');
+        obs.innerText = obstacleLabels[clamp(gameLevel + i, 0, obstacleLabels.length - 1)];
+        const y = lanes[i];
+        const x = Math.random() * 100;
+        obs.style.top = y + 'px';
+        obs.style.left = x + '%';
+        obs.style.width = (80 + Math.random() * 50) + 'px';
+        gameArea.appendChild(obs);
+        obstacles.push({
+          el: obs,
+          speed: (1.2 + Math.random() * 1.8) * (i % 2 === 0 ? 1 : -1),
+          left: x,
         });
-    </script>
+      }
+      gameInterval = setInterval(() => {
+        obstacles.forEach(obs => {
+          obs.left += obs.speed;
+          if (obs.left > 100) obs.left = -20;
+          if (obs.left < -20) obs.left = 100;
+          obs.el.style.left = obs.left + '%';
+        });
+        checkCollision();
+      }, 20);
+    };
+
+    const moveFrog = (e) => {
+      if (!gameRunning) return;
+      const key = e.key.toLowerCase();
+      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+        e.preventDefault();
+      }
+      const speed = 15;
+      switch (key) {
+        case 'w':
+        case 'arrowup':
+          frogY -= speed;
+          break;
+        case 's':
+        case 'arrowdown':
+          frogY += speed;
+          break;
+        case 'a':
+        case 'arrowleft':
+          frogX -= 5;
+          break;
+        case 'd':
+        case 'arrowright':
+          frogX += 5;
+          break;
+      }
+      frogY = clamp(frogY, 0, 120);
+      frogX = clamp(frogX, 0, 95);
+      frog.style.top = frogY + 'px';
+      frog.style.left = frogX + '%';
+      checkCollision();
+    };
+
+    const checkCollision = () => {
+      if (!gameRunning) return;
+      if (frogY <= 20) {
+        endGame(true);
+        return;
+      }
+      const fRect = frog.getBoundingClientRect();
+      obstacles.forEach(obs => {
+        const oRect = obs.el.getBoundingClientRect();
+        if (fRect.left < oRect.right - 5 && fRect.right > oRect.left + 5
+          && fRect.top < oRect.bottom - 5 && fRect.bottom > oRect.top + 5) {
+          endGame(false);
+        }
+      });
+    };
+
+    const endGame = (win) => {
+      clearInterval(gameInterval);
+      document.removeEventListener('keydown', moveFrog);
+      gameRunning = false;
+
+      if (win) {
+        frog.innerText = "✅";
+        document.getElementById('goal').innerText = "PORTAL REACHED";
+        gameVerified.checked = true;
+      } else {
+        alert("ATS BOT HAS DISCARDED YOUR APPLICATION. START OVER.");
+        frogY = 120;
+        frogX = 50;
+        frog.style.top = frogY + 'px';
+        frog.style.left = frogX + '%';
+        frog.innerText = "📄";
+        document.getElementById('goal').innerText = "INBOX";
+        gameRunning = true;
+        document.addEventListener('keydown', moveFrog);
+        spawnObstacles();
+      }
+    };
+
+    startGame.addEventListener('click', () => {
+      gameArea.style.display = 'block';
+      startGame.style.display = 'none';
+      gameRunning = true;
+      spawnObstacles();
+      gameArea.focus();
+      gameArea.addEventListener('keydown', moveFrog); // ensure focus trap
+    });
+
+    gameArea.addEventListener('keydown', (e) => {
+      if (gameArea.contains(e.target)) {
+        e.preventDefault();
+        moveFrog(e);
+      }
+    });
+
+    // --- 12. FINAL SUBMIT (STOP ALL HELL) ---
+    casapForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (!gameVerified.checked) {
+        alert("You must bypass the ATS bots.");
+        return;
+      }
+
+      // HALT ALL HELL
+      clearInterval(colorPhase);
+      clearInterval(stateInterval);
+      clearInterval(countdownInterval);
+      if (gameInterval) clearInterval(gameInterval);
+
+      document.body.style.transform = 'none';
+      document.body.style.backgroundColor = '#000000';
+      formEl.style.filter = 'none';
+      progress.style.width = '100%';
+
+      setTheme({
+        '--primary': '#1a1a2e',
+        '--bg-start': '#f0fbf7',
+      });
+
+      panicTimer.style.display = 'none';
+      formEl.style.display = 'none';
+      window.scrollTo(0, 0);
+
+      display(document.getElementById('resultContainer'), true);
+    });
+
+    // --- 13. PROGRESS METER ---
+    const progressInterval = setInterval(() => {
+      const w = Math.min(95, progress.offsetWidth + 1);
+      progress.style.width = `${w}%`;
+      if (w === 95) progress.style.width = "0%";
+    }, 1000);
+  });
+</script>
 </body>
 </html>
