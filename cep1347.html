@@ -663,15 +663,19 @@
 
         // update diag bar: shows actual canvas pixel dimensions every second
         var diag = document.getElementById('film-diag');
+        var nodiag = window.location.search.indexOf('nodiag') !== -1;
+        if (nodiag && diag) diag.style.display = 'none';
         function updateDiag() {
           var c = document.getElementById('simCanvas');
-          if (!c || !diag) return;
+          if (!c || !diag || nodiag) return;
           var dpr = window.devicePixelRatio || 1;
           var w = Math.round(c.width / dpr);
           var h = Math.round(c.height / dpr);
-          diag.textContent = w + '\u00d7' + h + ' \u00b7 DPR ' + dpr.toFixed(1) + ' \u00b7 ORBITAL \u00b7 1920\u00d71080 target';
+          var onTarget = (Math.round(c.width) === 1920 && Math.round(c.height) === 1080);
+          diag.textContent = w + '\u00d7' + h + ' \u00b7 DPR ' + dpr.toFixed(1) + ' \u00b7 ORBITAL \u00b7 ' + (onTarget ? '\u2713 1920\u00d71080' : '1920\u00d71080 target');
+          diag.style.color = onTarget ? 'rgba(134,239,172,0.55)' : 'rgba(196,162,88,0.40)';
         }
-        setInterval(updateDiag, 1000);
+        setInterval(updateDiag, 500);
         updateDiag();
       });
     })();
