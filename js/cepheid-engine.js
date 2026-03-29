@@ -293,9 +293,6 @@
 
     // pulsation (13–17s): the answer
     { t: 13500, dur: 3500, text: 'Most likely it formed from a stellar merger in a former triple system \u2014 never passing through the red giant phase' },
-
-    // zoom-out (17s+): credits before end card
-    { t: 17500, dur: 2200, text: 'Pilecki et al. 2022  \u00B7  Espinoza-Arancibia & Pilecki 2025  \u00B7  OGLE-IV' },
   ];
 
   var ogle_phased    = [];
@@ -304,6 +301,7 @@
   var PULS_LC_OFFSET = 0; // epoch offset between JSON puls_cycle and OGLE T0_ORB fold; computed by computeLCOffset()
 
   var trail1 = [], trail2 = [];
+  var trail_fade_start = null; // set on resize; trails dissolve rather than hard-cut
 
   // ── dom ────────────────────────────────────────────────────────────────────
   var simCanvas = document.getElementById('simCanvas');
@@ -1158,8 +1156,8 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  var ORBIT_DURATION_S  = (document.documentElement.classList.contains('film-mode')) ? 16.0 : 120.0;
-  var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
+  var ORBIT_DURATION_S  = (document.documentElement.classList.contains('film-mode')) ? 60.0 : 120.0;
+  var PULS_DURATION_S   = 3.5;  // wall-clock seconds per simulated pulsation cycle
   // realtime: pulsation runs ~4x faster than the true P_puls/P_orb ratio (1.41s would be exact)
   // deliberately sped up so pulsation is visible alongside the orbit without slowing the orbit down
   var REALTIME_PULS_S   = 0.35; // wall-clock seconds per pulsation cycle in realtime mode
@@ -1252,10 +1250,21 @@
     var pr2 = Math.max(2, COMPANION_RAD * zoom);
 
     // ── plots ──
-    if (currentMode === 'pulsation') {
-      drawLightCurve(puls_phi);
-    } else {
-      drawRVPlot(orbitPhase, puls_phi);
+    // in film mode, fade the plot out during the zoom-out sequence (film_t_s 17→19)
+    var plot_alpha = 1;
+    if (isFilm && filmStartTime !== null) {
+      var fts = (now - filmStartTime) / 1000;
+      if (fts >= 17) plot_alpha = Math.max(0, 1 - (fts - 17) / 2);
+    }
+    if (plot_alpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = plot_alpha;
+      if (currentMode === 'pulsation') {
+        drawLightCurve(puls_phi);
+      } else {
+        drawRVPlot(orbitPhase, puls_phi);
+      }
+      ctx.restore();
     }
 
     // clip all star-area drawing so nothing bleeds into the plot region below
@@ -1350,6 +1359,21 @@
 
     // ── trails: cinematic tapered lines ──
     if (currentMode !== 'pulsation') {
+      // trail resize fade: dissolve old (mis-positioned) points over 600ms instead of hard-cutting
+      var TRAIL_FADE_DUR = 600;
+      var trail_fade_mul = 1;
+      if (trail_fade_start !== null) {
+        var tfe = now - trail_fade_start;
+        if (tfe < TRAIL_FADE_DUR) {
+          trail_fade_mul = 1 - tfe / TRAIL_FADE_DUR;
+        } else {
+          // fade complete: clear stale points and stop fading
+          trail1 = []; trail2 = [];
+          trail_fade_start = null;
+          trail_fade_mul = 1;
+        }
+      }
+
       trail1.push({ x: s1x, y: s1y, col: col1 || FALLBACK_COL });
       trail2.push({ x: s2x, y: s2y });
       if (trail1.length > TRAIL_LEN) trail1.shift();
@@ -1359,9 +1383,10 @@
       // Cepheid trail, temperature-coloured tapered stroke
       if (trail1.length > 2) {
         for (var ti = 1; ti < trail1.length; ti++) {
-          var tf = ti / trail1.length;           // 0=tail, 1=head
-          var tw = tf * tf * (isFilm ? 5.5 : 3.5);  // film: wider, more luminous
-          var ta = tf * tf * (isFilm ? 0.75 : 0.55);
+          var tf = ti / trail1.length;
+          var tw = tf * tf * (isFilm ? 5.5 : 3.5);
+          var ta = tf * tf * (isFilm ? 0.75 : 0.55) * trail_fade_mul;
+          if (ta <= 0) continue;
           ctx.beginPath();
           ctx.moveTo(trail1[ti-1].x, trail1[ti-1].y);
           ctx.lineTo(trail1[ti].x,   trail1[ti].y);
@@ -1376,7 +1401,8 @@
         for (var ti2 = 1; ti2 < trail2.length; ti2++) {
           var tf2 = ti2 / trail2.length;
           var tw2 = tf2 * tf2 * (isFilm ? 4.4 : 2.8);
-          var ta2 = tf2 * tf2 * (isFilm ? 0.65 : 0.45);
+          var ta2 = tf2 * tf2 * (isFilm ? 0.65 : 0.45) * trail_fade_mul;
+          if (ta2 <= 0) continue;
           ctx.beginPath();
           ctx.moveTo(trail2[ti2-1].x, trail2[ti2-1].y);
           ctx.lineTo(trail2[ti2].x,   trail2[ti2].y);
@@ -1793,7 +1819,7 @@
     simCanvas.width = rect.width * dpr;
     simCanvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    trail1 = []; trail2 = []; bgStars = null;
+    trail_fade_start = Date.now(); bgStars = null;
   }
 
   // ── init ───────────────────────────────────────────────────────────────────
