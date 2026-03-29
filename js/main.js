@@ -1,1063 +1,1430 @@
-const canvas = document.getElementById('star-canvas');
-const ctx = canvas.getContext('2d');
-const tooltip = document.getElementById('star-tooltip');
-const modal = document.getElementById('object-modal');
-const popover = document.getElementById('star-popover');
-const popover_name = document.getElementById('star-popover-name');
-const popover_btn = document.getElementById('star-popover-btn');
+(function() {
+  // ── config ──────────────────────────────────────────────────────────────────
+  var MODES         = new Set(['orbital', 'pulsation', 'realtime']);
+  var COMPANION_RAD = 12.51;   // R_sun (Espinoza-Arancibia & Pilecki 2025)
+  var FALLBACK_COL  = '#ffe066';
+  var R_SUN_KM      = 695700;
+  var P_ORB_D       = 58.85;
+  var P_ORB_S       = P_ORB_D * 86400;
+  var P_PULS        = 0.69001; // days
+  var T0_ORB        = 2459050.0; // orbital reference epoch HJD (Pilecki+ 2022 Table 1)
+  var T0_PULS       = 2459510.64947; // pulsation reference epoch HJD (Fourier r=2 fit to Pilecki RVs)
+  var COS_I         = Math.cos(57 * Math.PI / 180); // orbital inclination: squashes ellipse minor axis; K1/K2 already embed sin(i)
+  var K1            = 28.5;   // km/s (Pilecki+ 2022 Table 1)
+  var K2            = 51.56;  // km/s (Pilecki+ 2022 Table 1)
+  // projection factor: converts radial velocity to pulsation velocity.
+  // p = 1.27 (Merand+ 2005 CHARA; consistent with Trahin+ 2021 mean
+  // p = 1.26 +/- 0.07 across 63 Galactic Cepheids, no period dependence).
+  // NOTE: calibrated on fundamental-mode Cepheids. CEP-1347 is a first-
+  // overtone pulsator (P_1O = 0.69 d); no overtone-specific calibration
+  // exists. The radius curve *shape* is independent of p; only the
+  // amplitude scales linearly. ~5% systematic uncertainty.
+  var P_FACTOR       = 1.27;
+  var R_MEAN         = 13.65;  // R_sun, from Pilecki+ 2022 eclipsing binary solution
+  var RV_THRESH     = 40;
+  var RV_N          = 2400;
+  var TRAIL_LEN     = 200;
+  var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
 
-document.getElementById('modal-close-btn').addEventListener('click', close_modal);
-modal.addEventListener('click', e => { if (e.target === modal) close_modal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { close_modal(); close_popover(); } });
-
-// featured research objects, open modal on click, pulse gold on canvas
-const featured_objects = [
-  {
-    name: "OGLE-LMC-CEP-1347 | v = 17.08",
-    ra_deg: 83.625,
-    dec_deg: -69.27,
-    simbad_id: "OGLE+LMC+CEP+1347",
-    card_url: "#card-cep1347",
-    type: "Binary Cepheid Variable  |  Large Magellanic Cloud",
-    writeup: "My primary research target. I analyzed six years of OGLE photometry for this double-overtone binary Cepheid in the LMC, built a pipeline to isolate residual signals, and found that a candidate rotational signature consistent with merger spindown was a 1/yr sampling alias of the ground-based cadence. I am now Co-Investigator and primary author of the Science Justification for a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki to test the merger scenario through chemical abundances."
-  },
-  {
-    name: "U Sagittarii | v = 6.68",
-    ra_deg: 277.972,
-    dec_deg: -19.125,
-    simbad_id: "U+Sgr",
-    card_url: "#card-usgr",
-    type: "Classical Cepheid Variable  |  Open Cluster M25",
-    writeup: "My first independent research target. I performed multi-band (V and I) differential photometry of this classical Cepheid in open cluster M25 and measured a 40.8% distance error in V-band versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths. Color index correlation (r = 0.85) provided independent evidence for the kappa-mechanism."
-  },
-  {
-    name: "7605 Cindygraber | v = 16.0",
-    ra_deg: 163.5,
-    dec_deg: 14.2,
-    catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605&view=VOP",
-    card_url: "#card-cindygraber",
-    type: "Main-Belt Asteroid  |  Indicative sky position",
-    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I am coordinating a multi-site Slooh campaign with citizen scientists operating telescopes remotely in Chile, Australia, and the Canary Islands to measure it. I built an open-source scheduler integrating orbital ephemerides and site visibility constraints to optimize cadence, and am extracting spectra from diffraction grating images to constrain taxonomic classification. Marker position and magnitude are indicative."
-  },
-  {
-    name: "19243 Bunting | v = 15.9",
-    ra_deg: 210.0,
-    dec_deg: 8.5,
-    catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243&view=VOP",
-    card_url: "#card-cindygraber",
-    type: "Main-Belt Asteroid  |  Indicative sky position",
-    writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
-  },
-  {
-    name: "HD 344787 | v = 9.32",
-    ra_deg: 295.872,
-    dec_deg: 23.178,
-    simbad_id: "HD344787",
-    pipeline: true,
-    type: "Active Investigation  |  Northern Sky",
-    writeup: "At the 247th AAS meeting, I watched Dupree &amp; MacLeod present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris? Is it alone, or is something else there, invisible and waiting to be found?"
-  }
-];
-
-// rendering state
-let star_data = [];
-let bg_stars_by_color = {}; // pre-grouped background stars, built once in build_stars
-let named_stars   = []; // Opt 4: pre-filtered; avoids full scan on touch events
-let featured_stars = []; // Opt 4: pre-filtered; avoids full scan on touch events
-let mouse = { x: -9999, y: -9999 };
-let hover_star = null;
-let time_s = 0;
-let catalog_loaded = false;
-let raf_id = null;
-let hero_visible = true;
-let cursor_is_pointer = false; // track to avoid per-frame style writes
-let last_frame_ts = 0;
-const FRAME_INTERVAL = 1000 / 30; // target 30fps — star field needs no more
-
-// deterministic rng, used only for per-star twinkle phase assignment
-function make_rng(seed) {
-  let s = seed >>> 0;
-  return () => {
-    s = Math.imul(1664525, s) + 1013904223 >>> 0;
-    return s / 0xffffffff;
-  };
-}
-
-// equirectangular projection: ra [0, 360) degrees -> x, dec [-90, 90] -> y
-function project(ra_deg, dec_deg) {
-  return {
-    x: (ra_deg / 360) * canvas.width,
-    y: (1 - (dec_deg + 90) / 180) * canvas.height
-  };
-}
-
-// rebuild pixel coordinates after resize, ra/dec stored on each star
-function reproject() {
-  for (const s of star_data) {
-    const p = project(s.ra_deg, s.dec_deg);
-    s.x = p.x;
-    s.y = p.y;
-  }
-}
-
-// build internal star_data from parsed catalog array
-// catalog entry format: [ra_deg, dec_deg, vmag, color_hex, name_or_null]
-function build_stars(catalog) {
-  star_data = [];
-  const rng = make_rng(31415);
-
-  // sort: named stars first (interactive layer loads first), then by magnitude
-  // ascending (brightest = lowest vmag first) within each group.
-  // O(n log n) once at load time — zero runtime cost.
-  const sorted = catalog.slice().sort((a, b) => {
-    const a_named = a[4] !== null ? 0 : 1;
-    const b_named = b[4] !== null ? 0 : 1;
-    if (a_named !== b_named) return a_named - b_named;
-    return a[2] - b[2]; // vmag ascending (brighter first)
-  });
-
-  for (const [ra_deg, dec_deg, vmag, color, name] of sorted) {
-    const pos = project(ra_deg, dec_deg);
-    const size = Math.max(0.4, (7.2 - vmag) * 0.38);
-    const is_named = name !== null;
-    const phase = rng() * Math.PI * 2;
-    const freq  = 0.3 + rng() * 1.4;
-    // floor bucket + fractional remainder for LUT interpolation
-    const bucket_f = (freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
-    const freq_bucket = Math.min(TWINKLE_BUCKETS - 2, Math.floor(bucket_f)); // -2 so bucket+1 is always valid
-    const freq_lerp   = bucket_f - freq_bucket;
-
-    star_data.push({
-      x: pos.x,
-      y: pos.y,
-      ra_deg,
-      dec_deg,
-      size,
-      mag: vmag,
-      name: is_named ? name : null,
-      simbad_id: is_named ? name : null,
-      freq_bucket,
-      freq_lerp,
-      sin_phase: Math.sin(phase),
-      cos_phase: Math.cos(phase),
-      featured: false,
-      color,
-      rgba_glow0: hex_to_rgba(color, 0.20),
-      rgba_full:  hex_to_rgba(color, 1)
-    });
-  }
-
-  // add featured research objects on top
-  const featured_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
-  for (let fi = 0; fi < featured_objects.length; fi++) {
-    const obj = featured_objects[fi];
-    const pos = project(obj.ra_deg, obj.dec_deg);
-    const rng2 = make_rng(99999 + fi * 7);
-    const f_phase  = rng2() * Math.PI * 2;
-    const f_freq   = 1.2 + fi * 0.2;
-    const f_bucket_f = (f_freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
-    const f_bucket   = Math.min(TWINKLE_BUCKETS - 2, Math.max(0, Math.floor(f_bucket_f)));
-    const f_lerp     = Math.min(1, Math.max(0, f_bucket_f - f_bucket));
-    star_data.push({
-      x: pos.x,
-      y: pos.y,
-      ra_deg: obj.ra_deg,
-      dec_deg: obj.dec_deg,
-      size: 3.5,
-      mag: 0,
-      name: obj.name,
-      simbad_id: obj.simbad_id,
-      freq_bucket: f_bucket,
-      freq_lerp:   f_lerp,
-      sin_phase: Math.sin(f_phase),
-      cos_phase: Math.cos(f_phase),
-      featured: true,
-      obj_data: obj,
-      color: featured_colors[fi] || '#c4a258',
-      rgba_glow0: hex_to_rgba(featured_colors[fi] || '#c4a258', 1),
-      rgba_full:  hex_to_rgba(featured_colors[fi] || '#c4a258', 1)
-    });
-  }
-
-  // pre-group background stars by color so draw loop doesn't rebuild every frame
-  bg_stars_by_color = {};
-  for (const s of star_data) {
-    if (s.featured || s.name) continue;
-    if (!bg_stars_by_color[s.color]) bg_stars_by_color[s.color] = [];
-    bg_stars_by_color[s.color].push(s);
-  }
-
-  // Opt 4: pre-filtered views — avoids full star_data scan on every touch event
-  featured_stars = star_data.filter(s => s.featured);
-  named_stars    = star_data.filter(s => s.name && !s.featured);
-}
-
-// ── twinkle lookup table ──────────────────────────────────────────────────────
-// Instead of Math.sin(time_s * freq + phase) per star (~9000 calls/frame),
-// we quantize frequencies into TWINKLE_BUCKETS bins and use the angle-addition
-// identity: sin(t*f + p) = sin(t*f)*cos(p) + cos(t*f)*sin(p).
-// Per frame: compute sin/cos for each bucket (64 calls total).
-// Per star: one lookup + 2 multiplies + 1 add. No per-star trig.
-const TWINKLE_BUCKETS = 64;
-const FREQ_MIN = 0.3, FREQ_MAX = 1.7;
-const twinkle_sin_lut = new Float32Array(TWINKLE_BUCKETS); // sin(time_s * bucket_freq)
-const twinkle_cos_lut = new Float32Array(TWINKLE_BUCKETS); // cos(time_s * bucket_freq)
-
-// Opt 5: pre-computed per-bucket frequencies — eliminates 64 multiply-adds every frame
-const twinkle_bucket_freqs = new Float32Array(TWINKLE_BUCKETS);
-for (let i = 0; i < TWINKLE_BUCKETS; i++) {
-  twinkle_bucket_freqs[i] = FREQ_MIN + (i / (TWINKLE_BUCKETS - 1)) * (FREQ_MAX - FREQ_MIN);
-}
-
-function update_twinkle_lut() {
-  for (let i = 0; i < TWINKLE_BUCKETS; i++) {
-    const a = time_s * twinkle_bucket_freqs[i]; // Opt 5: freq is pre-computed, no multiply-add
-    twinkle_sin_lut[i] = Math.sin(a);
-    twinkle_cos_lut[i] = Math.cos(a);
-  }
-}
-
-// twinkle value for a star: lerps between adjacent LUT buckets using freq_lerp.
-// Each star gets a unique effective frequency within its bin — full variation,
-// zero per-star trig. Cost: 2 LUT lookups + 1 lerp (3 multiplies, 2 adds).
-function star_twinkle(s) {
-  const i = s.freq_bucket;
-  const t = s.freq_lerp;
-  const sin_f = twinkle_sin_lut[i] + t * (twinkle_sin_lut[i + 1] - twinkle_sin_lut[i]);
-  const cos_f = twinkle_cos_lut[i] + t * (twinkle_cos_lut[i + 1] - twinkle_cos_lut[i]);
-  return 0.78 + 0.22 * (sin_f * s.cos_phase + cos_f * s.sin_phase);
-}
-
-
-
-// convert #rrggbb to rgba(r,g,b,a) string
-function hex_to_rgba(hex, alpha) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-
-// Opt 1: alpha-bucket batching — star_twinkle() returns [0.56, 1.0], so
-// alpha = 0.32 + 0.24 * t ∈ [BG_ALPHA_MIN, BG_ALPHA_MAX].
-// Quantising into BG_ALPHA_BUCKETS steps lets us batch all stars at the same
-// (color, alpha) into one compound path, reducing fill() calls 9000 → ~40.
-const BG_ALPHA_BUCKETS = 8;
-const BG_ALPHA_MIN   = 0.32 + 0.24 * 0.56; // ≈ 0.4544
-const BG_ALPHA_MAX   = 0.32 + 0.24 * 1.00; // = 0.56
-const BG_ALPHA_RANGE = BG_ALPHA_MAX - BG_ALPHA_MIN;
-// Pre-allocated bucket arrays — cleared each frame with .length = 0, no GC churn
-const _bg_buckets = Array.from({ length: BG_ALPHA_BUCKETS }, () => []);
-
-// batched background star drawing — uses pre-grouped color buckets built at catalog load.
-// Sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
-function draw_background_stars_batched() {
-  const TWO_PI = Math.PI * 2;
-  for (const color in bg_stars_by_color) {
-    // Distribute this color's stars into alpha buckets
-    for (let b = 0; b < BG_ALPHA_BUCKETS; b++) _bg_buckets[b].length = 0;
-    for (const s of bg_stars_by_color[color]) {
-      const twinkle = star_twinkle(s);
-      const alpha   = 0.32 + 0.24 * twinkle;
-      const b = Math.min(BG_ALPHA_BUCKETS - 1,
-                  Math.max(0, Math.floor((alpha - BG_ALPHA_MIN) / BG_ALPHA_RANGE * BG_ALPHA_BUCKETS)));
-      _bg_buckets[b].push(s);
+  // ── starfield: static LMC background, generated once on first resize ──────
+  var bgStars = null;
+  var bgStarsW = 0, bgStarsH = 0;
+  function ensureBgStars(cw, ch) {
+    if (bgStars && bgStarsW === cw && bgStarsH === ch) return;
+    bgStarsW = cw; bgStarsH = ch;
+    var rng = function(seed) { // deterministic LCG so starfield is stable across frames
+      var s = seed;
+      return function() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+    };
+    var rand = rng(0xdeadbeef);
+    bgStars = [];
+    var n = Math.round(cw * ch / 3000); // ~700 stars at 1920×1080
+    for (var i = 0; i < n; i++) {
+      bgStars.push({
+        x: rand() * cw,
+        y: rand() * ch,
+        r: rand() < 0.85 ? 0.6 : (rand() < 0.6 ? 1.0 : 1.4), // mostly sub-pixel, a few brighter
+        a: 0.04 + rand() * 0.18  // dim: 0.04–0.22, never compete with stars
+      });
     }
-    // One compound path + one fill() per non-empty (color, alpha-bucket) pair
-    ctx.fillStyle = color;
-    for (let b = 0; b < BG_ALPHA_BUCKETS; b++) {
-      const group = _bg_buckets[b];
-      if (!group.length) continue;
-      ctx.globalAlpha = BG_ALPHA_MIN + (b + 0.5) / BG_ALPHA_BUCKETS * BG_ALPHA_RANGE;
+  }
+  function drawBgStars(cw, ch) {
+    ensureBgStars(cw, ch);
+    if (!bgStars) return;
+    ctx.save();
+    for (var i = 0; i < bgStars.length; i++) {
+      var s = bgStars[i];
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      for (const s of group) {
-        ctx.moveTo(s.x + s.size, s.y); // moveTo avoids connecting lines between arcs
-        ctx.arc(s.x, s.y, s.size, 0, TWO_PI);
-      }
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
-  }
-  ctx.globalAlpha = 1;
-}
-
-function draw_named_star(s) {
-  const twinkle = star_twinkle(s);
-  // soft glow for brighter stars
-  if (s.size > 1.6) {
-    const gr = s.size * 3.4;
-    const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
-    grd.addColorStop(0, hex_to_rgba(s.color, 0.20 * twinkle));
-    grd.addColorStop(1, hex_to_rgba(s.color, 0));
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, gr, 0, Math.PI * 2);
-    ctx.fillStyle = grd;
-    ctx.fill();
-  }
-
-  ctx.beginPath();
-  ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-  ctx.fillStyle = s.color;
-  ctx.globalAlpha = 0.70 + 0.30 * twinkle;
-  ctx.fill();
-  ctx.globalAlpha = 1;
-}
-
-function draw_featured_star(s) {
-  const is_pipeline = s.obj_data && s.obj_data.pipeline;
-  // Bug 1: star_twinkle returns [0.56, 1.0]; remap to [0, 1] for correct pulse range
-  // clamp as defense — out-of-range twinkle values would produce negative radii
-  const pulse = Math.max(0, Math.min(1, (star_twinkle(s) - 0.56) / 0.44));
-  const glow_r = 16 + pulse * 5;
-  const c = s.color;
-  const glow_alpha = is_pipeline ? 0.22 : 0.45;
-  const ring_base  = is_pipeline ? 0.12 : 0.28;
-  const ring_pulse = is_pipeline ? 0.22 : 0.45;
-
-  // radial glow — use hex_to_rgba only for the variable alpha (pulse-dependent)
-  const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glow_r);
-  grd.addColorStop(0, hex_to_rgba(c, glow_alpha * pulse));
-  grd.addColorStop(1, hex_to_rgba(c, 0));
-  ctx.beginPath();
-  ctx.arc(s.x, s.y, glow_r, 0, Math.PI * 2);
-  ctx.fillStyle = grd;
-  ctx.fill();
-
-  // orbit ring
-  ctx.beginPath();
-  ctx.arc(s.x, s.y, 8 + pulse * 2.5, 0, Math.PI * 2);
-  ctx.strokeStyle = hex_to_rgba(c, ring_base + pulse * ring_pulse);
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  // core dot
-  ctx.beginPath();
-  ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-  ctx.fillStyle = c;
-  ctx.fill();
-}
-
-function draw_hover_ring(s) {
-  ctx.beginPath();
-  ctx.arc(s.x, s.y, s.size + 5, 0, Math.PI * 2);
-  ctx.strokeStyle = s.featured
-    ? hex_to_rgba(s.color, 0.85)
-    : 'rgba(200,215,245,0.60)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
-
-// pre-computed legend items — built once, not every frame
-const legend_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
-const legend_items = featured_objects.map((obj, i) => ({
-  label: obj.name,
-  color: legend_colors[i] || '#c4a258'
-}));
-let legend_col_w = 0; // measured once after font loads
-
-function draw_canvas_legend() {
-  const items = legend_items;
-  ctx.save();
-  ctx.font = '600 10px "JetBrains Mono", monospace';
-  ctx.textBaseline = 'middle';
-
-  const dot_r = 4;
-  const row_h = 18;
-  const pad_x = 14;
-  const pad_y = 12;
-  const gap = 8;
-
-  // measure col_w once (font must be set first)
-  if (!legend_col_w) {
-    const widths = items.map(it => ctx.measureText(it.label).width);
-    legend_col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
-  }
-
-  const total_legend_w = items.length * legend_col_w;
-  const two_rows = legend_col_w > 0 && total_legend_w > canvas.width - pad_x * 2;
-  const items_per_row = two_rows ? Math.ceil(items.length / 2) : items.length;
-  let x = pad_x;
-  const y_bottom = canvas.height - pad_y - row_h / 2;
-  const y_top    = two_rows ? y_bottom - row_h - 4 : y_bottom;
-
-  for (let i = 0; i < items.length; i++) {
-    const it = items[i];
-    if (two_rows && i === items_per_row) x = pad_x;
-    const row_y = (two_rows && i >= items_per_row) ? y_bottom : y_top;
-    const cx = x + dot_r;
-
-    // pulsing dot — use bucket 0..4 mapped across LUT for variety
-    const lut_i = Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1));
-    const pulse = 0.5 + 0.5 * twinkle_sin_lut[lut_i];
-    const glow = ctx.createRadialGradient(cx, row_y, 0, cx, row_y, dot_r * 3);
-    glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
-    glow.addColorStop(1, hex_to_rgba(it.color, 0));
-    ctx.beginPath();
-    ctx.arc(cx, row_y, dot_r * 3, 0, Math.PI * 2);
-    ctx.fillStyle = glow;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(cx, row_y, dot_r, 0, Math.PI * 2);
-    ctx.fillStyle = it.color;
-    ctx.globalAlpha = 0.8 + 0.2 * pulse;
-    ctx.fill();
     ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+  // fourier r=2 fit to pilecki rv residuals (r²=0.927); [a0, a1, b1, a2, b2]
+  var PULS_C        = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
 
-    // label
-    ctx.fillStyle = 'rgba(200,215,245,0.52)';
-    ctx.fillText(it.label, cx + dot_r + gap, row_y);
+  // ── embedded observational data ────────────────────────────────────────────
+  // 187 OGLE-IV V-band observations [hjd-2450000, v_mag, err]
+  var OGLE_V_RAW = [
+    [5260.65957,17.078,0.008],[5267.58314,17.150,0.007],[5446.91815,17.057,0.008],
+    [5459.83597,16.916,0.006],[5477.76899,16.889,0.006],[5485.80179,17.254,0.007],
+    [5492.80569,17.192,0.008],[5493.82817,17.016,0.008],[5494.80475,17.232,0.008],
+    [5495.76190,16.884,0.007],[5497.85791,16.874,0.007],[5499.76516,17.170,0.007],
+    [5502.85632,17.102,0.006],[5503.79358,17.214,0.007],[5505.76030,17.245,0.007],
+    [5507.79578,17.207,0.007],[5509.76198,17.143,0.006],[5510.79597,17.166,0.006],
+    [5511.80606,17.100,0.007],[5512.81494,17.171,0.007],[5514.81718,17.239,0.007],
+    [5515.79436,16.902,0.006],[5516.81975,17.241,0.007],[5517.78078,16.905,0.006],
+    [5521.76864,17.176,0.010],[5522.76706,16.943,0.007],[5523.72738,17.263,0.009],
+    [5524.73678,16.881,0.006],[5525.70272,17.203,0.007],[5526.73953,16.975,0.006],
+    [5527.80058,17.217,0.007],[5528.67496,17.202,0.007],[5529.65538,16.971,0.006],
+    [5530.73352,17.191,0.007],[5531.81659,17.097,0.006],[5532.72558,17.244,0.006],
+    [5533.74548,16.883,0.006],[5534.77892,17.270,0.007],[5535.67971,17.090,0.006],
+    [5536.75827,17.227,0.007],[5539.76703,17.205,0.007],[5546.73411,17.026,0.007],
+    [5547.79317,17.208,0.007],[5548.76495,17.160,0.007],[5549.78511,17.159,0.007],
+    [5550.80713,17.178,0.008],[5553.68434,16.910,0.007],[5556.72571,17.168,0.007],
+    [5557.70759,17.165,0.007],[5558.70713,17.076,0.007],[5559.75050,17.174,0.007],
+    [5561.65181,17.241,0.007],[5562.77438,16.919,0.006],[5563.70387,17.255,0.007],
+    [5565.71040,17.199,0.007],[5566.73995,17.031,0.006],[5582.72890,16.836,0.007],
+    [5589.67657,16.963,0.006],[5592.69597,17.262,0.007],[5596.66782,17.054,0.006],
+    [5598.64893,16.971,0.006],[5614.61509,17.097,0.007],[5619.60705,17.239,0.006],
+    [5622.60546,17.156,0.007],[5623.56815,17.082,0.006],[5625.56129,16.901,0.006],
+    [5627.63124,16.935,0.006],[5629.57132,16.905,0.006],[5633.55797,17.180,0.007],
+    [5647.55292,16.898,0.006],[5650.54864,17.131,0.006],[5652.55008,17.082,0.006],
+    [5656.51796,16.875,0.006],[5659.54757,17.172,0.007],[5670.50101,17.054,0.008],
+    [5674.52737,16.858,0.006],[5679.51660,17.109,0.006],[5685.51210,16.786,0.006],
+    [5693.47271,17.261,0.007],[5825.84308,17.217,0.007],[5843.88726,17.229,0.007],
+    [5854.79544,17.178,0.006],[5863.75821,17.160,0.006],[5867.77492,16.895,0.005],
+    [5875.74444,17.180,0.007],[5880.81056,16.933,0.007],[5883.80062,17.203,0.007],
+    [5886.81874,17.164,0.007],[5892.78162,17.156,0.006],[5897.77018,17.234,0.007],
+    [5910.73680,17.152,0.007],[5924.73350,17.188,0.006],[5932.69733,17.077,0.007],
+    [5940.72735,17.034,0.006],[5952.73776,17.086,0.006],[5961.67663,16.985,0.006],
+    [5970.63305,16.946,0.006],[5972.71011,17.052,0.006],[5994.53416,17.031,0.008],
+    [5994.67369,16.935,0.007],[5995.52897,17.088,0.007],[5995.67303,17.181,0.010],
+    [5996.51279,17.209,0.007],[5996.65647,16.913,0.008],[5997.51132,17.040,0.006],
+    [5997.66473,17.230,0.008],[5998.54367,17.186,0.006],[5998.66807,17.161,0.007],
+    [5999.53890,16.827,0.005],[5999.66103,17.073,0.006],[6000.49175,17.235,0.010],
+    [6000.65559,17.172,0.006],[6001.49642,17.076,0.007],[6001.61660,16.897,0.006],
+    [6006.54369,17.114,0.006],[6013.58322,17.205,0.006],[6020.55695,17.234,0.007],
+    [6193.89478,17.166,0.006],[6226.85738,17.211,0.006],[6229.85812,17.071,0.007],
+    [6236.83182,16.851,0.005],[6292.78911,16.889,0.006],[6317.66143,16.991,0.006],
+    [6333.65492,17.156,0.006],[6344.62146,17.030,0.005],[6592.83432,16.827,0.005],
+    [6600.74469,17.187,0.005],[6685.59638,17.161,0.006],[6687.69604,17.214,0.006],
+    [6688.62904,17.156,0.006],[6689.65282,17.054,0.005],[6690.65529,17.154,0.005],
+    [6691.67804,17.001,0.005],[6692.69787,17.219,0.005],[6693.64409,16.909,0.004],
+    [6694.68977,17.235,0.005],[6695.63489,16.848,0.005],[6696.62245,17.164,0.006],
+    [6697.68051,17.097,0.005],[6698.68090,17.166,0.007],[6699.52519,17.218,0.007],
+    [6700.55428,16.843,0.005],[6700.67819,17.002,0.006],[6701.54620,17.264,0.007],
+    [6701.68172,17.185,0.007],[6702.55196,16.960,0.007],[6702.68457,16.978,0.007],
+    [6703.56258,17.194,0.008],[6704.56320,17.050,0.006],[6704.70883,16.895,0.007],
+    [6705.55212,17.111,0.005],[6706.63145,17.126,0.006],[6707.64413,17.163,0.006],
+    [6708.63181,17.182,0.005],[6709.62621,16.992,0.005],[6710.63554,17.201,0.005],
+    [6711.62247,16.915,0.005],[6712.57312,17.265,0.005],[6997.80230,17.160,0.008],
+    [7007.75349,17.090,0.006],[7063.65587,17.103,0.006],[7064.71928,17.142,0.006],
+    [7065.70435,17.021,0.006],[7066.70004,17.206,0.006],[7067.69589,16.997,0.005],
+    [7068.67172,17.243,0.006],[7069.68134,16.848,0.005],[7070.71694,17.213,0.006],
+    [7071.72318,16.851,0.005],[7072.70390,17.202,0.007],[7075.64953,17.184,0.006],
+    [7076.65465,16.941,0.005],[7077.63346,17.245,0.006],[7078.63331,16.909,0.006],
+    [7110.50625,17.025,0.006],[7111.52920,17.212,0.007],[7112.52721,16.945,0.007],
+    [7113.52238,17.204,0.007],[7114.53109,16.812,0.006],[7115.52542,17.233,0.007],
+    [7116.51354,17.089,0.009],[7117.54233,17.197,0.007],[7118.51542,17.152,0.007],
+    [7119.50233,17.018,0.006],[7137.49852,17.102,0.006],[7332.74904,17.095,0.006],
+    [7366.72606,17.236,0.006]
+  ];
 
-    x += legend_col_w;
+  // 9 spectroscopic RVs from Pilecki et al. (2022, ApJ 940 L48)
+  // [hjd-2450000, rv_cepheid, err1, rv_companion, err2]
+  var PILECKI_RV_RAW = [
+    [9510.80498,271.408,0.148,195.142,0.397],
+    [9541.61089,222.409,0.113,281.004,0.479],
+    [9556.62074,246.214,0.124,207.792,0.542],
+    [9558.63776,251.270,0.128,200.067,0.553],
+    [9563.71814,280.680,0.128,188.181,0.397],
+    [9566.72085,261.271,0.183,189.594,0.514],
+    [9579.64289,255.698,0.292,239.801,0.335],
+    [9589.71976,206.661,0.109,285.529,0.421],
+    [9604.62569,231.395,0.159,263.152,0.546]
+  ];
+
+  // ── state ──────────────────────────────────────────────────────────────────
+  var data        = null;
+  var currentMode = 'orbital';
+  var orbitPhase  = 0;      // normalized 0-1 orbital phase, advances at 1/ORBIT_DURATION_S per sec
+  var pulsTime    = 0;      // pulsation elapsed time in days
+  var maxR1       = 1;
+
+  var rv1 = [], rv2 = [], rvDelta = [];
+  var rv_abs_min = 0, rv_abs_max = 0;
+  var v_puls_cycle = [];
+  var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
+
+  // guided first-loop captions
+  var captionStartTime = null;
+  var CAPTIONS = [
+    { t: 0,    dur: 5000, text: 'OGLE-LMC-CEP-1347: a pulsating Cepheid in an eclipsing binary, ~165,000 light-years away in the LMC' },
+    { t: 7000, dur: 5000, text: 'The radial velocity curves encode both stars\u2019 orbital motion' },
+  ];
+
+  var ogle_phased    = [];
+  var pilecki_phased = [];
+  var phase_offset   = 0;
+  var PULS_LC_OFFSET = 0; // epoch offset between JSON puls_cycle and OGLE T0_ORB fold; computed by computeLCOffset()
+
+  var trail1 = [], trail2 = [];
+
+  // ── dom ────────────────────────────────────────────────────────────────────
+  var simCanvas = document.getElementById('simCanvas');
+  var ctx       = simCanvas ? simCanvas.getContext('2d') : null;
+  var preview   = document.getElementById('sim-preview');
+  var plotUI    = document.getElementById('hud-plot-container');
+
+  var hud = {
+    mag:        document.getElementById('hud-mag'),
+    teff:       document.getElementById('hud-teff'),
+    rad:        document.getElementById('hud-rad'),
+    phase:      document.getElementById('hud-phase'),
+    phaseLabel: document.getElementById('hud-phase-label'),
+  };
+
+  var bounds = { a1: 0, a2: 0, minV: 99, maxV: -99 };
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+
+  function safeGet(arr, idx, fb) {
+    return (arr && arr[idx] !== undefined) ? arr[idx] : fb;
   }
 
-  // arrow hint pointing at a randomly chosen safe featured star
-  if (hint_alpha > 0 && hint_target) {
-    const s = hint_target;
-    const sx = s.x, sy = s.y;
-    const is_mobile = canvas.width <= 740;
+  function hexToRgba(hex, a) {
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
 
-    // scale everything for mobile vs desktop
-    const font_name  = is_mobile ? '500 13px "JetBrains Mono", monospace' : '500 12px "JetBrains Mono", monospace';
-    const font_sub   = is_mobile ? '400 12px "JetBrains Mono", monospace' : '400 11px "JetBrains Mono", monospace';
-    const label_w    = is_mobile ? 138 : 124;
-    const label_h    = is_mobile ? 40  : 36;
-    const offset     = is_mobile ? 100 : 92;  // px from star center to label center
-    const glow_gap   = is_mobile ? 26  : 24;  // tip clearance from star center
-    const ah         = is_mobile ? 9   : 7;   // arrowhead size
-    const shaft_w    = is_mobile ? 1.6 : 1.2;
-    const head_w     = is_mobile ? 2.0 : 1.5;
+  function getPlotRect() {
+    if (!plotUI) return null;
+    var pr = plotUI.getBoundingClientRect();
+    var sr = simCanvas.getBoundingClientRect();
+    return { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height };
+  }
 
-    // place label left of star if on right half of canvas, otherwise right
-    const label_left = sx > canvas.width * 0.55;
-    const lx = label_left
-      ? Math.max(label_w / 2 + 8, sx - offset)
-      : Math.min(canvas.width - label_w / 2 - 8, sx + offset);
-    const ly = sy - 42;
-    const short_name = (s.obj_data.name || '').split(' | ')[0].trim();
+  function getStarArea() {
+    var dpr = window.devicePixelRatio || 1;
+    var w = simCanvas.width / dpr;
+    var h = simCanvas.height / dpr;
+    var isMob = window.innerWidth <= 740;
+    var plot = getPlotRect();
+    // Always constrain star area height to the top of the plot whenever the
+    // plot sits inside the canvas bounds — prevents orbital ellipses and
+    // trails from bleeding over the RV/LC panel on any viewport width.
+    var gap = isMob ? 30 : 4;
+    var star_h = (plot && plot.py > 0 && plot.py < h) ? plot.py - gap : h;
+    return { w: w, h: star_h, full_h: h, mobile: isMob };
+  }
 
-    // tail starts from label bottom-center, tip stops outside glow ring
-    const tail_x = lx, tail_y = ly + label_h / 2 + 4;
-    const dx = sx - tail_x, dy = sy - tail_y;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const tip_x = tail_x + dx * (1 - glow_gap / dist);
-    const tip_y = tail_y + dy * (1 - glow_gap / dist);
-    const angle = Math.atan2(dy, dx);
+  // ── rv precomputation ──────────────────────────────────────────────────────
+
+  function buildRV() {
+    rv1 = []; rv2 = []; rvDelta = [];
+
+    // pulsation RV model: Fourier r=2 fit directly to Pilecki RV residuals (R²=0.927)
+    // coeffs: [a0, a1, b1, a2, b2] from chi2-minimised fit over phi0 grid
+    var Np = 120;
+    v_puls_cycle = [];
+    for (var i = 0; i < Np; i++) {
+      var ph = i / Np;
+      var v = PULS_C[0]
+            + PULS_C[1] * Math.cos(2 * Math.PI * ph)
+            + PULS_C[2] * Math.sin(2 * Math.PI * ph)
+            + PULS_C[3] * Math.cos(4 * Math.PI * ph)
+            + PULS_C[4] * Math.sin(4 * Math.PI * ph);
+      v_puls_cycle.push(v);
+    }
+
+    // orbital-only model curves (no pulsation in model lines)
+    for (var k = 0; k < RV_N; k++) {
+      var phi = k / RV_N;
+      var v1 = K1 * Math.sin(2 * Math.PI * phi);
+      var v2 = -K2 * Math.sin(2 * Math.PI * phi);
+      rv1.push(v1);
+      rv2.push(v2);
+      rvDelta.push(Math.abs(v1 - v2));
+    }
+
+    // y-axis bounds from model + pulsation-corrected Pilecki points
+    rv_abs_min = Infinity; rv_abs_max = -Infinity;
+    for (var j = 0; j < RV_N; j++) {
+      var a1 = rv1[j] + GAMMA_SYS;
+      var a2 = rv2[j] + GAMMA_SYS;
+      if (a1 < rv_abs_min) rv_abs_min = a1;
+      if (a1 > rv_abs_max) rv_abs_max = a1;
+      if (a2 < rv_abs_min) rv_abs_min = a2;
+      if (a2 > rv_abs_max) rv_abs_max = a2;
+    }
+    for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
+      var row = PILECKI_RV_RAW[pi];
+      // pulsation-corrected Cepheid RV for bounds check
+      var hjd_pi = row[0] + 2450000.0;
+      var pp = (((hjd_pi - T0_PULS) % P_PULS) / P_PULS + 1) % 1;
+      var pidx = Math.round(pp * Np) % Np;
+      var rv1_corr = row[1] - v_puls_cycle[pidx];
+      if (rv1_corr < rv_abs_min) rv_abs_min = rv1_corr;
+      if (rv1_corr > rv_abs_max) rv_abs_max = rv1_corr;
+      if (row[3] < rv_abs_min) rv_abs_min = row[3];
+      if (row[3] > rv_abs_max) rv_abs_max = row[3];
+    }
+    rv_abs_min -= 12;
+    rv_abs_max += 12;
+  }
+
+  // ── radius from RV integration (Baade-Wesselink) ──────────────────────────
+  // dR/dt = p * Vr(t) [positive Vr = receding = expanding = dR>0]
+  // integrated over pulsation phase.
+  // PULS_C = [a0, a1, b1, a2, b2] in cos/sin convention.
+  // the periodic integral of Vr(phi) drops a0 (secular drift, ~0).
+  // integral of cos(2k*pi*phi) d(phi) = sin(2k*pi*phi) / (2k*pi)
+  // integral of sin(2k*pi*phi) d(phi) = -cos(2k*pi*phi) / (2k*pi)
+  // scale factor converts km/s * days -> R_sun.
+
+  var BW_SCALE = P_FACTOR * P_PULS * 86400 / R_SUN_KM; // ~0.109
+
+  // epoch correction: PULS_C is anchored to T0_PULS, but the JSON LC
+  // (v_mag, teff, color) is anchored to T0_ORB. shift radius phase so
+  // both align when indexed by the same phi_cur.
+  // offset = frac((T0_PULS - T0_ORB) / P_PULS) = 0.5997
+  var PULS_EPOCH_OFFSET = ((T0_PULS - T0_ORB) / P_PULS % 1 + 1) % 1; // 0.5997
+
+  function computeRadius(phi) {
+    var phi_corr = phi - PULS_EPOCH_OFFSET;
+    // puls_c coefficients (duplicated from buildRV for locality)
+    var a1 =  3.3790, b1 = -15.6020;
+    var a2 = -4.3673, b2 =  -3.2070;
+    var twopi  = 2 * Math.PI;
+    var fourpi = 4 * Math.PI;
+    var theta1 = twopi * phi_corr;
+    var theta2 = fourpi * phi_corr;
+    // periodic part of integral(Vr, dphi)
+    var integ = (a1 / twopi)  * Math.sin(theta1)
+              - (b1 / twopi)  * Math.cos(theta1)
+              + (a2 / fourpi) * Math.sin(theta2)
+              - (b2 / fourpi) * Math.cos(theta2);
+    return R_MEAN + BW_SCALE * integ;
+  }
+
+  // precompute radius bounds for display scaling
+  var radius_min = Infinity, radius_max = -Infinity;
+  (function() {
+    for (var i = 0; i < 200; i++) {
+      var r = computeRadius(i / 200);
+      if (r < radius_min) radius_min = r;
+      if (r > radius_max) radius_max = r;
+    }
+  })();
+
+  // ── orbital position interpolation ────────────────────────────────────────
+
+  function lerpFrame(p, i_fp) {
+    // linear interpolation between two adjacent orbital frames
+    var N  = p.x1.length;
+    var i0 = Math.floor(i_fp) % N;
+    var i1 = (i0 + 1) % N;
+    var t  = i_fp - Math.floor(i_fp);
+    function lerp(a, b, f) { return a + (b - a) * f; }
+    return {
+      x1: lerp(p.x1[i0], p.x1[i1], t), y1: lerp(p.y1[i0], p.y1[i1], t),
+      z1: lerp(p.z1[i0], p.z1[i1], t), x2: lerp(p.x2[i0], p.x2[i1], t),
+      y2: lerp(p.y2[i0], p.y2[i1], t), z2: lerp(p.z2[i0], p.z2[i1], t),
+    };
+  }
+
+  // ── pulsation state lookup, uses puls_cycle from JSON metadata ────────────
+  // decoupled from orbital frame count: always 480-frame resolution
+  // puls_phi: 0-1 pulsation phase
+
+  function getPulsState(puls_phi) {
+    var pc = data && data.metadata && data.metadata.puls_cycle;
+    if (!pc) return { r1: R_MEAN, mag: 17.1, teff: 6490, col: FALLBACK_COL };
+    var fp = ((puls_phi % 1 + 1) % 1) * (pc.Np - 1);
+    var i0 = Math.floor(fp) % pc.Np;
+    var i1 = (i0 + 1) % pc.Np;
+    var t  = fp - Math.floor(fp);
+    function lerp(a, b, f) { return a + (b - a) * f; }
+    return {
+      // radius from BW integration of pulsation RV (replaces JSON magnitude-proxy).
+      // epoch-corrected via PULS_EPOCH_OFFSET to align PULS_C (T0_PULS)
+      // with JSON LC (T0_ORB).
+      r1:  computeRadius(puls_phi),
+      mag: lerp(pc.v_mag[i0], pc.v_mag[i1], t),
+      teff: pc.teff ? lerp(pc.teff[i0], pc.teff[i1], t) : null,
+      col:  pc.color1[Math.round(fp) % pc.Np],
+    };
+  }
+
+  // ── LC phase-offset computation ────────────────────────────────────────────
+  // Solves the 9x9 weighted normal equations for a 4th-order Fourier fit to
+  // the OGLE photometry (folded at T0_ORB), finds its minimum-magnitude phase
+  // phi_fit, then finds the minimum-magnitude phase phi_json in pc.v_mag.
+  // PULS_LC_OFFSET = phi_json - phi_fit shifts the treadmill lookup so the
+  // Fourier curve's minimum lands at the same screen position as the scatter.
+
+  function solveLeastSquares(A, b, n) {
+    // Gaussian elimination with partial pivoting; operates on augmented [A|b]
+    var M = [];
+    for (var i = 0; i < n; i++) { M[i] = A[i].slice(); M[i].push(b[i]); }
+    for (var col = 0; col < n; col++) {
+      var maxRow = col;
+      for (var row = col + 1; row < n; row++) {
+        if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
+      }
+      var tmp = M[col]; M[col] = M[maxRow]; M[maxRow] = tmp;
+      if (Math.abs(M[col][col]) < 1e-12) continue;
+      for (var row2 = col + 1; row2 < n; row2++) {
+        var f = M[row2][col] / M[col][col];
+        for (var c = col; c <= n; c++) M[row2][c] -= f * M[col][c];
+      }
+    }
+    var x = [];
+    for (var i2 = n - 1; i2 >= 0; i2--) {
+      x[i2] = M[i2][n];
+      for (var j = i2 + 1; j < n; j++) x[i2] -= M[i2][j] * x[j];
+      x[i2] /= M[i2][i2];
+    }
+    return x;
+  }
+
+  function computeLCOffset(pc) {
+    // 4th-order Fourier: a0 + sum_{k=1}^{4} [a_k cos(2πkφ) + b_k sin(2πkφ)]
+    // 9 parameters: [a0, a1, b1, a2, b2, a3, b3, a4, b4]
+    var ord = 4, np = 2 * ord + 1;
+    var XtWX = [], XtWy = [];
+    for (var i = 0; i < np; i++) { XtWX[i] = []; for (var j = 0; j < np; j++) XtWX[i][j] = 0; XtWy[i] = 0; }
+
+    for (var oi = 0; oi < OGLE_V_RAW.length; oi++) {
+      var r   = OGLE_V_RAW[oi];
+      var phi = ((((r[0] + 2450000) - T0_ORB) % P_PULS + P_PULS) % P_PULS) / P_PULS;
+      var mag = r[1];
+      var w   = 1 / (r[2] * r[2]);
+      // design vector
+      var xv = [1];
+      for (var k = 1; k <= ord; k++) {
+        xv.push(Math.cos(2 * Math.PI * k * phi));
+        xv.push(Math.sin(2 * Math.PI * k * phi));
+      }
+      for (var a = 0; a < np; a++) {
+        XtWy[a] += w * xv[a] * mag;
+        for (var b = 0; b < np; b++) XtWX[a][b] += w * xv[a] * xv[b];
+      }
+    }
+
+    var coeffs = solveLeastSquares(XtWX, XtWy, np);
+
+    // find phase of minimum magnitude in the Fourier fit (max light)
+    var nSearch = 2000;
+    var minFitMag = Infinity, phi_fit_min = 0;
+    for (var s = 0; s < nSearch; s++) {
+      var phi_s = s / nSearch;
+      var mag_s = coeffs[0];
+      for (var k2 = 1; k2 <= ord; k2++) {
+        mag_s += coeffs[2 * k2 - 1] * Math.cos(2 * Math.PI * k2 * phi_s);
+        mag_s += coeffs[2 * k2]     * Math.sin(2 * Math.PI * k2 * phi_s);
+      }
+      if (mag_s < minFitMag) { minFitMag = mag_s; phi_fit_min = phi_s; }
+    }
+
+    // find phase of minimum magnitude in JSON puls_cycle
+    var phi_json_min = 0, minJsonMag = Infinity;
+    for (var ji = 0; ji < pc.Np; ji++) {
+      if (pc.v_mag[ji] < minJsonMag) { minJsonMag = pc.v_mag[ji]; phi_json_min = ji / pc.Np; }
+    }
+
+    // offset: shift treadmill lookup so its minimum aligns with scatter minimum
+    // PULS_LC_OFFSET = phi_json_min - phi_fit_min (mod 1)
+    return ((phi_json_min - phi_fit_min) % 1 + 1) % 1;
+  }
+
+  // ── phase-fold observational data ──────────────────────────────────────────
+
+  function prepareObservationalData() {
+    // 1. phase-fold Pilecki data on orbital period, fine-tune offset from companion
+    var raw_phases = [];
+    for (var i = 0; i < PILECKI_RV_RAW.length; i++) {
+      var hjd = PILECKI_RV_RAW[i][0] + 2450000.0;
+      raw_phases.push((((hjd - T0_ORB) % P_ORB_D) / P_ORB_D + 1) % 1);
+    }
+
+    var best_d = 0, best_sse = Infinity;
+    for (var d = 0; d < 1000; d++) {
+      var delta = d / 1000;
+      var sse = 0;
+      for (var j = 0; j < PILECKI_RV_RAW.length; j++) {
+        var phi = (raw_phases[j] + delta) % 1;
+        var model = -K2 * Math.sin(2 * Math.PI * phi) + GAMMA_SYS;
+        var res = model - PILECKI_RV_RAW[j][3];
+        sse += res * res;
+      }
+      if (sse < best_sse) { best_sse = sse; best_d = delta; }
+    }
+    phase_offset = best_d;
+
+    // 2. store pulsation-corrected Cepheid RVs and raw companion RVs
+    var Np = v_puls_cycle.length;
+    pilecki_phased = [];
+    for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
+      var row = PILECKI_RV_RAW[pi];
+      var hjd_pi = row[0] + 2450000.0;
+      // pulsation phase at this observation using fitted T0_PULS
+      var pp = (((hjd_pi - T0_PULS) % P_PULS) / P_PULS + 1) % 1;
+      var pidx = Math.round(pp * Np) % Np;
+      var rv1_corrected = row[1] - v_puls_cycle[pidx];
+      pilecki_phased.push({
+        display_phase: (raw_phases[pi] + phase_offset) % 1,
+        rv1:  rv1_corrected,
+        rv2:  row[3],
+        err1: row[2],
+        err2: row[4]
+      });
+    }
+
+    // 3. OGLE V-band scatter phase-folded at P_puls
+    // T0_ORB is the correct anchor here: the JSON puls_cycle was generated by the Python
+    // exporter with times starting at t=0 = T0_ORB, so JSON phase 0 = T0_ORB.
+    // phi_cur in orbital mode is also anchored at T0_ORB.  Both must share the same epoch
+    // for scatter to align with the model curve.
+    // NOTE: T0_PULS (the Pilecki RV epoch) is a SEPARATE convention used only for the
+    // pulsation correction applied to the spectroscopic RVs above — do not mix them.
+    var weights = [];
+    var max_w = 0;
+    for (var oi = 0; oi < OGLE_V_RAW.length; oi++) {
+      var w = 1 / (OGLE_V_RAW[oi][2] * OGLE_V_RAW[oi][2]);
+      weights.push(w);
+      if (w > max_w) max_w = w;
+    }
+    ogle_phased = [];
+    for (var oi2 = 0; oi2 < OGLE_V_RAW.length; oi2++) {
+      var r = OGLE_V_RAW[oi2];
+      ogle_phased.push({
+        phase: ((((r[0] + 2450000) - T0_ORB) % P_PULS + P_PULS) % P_PULS) / P_PULS,
+        mag:   r[1],
+        alpha: 0.18 + 0.64 * (weights[oi2] / max_w)
+      });
+    }
+
+    // compute LC phase offset from 4th-order weighted Fourier fit to OGLE data
+    var pc_off = data && data.metadata && data.metadata.puls_cycle;
+    if (pc_off) PULS_LC_OFFSET = computeLCOffset(pc_off);
+  }
+
+  // ── rv plot (orbital mode) ─────────────────────────────────────────────────
+
+  function drawRVPlot(orbitPhi, puls_phi) {
+    var box = getPlotRect();
+    if (!box || !rv1.length) return;
+    var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
+
+    // apply phase_offset + 0.25 geometric correction (cos parameterization puts phi=0 at quadrature,
+    // but rv model is K·sin(2πφ) which is zero at phi=0; the 0.25 aligns the two conventions)
+    var cursor_phi = (orbitPhi + phase_offset + 0.25) % 1;
+    var rvI = Math.round(cursor_phi * RV_N) % RV_N;
+
+    var isMob = getStarArea().mobile;
+    var inset = isMob ? 8 : 44, padTop = 26, padBottom = isMob ? 10 : 36;
+    var drawH = ph - padTop - padBottom;
+    var range = rv_abs_max - rv_abs_min;
+    var yScale = drawH / range;
+    var plotW = pw - 2 * inset;
+    var nPts = 600;
+    var step = plotW / nPts;
+
+    var rvToY = function(v) { return py + padTop + (rv_abs_max - v) * yScale; };
 
     ctx.save();
-    ctx.globalAlpha = hint_alpha;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
 
-    // backdrop pill — slightly more opaque for visibility
-    ctx.fillStyle = 'rgba(7,9,26,0.72)';
+    // ── RV color bands between curves ──
+    // approach band (rv1 > rv2 -> Cepheid approaching faster): warm amber tint
+    // recession band (rv2 > rv1): cool red tint
+    for (var kb = 0; kb < nPts; kb++) {
+      var ri_b = Math.round(kb / nPts * RV_N) % RV_N;
+      var y1b = rvToY(rv1[ri_b] + GAMMA_SYS);
+      var y2b = rvToY(rv2[ri_b] + GAMMA_SYS);
+      var yTop = Math.min(y1b, y2b);
+      var yBot = Math.max(y1b, y2b);
+      var bandH = yBot - yTop;
+      if (bandH < 1) continue;
+      // amber where Cepheid is above companion (rv1>rv2), red otherwise
+      var col_b = (rv1[ri_b] > rv2[ri_b])
+        ? 'rgba(196,162,88,0.07)'
+        : 'rgba(248,113,113,0.07)';
+      ctx.fillStyle = col_b;
+      ctx.fillRect(px + inset + kb * step, yTop, step + 0.5, bandH);
+    }
+
+    // delta-rv >= 40 green shading (on top of color bands)
+    for (var k = 0; k < nPts; k++) {
+      var ri = Math.round(k / nPts * RV_N) % RV_N;
+      if (rvDelta[ri] >= RV_THRESH) {
+        ctx.fillStyle = 'rgba(134,239,172,0.07)';
+        ctx.fillRect(px + inset + k * step, py + padTop, step + 0.5, drawH);
+      }
+    }
+
+    // gamma line
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 7]);
     ctx.beginPath();
-    ctx.roundRect(lx - label_w / 2, ly - label_h / 2, label_w, label_h, 5);
+    ctx.moveTo(px + inset, rvToY(GAMMA_SYS));
+    ctx.lineTo(px + pw - inset, rvToY(GAMMA_SYS));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // model curves
+    var drawCurve = function(arr, color) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      for (var k2 = 0; k2 <= nPts; k2++) {
+        var ri2 = Math.round(k2 / nPts * RV_N) % RV_N;
+        var cx2 = px + inset + k2 * step;
+        var cy2 = rvToY(arr[ri2] + GAMMA_SYS);
+        k2 === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
+      }
+      ctx.stroke();
+    };
+    drawCurve(rv1, '#ffe4a0');
+    drawCurve(rv2, '#f87171');
+
+    // pilecki scatter with error bars
+    for (var pi2 = 0; pi2 < pilecki_phased.length; pi2++) {
+      var pp = pilecki_phased[pi2];
+      var dpx = px + inset + pp.display_phase * plotW;
+      var errPx = pp.err1 !== undefined ? pp.err1 * yScale : 2 * yScale;
+      var errPx2 = pp.err2 !== undefined ? pp.err2 * yScale : 2 * yScale;
+      ctx.globalAlpha = 0.92;
+      // cepheid error bar
+      ctx.strokeStyle = 'rgba(255,228,160,0.5)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(dpx, rvToY(pp.rv1) - errPx);
+      ctx.lineTo(dpx, rvToY(pp.rv1) + errPx);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv1) - errPx);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv1) - errPx);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv1) + errPx);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv1) + errPx);
+      ctx.stroke();
+      // companion error bar
+      ctx.strokeStyle = 'rgba(248,113,113,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(dpx, rvToY(pp.rv2) - errPx2);
+      ctx.lineTo(dpx, rvToY(pp.rv2) + errPx2);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv2) - errPx2);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv2) - errPx2);
+      ctx.moveTo(dpx - 3, rvToY(pp.rv2) + errPx2);
+      ctx.lineTo(dpx + 3, rvToY(pp.rv2) + errPx2);
+      ctx.stroke();
+      // cepheid dot
+      ctx.beginPath();
+      ctx.arc(dpx, rvToY(pp.rv1), 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffe4a0';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      // companion dot
+      ctx.beginPath();
+      ctx.arc(dpx, rvToY(pp.rv2), 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#f87171';
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // cursor line at current orbital phase (shifted by phase_offset to match data)
+    var curX = px + inset + cursor_phi * plotW;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(96,165,250,0.65)';
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = '#60a5fa';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(curX, py + padTop);
+    ctx.lineTo(curX, py + ph - padBottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    // ── tracking dots on cursor, target-sight: outer ring + bright center ──
+    // companion: orbital model only
+    var compY = rvToY(rv2[rvI] + GAMMA_SYS);
+    ctx.save();
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#f87171';
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(curX, compY, 7, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath();
+    ctx.arc(curX, compY, 2.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
 
-    // thin border on pill for extra definition
-    ctx.strokeStyle = 'rgba(196,162,88,0.22)';
-    ctx.lineWidth = 0.75;
-    ctx.stroke();
-
-    // star name in its legend color
-    ctx.font = font_name;
-    ctx.fillStyle = s.color;
-    ctx.fillText(short_name, lx, ly - 9);
-
-    // subtitle
-    ctx.font = font_sub;
-    ctx.fillStyle = 'rgba(226,221,212,0.92)';
-    ctx.fillText(is_mobile ? 'tap to explore' : 'click to explore', lx, ly + 9);
-
-    // arrow shaft
+    // cepheid: orbital model + pulsation RV at current pulsation phase
+    var puls_ph = puls_phi;
+    var v_puls_now = PULS_C[0]
+      + PULS_C[1] * Math.cos(2 * Math.PI * puls_ph)
+      + PULS_C[2] * Math.sin(2 * Math.PI * puls_ph)
+      + PULS_C[3] * Math.cos(4 * Math.PI * puls_ph)
+      + PULS_C[4] * Math.sin(4 * Math.PI * puls_ph);
+    var cepY = rvToY(rv1[rvI] + GAMMA_SYS + v_puls_now);
+    ctx.save();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#ffe4a0';
+    ctx.strokeStyle = '#ffe4a0';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(tail_x, tail_y);
-    ctx.lineTo(tip_x, tip_y);
-    ctx.strokeStyle = 'rgba(196,162,88,0.88)';
-    ctx.lineWidth = shaft_w;
+    ctx.arc(curX, cepY, 7, 0, Math.PI * 2);
     ctx.stroke();
-
-    // arrowhead
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffe4a0';
     ctx.beginPath();
-    ctx.moveTo(tip_x, tip_y);
-    ctx.lineTo(tip_x - ah * Math.cos(angle - 0.42), tip_y - ah * Math.sin(angle - 0.42));
-    ctx.moveTo(tip_x, tip_y);
-    ctx.lineTo(tip_x - ah * Math.cos(angle + 0.42), tip_y - ah * Math.sin(angle + 0.42));
-    ctx.strokeStyle = 'rgba(196,162,88,1.0)';
-    ctx.lineWidth = head_w;
-    ctx.stroke();
+    ctx.arc(curX, cepY, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // y-axis label and ticks, hidden on mobile to prevent overlap with plot
+    if (!getStarArea().mobile) {
+      // y-axis label, rotated "km s⁻¹"
+      ctx.save();
+      ctx.translate(px + 14, py + padTop + drawH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('km s\u207B\u00B9', 0, 0);
+      ctx.restore();
+
+      // y-axis ticks, brighter, larger font
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      var ts = 20;
+      for (var tv = Math.ceil(rv_abs_min / ts) * ts; tv <= Math.floor(rv_abs_max / ts) * ts; tv += ts) {
+        var tly = rvToY(tv);
+        if (tly > py + padTop + 6 && tly < py + ph - padBottom - 4)
+          ctx.fillText(tv.toFixed(0), px + inset - 4, tly);
+      }
+    }
+
+    // x-axis phase labels and attribution, hidden on mobile to prevent overlap
+    if (!getStarArea().mobile) {
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      for (var xp = 0; xp <= 1; xp += 0.25) {
+        ctx.textAlign = xp === 0 ? 'left' : xp === 1 ? 'right' : 'center';
+        ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 5);
+      }
+      ctx.textAlign = 'center'; // reset
+
+      // attribution
+      ctx.font = '9px \'JetBrains Mono\', monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
+    }
+
+    // canvas legend, replaces #rv-legend HTML element, always drawn on canvas
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(96,165,250,0.65)';
+    ctx.fillText('RADIAL VELOCITIES (KM/S) - ORBITAL PHASE', px + inset, py + 6);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffe4a0';
+    ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText('\u2014 Companion', px + pw - inset, py + 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 30);
 
     ctx.restore();
   }
-  ctx.restore(); // matches ctx.save() at top of draw_canvas_legend
-}
 
-// ── main render loop ──────────────────────────────────────────────────────────
+  // ── light curve (pulsation mode) ───────────────────────────────────────────
 
-function draw(ts) {
-  // throttle to ~30fps — star field doesn't benefit from 60fps
-  if (ts - last_frame_ts < FRAME_INTERVAL) {
-    if (hero_visible) raf_id = requestAnimationFrame(draw);
-    else raf_id = null;
-    return;
-  }
-  last_frame_ts = ts;
+  function drawLightCurve(puls_phi) {
+    var box = getPlotRect();
+    var pc = data && data.metadata && data.metadata.puls_cycle;
+    if (!box || !pc) return;
+    var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-  time_s = ts * 0.001;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var isMob = getStarArea().mobile;
+    var inset = isMob ? 8 : 40, padTop = 22, padBottom = isMob ? 34 : 40;
+    var drawH = ph - padTop - padBottom;
+    var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
+    var midMag = (bounds.minV + bounds.maxV) / 2;
+    // nPts render columns; n_cycles = total pulsation cycles visible in window
+    var nPts     = 480;
+    var n_cycles = 2;
+    var step     = (pw - inset * 2) / nPts;
+    var Np       = pc.Np;
+    var phi_cur  = puls_phi;
 
-  if (!catalog_loaded) {
-    if (hero_visible) raf_id = requestAnimationFrame(draw);
-    else raf_id = null;
-    return;
-  }
+    // magnitude → y: faint (large mag) maps UP, bright (small mag) maps DOWN.
+    // standard astronomical magnitude axis convention.
+    var magToY = function(m) {
+      return py + padTop + drawH / 2 - ((m - midMag) * (drawH / magRange) * 0.72);
+    };
 
-  update_twinkle_lut(); // 64 sin/cos calls instead of ~9000
+    ctx.save();
 
-  hover_star = null;
-  let min_d = 14;
-
-  // draw all background stars batched by color (pre-grouped at catalog load)
-  draw_background_stars_batched();
-
-  for (const s of star_data) {
-    if (s.featured) {
-      draw_featured_star(s);
-    } else if (s.name) {
-      draw_named_star(s);
-      // hover detection only for named + featured stars
-      const dx = mouse.x - s.x, dy = mouse.y - s.y;
-      const d = Math.sqrt(dx * dx + dy * dy);
-      if (d < min_d) { min_d = d; hover_star = s; }
+    // y-axis label
+    if (!getStarArea().mobile) {
+      ctx.save();
+      ctx.translate(px + 10, py + padTop + drawH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.font = '9px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(96,165,250,0.55)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('V mag', 0, 0);
+      ctx.restore();
     }
-  }
 
-  // featured hover detection (drawn after named so they win proximity ties)
-  for (const s of star_data) {
-    if (!s.featured) continue;
-    const dx = mouse.x - s.x, dy = mouse.y - s.y;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    if (d < 20) { hover_star = s; }
-  }
+    // ogle scatter, phase-based x offset from center
+    for (var oi = 0; oi < ogle_phased.length; oi++) {
+      var op = ogle_phased[oi];
+      var dp = op.phase - phi_cur;
+      dp = dp - Math.round(dp); // wrap to [-0.5, 0.5]
+      var px_off = dp * nPts / n_cycles; // pixel offset from center
 
-  if (hover_star) {
-    draw_hover_ring(hover_star);
-    if (!cursor_is_pointer) { canvas.style.cursor = 'pointer'; cursor_is_pointer = true; }
-  } else {
-    if (cursor_is_pointer) { canvas.style.cursor = 'default'; cursor_is_pointer = false; }
-  }
-
-  draw_canvas_legend();
-  if (hero_visible) {
-    raf_id = requestAnimationFrame(draw);
-  } else {
-    raf_id = null;
-  }
-}
-
-// ── interaction ───────────────────────────────────────────────────────────────
-
-// Bug 2 / Opt 7: cache hero element + derived measurements so neither
-// getElementById nor getBoundingClientRect runs on every mousemove or scroll.
-// hero_rect_cache is refreshed on scroll (layout already dirty) and resize.
-// hero_scroll_bottom is stable between resizes — uses offsetTop + offsetHeight.
-let hero_el         = null;
-let hero_rect_cache = null;  // viewport-relative rect for canvas_exposed_at
-let hero_scroll_bottom = 0;  // doc-absolute bottom edge for scroll spy
-const nav_el = document.querySelector('nav');
-
-function refresh_hero_cache() {
-  if (!hero_el) hero_el = document.getElementById('hero');
-  hero_rect_cache    = hero_el.getBoundingClientRect();
-  hero_scroll_bottom = hero_el.offsetTop + hero_el.offsetHeight; // stable until resize
-}
-
-function canvas_exposed_at(x, y) {
-  // Bug 2: use cached rect — no forced reflow on every mousemove
-  const r = hero_rect_cache;
-  return r !== null && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
-}
-
-function on_mouse_move(e) {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
-
-  if (hover_star && canvas_exposed_at(e.clientX, e.clientY)) {
-    const mag_str = hover_star.featured
-      ? ''
-      : `  | v = ${hover_star.mag.toFixed(2)}`;
-    tooltip.textContent = `${hover_star.name}${mag_str}`;
-    tooltip.style.left = (e.clientX + 16) + 'px';
-    tooltip.style.top  = (e.clientY - 28) + 'px';
-    tooltip.classList.add('visible');
-  } else {
-    tooltip.classList.remove('visible');
-    // dismiss stale popover once cursor leaves all named stars
-    if (!hover_star) close_popover();
-  }
-}
-
-function on_click(e) {
-  // ignore clicks that originated on UI elements layered above the canvas
-  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card')) return;
-  if (!hover_star) { close_popover(); return; }
-  if (!canvas_exposed_at(e.clientX, e.clientY)) return;
-  if (hover_star.featured) {
-    close_popover();
-    dismiss_hint();
-    open_modal(hover_star.obj_data);
-  } else {
-    // ctrl/cmd+click: bypass confirmation and open directly
-    if (e.ctrlKey || e.metaKey) {
-      const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
-      window.open(url, '_blank', 'noopener');
-      return;
-    }
-    const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
-    open_popover(hover_star.name, url, e.clientX, e.clientY);
-  }
-}
-
-// touch handler for canvas: direct tap-to-open, no hover needed
-function on_touch_start(e) {
-  // don't process canvas taps when modal or mobile nav is open
-  if (modal.classList.contains('visible')) return;
-  if (mobile_nav.classList.contains('open')) return;
-
-  const touch = e.changedTouches[0];
-  const tx = touch.clientX;
-  const ty = touch.clientY;
-
-  if (!canvas_exposed_at(tx, ty)) return;
-
-  // update mouse position so render loop reflects touch
-  mouse.x = tx;
-  mouse.y = ty;
-
-  // check featured stars first (larger tap target) — Opt 4: use pre-built array
-  let best = null;
-  let best_d = 38;
-  for (const s of featured_stars) {
-    const dx = tx - s.x, dy = ty - s.y;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    if (d < best_d) { best_d = d; best = s; }
-  }
-
-  if (best) {
-    e.preventDefault();
-    dismiss_hint();
-    open_modal(best.obj_data);
-    return;
-  }
-
-  // fallback: named catalog stars with slightly wider radius than mouse — Opt 4: pre-built array
-  let best_named = null;
-  let best_nd = 22;
-  for (const s of named_stars) {
-    const dx = tx - s.x, dy = ty - s.y;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    if (d < best_nd) { best_nd = d; best_named = s; }
-  }
-
-  if (best_named) {
-    e.preventDefault();
-    dismiss_hint();
-    const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
-    open_popover(best_named.name, url, tx, ty);
-  }
-}
-
-function open_popover(name, url, cx, cy) {
-  popover_name.textContent = name;
-  popover_btn.href = url;
-
-  // position near click, clamped to viewport
-  popover.style.left = '0px';
-  popover.style.top  = '0px';
-  popover.classList.add('visible');
-  const pw = popover.offsetWidth;
-  const ph = popover.offsetHeight;
-  const left = Math.min(cx + 14, window.innerWidth  - pw - 12);
-  const top  = Math.min(cy - 8,  window.innerHeight - ph - 12);
-  popover.style.left = Math.max(8, left) + 'px';
-  popover.style.top  = Math.max(8, top)  + 'px';
-}
-
-function close_popover() {
-  popover.classList.remove('visible');
-}
-
-function open_modal(obj) {
-  document.getElementById('modal-type').textContent = obj.type;
-  document.getElementById('modal-name').textContent = obj.name;
-  document.getElementById('modal-body').innerHTML = obj.writeup;
-  const link = document.getElementById('modal-simbad');
-  if (obj.catalog_url) {
-    link.href = obj.catalog_url;
-    link.textContent = 'View on JPL Small-Body Database';
-  } else {
-    link.href = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id)}`;
-    link.textContent = 'View on SIMBAD';
-  }
-  // show "View Research Card" link if this object maps to a card
-  const card_link = document.getElementById('modal-card-link');
-  if (obj.card_url) {
-    card_link.href = obj.card_url;
-    card_link.style.display = '';
-    card_link.onclick = (e) => {
-      e.preventDefault();
-      close_modal();
-      const card_el = document.querySelector(obj.card_url);
-      if (card_el) {
-        card_el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // expand the card if not already open
-        if (!card_el.classList.contains('card-open')) {
-          const toggle = card_el.querySelector('.card-toggle');
-          if (toggle) toggle.click();
+      for (var c = -3; c <= 3; c++) {
+        var off = px_off + c * (nPts / n_cycles);
+        if (off >= -nPts / 2 && off <= nPts / 2) {
+          var ox = px + pw / 2 + off * step;
+          var oy = magToY(op.mag);
+          ctx.beginPath();
+          ctx.arc(ox, oy, 2, 0, Math.PI * 2);
+          ctx.fillStyle = '#60a5fa';
+          ctx.globalAlpha = op.alpha;
+          ctx.fill();
         }
       }
-    };
-  } else {
-    card_link.style.display = 'none';
-  }
-  modal.classList.add('visible');
-}
-
-function close_modal() {
-  modal.classList.remove('visible');
-}
-
-// prevent touches on the modal from reaching the canvas touch handler
-const modal_inner = document.querySelector('.modal-inner');
-modal_inner.addEventListener('touchstart', (e) => {
-  e.stopPropagation();
-}, { passive: true });
-modal_inner.addEventListener('touchmove', (e) => {
-  e.stopPropagation(); // lets modal scroll without moving star field
-}, { passive: true });
-
-// close popover when clicking outside it (on non-star areas)
-document.addEventListener('click', (e) => {
-  if (!popover.contains(e.target) && e.target !== canvas) close_popover();
-});
-
-// ── resize ───────────────────────────────────────────────────────────────────
-
-function on_resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  legend_col_w = 0; // remeasure legend on next draw
-  reproject();
-  refresh_hero_cache(); // Bug 2 / Opt 7: re-measure after layout change
-  if (catalog_loaded) pick_hint_target(); // revalidate hint target after viewport change
-}
-
-// ── init: fetch catalog, build stars, start loop ───────────────
-function init() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  refresh_hero_cache(); // Bug 2 / Opt 7: seed cache before first mousemove or scroll
-
-  // pause render loop when hero is off-screen, resume when it returns
-  const hero_observer = new IntersectionObserver((entries) => {
-    hero_visible = entries[0].isIntersecting;
-    if (hero_visible && !raf_id) {
-      raf_id = requestAnimationFrame(draw);
     }
-  }, { threshold: 0 });
-  hero_observer.observe(document.getElementById('hero'));
+    ctx.globalAlpha = 1;
 
-  // start render loop immediately — draw() guards on catalog_loaded internally
-  raf_id = requestAnimationFrame(draw);
-
-  fetch('/data/stars.json')
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(catalog => {
-      build_stars(catalog);
-      catalog_loaded = true;
-      pick_hint_target();
-    })
-    .catch(err => console.error('Star catalog load error:', err));
-}
-
-window.addEventListener('mousemove', on_mouse_move);
-window.addEventListener('click', on_click);
-window.addEventListener('resize', on_resize);
-window.addEventListener('touchstart', on_touch_start, { passive: false });
-
-// -- tab visibility: restart rAF loop and refresh caches on tab return --
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) return;
-  // Bug B fix: viewport rect may be stale after tab switch
-  refresh_hero_cache();
-  // Bug A fix: IntersectionObserver can fire isIntersecting:false while tab is
-  // hidden, killing the rAF loop. Re-derive hero_visible from actual geometry
-  // and restart the loop if it died.
-  if (hero_el) {
-    const r = hero_el.getBoundingClientRect();
-    const in_view = r.bottom > 0 && r.top < window.innerHeight;
-    hero_visible = in_view;
-    if (hero_visible && !raf_id) {
-      raf_id = requestAnimationFrame(draw);
+    // fourier fit treadmill, scrolls with phi_cur, phase-indexed into puls_cycle
+    ctx.beginPath();
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    for (var k = -nPts / 2; k <= nPts / 2; k++) {
+      var k_phase = ((phi_cur + k * n_cycles / nPts) % 1 + 1) % 1;
+      var fi = Math.floor(((k_phase + PULS_LC_OFFSET) % 1 + 1) % 1 * Np) % Np;
+      var lx = px + pw / 2 + k * step;
+      var ly = magToY(pc.v_mag[fi]);
+      k === -nPts / 2 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly);
     }
-  }
-});
+    ctx.stroke();
 
-// -- bookshelf touch toggle --
-// tap to expand; tap again or tap another spine to collapse
-document.querySelectorAll('.book-spine').forEach(spine => {
-  spine.addEventListener('click', () => {
-    const is_active = spine.classList.contains('active');
-    document.querySelectorAll('.book-spine.active').forEach(s => s.classList.remove('active'));
-    if (!is_active) spine.classList.add('active');
-  });
-});
+    // cursor dot on photometric curve
+    var cur_fi = Math.floor(((phi_cur + PULS_LC_OFFSET) % 1 + 1) % 1 * Np) % Np;
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, magToY(pc.v_mag[cur_fi]), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(96,165,250,0.9)';
+    ctx.fill();
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.30)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px + pw / 2, py + padTop);
+    ctx.lineTo(px + pw / 2, py + ph - 4);
+    ctx.stroke();
+    ctx.restore();
 
-// -- bookshelf adaptive layout --
-(function() {
-  const pool = document.getElementById('bookshelf-pool');
-  const rows_el = document.getElementById('bookshelf-rows');
-  if (!pool || !rows_el) return;
-
-  // grab all spines once; moving a node preserves its event listeners
-  const spines = Array.from(pool.children);
-
-  // content-driven heights: measure text length across title + author + impact,
-  // map linearly to 190–250px range. Applied as inline style so nth-child
-  // scope doesn't matter (nth-child resets per parent row, not pool).
-  spines.forEach(spine => {
-    const title  = spine.querySelector('.spine-book-title');
-    const author = spine.querySelector('.spine-author');
-    const impact = spine.querySelector('.spine-impact');
-    const len = (title  ? title.textContent.length  : 0)
-              + (author ? author.textContent.length : 0)
-              + (impact ? impact.textContent.length : 0);
-    // clamp to 190–250px: shorter books are shorter spines
-    const MIN_H = 190, MAX_H = 250, MIN_L = 30, MAX_L = 160;
-    const clamped = Math.max(MIN_L, Math.min(MAX_L, len));
-    const h = Math.round(MIN_H + (clamped - MIN_L) / (MAX_L - MIN_L) * (MAX_H - MIN_H));
-    spine.style.height = h + 'px';
-  });
-
-  function layout_shelves() {
-    const is_mobile = window.innerWidth <= 740;
-    const w_col = is_mobile ? 40 : 46;
-    const w_exp = is_mobile ? 150 : 172;
-    const gap = 5;
-
-    const container_rect = rows_el.parentElement.getBoundingClientRect();
-    const computed_style = window.getComputedStyle(rows_el.parentElement);
-    const padding_left = parseFloat(computed_style.paddingLeft);
-    const padding_right = parseFloat(computed_style.paddingRight);
-    const container_inner_w = container_rect.width - padding_left - padding_right;
-
-    // n_per_row: fit 1 expanded + (n-1) collapsed + (n-1) gaps within the container.
-    // On mobile we subtract a small extra margin so books aren't flush to the edge.
-    const effective_w = is_mobile ? container_inner_w - 20 : container_inner_w;
-    const n_per_row = Math.max(2, 1 + Math.floor((effective_w - w_exp) / (w_col + gap)));
-
-    const total = spines.length;
-    const n_rows = Math.ceil(total / n_per_row);
-    const base = Math.floor(total / n_rows);
-    const extra = total % n_rows; // first `extra` rows get one extra book
-
-    rows_el.innerHTML = '';
-    let idx = 0;
-    for (let r = 0; r < n_rows; r++) {
-      const count = base + (r < extra ? 1 : 0);
-      const shelf = document.createElement('div');
-      shelf.className = 'book-shelf';
-      shelf.setAttribute('role', 'list');
-      for (let j = 0; j < count; j++) {
-        shelf.appendChild(spines[idx++]);
+    // y-axis magnitude ticks (bright = small mag = top; faint = large mag = bottom)
+    if (!getStarArea().mobile) {
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      var magStep = 0.1;
+      var tickMin = Math.ceil(bounds.minV / magStep) * magStep;
+      var tickMax = Math.floor(bounds.maxV / magStep) * magStep;
+      for (var tm = tickMin; tm <= tickMax + 1e-9; tm += magStep) {
+        var tmy = magToY(tm);
+        if (tmy > py + padTop + 4 && tmy < py + ph - padBottom - 4)
+          ctx.fillText(tm.toFixed(1), px + inset - 2, tmy);
       }
-      rows_el.appendChild(shelf);
-      const surface = document.createElement('div');
-      surface.className = 'book-shelf-surface';
-      rows_el.appendChild(surface);
     }
+
+    // title
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(96,165,250,0.65)';
+    ctx.textAlign = 'left';
+    ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, py + 14);
+
+    // legend top-right
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#60a5fa';
+    ctx.fillText('Fourier fit', px + pw - inset, py + padTop + 10);
+    ctx.fillStyle = 'rgba(96,165,250,0.60)';
+    ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
+
+    // ── radius vs phase mini-curve (bottom strip, BW-integrated) ──
+    var rMin = radius_min;
+    var rMax = radius_max;
+    var rRange = Math.max(0.01, rMax - rMin);
+    var rH = isMob ? 22 : 32, rY = py + ph - rH - 4;
+    var rToY2 = function(r) { return rY + rH - (r - rMin) / rRange * rH; };
+
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillRect(px + inset, rY, pw - inset * 2, rH);
+
+    // radius treadmill synced to phi_cur
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(134,239,172,0.92)';
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    for (var rk = -nPts / 2; rk <= nPts / 2; rk++) {
+      var rk_phase = ((phi_cur + rk * n_cycles / nPts) % 1 + 1) % 1;
+      var rlx = px + pw / 2 + rk * step;
+      var rly = rToY2(computeRadius(rk_phase));
+      rk === -nPts / 2 ? ctx.moveTo(rlx, rly) : ctx.lineTo(rlx, rly);
+    }
+    ctx.stroke();
+
+    // cursor dot on radius curve
+    var cur_r1 = computeRadius(phi_cur);
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, rToY2(cur_r1), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(134,239,172,0.9)';
+    ctx.fill();
+
+    // R label and live value
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.fillStyle = 'rgba(134,239,172,0.70)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 3);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(134,239,172,0.85)';
+    ctx.fillText(cur_r1.toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 3);
+
+    // radius axis ticks (desktop only — strip is too narrow on mobile)
+    if (!getStarArea().mobile) {
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      var rTickStep = 0.2;
+      var rTickMin = Math.ceil(rMin / rTickStep) * rTickStep;
+      var rTickMax = Math.floor(rMax / rTickStep) * rTickStep;
+      for (var rt = rTickMin; rt <= rTickMax + 1e-9; rt += rTickStep) {
+        var rty = rToY2(rt);
+        if (rty > rY + 4 && rty < rY + rH - 4)
+          ctx.fillText(rt.toFixed(1), px + inset - 2, rty);
+      }
+    }
+
+    ctx.restore();
   }
 
-  layout_shelves();
-  // re-run after first paint — container may have width 0 at parse time
-  requestAnimationFrame(layout_shelves);
-  // re-run after async fonts settle — eb garamond load shifts container dimensions
-  document.fonts.ready.then(layout_shelves);
+  function drawStar(spx, spy, pr, col, is_cepheid, brightness) {
+    ctx.save();
+    var c = col || FALLBACK_COL;
+    var b = (brightness !== undefined) ? Math.max(0, Math.min(1, brightness)) : 0.5;
 
-  let resize_timer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resize_timer);
-    resize_timer = setTimeout(layout_shelves, 120);
-  });
-})();
+    // bloom: fixed radius, linear alpha only, single gradient pass
+    var bloom_r = pr * 3.2;
+    var bloom_a = is_cepheid ? (0.07 + b * 0.13) : 0.06;
+    var grad = ctx.createRadialGradient(spx, spy, pr * 0.5, spx, spy, bloom_r);
+    grad.addColorStop(0,   hexToRgba(c, bloom_a));
+    grad.addColorStop(0.5, hexToRgba(c, bloom_a * 0.35));
+    grad.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(spx, spy, bloom_r, 0, Math.PI * 2);
+    ctx.fill();
 
-// -- scroll-spy & url updater --
-const nav_sections = ['hero','about', 'research', 'cepheid-sim', 'writing', 'highlights', 'bookshelf'];
-const nav_links_array = Array.from(document.querySelectorAll('.nav-links a'));
+    // subtle core glow
+    ctx.shadowBlur  = pr * (is_cepheid ? 1.8 + b * 1.2 : 1.4);
+    ctx.shadowColor = c;
 
-const observerOptions = {
-  root: null,
-  rootMargin: '-20% 0px -60% 0px', // Triggers when the section reaches the upper-middle of screen
-  threshold: 0
-};
+    // disc
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.arc(spx, spy, pr, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      
-      // 1. Update the active class in the navigation
-      nav_links_array.forEach(link => {
-        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+  // ── main loop ──────────────────────────────────────────────────────────────
+
+  var ORBIT_DURATION_S  = 120.0; // wall-clock seconds per simulated orbit
+  var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
+  // realtime: pulsation runs ~4x faster than the true P_puls/P_orb ratio (1.41s would be exact)
+  // deliberately sped up so pulsation is visible alongside the orbit without slowing the orbit down
+  var REALTIME_PULS_S   = 0.35; // wall-clock seconds per pulsation cycle in realtime mode
+
+  function animate(now) {
+    if (!data || !data.physics_frames) { requestAnimationFrame(animate); return; }
+    // if canvas has no size yet (element not laid out), resize and wait one frame
+    if (simCanvas.width === 0 || simCanvas.height === 0) {
+      resize();
+      requestAnimationFrame(animate);
+      return;
+    }
+    var p = data.physics_frames;
+    var dpr = window.devicePixelRatio || 1;
+    var cw = simCanvas.width / dpr;
+    var ch = simCanvas.height / dpr;
+
+    ctx.clearRect(0, 0, cw, ch);
+    drawBgStars(cw, ch);
+
+    // wall-clock delta, capped at 100ms to avoid jumps after tab switch
+    if (lastTime === null) lastTime = now;
+    var dt_ms = Math.min(now - lastTime, 100);
+    lastTime = now;
+
+    // advance orbital phase: 0→1 in ORBIT_DURATION_S wall seconds
+    orbitPhase = (orbitPhase + (dt_ms / 1000) / ORBIT_DURATION_S) % 1;
+
+    // pulsation clock: only advance in pulsation and realtime modes.
+    // in orbital mode, pulsation phase is derived from orbital time (physically correct).
+    if (currentMode !== 'orbital') {
+      var puls_rate_s = (currentMode === 'realtime') ? REALTIME_PULS_S : PULS_DURATION_S;
+      pulsTime += (dt_ms / 1000) / puls_rate_s * P_PULS;
+    }
+
+    // pulsation phase 0-1:
+    // orbital mode  → tied to orbital time: one P_PULS per 1/85.3 of the orbit
+    // pulsation/realtime → independent pulsTime clock
+    var puls_phi = (currentMode === 'orbital')
+      ? ((orbitPhase * P_ORB_D % P_PULS) / P_PULS + 1) % 1
+      : ((pulsTime % P_PULS) / P_PULS + 1) % 1;
+
+    var x1, y1, z1, x2, y2, z2, r1, mag, teff, col1;
+
+    if (currentMode === 'pulsation') {
+      // pulsation view: freeze orbital positions at center
+      x1 = 0; y1 = 0; z1 = 0;
+      x2 = 99999; y2 = 0; z2 = -1;
+    } else {
+      // orbital / realtime: interpolated positions from skeleton or full data
+      var orb = lerpFrame(p, orbitPhase * (p.x1.length - 1));
+      x1 = orb.x1; y1 = orb.y1; z1 = orb.z1;
+      x2 = orb.x2; y2 = orb.y2; z2 = orb.z2;
+    }
+
+    // star state from puls_cycle (stable 480-frame resolution regardless of orbital dataset)
+    var ps = getPulsState(puls_phi);
+    r1   = ps.r1;
+    mag  = ps.mag;
+    teff = ps.teff;
+    col1 = ps.col;
+
+    // brightness for bloom
+    var mag_range = bounds.maxV - bounds.minV;
+    var brightness = mag_range > 0 ? 1 - (mag - bounds.minV) / mag_range : 0.5;
+
+    // star drawing area
+    var star = getStarArea();
+    var sw = star.w, sh = star.h;
+
+    var zoom, cx, cy;
+    if (currentMode === 'pulsation') {
+      zoom = (Math.min(sw, sh) * 0.14) / maxR1;
+      cx = sw / 2;
+      cy = sh * 0.35;
+    } else {
+      zoom = (Math.min(sw, sh) * 0.32) / bounds.a2;
+      cx = sw / 2;
+      cy = sh / 2;
+    }
+
+    // screen positions
+    var s1x = cx + x1 * zoom, s1y = cy + y1 * zoom;
+    var s2x = cx + x2 * zoom, s2y = cy + y2 * zoom;
+    var pr1 = Math.max(2, r1 * zoom);
+    var pr2 = Math.max(2, COMPANION_RAD * zoom);
+
+    // ── plots ──
+    if (currentMode === 'pulsation') {
+      drawLightCurve(puls_phi);
+    } else {
+      drawRVPlot(orbitPhase, puls_phi);
+    }
+
+    // clip all star-area drawing so nothing bleeds into the plot region below
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, sw, star.h);
+    ctx.clip();
+
+    // ── orbital ellipses (inside clip so they can't bleed into plot) ──
+    if (currentMode !== 'pulsation') {
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 9]);
+      ctx.strokeStyle = 'rgba(248,113,113,0.55)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, bounds.a2 * zoom, bounds.a2 * zoom * COS_I, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(196,162,88,0.55)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, bounds.a1 * zoom, bounds.a1 * zoom * COS_I, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // barycenter
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy);
+      ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── trails: cinematic tapered lines ──
+    if (currentMode !== 'pulsation') {
+      trail1.push({ x: s1x, y: s1y, col: col1 || FALLBACK_COL });
+      trail2.push({ x: s2x, y: s2y });
+      if (trail1.length > TRAIL_LEN) trail1.shift();
+      if (trail2.length > TRAIL_LEN) trail2.shift();
+
+      ctx.save();
+      // Cepheid trail, temperature-coloured tapered stroke
+      if (trail1.length > 2) {
+        for (var ti = 1; ti < trail1.length; ti++) {
+          var tf = ti / trail1.length;           // 0=tail, 1=head
+          var tw = tf * tf * 3.5;               // quadratic taper: thin tail, thick head
+          var ta = tf * tf * 0.55;
+          ctx.beginPath();
+          ctx.moveTo(trail1[ti-1].x, trail1[ti-1].y);
+          ctx.lineTo(trail1[ti].x,   trail1[ti].y);
+          ctx.strokeStyle = hexToRgba(trail1[ti].col, ta);
+          ctx.lineWidth   = tw;
+          ctx.lineCap     = 'round';
+          ctx.stroke();
+        }
+      }
+      // Companion trail, red, same taper
+      if (trail2.length > 2) {
+        for (var ti2 = 1; ti2 < trail2.length; ti2++) {
+          var tf2 = ti2 / trail2.length;
+          var tw2 = tf2 * tf2 * 2.8;
+          var ta2 = tf2 * tf2 * 0.45;
+          ctx.beginPath();
+          ctx.moveTo(trail2[ti2-1].x, trail2[ti2-1].y);
+          ctx.lineTo(trail2[ti2].x,   trail2[ti2].y);
+          ctx.strokeStyle = 'rgba(248,113,113,' + ta2.toFixed(3) + ')';
+          ctx.lineWidth   = tw2;
+          ctx.lineCap     = 'round';
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    // ── stars (z-sorted) ──
+    if (z1 < z2) {
+      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
+      drawStar(s1x, s1y, pr1, col1, true, brightness);
+    } else {
+      drawStar(s1x, s1y, pr1, col1, true, brightness);
+      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
+    }
+
+    // ── star labels: always-on, dark pill background ──
+    if (currentMode !== 'pulsation') {
+      ctx.save();
+      ctx.font = '12px \'JetBrains Mono\', monospace';
+      ctx.textBaseline = 'middle';
+
+      var drawLabel = function(lx, ly, text, fgCol) {
+        var pad = 5, tw = ctx.measureText(text).width;
+        var rw = tw + pad*2, rh = 18;
+        var rx = Math.min(lx, sw - rw - 4), ry = ly - 9;
+        ctx.fillStyle = 'rgba(7,9,26,0.72)';
+        ctx.beginPath();
+        ctx.roundRect(rx, ry, rw, rh, 3);
+        ctx.fill();
+        ctx.fillStyle = fgCol;
+        ctx.globalAlpha = 0.92;
+        ctx.fillText(text, lx + pad, ly);
+        ctx.globalAlpha = 1;
+      };
+
+      drawLabel(s1x + pr1 + 9, s1y, 'Cepheid',   '#ffe4a0');
+      drawLabel(s2x + pr2 + 9, s2y, 'Companion', '#f87171');
+      ctx.restore();
+    }
+
+    ctx.restore(); // end star-area clip
+
+    // ── object id label (top-left of star area, always visible) ──
+    ctx.save();
+    ctx.font = '10px \'JetBrains Mono\', monospace';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    ctx.fillText('OGLE-LMC-CEP-1347  \u00B7  LMC', 10, 10);
+    ctx.restore();
+
+    // ── mobile separator ──
+    if (star.mobile) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, sh + 10);
+      ctx.lineTo(sw, sh + 10);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── hud ──
+    if (hud.mag) hud.mag.innerText = mag.toFixed(1);
+    if (hud.teff) hud.teff.innerText = teff !== null ? Math.round(teff) + ' K' : '~6490 K';
+    var swatch = document.getElementById('hud-teff-swatch');
+    if (swatch && col1) swatch.style.background = col1;
+    if (hud.rad) hud.rad.innerText = r1.toFixed(1) + ' R\u2609';
+
+    if (currentMode === 'pulsation') {
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = '\u03C6<sub>puls</sub> Pulsation phase';
+      if (hud.phase) hud.phase.innerText = puls_phi.toFixed(3);
+    } else {
+      var orbLabel = currentMode === 'realtime'
+        ? '\u03C6<sub>orb</sub> Orbital phase \u00B7 puls \u00D785'
+        : '\u03C6<sub>orb</sub> Orbital phase';
+      if (hud.phaseLabel) hud.phaseLabel.innerHTML = orbLabel;
+      if (hud.phase) hud.phase.innerText = orbitPhase.toFixed(3);
+    }
+
+    // ── guided first-loop captions ──
+    if (currentMode === 'orbital' || currentMode === 'realtime') {
+      if (captionStartTime === null) captionStartTime = now;
+      var elapsed = now - captionStartTime;
+      var starArea = getStarArea();
+      var capY = Math.min(starArea.h * 0.82, starArea.h - 50);
+      var maxCapW = starArea.w - 40; // leave margin on both sides
+      ctx.font = '11px \'JetBrains Mono\', monospace';
+
+      // word-wrap helper: returns array of lines fitting within maxW
+      function wrapText(text, maxW) {
+        var words = text.split(' ');
+        var lines = [];
+        var cur = '';
+        for (var wi = 0; wi < words.length; wi++) {
+          var test = cur ? cur + ' ' + words[wi] : words[wi];
+          if (ctx.measureText(test).width > maxW && cur) {
+            lines.push(cur);
+            cur = words[wi];
+          } else {
+            cur = test;
+          }
+        }
+        if (cur) lines.push(cur);
+        return lines;
+      }
+
+      for (var ci = 0; ci < CAPTIONS.length; ci++) {
+        var cap = CAPTIONS[ci];
+        var age = elapsed - cap.t;
+        if (age < 0 || age > cap.dur + 800) continue;
+        var alpha = age < 400 ? age / 400
+                  : age > cap.dur ? Math.max(0, 1 - (age - cap.dur) / 800)
+                  : 1;
+        if (alpha <= 0) continue;
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.88;
+        ctx.font = '11px \'JetBrains Mono\', monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        var lines = wrapText(cap.text, maxCapW - 24);
+        var lineH = 17;
+        var pillH = lines.length * lineH + 10;
+        var pillW = 0;
+        for (var li = 0; li < lines.length; li++) {
+          var lw = ctx.measureText(lines[li]).width + 24;
+          if (lw > pillW) pillW = lw;
+        }
+        var capX = starArea.w / 2;
+        var pillY = capY - pillH / 2;
+        ctx.fillStyle = 'rgba(7,9,26,0.80)';
+        ctx.beginPath();
+        ctx.roundRect(capX - pillW / 2, pillY, pillW, pillH, 4);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(226,221,212,0.92)';
+        for (var li2 = 0; li2 < lines.length; li2++) {
+          ctx.fillText(lines[li2], capX, pillY + 5 + lineH * li2 + lineH / 2);
+        }
+        ctx.restore();
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // ── mode switching ─────────────────────────────────────────────────────────
+
+  window.setMode = function(mode) {
+    if (!MODES.has(mode)) return;
+    currentMode = mode;
+    trail1 = []; trail2 = [];
+    lastTime = null;
+    pulsTime = 0;
+
+    document.querySelectorAll('.btn-mode').forEach(function(b) {
+      b.style.background = 'transparent';
+      b.style.color = 'rgba(255,255,255,0.4)';
+      b.style.boxShadow = 'none';
+    });
+    var btn = document.getElementById('btn-' + mode);
+    if (btn) {
+      btn.style.background = 'rgba(255,255,255,0.18)';
+      btn.style.color = '#ffffff';
+      btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
+    }
+  };
+
+  // ── resize ─────────────────────────────────────────────────────────────────
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    var rect = simCanvas.getBoundingClientRect();
+    simCanvas.width = rect.width * dpr;
+    simCanvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    trail1 = []; trail2 = []; bgStars = null;
+  }
+
+  // ── init ───────────────────────────────────────────────────────────────────
+
+  async function init() {
+    if (!simCanvas || !ctx) return;
+    try {
+      // stage 1: boot JSON, starts sim immediately
+
+      // sequence loading lines: each fades in, holds, fades out, then next starts
+      // fade-in 0.4s → hold 0.8s → fade-out 0.4s, 3s between line starts
+      var loadLines = [
+        document.getElementById('sll-0'),
+        document.getElementById('sll-1'),
+        document.getElementById('sll-2'),
+        document.getElementById('sll-3')
+      ];
+      var loadTimers = [];
+      loadLines.forEach(function(el, idx) {
+        if (!el) return;
+        var t0 = idx * 3000; // each line starts 3s after the previous
+        loadTimers.push(setTimeout(function() { el.style.opacity = '1'; }, t0));
+        loadTimers.push(setTimeout(function() { el.style.opacity = '0'; }, t0 + 2400));
       });
-      
-      // 2. Silently update the browser's URL bar without jumping the page
-      history.replaceState(null, null, id === 'hero' ? '/' : '#' + id);
-    }
-  });
-}, observerOptions);
 
-nav_sections.forEach(id => {
-  const el = document.getElementById(id);
-  if (el) observer.observe(el);
-});
+      var scriptEl = document.querySelector('script[data-boot-json]');
+      var bootUrl  = (scriptEl && scriptEl.dataset.bootJson) || '/data/master_data_boot.json';
+      var fullUrl  = (scriptEl && scriptEl.dataset.fullJson) || '/data/master_data.json';
 
-// -- hamburger --
-const hamburger_btn = document.getElementById('nav-hamburger');
-const mobile_nav = document.getElementById('nav-mobile');
-function toggle_mobile_nav() {
-  const open = mobile_nav.classList.toggle('open');
-  hamburger_btn.classList.toggle('open', open);
-  hamburger_btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  document.body.style.overflow = open ? 'hidden' : '';
-  // prevent starfield interaction while menu is open
-  canvas.style.pointerEvents = open ? 'none' : 'auto';
-}
-hamburger_btn.addEventListener('click', (e) => { e.stopPropagation(); toggle_mobile_nav(); });
-mobile_nav.addEventListener('click', (e) => e.stopPropagation());
-mobile_nav.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
-mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
-  a.addEventListener('click', () => {
-    mobile_nav.classList.remove('open');
-    hamburger_btn.classList.remove('open');
-    document.body.style.overflow = '';
-    canvas.style.pointerEvents = 'auto';
-  });
-});
-
-// -- back to top --
-const back_to_top_btn = document.getElementById('back-to-top');
-window.addEventListener('scroll', () => {
-  back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
-
-  // Opt 7: compare scrollY against cached doc-absolute bottom — no getElementById or getBoundingClientRect
-  nav_el.classList.toggle('nav--scrolled', window.scrollY >= hero_scroll_bottom);
-
-  // Bug 2: refresh viewport rect on scroll (layout is already dirty here) so
-  // canvas_exposed_at never calls getBoundingClientRect on mousemove
-  if (hero_el) hero_rect_cache = hero_el.getBoundingClientRect();
-}, { passive: true });
-back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-// -- canvas hint: arrow pointing at a randomly chosen safe featured star --
-let hint_alpha = 0;
-let hint_dismissed = false;
-let hint_target = null; // set once in pick_hint_target after catalog loads
-
-// pick a random featured star whose label zone won't overlap nav, hero text, or legend.
-// safe zone: y between 90 and canvas.height-90, label box clears hero text column
-// (left ~42% of canvas, bottom 55% of height).
-function pick_hint_target() {
-  if (!featured_stars.length) { hint_target = null; return; }
-  const is_mobile = canvas.width <= 740;
-  const label_w = is_mobile ? 138 : 124;
-  const label_h = is_mobile ? 40  : 36;
-  const offset  = is_mobile ? 100 : 92;
-  const safe = featured_stars.filter(s => {
-    // vertical: clear nav (90px) and legend (90px from bottom)
-    if (s.y < 90 || s.y > canvas.height - 90) return false;
-    // compute label x based on which side has room
-    const label_left = s.x > canvas.width * 0.55;
-    const lx = label_left
-      ? Math.max(label_w / 2 + 8, s.x - offset)
-      : Math.min(canvas.width - label_w / 2 - 8, s.x + offset);
-    const label_bot      = s.y - 42 + label_h / 2;
-    const label_left_edge = lx - label_w / 2;
-    // hero text occupies roughly left 42% of canvas, below 45% of height
-    const in_hero_col  = label_left_edge < canvas.width * 0.42;
-    const in_hero_vert = label_bot > canvas.height * 0.45;
-    if (in_hero_col && in_hero_vert) return false;
-    return true;
-  });
-  const pool = safe.length ? safe : featured_stars;
-  hint_target = pool[Math.floor(Math.random() * pool.length)];
-}
-
-function dismiss_hint() {
-  if (hint_dismissed) return;
-  hint_dismissed = true;
-  const t1 = performance.now();
-  (function fade_out(t) {
-    hint_alpha = Math.max(0, 1 - (t - t1) / 500);
-    if (hint_alpha > 0) requestAnimationFrame(fade_out);
-  })(t1);
-}
-
-setTimeout(() => {
-  const t0 = performance.now();
-  (function fade_in(t) {
-    if (hint_dismissed) return;
-    hint_alpha = Math.min(1, (t - t0) / 700);
-    if (hint_alpha < 1) requestAnimationFrame(fade_in);
-  })(t0);
-  setTimeout(() => {
-    dismiss_hint();
-  }, 2500);
-}, 1200);
-
-(function() {
-  const u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
-  const el = document.getElementById('contact-email');
-  if (el) {
-    const a = document.createElement('a');
-    a.href = 'mailto:' + u;
-    a.textContent = u;
-    a.style.color = 'var(--blue)';
-    a.style.textDecoration = 'none';
-    a.addEventListener('mouseenter', () => a.style.textDecoration = 'underline');
-    a.addEventListener('mouseleave', () => a.style.textDecoration = 'none');
-    el.appendChild(a);
-  }
-})();
-
-// research card expand/collapse
-document.querySelectorAll('.card-toggle').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    const card = btn.closest('.research-card');
-    const expand = card.querySelector('.card-expand');
-    const open = card.classList.toggle('card-open');
-    expand.style.maxHeight = open ? expand.scrollHeight + 'px' : '0';
-    btn.textContent = open ? 'Read less \u2191' : 'Read more \u2193';
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-});
-
-// on-load hash routing for direct research card links (e.g. henryzimmerman.net/#card-cep1347)
-const card_ids = ['card-cep1347', 'card-cindygraber', 'card-usgr'];
-const hash_target = window.location.hash.slice(1); // strip leading #
-if (card_ids.includes(hash_target)) {
-  const card_el = document.getElementById(hash_target);
-  if (card_el) {
-    // slight delay so page layout is stable before scrolling
-    setTimeout(() => {
-      card_el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (!card_el.classList.contains('card-open')) {
-        const toggle = card_el.querySelector('.card-toggle');
-        if (toggle) toggle.click();
+      var r = await fetch(bootUrl);
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' loading boot JSON');
+      data = await r.json();
+      var p = data.physics_frames;
+      var req = ['v_mag', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'r1'];
+      for (var ri = 0; ri < req.length; ri++) {
+        if (!Array.isArray(p[req[ri]])) throw new Error('Missing: physics_frames.' + req[ri]);
       }
-    }, 300);
-  }
-}
 
-init();
+      for (var mi = 0; mi < p.v_mag.length; mi++) {
+        if (p.v_mag[mi] < bounds.minV) bounds.minV = p.v_mag[mi];
+        if (p.v_mag[mi] > bounds.maxV) bounds.maxV = p.v_mag[mi];
+      }
+      // refine bounds from puls_cycle (full cycle, high resolution)
+      var pc_init = data.metadata && data.metadata.puls_cycle;
+      if (pc_init) {
+        for (var pci = 0; pci < pc_init.Np; pci++) {
+          if (pc_init.v_mag[pci] < bounds.minV) bounds.minV = pc_init.v_mag[pci];
+          if (pc_init.v_mag[pci] > bounds.maxV) bounds.maxV = pc_init.v_mag[pci];
+        }
+        maxR1 = radius_max;
+      }
+      bounds.a1 = Math.max.apply(null, p.x1.map(Math.abs));
+      bounds.a2 = Math.max.apply(null, p.x2.map(Math.abs));
+      maxR1 = radius_max;
+
+      buildRV();
+      prepareObservationalData();
+
+      // boot JSON is now uniformly sampled across the full orbit,
+      // so orbitPhase can start at 0 without any positional desync.
+      orbitPhase = 0;
+
+      if (preview) {
+        // cancel any pending line timers and clear all lines immediately
+        loadTimers.forEach(function(t) { clearTimeout(t); });
+        loadLines.forEach(function(el) { if (el) el.style.opacity = '0'; });
+        preview.style.opacity = '0';
+        setTimeout(function() { preview.style.display = 'none'; }, 650);
+      }
+      simCanvas.style.opacity = '1';
+      if (plotUI) plotUI.style.opacity = '1';
+
+      window.addEventListener('resize', resize);
+      resize();
+      setMode('orbital');
+      requestAnimationFrame(animate);
+
+      // stage 2: fetch full JSON in background, swap seamlessly
+      fetch(fullUrl).then(function(r2) {
+        if (!r2.ok) return;
+        return r2.json();
+      }).then(function(fullData) {
+        if (!fullData) return;
+        // orbitPhase is normalized 0-1, no rescaling needed, just swap data
+        data = fullData;
+        var p2 = data.physics_frames;
+        bounds.minV = 99; bounds.maxV = -99;
+        for (var mi2 = 0; mi2 < p2.v_mag.length; mi2++) {
+          if (p2.v_mag[mi2] < bounds.minV) bounds.minV = p2.v_mag[mi2];
+          if (p2.v_mag[mi2] > bounds.maxV) bounds.maxV = p2.v_mag[mi2];
+        }
+        var pc_full = data.metadata && data.metadata.puls_cycle;
+        if (pc_full) {
+          for (var pci2 = 0; pci2 < pc_full.Np; pci2++) {
+            if (pc_full.v_mag[pci2] < bounds.minV) bounds.minV = pc_full.v_mag[pci2];
+            if (pc_full.v_mag[pci2] > bounds.maxV) bounds.maxV = pc_full.v_mag[pci2];
+          }
+          maxR1 = radius_max;
+        }
+        bounds.a1 = Math.max.apply(null, p2.x1.map(Math.abs));
+        bounds.a2 = Math.max.apply(null, p2.x2.map(Math.abs));
+        maxR1 = radius_max;
+        buildRV();
+        prepareObservationalData();
+      }).catch(function(e) {
+        console.warn('Full data load failed, running on boot data:', e);
+      });
+
+    } catch (e) {
+      console.error('Cepheid sim init error:', e);
+    }
+  }
+
+  init();
+})();
