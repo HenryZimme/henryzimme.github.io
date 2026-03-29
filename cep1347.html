@@ -534,8 +534,8 @@
     <!-- orbital param strip -->
     <div id="orb-params">
       P<sub>orb</sub> = 58.85 d &nbsp;&middot;&nbsp;
-      K&#x2081; = 28.5 km s&#x207B;&#xB9; &nbsp;&middot;&nbsp;
-      K&#x2082; = 51.56 km s&#x207B;&#xB9; &nbsp;&middot;&nbsp;
+      K&#x2081; = 28.5 km s&#x207B;&#xB9; (Cepheid RV) &nbsp;&middot;&nbsp;
+      K&#x2082; = 51.56 km s&#x207B;&#xB9; (companion RV) &nbsp;&middot;&nbsp;
       P<sub>puls</sub> = 0.690 d
     </div>
 
@@ -555,7 +555,7 @@
 
     <div class="exp-body">
 
-      <p>What does a star that should not exist look like? OGLE-LMC-CEP-1347, a binary Cepheid variable in the Large Magellanic Cloud some 165,000 light-years away, offers a rare window into that question. The simulation above &mdash; built from OGLE-IV photometry spanning 2010&ndash;2016 (187 epochs) and spectroscopic radial velocities from Pilecki et al. (2022) &mdash; shows the Cepheid (amber) and its companion (red) orbiting in 58.85 days, the tightest orbit known for any Cepheid (Pilecki et al. 2022).</p>
+      <p>What does a star that should not exist look like? OGLE-LMC-CEP-1347, a binary Cepheid variable in the Large Magellanic Cloud, roughly 165,000 light-years away, is one possible answer. The simulation above &mdash; built from OGLE-IV photometry spanning 2010&ndash;2016 (187 epochs) and spectroscopic radial velocities from Pilecki et al. (2022) &mdash; shows the Cepheid (amber) and its companion (red) orbiting in 58.85 days, the tightest orbit known for any Cepheid (Pilecki et al. 2022).</p>
 
       <p>Cepheids are used as the primary rung of the cosmic distance ladder: a Cepheid's pulsation period predicts its intrinsic luminosity, so measuring how bright it appears tells you how far away it is. What makes CEP-1347 exceptional is that it breaks the evolutionary model underpinning all of that. A star massive enough to become a Cepheid (3.41 M&#x2609;) should first swell into a red giant &mdash; expanding far enough to disrupt any 59-day orbit it might have been in. That CEP-1347 is still here, pulsating inside a compact binary, is the anomaly that makes it worth studying.</p>
 
@@ -612,6 +612,7 @@
     <hr class="article-divider">
     <div class="exp-meta" style="margin-bottom:16px">Physics Notes</div>
     <div class="exp-body">
+      <p style="font-size:17px;font-style:italic;color:var(--text-dim);margin-bottom:16px;">The notes below are for readers who want to see the methodology. The simulation and prose above stand on their own.</p>
       <p style="font-size:17px">Orbital positions are interpolated from a precomputed skeleton derived from the Pilecki+ 2022 double-lined solution. The Cepheid radius is computed analytically via Baade-Wesselink integration of a 2nd-order Fourier fit to the pulsation radial velocity residuals (R&sup2; = 0.927), using projection factor p = 1.27 (calibrated on fundamental-mode Cepheids; ~5% systematic for this first-overtone pulsator). The light curve and temperature color are derived from phase-folded OGLE-IV photometry. All physical parameters are from Espinoza-Arancibia &amp; Pilecki (2025, ApJ 981 L35) and Pilecki et al. (2022, ApJ 940 L48).</p>
     </div>
 
@@ -621,7 +622,7 @@
     <ul class="ref-list">
       <li>Espinoza-Arancibia &amp; Pilecki 2025, ApJ 981 L35 &mdash; <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener">doi:10.3847/2041-8213/adb96b</a></li>
       <li>Pilecki et al. 2022, ApJ 940 L48 &mdash; <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener">doi:10.3847/2041-8213/ac9fcc</a></li>
-      <li>Martin et al. 2024, A&amp;A 683 L6 &mdash; Li-rich double-mode Cepheid survey</li>
+      <li>Martin et al. 2024, A&amp;A 683 L6 &mdash; <a href="https://doi.org/10.1051/0004-6361/202348616" target="_blank" rel="noopener">doi:10.1051/0004-6361/202348616</a> &mdash; Li-rich double-mode Cepheid survey</li>
       <li>OGLE-IV V-band photometry: 187 epochs, HJD 2455260&ndash;2459660</li>
       <li>Simulation code: H. Zimmerman (Phillips Academy Andover / CAMK Warsaw)</li>
     </ul>
