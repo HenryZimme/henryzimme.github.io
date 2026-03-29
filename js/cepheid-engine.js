@@ -289,10 +289,10 @@
 
     // orbital (5–13s): the binary and the problem
     { t:  5800, dur: 5000, text: 'The shortest orbital period ever measured for a classical Cepheid: 58.85 days' },
-    { t: 11500, dur: 4000, text: 'At this separation, the Cepheid should have engulfed its companion as a red giant. It did not.' },
+    { t: 11500, dur: 1500, text: 'At this separation, the Cepheid should have engulfed its companion as a red giant. It did not.' },
 
     // pulsation (13–17s): the answer
-    { t: 13500, dur: 3500, text: 'Most likely it formed from a stellar merger in a former triple system \u2014 never passing through the red giant phase' },
+    { t: 14200, dur: 3000, text: 'Most likely it formed from a stellar merger in a former triple system \u2014 never passing through the red giant phase' },
   ];
 
   var ogle_phased    = [];
