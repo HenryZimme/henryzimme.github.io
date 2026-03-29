@@ -23,8 +23,47 @@
   var R_MEAN         = 13.65;  // R_sun, from Pilecki+ 2022 eclipsing binary solution
   var RV_THRESH     = 40;
   var RV_N          = 2400;
-  var TRAIL_LEN     = 200;
+  var TRAIL_LEN     = 1800;
   var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
+
+  // ── starfield: static LMC background, generated once on first resize ──────
+  var bgStars = null;
+  var bgStarsW = 0, bgStarsH = 0;
+  function ensureBgStars(cw, ch) {
+    if (bgStars && bgStarsW === cw && bgStarsH === ch) return;
+    bgStarsW = cw; bgStarsH = ch;
+    var rng = function(seed) { // deterministic LCG so starfield is stable across frames
+      var s = seed;
+      return function() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+    };
+    var rand = rng(0xdeadbeef);
+    bgStars = [];
+    var n = Math.round(cw * ch / 2500); // ~830 stars at 1920×1080 CSS-px equivalent
+    for (var i = 0; i < n; i++) {
+      var isBright = rand() < 0.08;
+      bgStars.push({
+        x: rand() * cw,
+        y: rand() * ch,
+        r: isBright ? 1.6 + rand() * 0.8 : (rand() < 0.7 ? 0.8 : 1.2),
+        a: isBright ? 0.35 + rand() * 0.20 : 0.12 + rand() * 0.22
+      });
+    }
+  }
+  function drawBgStars(cw, ch) {
+    ensureBgStars(cw, ch);
+    if (!bgStars) return;
+    ctx.save();
+    for (var i = 0; i < bgStars.length; i++) {
+      var s = bgStars[i];
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
   // fourier r=2 fit to pilecki rv residuals (r²=0.927); [a0, a1, b1, a2, b2]
   var PULS_C        = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
 
@@ -123,10 +162,17 @@
   var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
 
   // guided first-loop captions
+  // times are in ms; designed for 60s film-mode orbit (one full orbit = 60,000ms)
   var captionStartTime = null;
   var CAPTIONS = [
-    { t: 0,    dur: 5000, text: 'OGLE-LMC-CEP-1347: a pulsating Cepheid in an eclipsing binary, ~165,000 light-years away in the LMC' },
-    { t: 7000, dur: 5000, text: 'The radial velocity curves encode both stars\u2019 orbital motion' },
+    { t:     0, dur: 6000, text: 'OGLE-LMC-CEP-1347 \u00B7 Large Magellanic Cloud \u00B7 ~165,000 light-years' },
+    { t:  8000, dur: 6000, text: 'The tightest orbit ever measured for a classical Cepheid: 58.85 days' },
+    { t: 16000, dur: 6000, text: 'Radial velocity curves encode the orbital motion of both stars' },
+    { t: 24000, dur: 6000, text: 'Cepheid mass: 3.41 M\u2609 \u00B7 Companion: 1.89 M\u2609 \u00B7 Mass ratio 1.8:1' },
+    { t: 33000, dur: 6000, text: 'A star this massive should have disrupted its own orbit as a red giant\u2014it didn\u2019t' },
+    { t: 42000, dur: 6000, text: 'Leading explanation: the Cepheid formed from a stellar merger in a former triple system' },
+    { t: 51000, dur: 6000, text: 'Pulsation period: 0.690 days \u00B7 85 pulsations per orbit \u00B7 Baade-Wesselink radius: 13.65 R\u2609' },
+    { t: 57000, dur: 5000, text: 'Pilecki et al. 2022 \u00B7 Espinoza-Arancibia & Pilecki 2025 \u00B7 OGLE-IV photometry' },
   ];
 
   var ogle_phased    = [];
@@ -934,7 +980,7 @@
 
   // ── main loop ──────────────────────────────────────────────────────────────
 
-  var ORBIT_DURATION_S  = 120.0; // wall-clock seconds per simulated orbit
+  var ORBIT_DURATION_S  = (document.documentElement.classList.contains('film-mode')) ? 60.0 : 120.0;
   var PULS_DURATION_S   = 2.0;  // wall-clock seconds per simulated pulsation cycle
   // realtime: pulsation runs ~4x faster than the true P_puls/P_orb ratio (1.41s would be exact)
   // deliberately sped up so pulsation is visible alongside the orbit without slowing the orbit down
@@ -954,6 +1000,7 @@
     var ch = simCanvas.height / dpr;
 
     ctx.clearRect(0, 0, cw, ch);
+    drawBgStars(cw, ch);
 
     // wall-clock delta, capped at 100ms to avoid jumps after tab switch
     if (lastTime === null) lastTime = now;
@@ -1105,16 +1152,22 @@
 
     // ── stars (z-sorted) ──
     if (z1 < z2) {
-      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
+      drawStar(s2x, s2y, pr2, '#f87171', false, 0.5);
       drawStar(s1x, s1y, pr1, col1, true, brightness);
     } else {
       drawStar(s1x, s1y, pr1, col1, true, brightness);
-      drawStar(s2x, s2y, pr2, '#f87171', false, 0);
+      drawStar(s2x, s2y, pr2, '#f87171', false, 0.5);
     }
 
-    // ── star labels: always-on, dark pill background ──
-    if (currentMode !== 'pulsation') {
+    // ── star labels: fade out after 15s in film mode, always-on otherwise ──
+    var labelAlpha = 1;
+    if (document.documentElement.classList.contains('film-mode') && captionStartTime !== null) {
+      var labelElapsed = now - captionStartTime;
+      labelAlpha = labelElapsed < 15000 ? 1 : Math.max(0, 1 - (labelElapsed - 15000) / 3000);
+    }
+    if (currentMode !== 'pulsation' && labelAlpha > 0) {
       ctx.save();
+      ctx.globalAlpha = labelAlpha;
       ctx.font = '12px \'JetBrains Mono\', monospace';
       ctx.textBaseline = 'middle';
 
@@ -1127,9 +1180,9 @@
         ctx.roundRect(rx, ry, rw, rh, 3);
         ctx.fill();
         ctx.fillStyle = fgCol;
-        ctx.globalAlpha = 0.92;
+        ctx.globalAlpha = labelAlpha * 0.92;
         ctx.fillText(text, lx + pad, ly);
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = labelAlpha;
       };
 
       drawLabel(s1x + pr1 + 9, s1y, 'Cepheid',   '#ffe4a0');
@@ -1185,7 +1238,7 @@
       var starArea = getStarArea();
       var capY = Math.min(starArea.h * 0.82, starArea.h - 50);
       var maxCapW = starArea.w - 40; // leave margin on both sides
-      ctx.font = '11px \'JetBrains Mono\', monospace';
+      ctx.font = '13px \'JetBrains Mono\', monospace';
 
       // word-wrap helper: returns array of lines fitting within maxW
       function wrapText(text, maxW) {
@@ -1215,7 +1268,7 @@
         if (alpha <= 0) continue;
         ctx.save();
         ctx.globalAlpha = alpha * 0.88;
-        ctx.font = '11px \'JetBrains Mono\', monospace';
+        ctx.font = '13px \'JetBrains Mono\', monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         var lines = wrapText(cap.text, maxCapW - 24);
@@ -1273,7 +1326,7 @@
     simCanvas.width = rect.width * dpr;
     simCanvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    trail1 = []; trail2 = [];
+    trail1 = []; trail2 = []; bgStars = null;
   }
 
   // ── init ───────────────────────────────────────────────────────────────────
