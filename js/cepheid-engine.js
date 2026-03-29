@@ -47,22 +47,21 @@
               : tint < 0.78 ? '#ddeeff'   // blue-white
               : tint < 0.90 ? '#ffeedd'   // warm foreground stars
               :                '#aaccff';  // faint blue
+      var r_val = isBright ? 1.7 + rand() * 0.9 : (rand() < 0.65 ? 0.7 : 1.1);
       bgStars.push({
         x: rand() * cw,
         y: rand() * ch,
-        r: isBright ? 1.7 + rand() * 0.9 : (rand() < 0.65 ? 0.7 : 1.1),
+        r: r_val,
         a: isBright ? 0.38 + rand() * 0.22 : 0.10 + rand() * 0.20,
         c: col,
         dep: 0.06 + rand() * 0.22,  // parallax depth factor (low=far, barely moves)
         twp: 2.2 + rand() * 4.2,    // twinkle period in seconds
         twf: rand() * Math.PI * 2,  // twinkle phase offset
+        // diffraction spike: only on bright stars (telescope secondary mirror struts effect)
+        spike_len: (isBright && rand() < 0.72) ? r_val * 4.0 + rand() * 5.0 : 0,
       });
     }
   }
-  // par_tx/par_ty: camera tx/ty passed in so each star drifts at s.dep fraction of camera motion
-  // (bg stars are inside the camera transform, so they get the full cam motion; we counter-shift
-  // by (1-dep)*cam to make farther stars appear to drift less — simulating parallax depth)
-  // t_s: wall-clock seconds for twinkle oscillation
   function drawBgStars(cw, ch, par_tx, par_ty, t_s) {
     ensureBgStars(cw, ch);
     if (!bgStars) return;
@@ -71,12 +70,35 @@
       var s = bgStars[i];
       // twinkle: ±8% alpha oscillation, slow, unique period per star
       var twinkle = 1 + 0.08 * Math.sin(2 * Math.PI * t_s / s.twp + s.twf);
-      ctx.globalAlpha = Math.max(0, s.a * twinkle);
+      var eff_a = Math.max(0, s.a * twinkle);
+      // parallax counter-shift: stars with low dep move less than camera
+      var sx = s.x + par_tx * (s.dep - 1);
+      var sy = s.y + par_ty * (s.dep - 1);
+      // star disc
+      ctx.globalAlpha = eff_a;
       ctx.fillStyle = s.c || '#ffffff';
       ctx.beginPath();
-      // parallax counter-shift: stars with low dep move less than camera
-      ctx.arc(s.x + par_tx * (s.dep - 1), s.y + par_ty * (s.dep - 1), s.r, 0, Math.PI * 2);
+      ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
       ctx.fill();
+      // diffraction spikes on bright stars (4-arm cross, suggests telescope optics)
+      if (s.spike_len > 0) {
+        var sl = s.spike_len;
+        ctx.strokeStyle = s.c || '#ffffff';
+        ctx.lineWidth   = 0.55;
+        // primary arms (horizontal / vertical)
+        ctx.globalAlpha = eff_a * 0.42;
+        ctx.beginPath();
+        ctx.moveTo(sx - sl, sy); ctx.lineTo(sx + sl, sy);
+        ctx.moveTo(sx, sy - sl); ctx.lineTo(sx, sy + sl);
+        ctx.stroke();
+        // diagonal arms (shorter, fainter — secondary struts)
+        var sd = sl * 0.52;
+        ctx.globalAlpha = eff_a * 0.16;
+        ctx.beginPath();
+        ctx.moveTo(sx - sd, sy - sd); ctx.lineTo(sx + sd, sy + sd);
+        ctx.moveTo(sx + sd, sy - sd); ctx.lineTo(sx - sd, sy + sd);
+        ctx.stroke();
+      }
     }
     ctx.globalAlpha = 1;
     ctx.restore();
@@ -185,12 +207,13 @@
   var puls_rings      = [];
   var prev_r1         = null;  // previous frame radius for peak detection
   var puls_was_rising = false;
+  var last_ring_time  = null;  // wall-clock ms of last ring emission (time-based trigger)
 
   var FILM_SEGMENTS = [
     { start: 0,  end: 15, mode: 'pulsation' },
     { start: 15, end: 42, mode: 'orbital' },
     { start: 42, end: 62, mode: 'pulsation' },
-    { start: 62, end: 75, mode: 'orbital' }
+    { start: 62, end: 92, mode: 'orbital' }   // extended: zoom-out sequence + end card
   ];
 
   // film-mode only: ken burns camera state
@@ -221,7 +244,12 @@
 
     // act 4 — orbital (62–75s): wide final shot — full system, cosmic scale
     { t: 64, zoom: 0.88, tx:   0, ty:   0 }, // widest frame — full orbit visible
-    { t: 80, zoom: 0.88, tx:   0, ty:   0 }, // hold through end card
+    { t: 68, zoom: 0.88, tx:   0, ty:   0 }, // hold 4s
+
+    // act 5 — zoom-out sequence (68–79s): pull back until the Cepheid is a dot among stars
+    // target zoom: r1*zoom_base*cam_zoom ≈ 1.5px → cam_zoom ≈ 0.022 at typical viewport
+    { t: 79, zoom: 0.020, tx:   0, ty:   0 }, // 11s pull-back — system shrinks to two dots
+    { t: 92, zoom: 0.020, tx:   0, ty:   0 }, // hold through end card
   ];
 
   function filmModeForTime(t) {
@@ -1248,23 +1276,47 @@
 
     drawBgStars(sw, star.h, film_cam.tx, film_cam.ty, now / 1000);
 
-    // ── faint LMC haze: elliptical diffuse glow suggesting the parent galaxy ──
+    // ── LMC haze: two-pass elongated bar — asymmetric, offset nucleus ──
+    // pass 1: main bar body, wide, horizontal-ish elongation across upper-right quadrant
+    // pass 2: offset nucleus, smaller, slightly brighter — the LMC bar center
     // in film mode: visible in pulsation segments too (star IS in the LMC), opacity boosted
     if (currentMode !== 'pulsation' || isFilm) {
-      var haze_a0 = isFilm ? 0.13  : 0.038;
-      var haze_a1 = isFilm ? 0.062 : 0.018;
-      var hazeX = sw * 0.62, hazeY = star.h * 0.28;
-      var hazeRx = sw * 0.38, hazeRy = star.h * 0.22;
-      var haze = ctx.createRadialGradient(hazeX, hazeY, 0, hazeX, hazeY, hazeRx);
-      haze.addColorStop(0,   'rgba(160,180,255,' + haze_a0 + ')');
-      haze.addColorStop(0.5, 'rgba(140,160,240,' + haze_a1 + ')');
-      haze.addColorStop(1,   'rgba(0,0,0,0)');
+      var haze_scale = isFilm ? 1.0 : 0.38; // non-film: much fainter, so as not to distract
+
       ctx.save();
-      ctx.scale(1, hazeRy / hazeRx);
-      ctx.fillStyle = haze;
+      // pass 1: bar body — wide, tilted ellipse
+      var b1x = sw * 0.60, b1y = star.h * 0.25;
+      var b1rx = sw * 0.44, b1ry = star.h * 0.18;
+      ctx.save();
+      ctx.translate(b1x, b1y);
+      ctx.rotate(0.38); // ~22° tilt — LMC bar position angle
+      ctx.scale(1, b1ry / b1rx);
+      var haze1 = ctx.createRadialGradient(0, 0, 0, 0, 0, b1rx);
+      haze1.addColorStop(0,   'rgba(155,172,248,' + (0.10 * haze_scale) + ')');
+      haze1.addColorStop(0.5, 'rgba(135,158,238,' + (0.045 * haze_scale) + ')');
+      haze1.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = haze1;
       ctx.beginPath();
-      ctx.arc(hazeX, hazeY * (hazeRx / hazeRy), hazeRx, 0, Math.PI * 2);
+      ctx.arc(0, 0, b1rx, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+
+      // pass 2: bar nucleus — smaller, offset, slightly brighter
+      var b2x = sw * 0.68, b2y = star.h * 0.31;
+      var b2rx = sw * 0.14, b2ry = star.h * 0.10;
+      ctx.save();
+      ctx.translate(b2x, b2y);
+      ctx.scale(1, b2ry / b2rx);
+      var haze2 = ctx.createRadialGradient(0, 0, 0, 0, 0, b2rx);
+      haze2.addColorStop(0,   'rgba(180,190,255,' + (0.14 * haze_scale) + ')');
+      haze2.addColorStop(0.6, 'rgba(150,168,245,' + (0.055 * haze_scale) + ')');
+      haze2.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = haze2;
+      ctx.beginPath();
+      ctx.arc(0, 0, b2rx, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
       ctx.restore();
     }
 
@@ -1346,51 +1398,57 @@
     }
 
     // ── pulsation shockwave rings (film mode only) ──
-    // detect radius peak (rising→falling edge) and emit an expanding pressure ring.
-    // coordinates are pre-camera so the ring scales naturally with the ken burns zoom.
+    // time-based emission: one ring per pulsation cycle (PULS_DURATION_S wall seconds).
+    // more reliable than edge detection on a smoothly varying r1 at 60fps.
     if (isFilm && currentMode === 'pulsation') {
-      if (prev_r1 !== null) {
-        if (r1 > prev_r1) {
-          puls_was_rising = true;
-        } else if (r1 < prev_r1 && puls_was_rising) {
-          puls_rings.push({ born_ms: now, x: s1x, y: s1y, r_start: pr1, col: col1 || FALLBACK_COL });
-          puls_was_rising = false;
-        }
+      var ring_interval_ms = PULS_DURATION_S * 1000;
+      if (last_ring_time === null) {
+        last_ring_time = now;
+        puls_rings.push({ born_ms: now, x: s1x, y: s1y, r_start: pr1, col: col1 || FALLBACK_COL });
+      } else if (now - last_ring_time >= ring_interval_ms) {
+        last_ring_time += ring_interval_ms; // step forward exactly, avoids drift
+        puls_rings.push({ born_ms: now, x: s1x, y: s1y, r_start: pr1, col: col1 || FALLBACK_COL });
       }
-      prev_r1 = r1;
 
-      // prune expired rings
-      puls_rings = puls_rings.filter(function(rg) { return now - rg.born_ms < 1700; });
+      // prune expired rings (lifetime 2400ms)
+      var RING_LIFE = 2400;
+      puls_rings = puls_rings.filter(function(rg) { return now - rg.born_ms < RING_LIFE; });
 
       for (var ri = 0; ri < puls_rings.length; ri++) {
         var rg = puls_rings[ri];
-        var rg_age = (now - rg.born_ms) / 1000; // seconds since emission
-        // expand from star edge; reach ~2.4x at end of lifetime
-        var rg_r  = rg.r_start * (1 + rg_age * 0.85);
-        var rg_a  = Math.max(0, 0.48 * (1 - rg_age / 1.7));
+        var rg_age = (now - rg.born_ms) / 1000;
+        var rg_t   = rg_age / (RING_LIFE / 1000); // 0→1 over lifetime
+        // exponential fade: punchy at start, lingers as it expands
+        var rg_a   = Math.max(0, 0.80 * Math.pow(1 - rg_t, 1.6));
         if (rg_a <= 0) continue;
+        // outer ring expands to 3x star radius over lifetime
+        var rg_r   = rg.r_start * (1 + rg_t * 2.0);
         ctx.save();
-        // outer ring: bright, color-matched to star temperature
         ctx.globalAlpha = rg_a;
         ctx.strokeStyle = rg.col;
-        ctx.lineWidth = Math.max(0.4, 2.4 * (1 - rg_age / 1.7));
-        ctx.shadowBlur  = 6;
+        ctx.lineWidth   = Math.max(0.5, 3.0 * (1 - rg_t));
+        ctx.shadowBlur  = 10;
         ctx.shadowColor = rg.col;
         ctx.beginPath();
         ctx.arc(rg.x, rg.y, rg_r, 0, Math.PI * 2);
         ctx.stroke();
-        // inner echo ring: half expansion rate, lower opacity — suggests harmonics
-        var rg_r2 = rg.r_start * (1 + rg_age * 0.38);
-        ctx.globalAlpha = rg_a * 0.28;
-        ctx.lineWidth = Math.max(0.3, 1.2 * (1 - rg_age / 1.7));
-        ctx.shadowBlur = 0;
+        // inner echo: slower expansion, suggests atmospheric harmonic
+        var rg_r2 = rg.r_start * (1 + rg_t * 0.9);
+        ctx.globalAlpha = rg_a * 0.32;
+        ctx.lineWidth   = Math.max(0.3, 1.5 * (1 - rg_t));
+        ctx.shadowBlur  = 0;
         ctx.beginPath();
         ctx.arc(rg.x, rg.y, rg_r2, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
     } else {
-      prev_r1 = null; // reset when not in pulsation film mode
+      // reset when leaving pulsation film mode so rings restart cleanly on re-entry
+      if (!isFilm || currentMode !== 'pulsation') {
+        last_ring_time = null;
+        puls_rings     = [];
+        prev_r1        = null;
+      }
     }
 
     // ── star labels: fade out after 15s in film mode, always-on otherwise ──
@@ -1521,59 +1579,93 @@
       if (captionStartTime === null) captionStartTime = now;
       var elapsed = now - captionStartTime;
       var starArea = getStarArea();
-      var capY = Math.min(starArea.h * 0.82, starArea.h - 50);
-      var maxCapW = starArea.w - 40; // leave margin on both sides
-      ctx.font = '15px \'JetBrains Mono\', monospace';
-
-      // word-wrap helper: returns array of lines fitting within maxW
-      function wrapText(text, maxW) {
-        var words = text.split(' ');
-        var lines = [];
-        var cur = '';
-        for (var wi = 0; wi < words.length; wi++) {
-          var test = cur ? cur + ' ' + words[wi] : words[wi];
-          if (ctx.measureText(test).width > maxW && cur) {
-            lines.push(cur);
-            cur = words[wi];
-          } else {
-            cur = test;
-          }
-        }
-        if (cur) lines.push(cur);
-        return lines;
-      }
 
       for (var ci = 0; ci < CAPTIONS.length; ci++) {
         var cap = CAPTIONS[ci];
         var age = elapsed - cap.t;
-        if (age < 0 || age > cap.dur + 800) continue;
-        var alpha = age < 400 ? age / 400
-                  : age > cap.dur ? Math.max(0, 1 - (age - cap.dur) / 800)
+        if (age < 0 || age > cap.dur + 900) continue;
+        var alpha = age < 500 ? age / 500
+                  : age > cap.dur ? Math.max(0, 1 - (age - cap.dur) / 900)
                   : 1;
         if (alpha <= 0) continue;
+
         ctx.save();
-        ctx.globalAlpha = alpha * 0.88;
-        ctx.font = '15px \'JetBrains Mono\', monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        var lines = wrapText(cap.text, maxCapW - 24);
-        var lineH = 19;
-        var pillH = lines.length * lineH + 12;
-        var pillW = 0;
-        for (var li = 0; li < lines.length; li++) {
-          var lw = ctx.measureText(lines[li]).width + 28;
-          if (lw > pillW) pillW = lw;
+
+        if (isFilm) {
+          // documentary bottom-third style: EB Garamond, no pill, text-shadow only
+          ctx.font = '22px \'EB Garamond\', serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          // word-wrap helper
+          function wrapFilmText(text, maxW) {
+            var words = text.split(' ');
+            var lines = [];
+            var cur = '';
+            for (var wi = 0; wi < words.length; wi++) {
+              var test = cur ? cur + ' ' + words[wi] : words[wi];
+              if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = words[wi]; }
+              else cur = test;
+            }
+            if (cur) lines.push(cur);
+            return lines;
+          }
+
+          var maxCapW = starArea.w - 120;
+          var lines   = wrapFilmText(cap.text, maxCapW);
+          var lineH   = 28;
+          var capX    = starArea.w / 2;
+          // bottom-third: position near lower quarter of star area
+          var capBaseY = starArea.h * 0.82;
+
+          // dark text-shadow pass (drawn first, offset, for legibility)
+          ctx.shadowBlur  = 18;
+          ctx.shadowColor = 'rgba(0,0,0,0.95)';
+          ctx.globalAlpha = alpha * 0.92;
+          ctx.fillStyle   = 'rgba(235,226,208,0.96)';
+          for (var li = 0; li < lines.length; li++) {
+            ctx.fillText(lines[li], capX, capBaseY + li * lineH - (lines.length - 1) * lineH / 2);
+          }
+        } else {
+          // interactive mode: keep original pill style
+          ctx.font = '15px \'JetBrains Mono\', monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          var maxCapW2 = starArea.w - 40;
+          function wrapText(text, maxW) {
+            var words = text.split(' ');
+            var lines2 = [];
+            var cur2 = '';
+            for (var wi2 = 0; wi2 < words.length; wi2++) {
+              var test2 = cur2 ? cur2 + ' ' + words[wi2] : words[wi2];
+              if (ctx.measureText(test2).width > maxW && cur2) { lines2.push(cur2); cur2 = words[wi2]; }
+              else cur2 = test2;
+            }
+            if (cur2) lines2.push(cur2);
+            return lines2;
+          }
+          var lines3  = wrapText(cap.text, maxCapW2 - 24);
+          var lineH3  = 19;
+          var pillH   = lines3.length * lineH3 + 12;
+          var pillW   = 0;
+          for (var li3 = 0; li3 < lines3.length; li3++) {
+            var lw3 = ctx.measureText(lines3[li3]).width + 28;
+            if (lw3 > pillW) pillW = lw3;
+          }
+          var capX3  = starArea.w / 2;
+          var capY3  = Math.min(starArea.h * 0.82, starArea.h - 50);
+          var pillY3 = capY3 - pillH / 2;
+          ctx.globalAlpha = alpha * 0.88;
+          ctx.fillStyle   = 'rgba(7,9,26,0.82)';
+          ctx.beginPath();
+          ctx.roundRect(capX3 - pillW / 2, pillY3, pillW, pillH, 5);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(226,221,212,0.92)';
+          for (var li4 = 0; li4 < lines3.length; li4++) {
+            ctx.fillText(lines3[li4], capX3, pillY3 + 6 + lineH3 * li4 + lineH3 / 2);
+          }
         }
-        var capX = starArea.w / 2;
-        var pillY = capY - pillH / 2;
-        ctx.fillStyle = 'rgba(7,9,26,0.82)';
-        ctx.beginPath();
-        ctx.roundRect(capX - pillW / 2, pillY, pillW, pillH, 5);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(226,221,212,0.92)';
-        for (var li2 = 0; li2 < lines.length; li2++) {
-          ctx.fillText(lines[li2], capX, pillY + 6 + lineH * li2 + lineH / 2);
-        }
+
         ctx.restore();
       }
     }
@@ -1592,64 +1684,72 @@
         ctx.restore();
       }
 
-      // end card: fades in at 63.5s (after last caption fully clears at ~62.8s)
-      var EC_START = 63500, EC_FADE = 1400, EC_TEXT_DELAY = 800;
+      // end card: fades in at 75s — the zoom-out is nearly complete, system is two tiny dots
+      // overlay is semi-transparent so the live starfield shows through behind the credits
+      var EC_START = 75000, EC_FADE = 1800, EC_TEXT_DELAY = 700;
       var ecAge = filmElapsed - EC_START;
       if (ecAge > 0) {
-        // dark background overlay
-        var ecBgA = Math.min(1, ecAge / EC_FADE);
+        // subtle dark scrim — legibility without blacking out the cosmos
+        var ecBgA = Math.min(1, ecAge / EC_FADE) * 0.42;
         ctx.save();
-        ctx.globalAlpha = ecBgA * 0.97;
+        ctx.globalAlpha = ecBgA;
         ctx.fillStyle = '#07091a';
         ctx.fillRect(0, 0, cw, ch);
         ctx.restore();
 
-        // text fades in slightly after background
         var ecTextA = Math.max(0, Math.min(1, (ecAge - EC_TEXT_DELAY) / EC_FADE));
         if (ecTextA > 0) {
           ctx.save();
           ctx.globalAlpha = ecTextA;
-          var ecX = cw / 2, ecY = ch / 2;
+          var ecX = cw / 2, ecY = ch * 0.44; // slightly above center
           ctx.textAlign = 'center';
+          // text uses shadowBlur for readability over the live starfield
+          ctx.shadowBlur  = 24;
+          ctx.shadowColor = 'rgba(0,0,0,0.98)';
 
           // amber accent line above title
-          ctx.strokeStyle = 'rgba(196,162,88,0.40)';
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(196,162,88,0.55)';
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(ecX - 220, ecY - 72);
-          ctx.lineTo(ecX + 220, ecY - 72);
+          ctx.moveTo(ecX - 240, ecY - 72);
+          ctx.lineTo(ecX + 240, ecY - 72);
           ctx.stroke();
+          ctx.shadowBlur = 24;
 
-          // object name
-          ctx.font = '500 38px \'EB Garamond\', serif';
+          // object name — EB Garamond, large
+          ctx.font = '500 42px \'EB Garamond\', serif';
           ctx.fillStyle = 'rgba(196,162,88,0.97)';
           ctx.textBaseline = 'middle';
-          ctx.fillText('OGLE-LMC-CEP-1347', ecX, ecY - 44);
+          ctx.fillText('OGLE-LMC-CEP-1347', ecX, ecY - 42);
 
           // subtitle
+          ctx.shadowBlur = 16;
           ctx.font = '12px \'JetBrains Mono\', monospace';
-          ctx.fillStyle = 'rgba(226,221,212,0.58)';
+          ctx.fillStyle = 'rgba(226,221,212,0.65)';
           ctx.letterSpacing = '0.08em';
-          ctx.fillText('CLASSICAL CEPHEID  \u00B7  DOUBLE-LINED SPECTROSCOPIC BINARY  \u00B7  LMC', ecX, ecY - 10);
+          ctx.fillText('CLASSICAL CEPHEID  \u00B7  DOUBLE-LINED SPECTROSCOPIC BINARY  \u00B7  LMC', ecX, ecY - 8);
 
           // divider
-          ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255,255,255,0.12)';
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(ecX - 220, ecY + 10);
-          ctx.lineTo(ecX + 220, ecY + 10);
+          ctx.moveTo(ecX - 240, ecY + 14);
+          ctx.lineTo(ecX + 240, ecY + 14);
           ctx.stroke();
+          ctx.shadowBlur = 16;
 
           // citations
           ctx.font = '11px \'JetBrains Mono\', monospace';
-          ctx.fillStyle = 'rgba(226,221,212,0.48)';
-          ctx.fillText('Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35', ecX, ecY + 32);
-          ctx.fillText('Pilecki et al. 2022, ApJ 940 L48  \u00B7  OGLE-IV photometry', ecX, ecY + 50);
+          ctx.fillStyle = 'rgba(226,221,212,0.52)';
+          ctx.fillText('Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35', ecX, ecY + 36);
+          ctx.fillText('Pilecki et al. 2022, ApJ 940 L48  \u00B7  OGLE-IV photometry', ecX, ecY + 54);
 
           // author line
           ctx.font = '11px \'JetBrains Mono\', monospace';
-          ctx.fillStyle = 'rgba(196,162,88,0.52)';
-          ctx.fillText('Simulation by H. Zimmerman  \u00B7  henryzimmerman.net', ecX, ecY + 88);
+          ctx.fillStyle = 'rgba(196,162,88,0.58)';
+          ctx.fillText('Simulation by H. Zimmerman  \u00B7  henryzimmerman.net', ecX, ecY + 96);
 
           ctx.restore();
         }
