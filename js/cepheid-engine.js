@@ -873,14 +873,30 @@
     ctx.fill();
 
     // R label and live value
-    ctx.font = '9px \'JetBrains Mono\', monospace';
+    ctx.font = '10px \'JetBrains Mono\', monospace';
     ctx.fillStyle = 'rgba(134,239,172,0.70)';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText('R\u2081 / R\u2609', px + inset + 2, rY + 3);
     ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(134,239,172,0.8)';
+    ctx.fillStyle = 'rgba(134,239,172,0.85)';
     ctx.fillText(cur_r1.toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 3);
+
+    // radius axis ticks (desktop only — strip is too narrow on mobile)
+    if (!getStarArea().mobile) {
+      ctx.font = '10px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      var rTickStep = 0.2;
+      var rTickMin = Math.ceil(rMin / rTickStep) * rTickStep;
+      var rTickMax = Math.floor(rMax / rTickStep) * rTickStep;
+      for (var rt = rTickMin; rt <= rTickMax + 1e-9; rt += rTickStep) {
+        var rty = rToY2(rt);
+        if (rty > rY + 4 && rty < rY + rH - 4)
+          ctx.fillText(rt.toFixed(1), px + inset - 2, rty);
+      }
+    }
 
     ctx.restore();
   }
