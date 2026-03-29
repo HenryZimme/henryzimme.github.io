@@ -178,6 +178,27 @@
     { start: 62, end: 75, mode: 'orbital' }
   ];
 
+  // film-mode only: ken burns camera state
+  var cam_dissolve_start = null;
+  var CAM_DISSOLVE_DUR   = 900; // ms
+
+  // ken burns keyframes: zoom scales the star area, tx/ty pan content in px (at zoom=1).
+  // positive tx shifts content right, positive ty shifts content down.
+  // all keyframes are in film-time seconds, clamped outside range.
+  // matched to FILM_SEGMENTS: pulsation (0-15s), orbital (15-42s), pulsation (42-62s), orbital (62-75s).
+  var CAM_KEYFRAMES = [
+    { t:  0, zoom: 1.00, tx:   0, ty:   0 },
+    { t:  7, zoom: 1.14, tx: -18, ty:   8 }, // slow push into pulsating star
+    { t: 15, zoom: 1.08, tx:  -8, ty:   4 }, // ease out before orbital cut
+    { t: 17, zoom: 1.00, tx:   0, ty:   0 }, // full pull-back for orbital
+    { t: 28, zoom: 1.06, tx:  24, ty:  -6 }, // gentle drift right
+    { t: 41, zoom: 1.00, tx:   0, ty:   0 }, // back to neutral before pulsation
+    { t: 44, zoom: 1.20, tx:   0, ty:  12 }, // tight push on star, shift down to center it
+    { t: 61, zoom: 1.08, tx:   0, ty:   5 }, // begin pull-out
+    { t: 64, zoom: 0.97, tx:   0, ty:   0 }, // slight wide shot for final orbital
+    { t: 80, zoom: 0.97, tx:   0, ty:   0 }, // hold through end card
+  ];
+
   function filmModeForTime(t) {
     for (var i = FILM_SEGMENTS.length - 1; i >= 0; i--) {
       if (t >= FILM_SEGMENTS[i].start) return FILM_SEGMENTS[i].mode;
@@ -197,6 +218,7 @@
     if (filmCurrentMode !== nextMode) {
       filmCurrentMode = nextMode;
       setMode(nextMode);
+      cam_dissolve_start = now; // triggers cross-dissolve overlay
     }
   }
 
@@ -1022,6 +1044,46 @@
     ctx.restore();
   }
 
+  // ── film-mode camera helpers (no-op outside film-mode) ────────────────────
+
+  function smoothstep(t) {
+    t = Math.max(0, Math.min(1, t));
+    return t * t * (3 - 2 * t);
+  }
+
+  // interpolate between CAM_KEYFRAMES using smoothstep easing within each segment
+  function getCamState(t_s) {
+    var kf = CAM_KEYFRAMES;
+    if (t_s <= kf[0].t) return { zoom: kf[0].zoom, tx: kf[0].tx, ty: kf[0].ty };
+    var last = kf[kf.length - 1];
+    if (t_s >= last.t) return { zoom: last.zoom, tx: last.tx, ty: last.ty };
+    for (var i = 0; i < kf.length - 1; i++) {
+      if (t_s >= kf[i].t && t_s < kf[i + 1].t) {
+        var dur = kf[i + 1].t - kf[i].t;
+        var et  = smoothstep((t_s - kf[i].t) / dur);
+        return {
+          zoom: kf[i].zoom + (kf[i + 1].zoom - kf[i].zoom) * et,
+          tx:   kf[i].tx   + (kf[i + 1].tx   - kf[i].tx)   * et,
+          ty:   kf[i].ty   + (kf[i + 1].ty   - kf[i].ty)   * et,
+        };
+      }
+    }
+    return { zoom: 1, tx: 0, ty: 0 };
+  }
+
+  // radial vignette drawn over the entire canvas including plots and captions
+  function drawVignette(cw, ch) {
+    var vcx = cw / 2, vcy = ch / 2;
+    var vr  = Math.max(cw, ch) * 0.78;
+    var grad = ctx.createRadialGradient(vcx, vcy, vr * 0.32, vcx, vcy, vr);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.60)');
+    ctx.save();
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.restore();
+  }
+
   // ── main loop ──────────────────────────────────────────────────────────────
 
   var ORBIT_DURATION_S  = (document.documentElement.classList.contains('film-mode')) ? 60.0 : 120.0;
@@ -1129,6 +1191,17 @@
     ctx.beginPath();
     ctx.rect(0, 0, sw, star.h);
     ctx.clip();
+
+    // film-mode ken burns: scale/translate around star-area center.
+    // applied after clip so the crop boundary stays fixed to the viewport.
+    // no-op in normal mode.
+    if (isFilm && filmStartTime !== null) {
+      var cam_t_s = (now - filmStartTime) / 1000;
+      var cam     = getCamState(cam_t_s);
+      ctx.translate(sw / 2 + cam.tx, sh / 2 + cam.ty);
+      ctx.scale(cam.zoom, cam.zoom);
+      ctx.translate(-sw / 2, -sh / 2);
+    }
 
     drawBgStars(sw, star.h);
 
@@ -1260,7 +1333,7 @@
     // ── scale bar: 0.1 AU (orbital/realtime only) ──────────────────────────────
     // a_total = a1+a2 = (K1+K2)*P/(2π*sin i) = 0.516 AU; 1 AU = 215.032 R_sun
     // zoom maps R_sun → px, so 0.1 AU = 21.503 R_sun → 21.503*zoom px
-    if (currentMode !== 'pulsation') {
+    if (currentMode !== 'pulsation' && !isFilm) {
       var scaleRsun = 0.1 * 215.032;   // 21.503 R_sun = 0.1 AU
       var scalePx   = scaleRsun * zoom;
       var sbX = 18, sbY = star.h - 20;
@@ -1286,6 +1359,21 @@
     }
 
     ctx.restore(); // end star-area clip
+
+    // film-mode cross-dissolve: dark overlay that fades out after mode transitions.
+    // applied after the clip restore so it covers the full star area in screen space,
+    // unaffected by the camera transform inside the clip.
+    if (isFilm && cam_dissolve_start !== null) {
+      var d_age = now - cam_dissolve_start;
+      if (d_age < CAM_DISSOLVE_DUR) {
+        var d_alpha = (1 - d_age / CAM_DISSOLVE_DUR) * 0.60;
+        ctx.save();
+        ctx.globalAlpha = d_alpha;
+        ctx.fillStyle = '#07091a';
+        ctx.fillRect(0, 0, sw, sh);
+        ctx.restore();
+      }
+    }
 
     // ── object id label (top-left of star area, always visible; fades after 8s in film mode) ──
     var idAlpha = 1;
@@ -1473,6 +1561,9 @@
         }
       }
     }
+
+    // film-mode vignette: drawn last so it sits over everything including plots and captions
+    if (isFilm) drawVignette(cw, ch);
 
     requestAnimationFrame(animate);
   }
