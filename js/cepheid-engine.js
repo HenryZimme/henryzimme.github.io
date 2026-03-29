@@ -186,17 +186,27 @@
   // positive tx shifts content right, positive ty shifts content down.
   // all keyframes are in film-time seconds, clamped outside range.
   // matched to FILM_SEGMENTS: pulsation (0-15s), orbital (15-42s), pulsation (42-62s), orbital (62-75s).
+  // pivot is mode-aware (see applyFilmCamera): pulsation pivots on the star (sh*0.35), orbital on center.
   var CAM_KEYFRAMES = [
+    // act 1 — pulsation (0–15s): open wide, push in on the breathing star
     { t:  0, zoom: 1.00, tx:   0, ty:   0 },
-    { t:  7, zoom: 1.14, tx: -18, ty:   8 }, // slow push into pulsating star
-    { t: 15, zoom: 1.08, tx:  -8, ty:   4 }, // ease out before orbital cut
-    { t: 17, zoom: 1.00, tx:   0, ty:   0 }, // full pull-back for orbital
-    { t: 28, zoom: 1.06, tx:  24, ty:  -6 }, // gentle drift right
-    { t: 41, zoom: 1.00, tx:   0, ty:   0 }, // back to neutral before pulsation
-    { t: 44, zoom: 1.20, tx:   0, ty:  12 }, // tight push on star, shift down to center it
-    { t: 61, zoom: 1.08, tx:   0, ty:   5 }, // begin pull-out
-    { t: 64, zoom: 0.97, tx:   0, ty:   0 }, // slight wide shot for final orbital
-    { t: 80, zoom: 0.97, tx:   0, ty:   0 }, // hold through end card
+    { t:  6, zoom: 1.42, tx:   0, ty:   0 }, // push in — star dominates frame
+    { t: 14, zoom: 1.20, tx:   0, ty:   0 }, // ease back before orbital cut
+
+    // act 2 — orbital (15–42s): pull back to reveal the binary, drift with the orbit
+    { t: 16, zoom: 0.86, tx:   0, ty:   0 }, // wide reveal — both stars, full ellipses
+    { t: 22, zoom: 0.96, tx:   0, ty:   0 }, // settle
+    { t: 30, zoom: 1.10, tx:  48, ty: -12 }, // drift right, following Cepheid arc
+    { t: 40, zoom: 1.00, tx:   0, ty:   0 }, // return to center before pulsation cut
+
+    // act 3 — pulsation (42–62s): tightest zoom — intimate, maximum drama
+    { t: 44, zoom: 1.55, tx:   0, ty:   0 }, // deep push — star fills frame
+    { t: 56, zoom: 1.32, tx:   0, ty:   0 }, // begin slow pull-out
+    { t: 62, zoom: 1.08, tx:   0, ty:   0 }, // pulling back, preparing final cut
+
+    // act 4 — orbital (62–75s): wide final shot — full system, cosmic scale
+    { t: 64, zoom: 0.88, tx:   0, ty:   0 }, // widest frame — full orbit visible
+    { t: 80, zoom: 0.88, tx:   0, ty:   0 }, // hold through end card
   ];
 
   function filmModeForTime(t) {
@@ -227,14 +237,21 @@
   var captionStartTime = null;
 
   var CAPTIONS = [
-    { t:     0, dur: 6000, text: 'OGLE-LMC-CEP-1347, Large Magellanic Cloud, ~165,000 light-years' },
-    { t:  8000, dur: 6000, text: 'The tightest orbit ever measured for a classical Cepheid: 58.85 days' },
-    { t: 16000, dur: 6000, text: 'Radial velocity curves encode the orbital motion of both stars' },
-    { t: 24000, dur: 6000, text: 'Cepheid 3.41 M\u2609, companion 1.89 M\u2609, total separation 0.52 AU' },
-    { t: 33000, dur: 6000, text: 'A star this massive should have disrupted its own orbit as a red giant. It did not.' },
-    { t: 42000, dur: 6000, text: 'Leading explanation: the Cepheid formed from a stellar merger in a former triple system' },
-    { t: 51000, dur: 6000, text: 'Pulsation period 0.690 days, 85 pulsations per orbit, Baade-Wesselink radius 13.65 R\u2609' },
-    { t: 57000, dur: 5000, text: 'Pilecki et al. 2022, Espinoza-Arancibia & Pilecki 2025, OGLE-IV photometry' },
+    // act 1: pulsation (0–15s) — star breathing, audience oriented
+    { t:     0, dur: 5500, text: 'OGLE-LMC-CEP-1347  \u00B7  Large Magellanic Cloud  \u00B7  ~165,000 light-years' },
+    { t:  7500, dur: 6000, text: 'A Cepheid variable: expanding and contracting every 0.690 days, changing temperature and brightness with each breath' },
+
+    // act 2: orbital (15–42s) — the binary mystery introduced
+    { t: 16000, dur: 6000, text: 'Its companion orbits in just 58.85 days \u2014 the tightest orbit ever measured for a classical Cepheid' },
+    { t: 24000, dur: 6500, text: 'Cepheid: 3.41 M\u2609, companion: 1.89 M\u2609, separation: 0.52 AU \u00B7 radial velocities from Pilecki et al. 2022' },
+    { t: 33000, dur: 7500, text: 'A star this massive should have swallowed its companion when it expanded as a red giant. It did not.' },
+
+    // act 3: pulsation (42–62s) — hypothesis and physics
+    { t: 43000, dur: 7000, text: 'Leading explanation: the Cepheid formed from a stellar merger inside a former triple system, skipping the red giant phase entirely' },
+    { t: 52000, dur: 6500, text: 'Baade-Wesselink radius 13.65 R\u2609 \u00B7 85 pulsations per orbit \u00B7 projection factor p\u202F=\u202F1.27' },
+
+    // act 4: orbital (62–75s) — credits before end card
+    { t: 62500, dur: 6000, text: 'Pilecki et al. 2022, ApJ 940 L48  \u00B7  Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35  \u00B7  OGLE-IV photometry' },
   ];
 
   var ogle_phased    = [];
@@ -1071,6 +1088,18 @@
     return { zoom: 1, tx: 0, ty: 0 };
   }
 
+  // apply ken burns camera transform inside the star-area clip.
+  // pivot is mode-aware: pulsation pivots on the star (sh*0.35), orbital on area center (sh/2).
+  // result: zoom pushes INTO the relevant subject rather than toward an arbitrary center.
+  function applyFilmCamera(cam_t_s, mode, sw, sh) {
+    var cam     = getCamState(cam_t_s);
+    var pivot_x = sw / 2;
+    var pivot_y = (mode === 'pulsation') ? sh * 0.35 : sh / 2;
+    ctx.translate(pivot_x + cam.tx, pivot_y + cam.ty);
+    ctx.scale(cam.zoom, cam.zoom);
+    ctx.translate(-pivot_x, -pivot_y);
+  }
+
   // radial vignette drawn over the entire canvas including plots and captions
   function drawVignette(cw, ch) {
     var vcx = cw / 2, vcy = ch / 2;
@@ -1197,10 +1226,7 @@
     // no-op in normal mode.
     if (isFilm && filmStartTime !== null) {
       var cam_t_s = (now - filmStartTime) / 1000;
-      var cam     = getCamState(cam_t_s);
-      ctx.translate(sw / 2 + cam.tx, sh / 2 + cam.ty);
-      ctx.scale(cam.zoom, cam.zoom);
-      ctx.translate(-sw / 2, -sh / 2);
+      applyFilmCamera(cam_t_s, currentMode, sw, sh);
     }
 
     drawBgStars(sw, star.h);
@@ -1422,8 +1448,8 @@
       if (hud.phase) hud.phase.innerText = orbitPhase.toFixed(3);
     }
 
-    // ── guided first-loop captions ──
-    if (currentMode === 'orbital' || currentMode === 'realtime') {
+    // ── guided captions: in film mode show in all modes; otherwise orbital/realtime only ──
+    if (isFilm || currentMode === 'orbital' || currentMode === 'realtime') {
       if (captionStartTime === null) captionStartTime = now;
       var elapsed = now - captionStartTime;
       var starArea = getStarArea();
