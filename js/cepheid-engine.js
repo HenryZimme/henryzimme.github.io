@@ -487,7 +487,8 @@
     var cursor_phi = (orbitPhi + phase_offset + 0.25) % 1;
     var rvI = Math.round(cursor_phi * RV_N) % RV_N;
 
-    var inset = 28, padTop = 26, padBottom = 36;
+    var isMob = getStarArea().mobile;
+    var inset = isMob ? 8 : 28, padTop = 26, padBottom = isMob ? 10 : 36;
     var drawH = ph - padTop - padBottom;
     var range = rv_abs_max - rv_abs_min;
     var yScale = drawH / range;
@@ -689,8 +690,10 @@
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.font = '10px \'JetBrains Mono\', monospace';
       for (var xp = 0; xp <= 1; xp += 0.25) {
+        ctx.textAlign = xp === 0 ? 'left' : xp === 1 ? 'right' : 'center';
         ctx.fillText('\u03C6=' + xp.toFixed(2), px + inset + xp * plotW, py + ph - padBottom + 5);
       }
+      ctx.textAlign = 'center'; // reset
 
       // attribution
       ctx.font = '9px \'JetBrains Mono\', monospace';
@@ -712,7 +715,7 @@
     ctx.fillStyle = '#f87171';
     ctx.fillText('\u2014 Companion', px + pw - inset, py + 18);
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 30);
+    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 24);
 
     ctx.restore();
   }
@@ -725,7 +728,8 @@
     if (!box || !pc) return;
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-    var inset = 28, padTop = 22, padBottom = 40;
+    var isMob = getStarArea().mobile;
+    var inset = isMob ? 8 : 28, padTop = 22, padBottom = isMob ? 34 : 40;
     var drawH = ph - padTop - padBottom;
     var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
     var midMag = (bounds.minV + bounds.maxV) / 2;
@@ -745,15 +749,17 @@
     ctx.save();
 
     // y-axis label
-    ctx.save();
-    ctx.translate(px + 10, py + padTop + drawH / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.font = '9px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(96,165,250,0.4)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('V mag  \u2191 faint', 0, 0);
-    ctx.restore();
+    if (!getStarArea().mobile) {
+      ctx.save();
+      ctx.translate(px + 10, py + padTop + drawH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.font = '9px \'JetBrains Mono\', monospace';
+      ctx.fillStyle = 'rgba(96,165,250,0.4)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('V mag  \u2191 faint', 0, 0);
+      ctx.restore();
+    }
 
     // ogle scatter, phase-based x offset from center
     for (var oi = 0; oi < ogle_phased.length; oi++) {
@@ -802,7 +808,7 @@
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(px + pw / 2, py + padTop);
-    ctx.lineTo(px + pw / 2, py + ph);
+    ctx.lineTo(px + pw / 2, py + ph - padBottom);
     ctx.stroke();
     ctx.restore();
 
@@ -826,7 +832,7 @@
     ctx.font = '9px \'JetBrains Mono\', monospace';
     ctx.fillStyle = 'rgba(96,165,250,0.55)';
     ctx.textAlign = 'left';
-    ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + 12, py + 14);
+    ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, py + 14);
 
     // legend top-right
     ctx.textAlign = 'right';
@@ -839,7 +845,7 @@
     var rMin = radius_min;
     var rMax = radius_max;
     var rRange = Math.max(0.01, rMax - rMin);
-    var rH = 32, rY = py + ph - rH - 4;
+    var rH = isMob ? 22 : 32, rY = py + ph - rH - 4;
     var rToY2 = function(r) { return rY + rH - (r - rMin) / rRange * rH; };
 
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
@@ -1095,7 +1101,8 @@
 
       var drawLabel = function(lx, ly, text, fgCol) {
         var pad = 5, tw = ctx.measureText(text).width;
-        var rx = lx, ry = ly - 9, rw = tw + pad*2, rh = 18;
+        var rw = tw + pad*2, rh = 18;
+        var rx = Math.min(lx, sw - rw - 4), ry = ly - 9;
         ctx.fillStyle = 'rgba(7,9,26,0.72)';
         ctx.beginPath();
         ctx.roundRect(rx, ry, rw, rh, 3);
