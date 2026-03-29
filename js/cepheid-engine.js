@@ -715,7 +715,7 @@
     ctx.fillStyle = '#f87171';
     ctx.fillText('\u2014 Companion', px + pw - inset, py + 18);
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 24);
+    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 30);
 
     ctx.restore();
   }
@@ -729,7 +729,7 @@
     var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
     var isMob = getStarArea().mobile;
-    var inset = isMob ? 8 : 28, padTop = 22, padBottom = isMob ? 34 : 40;
+    var inset = isMob ? 8 : 40, padTop = 22, padBottom = isMob ? 34 : 40;
     var drawH = ph - padTop - padBottom;
     var magRange = Math.max(0.1, bounds.maxV - bounds.minV);
     var midMag = (bounds.minV + bounds.maxV) / 2;
@@ -808,7 +808,7 @@
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(px + pw / 2, py + padTop);
-    ctx.lineTo(px + pw / 2, py + ph - padBottom);
+    ctx.lineTo(px + pw / 2, py + ph - 4);
     ctx.stroke();
     ctx.restore();
 
@@ -1003,7 +1003,20 @@
     var pr1 = Math.max(2, r1 * zoom);
     var pr2 = Math.max(2, COMPANION_RAD * zoom);
 
-    // ── orbital ellipses ──
+    // ── plots ──
+    if (currentMode === 'pulsation') {
+      drawLightCurve(puls_phi);
+    } else {
+      drawRVPlot(orbitPhase, puls_phi);
+    }
+
+    // clip all star-area drawing so nothing bleeds into the plot region below
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, sw, star.h);
+    ctx.clip();
+
+    // ── orbital ellipses (inside clip so they can't bleed into plot) ──
     if (currentMode !== 'pulsation') {
       ctx.save();
       ctx.lineWidth = 2;
@@ -1029,19 +1042,6 @@
       ctx.stroke();
       ctx.restore();
     }
-
-    // ── plots ──
-    if (currentMode === 'pulsation') {
-      drawLightCurve(puls_phi);
-    } else {
-      drawRVPlot(orbitPhase, puls_phi);
-    }
-
-    // clip all star-area drawing so nothing bleeds into the plot region below
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, 0, sw, star.h);
-    ctx.clip();
 
     // ── trails: cinematic tapered lines ──
     if (currentMode !== 'pulsation') {
