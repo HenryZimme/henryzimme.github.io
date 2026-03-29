@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.A.S.A.P. Phase 13: Sensory Overload</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --accent: #1D9E75;
+            --hostile: #c0392b;
+            --bg-start: #e0e5ec;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 150vh; 
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-start);
+            color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* The Panic Timer */
+        #panicTimer { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--hostile); color: white; text-align: center; padding: 10px; font-size: 18px; font-weight: bold; z-index: 1000; letter-spacing: 2px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); transition: background-color 0.5s ease;}
+
+        #formContainer { 
+            background: white; 
+            padding: 40px; 
+            border: 5px solid var(--accent); 
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2); 
+            max-width: 700px; 
+            width: 100%; 
+            margin: 80px 20px 100px 20px; 
+            overflow: hidden; 
+            transition: filter 0.3s ease, border-color 0.5s ease;
+        }
+
+        h1 { font-size: 24px; text-align: center; color: var(--hostile); margin-bottom: 5px; text-transform: uppercase; transition: color 0.5s ease;}
+        p.subtitle { text-align: center; font-size: 12px; margin-bottom: 30px; font-style: italic;}
+        .section-title { font-size: 16px; font-weight: bold; border-bottom: 2px dashed var(--accent); padding-bottom: 8px; margin-top: 30px; margin-bottom: 20px; color: var(--primary); background: rgba(0,0,0,0.05); padding: 5px; transition: color 0.5s ease, border-color 0.5s ease;}
+
+        .form-group { margin-bottom: 25px; }
+        label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+        input[type="text"], select { width: 100%; padding: 10px; border: 2px solid var(--primary); box-sizing: border-box; font-family: inherit; transition: border-color 0.5s ease;}
+
+        /* Sliders */
+        .slider-container { position: relative; padding-bottom: 25px; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 11px; margin-top: 5px; font-weight: bold;}
+
+        /* The Spinning Essay */
+        #essayBox { width: 100%; height: 100px; resize: none; padding: 10px; border: 2px solid var(--primary); font-family: inherit; transition: transform 0.1s linear, border-color 0.5s ease; }
+
+        /* Extracurricular Trap */
+        .ec-list { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+
+        /* The Horrible Phone Slider */
+        input[type="range"].phone-slider { width: 100%; cursor: crosshair; }
+        #phoneDisplay { font-size: 18px; text-align: center; margin-top: 10px; font-weight: bold; color: var(--hostile); background: rgba(0,0,0,0.05); padding: 10px; border: 2px solid var(--accent); transition: color 0.5s ease, border-color 0.5s ease;}
+
+        /* Audio Captcha */
+        .fake-audio { width: 100%; height: 40px; background: rgba(0,0,0,0.1); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 10px;}
+
+        /* Interactive Frogger */
+        #gameArea { width: 100%; height: 150px; border: 2px solid var(--primary); background-color: #222; position: relative; overflow: hidden; margin-top: 10px; display: none;}
+        #frog { width: 25px; height: 25px; background-color: var(--accent); position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); border-radius: 4px; z-index: 10; font-size: 12px; color: white; display: flex; align-items: center; justify-content: center;}
+        .obstacle { position: absolute; height: 25px; background-color: var(--hostile); border-radius: 2px; color: white; font-size: 10px; padding: 2px; box-sizing: border-box; display: flex; align-items: center;}
+        #goal { width: 100%; height: 30px; background-color: var(--accent); position: absolute; top: 0; left: 0; text-align: center; color: white; line-height: 30px; font-weight: bold; letter-spacing: 1px;}
+
+        /* Moving Checkbox Area */
+        #checkboxArea { height: 60px; border: 2px solid var(--primary); position: relative; background: rgba(0,0,0,0.02); margin-bottom: 20px; overflow: hidden;}
+        #movingCheckboxLabel { position: absolute; top: 20px; left: 20px; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s ease;}
+
+        /* Shrinking/Moving Submit Button */
+        #submitWrapper { position: relative; height: 150px; margin-top: 30px; border-top: 2px solid var(--accent); padding-top: 20px;}
+        #movingSubmit { position: absolute; padding: 15px 30px; background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; font-family: inherit; transition: all 0.1s; font-size: 16px; top: 40px; left: 35%;}
+        
+        /* Result Styles */
+        #resultContainer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f0fbf7; justify-content: center; align-items: center; flex-direction: column; z-index: 2000; }
+        .result-card { background-color: #ffffff; box-shadow: 0 10px 25px rgba(29, 158, 117, 0.15); padding: 30px; font-family: monospace; border: 2px solid #1D9E75; border-radius: 12px; text-align: center; max-width: 400px; }
+    </style>
+</head>
+<body>
+
+    <div id="panicTimer">PORTAL CLOSES IN: 02:59</div>
+
+    <div id="formContainer">
+        <h1>C.A.S.A.P. PHASE 13</h1>
+        <p class="subtitle">Sensory Annihilation & Engagement Verification<br>Keep moving your mouse to maintain visual clarity.</p>
+
+        <form id="casapForm">
+            
+            <div class="section-title">I. Demographic Obfuscation</div>
+
+            <div class="form-group">
+                <label>Select Your State of Residence:</label>
+                <select id="shufflingState" required size="5" style="height: 120px;"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Enter Phone Number (Precision Required):</label>
+                <input type="range" min="1000000000" max="9999999999" value="5555555555" class="phone-slider" id="phoneSlider">
+                <div id="phoneDisplay">555-555-5555</div>
+            </div>
+
+            <div class="form-group">
+                <label>Date of Birth Confirmation (Required):</label>
+                <input type="color" value="#8e44ad" style="width: 100px; height: 50px; cursor: pointer; border: 2px solid #ccc;">
+            </div>
+
+            <div class="section-title">II. Psychological State Extraction</div>
+
+            <div class="form-group slider-container">
+                <label>Current Anxiety Level Induced by this Application:</label>
+                <input type="range" min="0" max="100" value="50">
+                <div class="slider-labels">
+                    <span>Mild Concern</span><span>Impending Doom</span><span>Vibrating Cellularly</span>
+                </div>
+            </div>
+
+            <div class="form-group slider-container">
+                <label>Self-Perceived "Imposter Syndrome" Metric:</label>
+                <input type="range" min="0" max="100" value="75">
+                <div class="slider-labels">
+                    <span>Slight Doubt</span><span>Fraudulent</span><span>Three Raccoons in a Trench Coat</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Regarding the 'Exactly 3 Cats' Institutional Requirement:</label>
+                <select required>
+                    <option value="">Select current status...</option>
+                    <option>I satisfy the feline quota.</option>
+                    <option>I have 2 cats and am sourcing a third.</option>
+                    <option>I am a dog person (Auto-Reject).</option>
+                </select>
+            </div>
+
+            <div class="section-title">III. Holistic Excellence</div>
+
+            <div class="form-group">
+                <label>Extracurricular Activities (Select all that apply):</label>
+                <div class="ec-list">
+                    <label><input type="checkbox"> Founded a non-profit that operates on 3 continents</label>
+                    <label><input type="checkbox"> First-author publication in Nature at age 14</label>
+                    <label><input type="checkbox"> Varsity sports captain / Olympic alternate</label>
+                    <label style="color: var(--hostile);"><input type="checkbox" id="sleepTrap"> Maintain a healthy sleep schedule (8+ hours/night)</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Personal Statement (250 words max):</label>
+                <textarea id="essayBox" placeholder="Begin typing your authentic truth here..." required></textarea>
+            </div>
+
+            <div class="section-title">IV. ATS Verification</div>
+
+            <div class="form-group">
+                <label>Audio CAPTCHA Challenge:</label>
+                <div class="fake-audio">▶ [ Audio Player Emulating Silence ] 🔊</div>
+                <input type="text" placeholder="Type the silence here..." required>
+            </div>
+
+            <div class="form-group">
+                <label>Résumé Transfer Protocol (Frogger):</label>
+                <button type="button" id="startGame" style="padding: 8px 15px; font-family: inherit; font-weight: bold; cursor: pointer; margin-bottom: 10px;">Initiate ATS Evasion</button>
+                <div id="gameArea">
+                    <div id="goal">INBOX</div>
+                    <div id="frog">📄</div>
+                </div>
+                <input type="checkbox" id="gameVerified" required style="display: none;">
+            </div>
+
+            <div class="section-title">V. Final Consent</div>
+
+            <div class="form-group">
+                <div id="checkboxArea">
+                    <label id="movingCheckboxLabel">
+                        <input type="checkbox" required id="fleeingCheck"> I am worthy of admission.
+                    </label>
+                </div>
+            </div>
+
+            <div id="submitWrapper">
+                <button type="submit" id="movingSubmit">FINALIZE TRANSMISSION</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="resultContainer">
+        <div class="result-card">
+            <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Posterior probability that this applicant is stressing too much:</div>
+            <div style="font-size: 80px; font-weight: bold; color: #1D9E75; line-height: 1;">99.9%</div>
+            <div style="font-size: 12px; color: #999; margin-top: 12px;">Confidence interval: Unshakable.</div>
+        </div>
+    </div>
+    <script src="casap.js" defer></script>
+</body>
+</html>
+
+<script src="casap.js" defer></script>
