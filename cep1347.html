@@ -377,6 +377,67 @@
     #back-to-top:hover { border-color: var(--gold); }
 
     /* mobile */
+    /* ── film mode (?film query param) ── */
+    /* hides all chrome, locks to full-viewport canvas, 1920x1080 capture ready */
+    html.film-mode body        { overflow: hidden; }
+    html.film-mode nav         { display: none !important; }
+    html.film-mode #explanation { display: none !important; }
+    html.film-mode #back-to-top { display: none !important; }
+    html.film-mode #scroll-hint { display: none !important; }
+    html.film-mode #mode-bar   { display: none !important; }
+    html.film-mode #epilepsy-modal { display: none !important; }
+
+    /* fix sim section to full viewport, no overflow */
+    html.film-mode #sim-section {
+      height: 100vh;
+      width: 100vw;
+      position: fixed;
+      top: 0; left: 0;
+    }
+
+    /* plot panel: 30% of viewport in film mode (756px star area at 1080p) */
+    html.film-mode #hud-plot-container { height: 30vh; }
+    html.film-mode #orb-params {
+      bottom: calc(30vh - 2px);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.28);
+    }
+
+    /* hud: slightly more prominent in film mode */
+    html.film-mode #hud-stats  { top: 20px; left: 24px; }
+
+    /* film watermark: bottom-right, subtle, can be cropped */
+    #film-watermark {
+      display: none;
+      position: fixed;
+      bottom: 12px; right: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.18);
+      z-index: 50;
+      pointer-events: none;
+      user-select: none;
+    }
+    html.film-mode #film-watermark { display: block; }
+
+    /* film diagnostics bar: top-right, shows canvas px for verification */
+    #film-diag {
+      display: none;
+      position: fixed;
+      top: 14px; right: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(196,162,88,0.40);
+      z-index: 300;
+      pointer-events: none;
+    }
+    html.film-mode #film-diag { display: block; }
+
     @media (max-width: 740px) {
       nav { padding: 20px; }
 
@@ -409,7 +470,10 @@
     <a href="https://www.henryzimmerman.net#research" class="nav-back">← Back to Research</a>
   </nav>
 
-  <!-- photosensitivity modal: matches index.html pattern exactly -->
+  <div id="film-watermark">henryzimmerman.net &nbsp;&middot;&nbsp; OGLE-LMC-CEP-1347</div>
+  <div id="film-diag" aria-hidden="true"></div>
+
+  <!-- epilepsy modal -->
   <div id="epilepsy-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(7,9,26,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
     <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
       <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
@@ -566,6 +630,52 @@
   </section>
 
   <button id="back-to-top" aria-label="Back to top">&#8593;</button>
+
+  <!-- film mode: activated by ?film query param -->
+  <script>
+    (function() {
+      if (window.location.search.indexOf('film') === -1) return;
+
+      // apply film-mode class immediately to suppress layout flash
+      document.documentElement.classList.add('film-mode');
+
+      // lock setMode to orbital only
+      var _setMode_orig = window.setMode;
+      Object.defineProperty(window, 'setMode', {
+        set: function(fn) {
+          _setMode_orig = fn;
+          // wrap: ignore any mode other than orbital
+          window._setMode_locked = function(m) { fn('orbital'); };
+        },
+        get: function() {
+          return window._setMode_locked || function() {};
+        },
+        configurable: true
+      });
+
+      // load engine immediately (no IntersectionObserver needed; canvas is visible from frame 1)
+      window.addEventListener('DOMContentLoaded', function() {
+        var s = document.createElement('script');
+        s.src = '/js/cepheid-engine.js';
+        s.dataset.bootJson = '/data/master_data_boot.json';
+        s.dataset.fullJson = '/data/master_data.json';
+        document.body.appendChild(s);
+
+        // update diag bar: shows actual canvas pixel dimensions every second
+        var diag = document.getElementById('film-diag');
+        function updateDiag() {
+          var c = document.getElementById('simCanvas');
+          if (!c || !diag) return;
+          var dpr = window.devicePixelRatio || 1;
+          var w = Math.round(c.width / dpr);
+          var h = Math.round(c.height / dpr);
+          diag.textContent = w + '\u00d7' + h + ' \u00b7 DPR ' + dpr.toFixed(1) + ' \u00b7 ORBITAL \u00b7 1920\u00d71080 target';
+        }
+        setInterval(updateDiag, 1000);
+        updateDiag();
+      });
+    })();
+  </script>
 
   <!-- back to top -->
   <script>
