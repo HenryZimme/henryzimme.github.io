@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
 
   <title>C.A.S.A.P. Phase 15: Absolute Ego Death</title>
   <style>
@@ -99,13 +102,51 @@
     #donationDisplay { font-size: 18px; text-align: center; margin-top: 10px; font-weight: bold; color: var(--accent); background: rgba(0,0,0,0.05); padding: 10px; border: 2px dashed var(--primary); border-radius: 4px; transition: color 0.5s ease;}
     #phoneDisplay { font-size: 18px; text-align: center; margin-top: 10px; font-weight: bold; color: var(--hostile); background: rgba(0, 0, 0, 0.05); padding: 10px; border: 2px solid var(--accent); border-radius: 4px; transition: color 0.5s ease, border-color 0.5s ease;}
     #mathQuestion { font-weight: bold; color: var(--hostile); margin-bottom: 5px; transition: color 0.5s ease;}
+    .math-block { background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.12); border-radius: 4px; padding: 12px 16px; margin: 8px 0; overflow-x: auto; font-size: 13px; }
+    .riemann-block { background: rgba(192,57,43,0.04); border: 2px dashed var(--hostile); border-radius: 4px; padding: 14px 16px; margin: 8px 0; overflow-x: auto; }
+    .riemann-block label { color: var(--hostile); font-size: 13px; margin-bottom: 8px; }
+    .katex-display { margin: 6px 0 !important; }
     .fake-audio { width: 100%; height: 40px; background: rgba(0,0,0,0.1); border: 2px solid var(--primary); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 10px; transition: border-color 0.5s ease;}
 
     /* --- INTERACTIVE GAMES & EVASIVE ELEMENTS --- */
-    #gameArea { width: 100%; height: 150px; border: 2px solid var(--primary); border-radius: 4px; background-color: #222; position: relative; overflow: hidden; margin-top: 10px; background-image: linear-gradient(0deg, rgba(0,0,0,0.1) 0%, transparent 100%); display: none;}
-    #goal { width: 100%; height: 30px; background-color: var(--accent); position: absolute; top: 0; left: 0; text-align: center; color: white; line-height: 30px; font-weight: bold; letter-spacing: 1px;}
-    #frog { width: 25px; height: 25px; background-color: var(--accent); position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); border-radius: 4px; z-index: 10; font-size: 12px; color: white; display: flex; align-items: center; justify-content: center;}
-    .obstacle { position: absolute; height: 25px; background-color: var(--hostile); border-radius: 2px; color: white; font-size: 10px; padding: 2px; box-sizing: border-box; display: flex; align-items: center; text-align: center; justify-content: center; word-break: break-all;}
+    #gameArea { width: 100%; height: 200px; border: 2px solid var(--primary); border-radius: 4px; background-color: #1a1a2e; position: relative; overflow: hidden; margin-top: 10px; display: none; outline: none;}
+    #gameArea:focus { box-shadow: 0 0 0 3px rgba(29,158,117,0.5); }
+    #goal { width: 100%; height: 35px; background-color: var(--accent); position: absolute; top: 0; left: 0; text-align: center; color: white; line-height: 35px; font-weight: bold; letter-spacing: 1px;}
+    #frog { width: 28px; height: 28px; background-color: var(--accent); position: absolute; top: 160px; left: calc(50% - 14px); border-radius: 4px; z-index: 10; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: none;}
+    .frog-trail { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: rgba(29,158,117,0.3); pointer-events: none; z-index: 5; transition: opacity 0.4s ease; }
+    #gameMobileControls { display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
+    .game-btn { padding: 8px 14px; font-family: inherit; font-weight: bold; cursor: pointer; background: var(--primary); color: white; border: 2px solid var(--accent); border-radius: 4px; font-size: 13px; user-select: none; -webkit-user-select: none; }
+    .game-btn:active { opacity: 0.7; }
+    .obstacle { position: absolute; height: 22px; background-color: var(--hostile); border-radius: 2px; color: white; font-size: 8px; padding: 2px 4px; box-sizing: border-box; display: flex; align-items: center; text-align: center; justify-content: center; white-space: nowrap; overflow: hidden; letter-spacing: 0.5px; font-weight: bold; }
+    @keyframes particleFall { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(110vh) rotate(360deg); } }
+    @keyframes windPush { 0%,100%{transform:none} 50%{transform:translateX(4px)} }
+
+    /* --- NEW COMPLEXITY LAYERS --- */
+    /* Mood indicator */
+    #moodBar { width: 100%; height: 20px; background: linear-gradient(to right, #c0392b, #f39c12, #1D9E75); border-radius: 4px; position: relative; margin-top: 8px; border: 2px solid var(--primary); overflow: hidden; }
+    #moodNeedle { position: absolute; top: 0; width: 4px; height: 100%; background: var(--primary); left: 50%; transform: translateX(-50%); transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    #moodLabel { font-size: 11px; text-align: center; margin-top: 5px; font-style: italic; min-height: 16px; }
+    /* Brand score */
+    #brandScore { font-size: 32px; font-weight: bold; text-align: center; color: var(--hostile); transition: color 0.3s; }
+    #brandScoreLabel { font-size: 11px; text-align: center; color: #888; margin-top: 4px; }
+    /* Moving captcha */
+    #captchaTarget { width: 40px; height: 40px; background: var(--hostile); border-radius: 50%; position: absolute; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; cursor: crosshair; border: 3px solid white; transition: none; }
+    #captchaArea { position: relative; height: 100px; background: #111; border: 2px solid var(--primary); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    #captchaStatus { font-size: 11px; margin-top: 5px; color: var(--hostile); text-align: center; }
+    /* Fake resume upload */
+    #resumeUpload { display: none; }
+    #resumeDropzone { border: 2px dashed var(--primary); border-radius: 4px; padding: 20px; text-align: center; font-size: 12px; cursor: pointer; transition: background 0.2s; color: #666; }
+    #resumeDropzone:hover { background: rgba(0,0,0,0.04); }
+    #resumeStatus { font-size: 11px; margin-top: 5px; min-height: 16px; }
+    /* Save progress trap */
+    #saveBtn { padding: 6px 16px; font-family: inherit; font-size: 12px; cursor: pointer; background: white; border: 2px solid #888; color: #444; letter-spacing: 1px; }
+    #saveStatus { font-size: 10px; color: #888; margin-top: 4px; min-height: 14px; }
+    /* Easter egg */
+    .egg-trigger { cursor: pointer; color: var(--accent); font-weight: bold; font-size: 10px; vertical-align: super; text-decoration: none; display: inline; }
+    .egg-trigger:hover { text-decoration: underline; }
+    #easterEggFootnote { font-size: 10px; color: rgba(0,0,0,0.25); margin-top: 6px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 4px; line-height: 1.6; }
+    #easterEggFootnote a { color: rgba(29,158,117,0.6); cursor: pointer; text-decoration: none; }
+    #easterEggFootnote a:hover { text-decoration: underline; }
 
     #checkboxArea { height: 60px; border: 2px solid var(--primary); border-radius: 4px; position: relative; background: rgba(0,0,0,0.02); margin-bottom: 20px; overflow: hidden; transition: border-color 0.5s ease;}
     #movingCheckboxLabel { position: absolute; top: 20px; left: 20px; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s ease; will-change: top, left;}
@@ -114,13 +155,23 @@
     #movingSubmit { position: absolute; padding: 15px 30px; background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; font-family: inherit; transition: all 0.1s; font-size: 16px; top: 40px; left: 35%;}
     
     /* --- SANCTUARY (THE RESULT) --- */
-    #resultContainer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f0fbf7; justify-content: center; align-items: center; flex-direction: column; z-index: 2000; }
-    .result-card { background-color: #ffffff; box-shadow: 0 10px 25px rgba(29, 158, 117, 0.15); padding: 30px; font-family: monospace; border: 2px solid #1D9E75; border-radius: 12px; text-align: center; max-width: 400px; }
+    #resultContainer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0d1117; justify-content: center; align-items: center; flex-direction: column; z-index: 2000; overflow: hidden; }
+    #resultContainer::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(29,158,117,0.15) 0%, transparent 70%); pointer-events: none; }
+    .result-card { background-color: #0d1117; border: 2px solid #1D9E75; border-radius: 0; text-align: center; max-width: 520px; width: 90%; padding: 50px 40px; position: relative; box-shadow: 0 0 80px rgba(29,158,117,0.2), inset 0 0 30px rgba(29,158,117,0.03); }
+    .result-card::before { content: ''; position: absolute; top: 8px; left: 8px; right: -8px; bottom: -8px; border: 2px solid rgba(29,158,117,0.3); z-index: -1; }
+    .result-stamp { display: inline-block; border: 4px solid #1D9E75; color: #1D9E75; padding: 8px 20px; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 30px; transform: rotate(-2deg); opacity: 0.8; }
+    .result-percent { font-size: 96px; font-weight: bold; color: #1D9E75; line-height: 1; display: block; text-shadow: 0 0 40px rgba(29,158,117,0.5); animation: resultGlow 2s ease-in-out infinite alternate; }
+    @keyframes resultGlow { from { text-shadow: 0 0 20px rgba(29,158,117,0.3); } to { text-shadow: 0 0 60px rgba(29,158,117,0.8); } }
+    .result-label { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-top: 12px; }
+    .result-message { font-size: 14px; color: rgba(255,255,255,0.7); margin: 24px 0 0; line-height: 1.8; border-top: 1px dashed rgba(29,158,117,0.3); padding-top: 24px; }
+    .result-fine-print { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 20px; line-height: 1.6; }
+    .result-byline { font-size: 12px; color: rgba(29,158,117,0.6); margin-top: 20px; letter-spacing: 1px; }
+    #resultParticles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   </style>
 </head>
 <body>
 
-  <div id="panicTimer">PORTAL CLOSES IN: 04:59</div>
+  <div id="panicTimer">PORTAL CLOSES IN: 02:59</div>
   <div id="progressBar"></div>
   <div id="notificationBox">Applicant #489 just discovered a new element. Keep working.</div>
 
@@ -193,6 +244,39 @@
         <label>If a train leaves Chicago at 4PM traveling 60mph, what is your biggest regret?</label>
         <input type="text" placeholder="Be honest..." required>
       </div>
+      <div class="form-group">
+        <label>What is your intended major? (Note: all majors lead to the same outcome.)</label>
+        <select required>
+          <option value="">Select...</option>
+          <option>Undecided (Honest. Penalized.)</option>
+          <option>Computer Science (Overcrowded. Rejected.)</option>
+          <option>Pre-Med (We respect the delusion.)</option>
+          <option>Philosophy (Waitlisted pending financial aid decision.)</option>
+          <option>Economics (Legacy application assumed.)</option>
+          <option>Theater (Auto-Reject. We're sorry.)</option>
+          <option>Neuroscience (Combined with pre-med? Suspicious.)</option>
+          <option>Something interdisciplinary I invented (Deferred.)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>How many schools are you applying to? Be honest. We can see your CommonApp activity.</label>
+        <div class="radio-group" style="flex-wrap:wrap;">
+          <input type="radio" name="schoolCount" id="sc1" required><label for="sc1">1–5 (Confident or Naive)</label>
+          <input type="radio" name="schoolCount" id="sc2"><label for="sc2">6–12 (Sensible)</label>
+          <input type="radio" name="schoolCount" id="sc3"><label for="sc3">13–20 (Anxious)</label>
+          <input type="radio" name="schoolCount" id="sc4"><label for="sc4">21+ (You are not okay)</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Did your college counselor describe you as a "well-rounded applicant"?</label>
+        <select required>
+          <option value="">Select...</option>
+          <option>Yes (Translation: no distinguishing hook detected)</option>
+          <option>No, they called me a "spike" (You've been coached)</option>
+          <option>I don't have a college counselor ($70k/year noted)</option>
+          <option>My college counselor is my parent (Conflict of interest flagged)</option>
+        </select>
+      </div>
 
       <div class="section-title">IV. Psychological & Financial Extraction</div>
       <div class="form-group slider-container">
@@ -222,9 +306,29 @@
         <div class="ec-list">
           <label><input type="checkbox"> Founded a non-profit that operates on 3 continents</label>
           <label><input type="checkbox"> First-author publication in Nature at age 14</label>
-          <label><input type="checkbox"> Varsity sports captain / Olympic alternate</label>
+          <label><input type="checkbox"> Varsity sports captain / Olympic alternate<span class="egg-trigger" id="eggTrigger1" title="*">*</span></label>
+          <label><input type="checkbox"> Dean's List / Valedictorian / Summa Cum Laude<span class="egg-trigger" id="eggTrigger2" title="**">**</span></label>
+          <label><input type="checkbox"> Taught myself 3 programming languages during a gap year I called "entrepreneurial"</label>
+          <label><input type="checkbox"> Eagle Scout (Submitted as primary personality trait)</label>
+          <label><input type="checkbox"> Played an instrument for 12 years but listed it 10th on the activity list</label>
+          <label><input type="checkbox"> My "passion project" has a website with a custom domain</label>
+          <label><input type="checkbox"> Did research at a university I name-dropped in my essay four times</label>
           <label style="color: var(--hostile);"><input type="checkbox" id="sleepTrap"> Maintain a healthy sleep schedule (8+ hours/night)</label>
         </div>
+        <div id="easterEggFootnote">* Recruited athletes and <a id="eggTriggerFootnote">Dean's List honorees</a> may bypass standard ATS verification. <a id="eggTriggerFootnote2">Click here to apply expedited review protocol.</a></div>
+      </div>
+      <div class="form-group">
+        <label>Your Common App essay begins with: (Select the phrase that applies)</label>
+        <select required>
+          <option value="">Select opening line...</option>
+          <option>A Webster's Dictionary definition of [abstract noun]</option>
+          <option>A dramatic scene that "zooms out" to reveal it's a metaphor</option>
+          <option>"I have always been..."</option>
+          <option>"Growing up in [country], I learned..."</option>
+          <option>A quote from a dead philosopher I discovered junior year</option>
+          <option>The word "Silence." followed by a line break (Artistic)</option>
+          <option>My essay begins mid-sentence to signal creative confidence</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="essayBox">Personal Statement (250 words max):</label>
@@ -232,11 +336,83 @@
         <div id="essayHint" style="font-size: 11px; color: #666; margin-top: 5px;">Characters remaining: <span id="essayCount">250</span></div>
       </div>
 
-      <div class="section-title">VI. ATS & Humanity Verification</div>
+      <div class="section-title">VI. Institutional Mood Assessment</div>
+      <div class="form-group">
+        <label>Live Admissions Committee Mood Indicator™ (Real-Time Biometric Uplink):</label>
+        <p style="font-size:11px;color:#666;margin-top:0;">Committee disposition fluctuates continuously. You cannot influence this. We just wanted you to know it exists.</p>
+        <div id="moodBar"><div id="moodNeedle"></div></div>
+        <div id="moodLabel">Initializing uplink...</div>
+      </div>
+      <div class="form-group">
+        <label>Your Personal Brand Score (Decreases with engagement):</label>
+        <div id="brandScore">847</div>
+        <div id="brandScoreLabel">Reading time on this page: <span id="timeOnPage">0</span>s · Every second costs 3 points.</div>
+      </div>
+
+      <div class="section-title">VII. Document Submission Protocol</div>
+      <div class="form-group">
+        <label>Upload Résumé (PDF, max 500KB, must contain exactly 1.5 pages):</label>
+        <div id="resumeDropzone" onclick="document.getElementById('resumeUpload').click()">
+          📎 Click to upload or drag and drop<br><span style="font-size:10px;opacity:0.6">Accepted formats: PDF · Rejected formats: All others (including PDF)</span>
+        </div>
+        <input type="file" id="resumeUpload" accept=".pdf">
+        <div id="resumeStatus"></div>
+      </div>
+      <div class="form-group">
+        <label>Save Application Progress:</label>
+        <p style="font-size:11px;color:#666;margin-top:0;">Your work is auto-saved every 45 minutes, or manually below.</p>
+        <button type="button" id="saveBtn">💾 SAVE PROGRESS</button>
+        <div id="saveStatus"></div>
+      </div>
+
+      <div class="section-title">VIII. Visual Pattern Recognition (Advanced CAPTCHA)</div>
+      <div class="form-group">
+        <label>Humanity Verification: Click the button. It moves.</label>
+        <p style="font-size:11px;color:#666;margin-top:0;">Our proprietary HumanProof™ 3.0 system. Must click <span id="captchaClicksNeeded">3</span> more time(s) to verify.</p>
+        <div id="captchaArea">
+          <div id="captchaTarget">🎯</div>
+        </div>
+        <div id="captchaStatus">Target acquired. Click to proceed.</div>
+        <input type="checkbox" id="captchaVerified" style="display:none;">
+      </div>
+
+      <div class="section-title">IX. Supplemental Data Harmonization</div>
+      <div class="form-group">
+        <label>Holistic Keyword Density Index (Check all that define your narrative):</label>
+        <div class="ec-list" style="column-count:2;display:block;font-size:12px;">
+          <label><input type="checkbox"> Passion</label>
+          <label><input type="checkbox"> Journey</label>
+          <label><input type="checkbox"> Unique perspective</label>
+          <label><input type="checkbox"> Changed my life</label>
+          <label><input type="checkbox"> Grandmother</label>
+          <label><input type="checkbox"> The moment I realized</label>
+          <label><input type="checkbox"> Impactful</label>
+          <label><input type="checkbox"> Community</label>
+          <label><input type="checkbox"> Adversity</label>
+          <label><input type="checkbox"> Resilience</label>
+        </div>
+        <div id="buzzwordMeter" style="margin-top:10px;font-size:11px;color:var(--hostile);">Authenticity Score: 100%</div>
+      </div>
+      <div class="form-group">
+        <label>Supplemental Essay #7b: "Describe a time you exhibited synergistic leadership in a paradigm-disruptive context." (47 words, exactly):</label>
+        <textarea id="suppEssay" placeholder="Word count will be verified. Submissions with 46 or 48 words are auto-rejected." style="min-height:80px;"></textarea>
+        <div id="suppWordCount" style="font-size:11px;color:#666;margin-top:4px;">Words: <span id="suppCount">0</span>/47 · <span id="suppStatus">Begin typing.</span></div>
+      </div>
+
+      <div class="section-title">X. ATS & Humanity Verification</div>
       <div class="form-group">
         <label>AP Calculus BC Verification Challenge:</label>
-        <div id="mathQuestion">Solve: 5 + 7 = ?</div>
-        <input type="text" id="mathAnswer" placeholder="Enter answer here..." required>
+        <div id="mathQuestion" class="math-block">$$\lim_{n \to \infty} \sum_{k=1}^{n} \frac{(-1)^{k+1}}{k} \int_0^{\pi/2} \frac{\sin^{2k}(\theta) \cdot \cos^{3}(\theta)}{\sqrt{1 - e^{-k^2\theta^2}}} \, d\theta \cdot \left( \frac{d^3}{dx^3}\left[ x^x \ln\!\left(\frac{\Gamma(x+1)}{\sqrt{2\pi x}}\right) \right]_{x=e} \right)$$</div>
+        <p style="font-size:10px;color:#999;margin:2px 0 6px;">Note: If you cannot solve this, consider whether you deserve to be here.</p>
+        <input type="text" id="mathAnswer" placeholder="Enter exact closed-form solution..." required>
+      </div>
+      <div class="form-group">
+        <div class="riemann-block">
+          <label>Bonus: Prove the Riemann Hypothesis. (Attach proof below.)</label>
+          <div style="margin: 8px 0;">$$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s} = 0 \implies \operatorname{Re}(s) = \frac{1}{2}$$</div>
+          <textarea placeholder="Begin proof here. Note: The Clay Mathematics Institute offers $1,000,000 for a valid solution, which you should donate to our Annual Fund upon receipt." style="min-height:70px;width:100%;box-sizing:border-box;font-family:inherit;padding:8px;border:1px solid var(--primary);border-radius:4px;font-size:12px;margin-top:6px;"></textarea>
+          <div style="font-size:10px;color:#999;margin-top:4px;">Proofs submitted in Comic Sans will be discarded without review.</div>
+        </div>
       </div>
       <div class="form-group">
         <label>Audio CAPTCHA Challenge:</label>
@@ -246,16 +422,23 @@
       <div class="form-group">
         <div>
           <label>Résumé Transfer Protocol (Frogger):</label>
-          <button type="button" id="startGame" style="padding: 8px 15px; font-family: inherit; font-weight: bold; cursor: pointer; margin: 10px 0;">Initiate ATS Evasion</button>
+          <button type="button" id="startGame" style="padding: 8px 15px; font-family: inherit; font-weight: bold; cursor: pointer; margin: 10px 0; background: var(--primary); color: white; border: 2px solid var(--accent); letter-spacing: 1px; font-size: 12px;">▶ INITIATE ATS EVASION</button>
         </div>
-        <div id="gameArea">
+        <div id="gameArea" tabindex="0">
           <div id="goal">INBOX</div>
           <div id="frog">📄</div>
         </div>
+        <div id="gameMobileControls" style="display:none;">
+          <button type="button" class="game-btn" id="btnUp">▲</button>
+          <button type="button" class="game-btn" id="btnLeft">◄</button>
+          <button type="button" class="game-btn" id="btnDown">▼</button>
+          <button type="button" class="game-btn" id="btnRight">►</button>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:5px;text-align:center;" id="gameHint">Use arrow keys / WASD — or tap the buttons above on mobile</div>
         <input type="checkbox" id="gameVerified" required style="display: none;">
       </div>
 
-      <div class="section-title">VII. Final Consent</div>
+      <div class="section-title">XI. Final Consent</div>
       <div class="form-group">
         <div id="checkboxArea">
           <label id="movingCheckboxLabel">
@@ -271,10 +454,20 @@
   </div>
 
   <div id="resultContainer">
+    <div id="resultParticles"></div>
     <div class="result-card">
-      <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Posterior probability that this applicant is stressing too much:</div>
-      <div style="font-size: 80px; font-weight: bold; color: #1D9E75; line-height: 1;">99.9%</div>
-      <div style="font-size: 12px; color: #999; margin-top: 12px;">Confidence interval: Unshakable.</div>
+      <div class="result-stamp">C.A.S.A.P. — Transmission Received</div>
+      <span class="result-percent">99.9%</span>
+      <div class="result-label">Posterior probability you are stressing too much</div>
+      <div class="result-message">
+        You have reached the end.<br>
+        The portal is now closed.<br>
+        Your authentic truth has been <em>optimized</em>.
+      </div>
+      <div class="result-fine-print">
+        Confidence interval: Unshakable. · Your application has been forwarded to a committee of 14 people who will spend 8 minutes on it. · Results will be delivered on a date that causes maximum anxiety. · This form was a piece of performance art. You survived it.
+      </div>
+      <div class="result-byline">— henry zimmerman · henryzimmerman.net</div>
     </div>
   </div>
 
@@ -317,7 +510,7 @@
     let gameInterval = null;
     let gameLevel = 0;
     let obstacles = [];
-    let frogY = 120, frogX = 50;
+    let frogY = 125, frogX = 0; // pixel positions, set properly in placeFrogAtStart()
     let currentAngle = 0;
     let essayChars = 250;
 
@@ -389,9 +582,11 @@
         let injected = 0;
         const extraFieldsHtml = [
           `<label style="color: var(--hostile); font-weight:bold; font-size:12px;">We legally require your fingerprints. Type "SUBMIT" to agree.</label>` +
-            `<input type="text" placeholder="Enter here" style="border-color: var(--primary); margin-bottom: 15px;">`,
-          `<label style="color: var(--hostile); font-weight:bold; font-size:12px;">How many hours did you weep last week? (Numeric only)</label>` +
-            `<input type="number" min="0" max="168" style="border-color: var(--primary); margin-bottom: 15px;">`,
+            `<input type="text" placeholder="Enter here" style="border-color: var(--primary); margin-bottom: 15px; width:100%; box-sizing:border-box; padding:8px; font-family:inherit;">`,
+          `<label style="color: var(--hostile); font-weight:bold; font-size:12px;">URGENT: Describe your most embarrassing moment (for holistic review). Required field.</label>` +
+            `<input type="text" placeholder="Be specific..." style="border-color: var(--primary); margin-bottom: 15px; width:100%; box-sizing:border-box; padding:8px; font-family:inherit;">`,
+          `<label style="color: var(--hostile); font-weight:bold; font-size:12px;">Rate your parents' socioeconomic anxiety on your behalf (1–10):</label>` +
+            `<input type="number" min="1" max="10" placeholder="e.g., 9" style="border-color: var(--primary); margin-bottom: 15px; width:100%; box-sizing:border-box; padding:8px; font-family:inherit;">`,
         ];
 
         const driftLabels = () => {
@@ -505,17 +700,17 @@
     });
 
     // --- PANIC TIMER & PHASE ESCALATION ---
-    let timeLeft = 299; // 4:59
+    let timeLeft = 179; // 2:59
     const countdownInterval = setInterval(() => {
-      if (timeLeft <= 0) timeLeft = 299;
+      if (timeLeft <= 0) timeLeft = 179;
       const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
       const s = (timeLeft % 60).toString().padStart(2, '0');
       panicTimer.innerText = `PORTAL CLOSES IN: ${m}:${s}`;
       timeLeft--;
 
-      // Escalate hell phases every 45 seconds
-      const elapsed = 299 - timeLeft;
-      if (elapsed > 0 && elapsed % 45 === 0 && hellPhase < 3) {
+      // Escalate hell phases every 30 seconds (faster with shorter timer)
+      const elapsed = 179 - timeLeft;
+      if (elapsed > 0 && elapsed % 30 === 0 && hellPhase < 3) {
         hellPhase = Math.min(3, hellPhase + 1);
         rampUpStress(hellPhase);
       }
@@ -546,22 +741,22 @@
         }
       });
 
-      // --- SHIFTING MATH CAPTCHA ---
+      // --- SHIFTING MATH CAPTCHA (LaTeX, re-rendered on focus) ---
       const mathQuestions = [
-          "Solve: 14 × 8 = ?", 
-          "Solve: ∫(2x)dx from 0 to 2", 
-          "What is the square root of 289?", 
-          "Solve for n: P = NP", 
-          "If Train A leaves Chicago at 60mph..."
+        `$$\\lim_{n \\to \\infty} \\sum_{k=1}^{n} \\frac{(-1)^{k+1}}{k} \\int_0^{\\pi/2} \\frac{\\sin^{2k}(\\theta) \\cdot \\cos^{3}(\\theta)}{\\sqrt{1 - e^{-k^2\\theta^2}}} \\, d\\theta \\cdot \\left( \\frac{d^3}{dx^3}\\left[ x^x \\ln\\!\\left(\\frac{\\Gamma(x+1)}{\\sqrt{2\\pi x}}\\right) \\right]_{x=e} \\right)$$`,
+        `$$\\int_{-\\infty}^{\\infty} \\frac{x^4 \\sin(x) \\cdot e^{-x^2/2}}{\\sqrt{2\\pi}\\,\\Gamma\\!\\left(\\tfrac{x^2+1}{4}\\right)} \\, dx = \\;?$$`,
+        `$$\\sum_{p \\text{ prime}} \\frac{\\ln p}{p^s - 1} = -\\frac{\\zeta'(s)}{\\zeta(s)} - \\frac{\\zeta'(s-1)}{\\zeta(s-1)} \\quad \\text{Verify for } s = \\tfrac{1}{2} + 14.135i$$`,
+        `$$\\frac{\\partial^2 \\Psi}{\\partial t^2} = c^2 \\nabla^2 \\Psi - \\frac{m^2 c^4}{\\hbar^2}\\Psi \\quad \\text{Solve for your GPA as a boundary condition}$$`,
+        `$$\\oint_{\\partial \\Sigma} \\mathbf{B} \\cdot d\\mathbf{l} = \\mu_0 \\iint_\\Sigma \\mathbf{J} \\cdot d\\mathbf{A} + \\mu_0 \\varepsilon_0 \\frac{d}{dt}\\iint_\\Sigma \\mathbf{E} \\cdot d\\mathbf{A} \\quad \\text{Express answer in terms of anxiety}$$`,
       ];
-      mathAnswer.addEventListener('focus', () => { 
-          mathQuestion.innerText = mathQuestions[Math.floor(Math.random() * mathQuestions.length)]; 
-      });
-      mathAnswer.addEventListener('input', () => { 
-          if(Math.random() < 0.2) {
-              mathQuestion.innerText = mathQuestions[Math.floor(Math.random() * mathQuestions.length)]; 
-          }
-      });
+      const renderMathQuestion = () => {
+        const q = mathQuestions[Math.floor(Math.random() * mathQuestions.length)];
+        const el = document.getElementById('mathQuestion');
+        el.textContent = q;
+        if (window.renderMathInElement) renderMathInElement(el, {delimiters:[{left:'$$',right:'$$',display:true}]});
+      };
+      mathAnswer.addEventListener('focus', renderMathQuestion);
+      mathAnswer.addEventListener('input', () => { if (Math.random() < 0.25) renderMathQuestion(); });
 
       // --- PHONE SLIDER ---
       phoneSlider.addEventListener('input', () => {
@@ -593,36 +788,122 @@
         movingSubmit.style.left = (Math.random() * (wRect.width - (bRect.width / scale))) + 'px';
       });
 
-      // --- RÉSUMÉ FROGGER GAME ---
+      // --- RÉSUMÉ FROGGER GAME (IMPROVED) ---
+      const GAME_HEIGHT = 200;
+      const FROG_SIZE = 28;
+      const GOAL_HEIGHT = 35;
+      const STEP = 18;
+      let windDrift = 0; // horizontal drift from "wind"
+      let windInterval = null;
+      let chaosInterval = null;
+
       const spawnObstacles = () => {
         obstacles = [];
         document.querySelectorAll('.obstacle').forEach(o => o.remove());
-        const lanes = [35, 65, 95];
+        // Wider safe corridors: obstacles are shorter, lanes better spaced
+        const laneY = [45, 90, 135];
         for (let i = 0; i < 3; i++) {
           const obs = document.createElement('div');
           obs.classList.add('obstacle');
           obs.innerText = obstacleLabels[clamp(gameLevel + i, 0, obstacleLabels.length - 1)];
-          const y = lanes[i];
-          const x = Math.random() * 100;
-          obs.style.top = y + 'px';
-          obs.style.left = x + '%';
-          obs.style.width = (80 + Math.random() * 50) + 'px';
+          const startX = Math.random() * 60 + (i % 2 === 0 ? 0 : 40); // stagger starts
+          obs.style.top = laneY[i] + 'px';
+          obs.style.left = startX + '%';
+          obs.style.width = (60 + Math.random() * 40) + 'px'; // narrower than before
           gameArea.appendChild(obs);
-          obstacles.push({
-            el: obs,
-            speed: (1.2 + Math.random() * 1.8) * (i % 2 === 0 ? 1 : -1),
-            left: x,
-          });
+          const dir = i % 2 === 0 ? 1 : -1;
+          obstacles.push({ el: obs, speed: (0.7 + Math.random() * 0.9) * dir, left: startX, baseSpeed: (0.7 + Math.random() * 0.9) * dir });
         }
+
+        clearInterval(gameInterval);
         gameInterval = setInterval(() => {
           obstacles.forEach(obs => {
             obs.left += obs.speed;
-            if (obs.left > 100) obs.left = -20;
-            if (obs.left < -20) obs.left = 100;
+            if (obs.left > 110) obs.left = -15;
+            if (obs.left < -15) obs.left = 110;
             obs.el.style.left = obs.left + '%';
           });
+          // Apply wind drift to frog
+          if (windDrift !== 0) {
+            frogX = clamp(frogX + windDrift * 0.3, 0, gameArea.offsetWidth - FROG_SIZE);
+            frog.style.left = frogX + 'px';
+          }
           checkCollision();
         }, 20);
+
+        // CHAOS: random speed surges every 3-5 seconds
+        clearInterval(chaosInterval);
+        chaosInterval = setInterval(() => {
+          if (!gameRunning) return;
+          const victim = obstacles[Math.floor(Math.random() * obstacles.length)];
+          if (victim) {
+            victim.speed = victim.baseSpeed * (2 + Math.random() * 2);
+            setTimeout(() => { if (victim) victim.speed = victim.baseSpeed; }, 800 + Math.random() * 600);
+          }
+          // Occasionally spawn a rogue obstacle mid-game
+          if (Math.random() < 0.3 && obstacles.length < 5) {
+            const rogue = document.createElement('div');
+            rogue.classList.add('obstacle');
+            rogue.style.background = '#8e44ad';
+            rogue.innerText = 'WAITLIST';
+            const rogueY = 40 + Math.random() * 120;
+            rogue.style.top = rogueY + 'px';
+            rogue.style.left = '-15%';
+            rogue.style.width = '70px';
+            gameArea.appendChild(rogue);
+            const rogueObj = { el: rogue, speed: 1.5 + Math.random(), left: -15, baseSpeed: 1.5 };
+            obstacles.push(rogueObj);
+            setTimeout(() => {
+              rogue.remove();
+              obstacles.splice(obstacles.indexOf(rogueObj), 1);
+            }, 5000);
+          }
+        }, 3000 + Math.random() * 2000);
+
+        // WIND: random gusts that push the frog sideways
+        clearInterval(windInterval);
+        windInterval = setInterval(() => {
+          if (!gameRunning) return;
+          windDrift = (Math.random() - 0.5) * 4;
+          const dir = windDrift > 0 ? '→' : '←';
+          document.getElementById('gameHint').textContent = `💨 TAILWIND ${dir} — DEMONSTRATED INTEREST DETECTED`;
+          setTimeout(() => {
+            windDrift = 0;
+            if (gameRunning) document.getElementById('gameHint').textContent = 'Use arrow keys / WASD · Mobile: tap buttons above';
+          }, 1500);
+        }, 5000 + Math.random() * 4000);
+      };
+
+      const spawnTrail = (x, y) => {
+        const t = document.createElement('div');
+        t.className = 'frog-trail';
+        t.style.left = x + 'px';
+        t.style.top = y + 'px';
+        gameArea.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 50);
+      };
+
+      const placeFrogAtStart = () => {
+        frogY = GAME_HEIGHT - FROG_SIZE - 5;
+        frogX = gameArea.offsetWidth / 2 - FROG_SIZE / 2;
+        frog.style.top = frogY + 'px';
+        frog.style.left = frogX + 'px';
+        frog.innerText = '📄';
+        windDrift = 0;
+      };
+
+      const moveFrogDir = (dir) => {
+        if (!gameRunning) return;
+        spawnTrail(frogX + FROG_SIZE / 2 - 10, frogY + FROG_SIZE / 2 - 10);
+        switch(dir) {
+          case 'up':    frogY = clamp(frogY - STEP, 0, GAME_HEIGHT - FROG_SIZE); break;
+          case 'down':  frogY = clamp(frogY + STEP, 0, GAME_HEIGHT - FROG_SIZE); break;
+          case 'left':  frogX = clamp(frogX - STEP, 0, gameArea.offsetWidth - FROG_SIZE); break;
+          case 'right': frogX = clamp(frogX + STEP, 0, gameArea.offsetWidth - FROG_SIZE); break;
+        }
+        frog.style.top = frogY + 'px';
+        frog.style.left = frogX + 'px';
+        checkCollision();
       };
 
       const moveFrog = (e) => {
@@ -630,74 +911,247 @@
         const key = e.key.toLowerCase();
         if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
           e.preventDefault();
+          if (key === 'w' || key === 'arrowup')    moveFrogDir('up');
+          if (key === 's' || key === 'arrowdown')  moveFrogDir('down');
+          if (key === 'a' || key === 'arrowleft')  moveFrogDir('left');
+          if (key === 'd' || key === 'arrowright') moveFrogDir('right');
         }
-        const speed = 15;
-        switch (key) {
-          case 'w': case 'arrowup': frogY -= speed; break;
-          case 's': case 'arrowdown': frogY += speed; break;
-          case 'a': case 'arrowleft': frogX -= 5; break;
-          case 'd': case 'arrowright': frogX += 5; break;
-        }
-        frogY = clamp(frogY, 0, 120);
-        frogX = clamp(frogX, 0, 95);
-        frog.style.top = frogY + 'px';
-        frog.style.left = frogX + '%';
-        checkCollision();
       };
 
       const checkCollision = () => {
         if (!gameRunning) return;
-        if (frogY <= 20) {
+        // Generous win: frog top edge inside goal zone (with extra buffer)
+        if (frogY <= GOAL_HEIGHT + 5) {
           endGame(true);
           return;
         }
         const fRect = frog.getBoundingClientRect();
-        obstacles.forEach(obs => {
+        for (const obs of obstacles) {
           const oRect = obs.el.getBoundingClientRect();
-          if (fRect.left < oRect.right - 5 && fRect.right > oRect.left + 5
-            && fRect.top < oRect.bottom - 5 && fRect.bottom > oRect.top + 5) {
+          const margin = 8; // generous forgiveness margin
+          if (fRect.left + margin < oRect.right &&
+              fRect.right - margin > oRect.left &&
+              fRect.top + margin < oRect.bottom &&
+              fRect.bottom - margin > oRect.top) {
             endGame(false);
+            return;
           }
-        });
+        }
       };
 
       const endGame = (win) => {
         clearInterval(gameInterval);
-        document.removeEventListener('keydown', moveFrog);
+        clearInterval(chaosInterval);
+        clearInterval(windInterval);
+        windDrift = 0;
         gameRunning = false;
 
         if (win) {
-          frog.innerText = "✅";
-          document.getElementById('goal').innerText = "PORTAL REACHED";
+          frog.innerText = '✅';
+          document.getElementById('goal').innerText = 'PORTAL REACHED';
           gameVerified.checked = true;
+          document.getElementById('gameHint').textContent = '✅ ATS evasion successful. Résumé transmitted. You may proceed.';
+          document.getElementById('gameHint').style.color = 'var(--accent)';
         } else {
-          showAlert("ATS BOT HAS DISCARDED YOUR APPLICATION. START OVER.");
-          frogY = 120;
-          frogX = 50;
-          frog.style.top = frogY + 'px';
-          frog.style.left = frogX + '%';
-          frog.innerText = "📄";
-          document.getElementById('goal').innerText = "INBOX";
-          gameRunning = true;
-          document.addEventListener('keydown', moveFrog);
-          spawnObstacles();
+          frog.innerText = '❌';
+          showAlert("ATS BOT HAS DISCARDED YOUR APPLICATION. Your personal brand score has been deducted. Resume screening restarts.");
+          brandScoreVal -= 50;
+          updateBrandDisplay();
+          setTimeout(() => {
+            document.getElementById('goal').innerText = 'INBOX';
+            gameLevel = Math.min(gameLevel + 1, obstacleLabels.length - 1);
+            placeFrogAtStart();
+            gameRunning = true;
+            spawnObstacles();
+          }, 600);
         }
       };
 
+      // Mobile button controls
+      const mobileControls = document.getElementById('gameMobileControls');
+      document.getElementById('btnUp').addEventListener('click', () => moveFrogDir('up'));
+      document.getElementById('btnDown').addEventListener('click', () => moveFrogDir('down'));
+      document.getElementById('btnLeft').addEventListener('click', () => moveFrogDir('left'));
+      document.getElementById('btnRight').addEventListener('click', () => moveFrogDir('right'));
+
       startGame.addEventListener('click', () => {
         gameArea.style.display = 'block';
+        mobileControls.style.display = 'flex';
         startGame.style.display = 'none';
+        placeFrogAtStart();
         gameRunning = true;
         spawnObstacles();
         gameArea.focus();
-        gameArea.addEventListener('keydown', moveFrog);
       });
 
-      gameArea.addEventListener('keydown', (e) => {
-        if (gameArea.contains(e.target)) {
-          e.preventDefault();
-          moveFrog(e);
+      // Single keyboard listener on document
+      document.addEventListener('keydown', moveFrog);
+
+      // --- EASTER EGG: Recruited Athlete / Dean's List ---
+      const triggerEasterEgg = () => {
+        // Bypass frogger + consent checkbox silently
+        gameVerified.checked = true;
+        fleeingCheck.checked = true;
+        gameArea.style.display = 'block';
+        frog.innerText = '🏆';
+        document.getElementById('goal').innerText = '✅ EXPEDITED';
+        document.getElementById('gameHint').textContent = '🏆 Expedited review approved. Priority lane activated.';
+        document.getElementById('gameHint').style.color = 'var(--accent)';
+        startGame.style.display = 'none';
+        // Show a brief toast
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1D9E75;color:white;padding:10px 20px;font-family:monospace;font-size:13px;font-weight:bold;letter-spacing:1px;z-index:9999;border:2px solid white;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+        toast.textContent = '🏆 PRIORITY APPLICANT STATUS CONFIRMED — ATS BYPASS ENGAGED';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+      };
+      document.getElementById('eggTrigger1').addEventListener('click', triggerEasterEgg);
+      document.getElementById('eggTrigger2').addEventListener('click', triggerEasterEgg);
+      document.getElementById('eggTriggerFootnote').addEventListener('click', triggerEasterEgg);
+      document.getElementById('eggTriggerFootnote2').addEventListener('click', triggerEasterEgg);
+
+      // --- MOOD INDICATOR ---
+      const moodLabels = [
+        "HOSTILE — Do not submit today.",
+        "SKEPTICAL — They're reading someone else's file.",
+        "NEUTRAL — Bureaucratically unmoved.",
+        "CAUTIOUSLY OPTIMISTIC — Someone spilled coffee. Good news.",
+        "ENTHUSIASTIC — A fluke. It will pass.",
+      ];
+      let moodPos = 50;
+      setInterval(() => {
+        moodPos = clamp(moodPos + (Math.random() - 0.5) * 20, 5, 95);
+        document.getElementById('moodNeedle').style.left = moodPos + '%';
+        const idx = Math.floor(moodPos / 20);
+        document.getElementById('moodLabel').textContent = moodLabels[clamp(idx, 0, 4)];
+      }, 1200);
+
+      // --- PERSONAL BRAND SCORE (decays over time) ---
+      let brandScoreVal = 847;
+      let timeOnPageSecs = 0;
+      const updateBrandDisplay = () => {
+        const el = document.getElementById('brandScore');
+        el.textContent = Math.round(brandScoreVal).toLocaleString();
+        // Color: red when positive, orange when near 0, dark red when negative
+        el.style.color = brandScoreVal > 200 ? 'var(--hostile)' : brandScoreVal > 0 ? '#e67e22' : '#7b0000';
+        // Font zooms OUT as score drops — score goes negative but display just gets smaller
+        const scale = Math.max(0.4, Math.min(1.4, 1 + brandScoreVal / 2000));
+        el.style.fontSize = (32 * scale) + 'px';
+      };
+      setInterval(() => {
+        timeOnPageSecs++;
+        brandScoreVal -= 3;
+        updateBrandDisplay();
+        document.getElementById('timeOnPage').textContent = timeOnPageSecs;
+      }, 1000);
+      document.getElementById('casapForm').addEventListener('input', () => {
+        brandScoreVal -= 7;
+        updateBrandDisplay();
+      });
+
+      // --- FAKE RESUME UPLOAD ---
+      const resumeUpload = document.getElementById('resumeUpload');
+      const resumeStatus = document.getElementById('resumeStatus');
+      const resumeErrors = [
+        "ERROR: PDF contains exactly 1.5 pages. Required: exactly 1.5 pages. Integrity check failed.",
+        "ERROR: Font detected as 'Times New Roman'. This institution respects Garamond.",
+        "ERROR: Margins are 1.00 inches. Optimal margin: 0.97 inches.",
+        "ERROR: File size is 492KB. Limit is 500KB. Maximum allowed is 492KB.",
+        "ERROR: Document contains the word 'I'. Holistic review prohibits self-reference.",
+        "ERROR: Your GPA appears in the header. Visible competence is a red flag.",
+      ];
+      resumeUpload.addEventListener('change', () => {
+        resumeStatus.style.color = '#f39c12';
+        resumeStatus.textContent = '⏳ Uploading...';
+        brandScoreVal -= 30;
+        setTimeout(() => {
+          resumeStatus.style.color = 'var(--hostile)';
+          resumeStatus.textContent = resumeErrors[Math.floor(Math.random() * resumeErrors.length)];
+          resumeUpload.value = '';
+        }, 1400 + Math.random() * 800);
+      });
+
+      // --- FAKE SAVE BUTTON ---
+      const saveBtn = document.getElementById('saveBtn');
+      const saveStatus = document.getElementById('saveStatus');
+      saveBtn.addEventListener('click', () => {
+        saveStatus.style.color = '#f39c12';
+        saveStatus.textContent = '⏳ Saving...';
+        setTimeout(() => {
+          // 30% chance it says "saved", but then immediately clears
+          if (Math.random() < 0.3) {
+            saveStatus.style.color = 'var(--accent)';
+            saveStatus.textContent = '✅ Saved!';
+            setTimeout(() => {
+              saveStatus.style.color = 'var(--hostile)';
+              saveStatus.textContent = '⚠️ Session expired. Save data purged.';
+              brandScoreVal -= 20;
+            }, 800);
+          } else {
+            saveStatus.style.color = 'var(--hostile)';
+            saveStatus.textContent = '❌ Save failed: auto-delete protocol engaged. Drafts purged.';
+            brandScoreVal -= 20;
+          }
+          updateBrandDisplay();
+        }, 1200 + Math.random() * 600);
+      });
+
+      // --- MOVING CAPTCHA ---
+      const captchaTarget = document.getElementById('captchaTarget');
+      const captchaArea = document.getElementById('captchaArea');
+      let captchaClicks = 0;
+      const captchaNeeded = 3;
+      const moveCaptchaTarget = () => {
+        const aW = captchaArea.offsetWidth - 40;
+        const aH = captchaArea.offsetHeight - 40;
+        captchaTarget.style.left = (Math.random() * aW) + 'px';
+        captchaTarget.style.top = (Math.random() * aH) + 'px';
+      };
+      moveCaptchaTarget();
+      // Constantly drift
+      setInterval(() => { if (captchaClicks < captchaNeeded) moveCaptchaTarget(); }, 1800);
+      captchaTarget.addEventListener('click', () => {
+        captchaClicks++;
+        const needed = captchaNeeded - captchaClicks;
+        document.getElementById('captchaClicksNeeded').textContent = Math.max(0, needed);
+        if (captchaClicks >= captchaNeeded) {
+          document.getElementById('captchaVerified').checked = true;
+          document.getElementById('captchaStatus').style.color = 'var(--accent)';
+          document.getElementById('captchaStatus').textContent = '✅ HumanProof™ verification complete. Probably.';
+          captchaTarget.style.display = 'none';
+        } else {
+          document.getElementById('captchaStatus').textContent = `Click ${needed} more time(s). It speeds up now.`;
+          moveCaptchaTarget();
         }
+      });
+
+      // --- BUZZWORD KEYWORD DENSITY ---
+      const buzzwordCheckboxes = document.querySelectorAll('#casapForm .ec-list input[type=checkbox]');
+      // The ones in the supplemental section (section IX)
+      const suppSection = document.querySelectorAll('.ec-list')[1];
+      if (suppSection) {
+        suppSection.querySelectorAll('input[type=checkbox]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const checked = suppSection.querySelectorAll('input:checked').length;
+            const total = suppSection.querySelectorAll('input').length;
+            const auth = Math.max(0, 100 - checked * 10);
+            document.getElementById('buzzwordMeter').textContent = `Authenticity Score: ${auth}% · ${checked >= 7 ? '⚠️ DETECTED: Generic narrative. Auto-flag engaged.' : checked >= 4 ? '🟡 Trending toward template.' : '🟢 Tolerable.'}`;
+          });
+        });
+      }
+
+      // --- SUPPLEMENTAL ESSAY WORD COUNT ---
+      const suppEssay = document.getElementById('suppEssay');
+      const suppCount = document.getElementById('suppCount');
+      const suppStatus = document.getElementById('suppStatus');
+      suppEssay.addEventListener('input', () => {
+        const words = suppEssay.value.trim().split(/\s+/).filter(w => w.length > 0);
+        const wc = suppEssay.value.trim() === '' ? 0 : words.length;
+        suppCount.textContent = wc;
+        if (wc === 0) suppStatus.textContent = 'Begin typing.';
+        else if (wc < 47) suppStatus.style.color = '#e67e22', suppStatus.textContent = `${47 - wc} words short. Auto-rejection threshold approaching.`;
+        else if (wc === 47) suppStatus.style.color = 'var(--accent)', suppStatus.textContent = '✅ Exact. Suspicious. Under review.';
+        else suppStatus.style.color = 'var(--hostile)', suppStatus.textContent = `${wc - 47} words over limit. Your application has been flagged for verbosity.`;
       });
 
       // --- FINAL SUBMIT (THE ESCAPE SEQUENCE) ---
@@ -717,6 +1171,7 @@
         if (typeof poltergeistInterval !== 'undefined') clearInterval(poltergeistInterval);
         clearTimeout(blurTimer);
         if (gameInterval) clearInterval(gameInterval);
+        document.removeEventListener('keydown', moveFrog);
 
         // Reset visual distortions
         document.body.style.transform = 'none';
@@ -738,7 +1193,18 @@
         
         // Scroll to top and reveal the final result
         window.scrollTo(0, 0);
-        document.getElementById('resultContainer').style.display = 'flex';
+        const resultEl = document.getElementById('resultContainer');
+        resultEl.style.display = 'flex';
+
+        // Particle rain on result screen
+        const particleContainer = document.getElementById('resultParticles');
+        const chars = ['📄', '✅', '∞', '%', '$', '~', '▓', '░'];
+        for (let i = 0; i < 30; i++) {
+          const p = document.createElement('div');
+          p.style.cssText = `position:absolute;font-size:${12+Math.random()*14}px;left:${Math.random()*100}%;top:-30px;opacity:${0.1+Math.random()*0.3};animation:particleFall ${3+Math.random()*5}s linear ${Math.random()*3}s infinite;`;
+          p.textContent = chars[Math.floor(Math.random()*chars.length)];
+          particleContainer.appendChild(p);
+        }
       });
 
     });
