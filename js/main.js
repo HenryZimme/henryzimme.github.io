@@ -299,11 +299,11 @@ function draw_named_star(s) {
   const twinkle = star_twinkle(s);
   // unified PSF gradient: white hot core → star color → transparent
   // replaces the former conditional glow + flat disc with a single draw call
-  const gr = Math.max(s.size * 4.5, 2.5);
+  const gr = Math.max(s.size * 3.4, 2.5);
   const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
-  grd.addColorStop(0,    `rgba(255,255,255,${(0.85 + 0.15 * twinkle).toFixed(2)})`);
-  grd.addColorStop(0.10, hex_to_rgba(s.color, 0.90 * twinkle));
-  grd.addColorStop(0.35, hex_to_rgba(s.color, 0.18 * twinkle));
+  grd.addColorStop(0,    `rgba(255,255,255,${(0.90 + 0.10 * twinkle).toFixed(2)})`);
+  grd.addColorStop(0.12, hex_to_rgba(s.color, (0.70 + 0.30 * twinkle)));
+  grd.addColorStop(0.40, hex_to_rgba(s.color, 0.30 * twinkle));
   grd.addColorStop(1,    hex_to_rgba(s.color, 0));
   ctx.beginPath();
   ctx.arc(s.x, s.y, gr, 0, Math.PI * 2);
