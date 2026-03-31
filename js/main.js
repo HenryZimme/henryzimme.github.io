@@ -62,6 +62,7 @@ const featured_objects = [
 // rendering state
 let star_data = [];
 let bg_stars_by_color = {}; // pre-grouped background stars, built once in build_stars
+let bg_bright_stars = []; // pre-filtered background stars (size > 1.0) for core dot pass
 let named_stars   = []; // Opt 4: pre-filtered; avoids full scan on touch events
 let featured_stars = []; // Opt 4: pre-filtered; avoids full scan on touch events
 let mouse = { x: -9999, y: -9999 };
@@ -188,8 +189,9 @@ function build_stars(catalog) {
   }
 
   // Opt 4: pre-filtered views — avoids full star_data scan on every touch event
-  featured_stars = star_data.filter(s => s.featured);
-  named_stars    = star_data.filter(s => s.name && !s.featured);
+  featured_stars  = star_data.filter(s => s.featured);
+  named_stars     = star_data.filter(s => s.name && !s.featured);
+  bg_bright_stars = star_data.filter(s => !s.featured && !s.name && s.size > 1.0);
 }
 
 // ── twinkle lookup table ──────────────────────────────────────────────────────
@@ -278,28 +280,35 @@ function draw_background_stars_batched() {
     }
   }
   ctx.globalAlpha = 1;
+
+  // white hot core pass — one compound path + one fill for all qualifying bg stars.
+  // size * 0.32 keeps the core sub-pixel on faint stars and a clean pinpoint on brighter ones.
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.62;
+  ctx.beginPath();
+  for (const s of bg_bright_stars) {
+    const r = s.size * 0.32;
+    ctx.moveTo(s.x + r, s.y);
+    ctx.arc(s.x, s.y, r, 0, TWO_PI);
+  }
+  ctx.fill();
+  ctx.globalAlpha = 1;
 }
 
 function draw_named_star(s) {
   const twinkle = star_twinkle(s);
-  // soft glow for brighter stars
-  if (s.size > 1.6) {
-    const gr = s.size * 3.4;
-    const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
-    grd.addColorStop(0, hex_to_rgba(s.color, 0.20 * twinkle));
-    grd.addColorStop(1, hex_to_rgba(s.color, 0));
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, gr, 0, Math.PI * 2);
-    ctx.fillStyle = grd;
-    ctx.fill();
-  }
-
+  // unified PSF gradient: white hot core → star color → transparent
+  // replaces the former conditional glow + flat disc with a single draw call
+  const gr = Math.max(s.size * 4.5, 2.5);
+  const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
+  grd.addColorStop(0,    `rgba(255,255,255,${(0.85 + 0.15 * twinkle).toFixed(2)})`);
+  grd.addColorStop(0.10, hex_to_rgba(s.color, 0.90 * twinkle));
+  grd.addColorStop(0.35, hex_to_rgba(s.color, 0.18 * twinkle));
+  grd.addColorStop(1,    hex_to_rgba(s.color, 0));
   ctx.beginPath();
-  ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-  ctx.fillStyle = s.color;
-  ctx.globalAlpha = 0.70 + 0.30 * twinkle;
+  ctx.arc(s.x, s.y, gr, 0, Math.PI * 2);
+  ctx.fillStyle = grd;
   ctx.fill();
-  ctx.globalAlpha = 1;
 }
 
 function draw_featured_star(s) {
