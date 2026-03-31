@@ -975,6 +975,8 @@ function pick_hint_target() {
   const label_h = is_mobile ? 40  : 36;
   const offset  = is_mobile ? 100 : 92;
   const safe = featured_stars.filter(s => {
+    // exclude HD 344787 from hint callout
+    if (s.name && s.name.startsWith('HD 344787')) return false;
     // vertical: clear nav (90px) and legend (90px from bottom)
     if (s.y < 90 || s.y > canvas.height - 90) return false;
     // compute label x based on which side has room
@@ -990,7 +992,8 @@ function pick_hint_target() {
     if (in_hero_col && in_hero_vert) return false;
     return true;
   });
-  const pool = safe.length ? safe : featured_stars;
+  const eligible = featured_stars.filter(s => !(s.name && s.name.startsWith('HD 344787')));
+  const pool = safe.length ? safe : (eligible.length ? eligible : featured_stars);
   hint_target = pool[Math.floor(Math.random() * pool.length)];
 }
 
