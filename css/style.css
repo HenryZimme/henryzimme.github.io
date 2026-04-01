@@ -1318,6 +1318,7 @@
     /* profile image frame */
     .profile-frame {
       width: 100%;
+      aspect-ratio: 613 / 661; /* mirrors image ratio — grid column height stable at parse time */
       margin-bottom: 2rem;
       padding: 6px;
       border: 1px solid var(--gold-dim);
@@ -1328,6 +1329,7 @@
     .profile-frame img {
       width: 100%;
       height: auto;
+      aspect-ratio: 613 / 661; /* reserves space before image loads — eliminates CLS */
       display: block;
       opacity: 0.95;
       filter: contrast(1.05);
