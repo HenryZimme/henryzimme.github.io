@@ -35,6 +35,7 @@ const featured_objects = [
     ra_deg: 163.5,
     dec_deg: 14.2,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605&view=VOP",
+    image_url: "/images/cindygraber_sub.jpg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
     writeup: "7605 Cindygraber has no confirmed synodic rotation period. I am coordinating a multi-site Slooh campaign with citizen scientists operating telescopes remotely in Chile, Australia, and the Canary Islands to measure it. I built an open-source scheduler integrating orbital ephemerides and site visibility constraints to optimize cadence, and am extracting spectra from diffraction grating images to constrain taxonomic classification. Marker position and magnitude are indicative."
@@ -44,6 +45,7 @@ const featured_objects = [
     ra_deg: 210.0,
     dec_deg: 8.5,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243&view=VOP",
+    image_url: "/images/bunting_sub.jpg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
     writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
@@ -700,6 +702,42 @@ function open_modal(obj) {
   document.getElementById('modal-type').textContent = obj.type;
   document.getElementById('modal-name').textContent = obj.name;
   document.getElementById('modal-body').innerHTML = obj.writeup;
+
+  // ── object image ────────────────────────────────────────────────────────
+  // provided image (asteroids) or DSS2 sky cutout (stellar objects with real coords)
+  let modal_img_wrap = document.getElementById('modal-img-wrap');
+  if (!modal_img_wrap) {
+    modal_img_wrap = document.createElement('div');
+    modal_img_wrap.id = 'modal-img-wrap';
+    const modal_body = document.getElementById('modal-body');
+    modal_body.parentNode.insertBefore(modal_img_wrap, modal_body);
+  }
+
+  const img_src = obj.image_url || (
+    obj.ra_deg != null && obj.dec_deg != null
+      ? `https://alasky.u-strasbg.fr/hips-image-services/hips2fits`
+        + `?hips=CDS%2FP%2FDSS2%2Fcolor&width=480&height=280`
+        + `&fov=0.8&projection=TAN&coordsys=icrs`
+        + `&ra=${obj.ra_deg}&dec=${obj.dec_deg}&format=jpg`
+      : null
+  );
+
+  if (img_src) {
+    modal_img_wrap.innerHTML = '<div id="modal-img-loading">loading image\u2026</div>';
+    modal_img_wrap.style.display = '';
+    const img = new Image();
+    img.onload = () => {
+      modal_img_wrap.innerHTML = '';
+      img.alt = obj.name;
+      img.id = 'modal-img';
+      modal_img_wrap.appendChild(img);
+      requestAnimationFrame(() => requestAnimationFrame(() => { img.style.opacity = '1'; }));
+    };
+    img.onerror = () => { modal_img_wrap.style.display = 'none'; };
+    img.src = img_src;
+  } else {
+    modal_img_wrap.style.display = 'none';
+  }
   const link = document.getElementById('modal-simbad');
   if (obj.catalog_url) {
     link.href = obj.catalog_url;
