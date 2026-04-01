@@ -670,6 +670,11 @@ function on_touch_end(e) {
   const tx = touch.clientX;
   const ty = touch.clientY;
 
+  // don't intercept taps on UI elements layered above the canvas —
+  // popover is fixed-position over the hero and would otherwise trigger star detection
+  const el = document.elementFromPoint(tx, ty);
+  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card'))) return;
+
   if (!canvas_exposed_at(tx, ty)) return;
 
   // update mouse position so render loop reflects touch
@@ -686,6 +691,7 @@ function on_touch_end(e) {
   }
 
   if (best) {
+    e.preventDefault(); // suppress synthetic click — more reliable than a time-based guard
     last_touch_action_ts = performance.now();
     dismiss_hint();
     open_modal(best.obj_data);
@@ -702,6 +708,7 @@ function on_touch_end(e) {
   }
 
   if (best_named) {
+    e.preventDefault(); // suppress synthetic click
     last_touch_action_ts = performance.now();
     dismiss_hint();
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
@@ -867,7 +874,7 @@ window.addEventListener('click', on_click);
 window.addEventListener('resize', on_resize);
 window.addEventListener('touchstart', on_touch_start, { passive: true });
 window.addEventListener('touchmove',  on_touch_move,  { passive: true });
-window.addEventListener('touchend',   on_touch_end,   { passive: true });
+window.addEventListener('touchend',   on_touch_end);
 
 // -- tab visibility: restart rAF loop and refresh caches on tab return --
 document.addEventListener('visibilitychange', () => {
