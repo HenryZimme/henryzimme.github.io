@@ -75,6 +75,7 @@ let touch_start_x = 0;
 let touch_start_y = 0;
 let touch_is_scroll = false;
 const TOUCH_SLOP = 8; // px of movement before treating gesture as a scroll
+let last_touch_action_ts = -1000; // suppresses synthetic click fired after touchend
 let time_s = 0;
 let catalog_loaded = false;
 let raf_id = null;
@@ -604,9 +605,11 @@ function on_mouse_move(e) {
       ? ''
       : `  | v = ${hover_star.mag.toFixed(2)}`;
     tooltip.textContent = `${hover_star.name}${mag_str}`;
-    tooltip.style.left = (e.clientX + 16) + 'px';
-    tooltip.style.top  = (e.clientY - 28) + 'px';
     tooltip.classList.add('visible');
+    const tw = tooltip.offsetWidth  || 160;
+    const th = tooltip.offsetHeight || 28;
+    tooltip.style.left = Math.max(8, Math.min(e.clientX + 16, window.innerWidth  - tw - 8)) + 'px';
+    tooltip.style.top  = Math.max(8, Math.min(e.clientY - 28, window.innerHeight - th - 8)) + 'px';
   } else {
     tooltip.classList.remove('visible');
     // dismiss stale popover once cursor leaves all named stars
@@ -615,6 +618,8 @@ function on_mouse_move(e) {
 }
 
 function on_click(e) {
+  // suppress the synthetic click the browser fires ~300ms after touchend
+  if (performance.now() - last_touch_action_ts < 600) return;
   // ignore clicks that originated on UI elements layered above the canvas
   if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card')) return;
   if (!hover_star) { close_popover(); return; }
@@ -681,6 +686,7 @@ function on_touch_end(e) {
   }
 
   if (best) {
+    last_touch_action_ts = performance.now();
     dismiss_hint();
     open_modal(best.obj_data);
     return;
@@ -696,6 +702,7 @@ function on_touch_end(e) {
   }
 
   if (best_named) {
+    last_touch_action_ts = performance.now();
     dismiss_hint();
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
     open_popover(best_named.name, url, tx, ty);
@@ -706,16 +713,19 @@ function open_popover(name, url, cx, cy) {
   popover_name.textContent = name;
   popover_btn.href = url;
 
-  // position near click, clamped to viewport
+  // position near tap/click, clamped to visible viewport
   popover.style.left = '0px';
   popover.style.top  = '0px';
   popover.classList.add('visible');
   const pw = popover.offsetWidth;
   const ph = popover.offsetHeight;
-  const left = Math.min(cx + 14, window.innerWidth  - pw - 12);
-  const top  = Math.min(cy - 8,  window.innerHeight - ph - 12);
-  popover.style.left = Math.max(8, left) + 'px';
-  popover.style.top  = Math.max(8, top)  + 'px';
+  // visualViewport accounts for mobile browser chrome (address bar, home indicator)
+  const vw = window.visualViewport ? window.visualViewport.width  : window.innerWidth;
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const left = Math.max(8, Math.min(cx + 14, vw - pw - 8));
+  const top  = Math.max(8, Math.min(cy -  8, vh - ph - 8));
+  popover.style.left = left + 'px';
+  popover.style.top  = top  + 'px';
 }
 
 function close_popover() {
