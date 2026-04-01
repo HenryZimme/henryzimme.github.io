@@ -1,0 +1,9 @@
+# block all crawlers from test and draft directories
+User-agent: *
+Disallow: /test/
+Disallow: /docs/
+
+# allow everything else (css, js, images, data, main HTML pages)
+
+# point crawlers to your sitemap (create this file next for best results)
+Sitemap: https://www.henryzimmerman.net/sitemap.xml
