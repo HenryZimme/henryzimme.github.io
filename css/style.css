@@ -1335,6 +1335,27 @@
       filter: contrast(1.05);
     }
 
+    /* research card deep-link from modal */
+    .modal-card-link {
+      display: inline-block;
+      margin-top: 10px;
+      margin-left: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      text-decoration: none;
+      opacity: 0.82;
+      transition: opacity 0.15s;
+    }
+    .modal-card-link:hover { opacity: 1; }
+
+    /* card call-to-action block hover — replaces inline onmouseover/onmouseout */
+    .card-cta:hover {
+      border-color: rgba(120, 165, 210, 0.45) !important;
+      background: rgba(120, 165, 210, 0.09) !important;
+    }
+
     /* reduced motion — collapse all CSS animations and transitions for users who prefer it */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
