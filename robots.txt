@@ -2,6 +2,7 @@
 User-agent: *
 Disallow: /test/
 Disallow: /docs/
+Disallow: /casap.html
 
 # allow everything else (css, js, images, data, main HTML pages)
 
