@@ -789,12 +789,22 @@
         ctx.restore();
       }
 
-      // visibility flag: set by IntersectionObserver in init()
-      var visible = false;
+      // visibility flags: set by IntersectionObserver and visibilitychange
+      var in_viewport = false;
+      var tab_visible = !document.hidden;
 
-      // main loop : only runs while canvas is in the viewport
+      function should_run() { return in_viewport && tab_visible; }
+
+      function maybe_start() {
+        if (should_run()) {
+          last_t = null;
+          requestAnimationFrame(animate);
+        }
+      }
+
+      // main loop : only runs while canvas is in the viewport and tab is visible
       function animate(now) {
-        if (!visible) return;
+        if (!should_run()) return;
         requestAnimationFrame(animate);
         if (now - last_frame < 1000 / FPS_CAP) return;
         last_frame = now;
@@ -855,15 +865,17 @@
           resize();
           last_t = null;
         });
-        // only animate while the canvas is visible : saves battery on scroll/tab switch
+        // only animate while canvas is visible and tab is in front
         var observer = new IntersectionObserver(function(entries) {
-          visible = entries[0].isIntersecting;
-          if (visible) {
-            last_t = null; // reset dt so first resumed frame doesn't jump
-            requestAnimationFrame(animate);
-          }
+          in_viewport = entries[0].isIntersecting;
+          maybe_start();
         }, { threshold: 0.05 });
         observer.observe(canvas);
+
+        document.addEventListener('visibilitychange', function() {
+          tab_visible = !document.hidden;
+          maybe_start();
+        });
       }
 
       init();
