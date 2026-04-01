@@ -69,6 +69,12 @@ let named_stars   = []; // Opt 4: pre-filtered; avoids full scan on touch events
 let featured_stars = []; // Opt 4: pre-filtered; avoids full scan on touch events
 let mouse = { x: -9999, y: -9999 };
 let hover_star = null;
+
+// touch disambiguation — distinguishes taps from scrolls
+let touch_start_x = 0;
+let touch_start_y = 0;
+let touch_is_scroll = false;
+const TOUCH_SLOP = 8; // px of movement before treating gesture as a scroll
 let time_s = 0;
 let catalog_loaded = false;
 let raf_id = null;
@@ -629,9 +635,29 @@ function on_click(e) {
   }
 }
 
-// touch handler for canvas: direct tap-to-open, no hover needed
+// ── touch disambiguation ──────────────────────────────────────────────────────
+// touchstart only records position — no action taken yet.
+// touchmove flags the gesture as a scroll if movement exceeds TOUCH_SLOP.
+// touchend acts only if the gesture was not a scroll.
+// This ensures page scrolling is never intercepted.
+
 function on_touch_start(e) {
-  // don't process canvas taps when modal or mobile nav is open
+  const touch = e.changedTouches[0];
+  touch_start_x = touch.clientX;
+  touch_start_y = touch.clientY;
+  touch_is_scroll = false;
+}
+
+function on_touch_move(e) {
+  if (touch_is_scroll) return; // already decided
+  const touch = e.changedTouches[0];
+  const dx = touch.clientX - touch_start_x;
+  const dy = touch.clientY - touch_start_y;
+  if (Math.sqrt(dx * dx + dy * dy) > TOUCH_SLOP) touch_is_scroll = true;
+}
+
+function on_touch_end(e) {
+  if (touch_is_scroll) return;
   if (modal.classList.contains('visible')) return;
   if (mobile_nav.classList.contains('open')) return;
 
@@ -655,7 +681,6 @@ function on_touch_start(e) {
   }
 
   if (best) {
-    e.preventDefault();
     dismiss_hint();
     open_modal(best.obj_data);
     return;
@@ -671,7 +696,6 @@ function on_touch_start(e) {
   }
 
   if (best_named) {
-    e.preventDefault();
     dismiss_hint();
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
     open_popover(best_named.name, url, tx, ty);
@@ -831,7 +855,9 @@ function init() {
 window.addEventListener('mousemove', on_mouse_move);
 window.addEventListener('click', on_click);
 window.addEventListener('resize', on_resize);
-window.addEventListener('touchstart', on_touch_start, { passive: false });
+window.addEventListener('touchstart', on_touch_start, { passive: true });
+window.addEventListener('touchmove',  on_touch_move,  { passive: true });
+window.addEventListener('touchend',   on_touch_end,   { passive: true });
 
 // -- tab visibility: restart rAF loop and refresh caches on tab return --
 document.addEventListener('visibilitychange', () => {
