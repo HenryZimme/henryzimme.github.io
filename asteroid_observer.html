@@ -1189,6 +1189,17 @@
   var accum_t     = 0;
   var raf_id      = null;
   var hand_angle  = -Math.PI / 2;   // current rendered dial hand angle
+  var in_viewport = false;           // set by IntersectionObserver
+  var tab_visible = !document.hidden; // set by visibilitychange
+
+  function should_run() { return in_viewport && tab_visible; }
+
+  function maybe_start() {
+    if (should_run() && !raf_id) {
+      last_t = null;
+      raf_id = requestAnimationFrame(loop);
+    }
+  }
 
   // ── hand tween ─────────────────────────────────────────────────────────────
   var tween_from  = 0;
@@ -1236,6 +1247,7 @@
 
   // ── rAF loop ──────────────────────────────────────────────────────────────
   function loop(ts) {
+    if (!should_run()) { raf_id = null; return; }
     raf_id = requestAnimationFrame(loop);
 
     var dt = last_t ? ts - last_t : 0;
@@ -1320,8 +1332,17 @@
     // layout + precompute
     resize();
 
-    // start
-    requestAnimationFrame(loop);
+    // pause when scrolled out of view or tab is hidden
+    var observer = new IntersectionObserver(function (entries) {
+      in_viewport = entries[0].isIntersecting;
+      maybe_start();
+    }, { threshold: 0.05 });
+    observer.observe(document.getElementById('sim-wrap'));
+
+    document.addEventListener('visibilitychange', function () {
+      tab_visible = !document.hidden;
+      maybe_start();
+    });
   }
 
   window.addEventListener('resize', function () {
