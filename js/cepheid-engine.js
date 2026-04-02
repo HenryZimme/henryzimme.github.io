@@ -314,7 +314,7 @@
     { t: 11500, dur: 1500, text: 'At this separation, the Cepheid should have engulfed its companion as a red giant. It did not.' },
 
     // pulsation (13–17s): the answer
-    { t: 14200, dur: 3000, text: 'Most likely it formed from a stellar merger in a former triple system \u2014 never passing through the red giant phase' },
+    { t: 14200, dur: 3000, text: 'Most likely it formed from a stellar merger in a former triple system, never passing through the red giant phase' },
   ];
 
   var ogle_phased    = [];
