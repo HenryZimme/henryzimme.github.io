@@ -929,7 +929,7 @@
     .hud-val--purple { color: #c4b5fd; }
     #hud-plot-container {
       position: absolute;
-      bottom: 6.5rem;
+      bottom: 8.5rem;
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 5rem);
