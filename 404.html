@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found | Henry Zimmerman</title>
+  <meta name="description" content="Page not found.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap">
+  <style>
+    :root {
+      --bg:           #07091a;
+      --gold:         #c4a258;
+      --gold-dim:     rgba(196, 162, 88, 0.22);
+      --text:         #e2ddd4;
+      --text-dim:     rgba(226, 221, 212, 0.62);
+      --panel:        rgba(7, 9, 26, 0.84);
+      --panel-border: rgba(196, 162, 88, 0.18);
+      --blue:         #78a5d2;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    :focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+    :focus:not(:focus-visible) { outline: none; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.72;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ── Star canvas ─────────────────────────────────────── */
+    #star-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    /* ── Nav ─────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.65) 0%, transparent 100%);
+    }
+
+    .nav-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-style: italic;
+    }
+    .nav-name:hover { color: var(--gold); }
+
+    .nav-links {
+      display: flex;
+      gap: 38px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    @media (max-width: 600px) {
+      nav { padding: 20px 24px; }
+      .nav-links { display: none; }
+    }
+
+    /* ── 404 content ─────────────────────────────────────── */
+    main {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0 52px 84px;
+    }
+
+    .err-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.72;
+      margin-bottom: 20px;
+      animation: fadein 0.9s ease both;
+    }
+
+    .err-code {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(96px, 16vw, 172px);
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      font-style: italic;
+      margin-bottom: 28px;
+      animation: fadein 0.9s 0.1s ease both;
+    }
+
+    .err-rule {
+      width: 56px;
+      height: 1px;
+      background: var(--gold-dim);
+      margin-bottom: 28px;
+      animation: fadein 0.9s 0.2s ease both;
+    }
+
+    .err-heading {
+      font-family: 'Spectral', serif;
+      font-size: clamp(18px, 2.5vw, 24px);
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 14px;
+      animation: fadein 0.9s 0.25s ease both;
+    }
+
+    .err-body {
+      font-family: 'Spectral', serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-dim);
+      max-width: 440px;
+      margin-bottom: 44px;
+      animation: fadein 0.9s 0.3s ease both;
+    }
+
+    .err-body em {
+      font-style: italic;
+      color: var(--text);
+    }
+
+    .err-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadein 0.9s 0.4s ease both;
+    }
+
+    .btn-primary {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 11px 24px;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      transition: background 0.18s, color 0.18s;
+    }
+    .btn-primary:hover {
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    .btn-secondary {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 11px 24px;
+      border: 1px solid rgba(226, 221, 212, 0.18);
+      color: var(--text-dim);
+      transition: border-color 0.18s, color 0.18s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--text-dim);
+      color: var(--text);
+    }
+
+    /* ── Signal annotation ───────────────────────────────── */
+    .signal-note {
+      position: fixed;
+      bottom: 36px;
+      right: 52px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.1em;
+      color: rgba(226, 221, 212, 0.22);
+      text-align: right;
+      animation: fadein 1.4s 0.6s ease both;
+      pointer-events: none;
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      main { padding: 0 24px 64px; }
+      .signal-note { right: 24px; bottom: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+
+<nav aria-label="Primary">
+  <a href="/" class="nav-name">Henry Zimmerman</a>
+  <ul class="nav-links">
+    <li><a href="/#research">Research</a></li>
+    <li><a href="/#writing">Writing</a></li>
+    <li><a href="/#about">About</a></li>
+  </ul>
+</nav>
+
+<main>
+  <p class="err-label">HTTP 404 · Not Found</p>
+  <h1 class="err-code">404</h1>
+  <div class="err-rule"></div>
+  <p class="err-heading">Nothing at these coordinates.</p>
+  <p class="err-body">
+    The page you're looking for may have moved, been renamed, or never existed. Either way, we'll never know what you would've found.
+  </p>
+  <div class="err-links">
+    <a href="/" class="btn-primary">← Home</a>
+    <a href="/#research" class="btn-secondary">Research</a>
+    <a href="/#writing" class="btn-secondary">Writing</a>
+  </div>
+</main>
+
+<p class="signal-note" aria-hidden="true">
+  RA --&nbsp;&nbsp; · &nbsp;&nbsp;Dec --<br>
+  signal: null
+</p>
+
+<script>
+  // Self-contained procedural star field — no stars.json dependency
+  (function () {
+    const canvas = document.getElementById('star-canvas');
+    const ctx    = canvas.getContext('2d');
+
+    const STAR_COUNT   = 320;
+    const NAMED_COUNT  = 5; // a few that twinkle gold
+    const FRAME_MS     = 1000 / 30;
+
+    let stars = [];
+    let W, H;
+    let last_t = 0;
+
+    // Deterministic PRNG (mulberry32) for consistent star placement on resize
+    function prng(seed) {
+      return function () {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    function build_stars() {
+      const rand = prng(0xDEADBEEF);
+      stars = [];
+
+      for (let i = 0; i < STAR_COUNT; i++) {
+        const mag = rand();     // 0 = bright, 1 = dim
+        const named = i < NAMED_COUNT;
+        stars.push({
+          x_frac:  rand(),      // fractional position — rebuilt on resize
+          y_frac:  rand(),
+          size:    named ? 1.5 + rand() * 1.0 : 0.3 + (1 - mag) * 1.4,
+          alpha:   named ? 0.85 : 0.12 + (1 - mag) * 0.6,
+          phase:   rand() * Math.PI * 2,
+          speed:   0.4 + rand() * 0.8,
+          named:   named,
+          color:   named ? '#c4a258' : (rand() < 0.12 ? '#78a5d2' : '#e2ddd4'),
+        });
+      }
+    }
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    function draw(ts) {
+      if (ts - last_t < FRAME_MS) { requestAnimationFrame(draw); return; }
+      last_t = ts;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const t = ts / 1000;
+
+      for (const s of stars) {
+        const twinkle = 0.55 + 0.45 * Math.sin(t * s.speed + s.phase);
+        const a = s.alpha * (s.named ? twinkle : 0.6 + 0.4 * twinkle);
+
+        ctx.beginPath();
+        ctx.arc(s.x_frac * W, s.y_frac * H, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = s.color;
+        ctx.globalAlpha = a;
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(draw);
+    }
+
+    build_stars();
+    resize();
+    window.addEventListener('resize', resize);
+    requestAnimationFrame(draw);
+  })();
+</script>
+
+</body>
+</html>
