@@ -825,6 +825,89 @@ function close_modal() {
   modal.classList.remove('visible');
 }
 
+// ── object disambiguation menu ───────────────────────────────────────────────
+// Activate when the star field grows dense enough for click-radius collisions
+// (~15–20 objects). Replace the direct open_modal() calls in on_click() and
+// on_touch_end() with open_disambiguation_menu() whenever candidates.length > 1.
+//
+// function open_disambiguation_menu(candidates, cx, cy) {
+//   // candidates: array of star objects within click/tap radius
+//   // cx, cy:     client coords of the click — used to position the menu
+//
+//   const menu = document.createElement('div');
+//   menu.id = 'disambig-menu';
+//   // Style like #star-popover: fixed, dark bg, border --accent-dim, Spectral font.
+//   // Clamp to viewport so it never clips off-screen.
+//   menu.style.cssText = `
+//     position: fixed;
+//     left: ${Math.min(cx + 12, window.innerWidth - 200)}px;
+//     top:  ${Math.min(cy - 8,  window.innerHeight - (candidates.length * 36 + 16))}px;
+//     z-index: 120;
+//     background: var(--bg-deep);
+//     border: 1px solid var(--accent-dim);
+//     padding: 8px 0;
+//     min-width: 180px;
+//   `;
+//   for (const s of candidates) {
+//     const row = document.createElement('button');
+//     row.textContent = s.obj_data.name;
+//     // Style: full-width, transparent bg, color var(--text-main), hover accent.
+//     row.addEventListener('click', () => {
+//       close_disambiguation_menu();
+//       dismiss_hint();
+//       open_modal(s.obj_data);
+//     });
+//     menu.appendChild(row);
+//   }
+//   document.body.appendChild(menu);
+//   // dismiss on any outside click
+//   setTimeout(() => {
+//     document.addEventListener('click', close_disambiguation_menu, { once: true });
+//   }, 0);
+// }
+//
+// function close_disambiguation_menu() {
+//   const el = document.getElementById('disambig-menu');
+//   if (el) el.remove();
+// }
+//
+// ── wire into on_click() ────────────────────────────────────────────────────
+// Replace the `if (hover_star.featured)` branch with:
+//
+//   if (hover_star.featured) {
+//     const CLICK_RADIUS = 18;
+//     const nearby = featured_stars.filter(s => {
+//       const dx = e.clientX - s.x, dy = e.clientY - s.y;
+//       return Math.sqrt(dx * dx + dy * dy) < CLICK_RADIUS;
+//     });
+//     close_popover();
+//     dismiss_hint();
+//     if (nearby.length > 1) {
+//       open_disambiguation_menu(nearby, e.clientX, e.clientY);
+//     } else {
+//       open_modal(hover_star.obj_data);
+//     }
+//   }
+//
+// ── wire into on_touch_end() ────────────────────────────────────────────────
+// After finding `best`, also collect all featured stars within the tap radius:
+//
+//   if (best) {
+//     e.preventDefault();
+//     last_touch_action_ts = performance.now();
+//     dismiss_hint();
+//     const nearby = featured_stars.filter(s => {
+//       const dx = tx - s.x, dy = ty - s.y;
+//       return Math.sqrt(dx * dx + dy * dy) < 38;
+//     });
+//     if (nearby.length > 1) {
+//       open_disambiguation_menu(nearby, tx, ty);
+//     } else {
+//       open_modal(best.obj_data);
+//     }
+//     return;
+//   }
+
 // prevent touches on the modal from reaching the canvas touch handler
 const modal_inner = document.querySelector('.modal-inner');
 modal_inner.addEventListener('touchstart', (e) => {
