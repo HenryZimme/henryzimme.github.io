@@ -4,6 +4,7 @@
   <!-- Main Portfolio -->
   <url>
     <loc>https://www.henryzimmerman.net/</loc>
+    <lastmod>2026-04-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -11,11 +12,13 @@
   <!-- Primary Research (Active projects & proposals) -->
   <url>
     <loc>https://www.henryzimmerman.net/cep1347.html</loc>
+    <lastmod>2026-04-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/1347_methods.html</loc>
+    <lastmod>2026-04-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -23,16 +26,19 @@
   <!-- Supplementary Research (Posters, notes, tools) -->
   <url>
     <loc>https://www.henryzimmerman.net/U_Sgr_abs.html</loc>
+    <lastmod>2025-05-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/asteroid_observer.html</loc>
+    <lastmod>2026-04-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/ccd_calibration.html</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -40,41 +46,49 @@
   <!-- Writing (Completed essays & analyses) -->
   <url>
     <loc>https://www.henryzimmerman.net/calls.html</loc>
+    <lastmod>2025-09-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/lisbon.html</loc>
+    <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/descartes.html</loc>
+    <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/believingbelief.html</loc>
+    <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/japan.html</loc>
+    <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/afonso.html</loc>
+    <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/baghdad.html</loc>
+    <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/muralism.html</loc>
+    <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
