@@ -860,6 +860,11 @@
       max-width: 420px;
       z-index: 20;
       pointer-events: none;
+      background: rgba(7,9,26,0.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
     }
     .sim-label {
       font-family: 'JetBrains Mono', monospace;
