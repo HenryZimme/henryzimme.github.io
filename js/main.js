@@ -51,6 +51,16 @@ const featured_objects = [
     writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
   },
   {
+    name: "4715 Medesicaste | v = 15.5",
+    ra_deg: 88.05,
+    dec_deg: 41.03,
+    catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=4715&view=VOP",
+    image_url: "/images/4715_shape_model.png",
+    // card_url: "#card-astcadence",  // uncomment when research card is live
+    type: "Jupiter Trojan  |  L5 Trailing Camp  |  Indicative sky position",
+    writeup: "(4715) Medesicaste is the asteroid that started a question I couldn\u2019t let go of. Lam et al. (2023) showed that non-uniform sampling suppressed aliased Fourier period solutions for this L5 trojan more effectively than the quasi-uniform WISE cadence\u2014but no framework existed to empirically optimize that cadence for the single-night ground-based case. I built one. Working from Medesicaste as the motivating object, I developed a two-phase cadence optimization framework combining window function minimization with a multi-stage CMA-ES search, trained and validated on ALCDEF light curves with injected Gaussian noise. The largest and most consistent gains emerge in the 8\u201316 hr period bin\u2014exactly the regime containing Medesicaste\u2019s 8.8 hr rotation period, and the most densely populated period range among main-belt asteroids and trojans. Paper in preparation. Marker position is from MPC/RECON astrometry (2026 Sep 7); magnitude is indicative."
+  },
+  {
     name: "HD 344787 | v = 9.32",
     ra_deg: 295.872,
     dec_deg: 23.178,
