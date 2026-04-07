@@ -16,6 +16,7 @@ const featured_objects = [
     name: "OGLE-LMC-CEP-1347 | v = 17.08",
     ra_deg: 83.625,
     dec_deg: -69.27,
+    fov_deg: 3.0, // LMC field — wide enough to show context
     simbad_id: "OGLE+LMC+CEP+1347",
     card_url: "#card-cep1347",
     type: "Binary Cepheid Variable  |  Large Magellanic Cloud",
@@ -25,6 +26,7 @@ const featured_objects = [
     name: "U Sagittarii | v = 6.68",
     ra_deg: 277.972,
     dec_deg: -19.125,
+    fov_deg: 0.5, // tight on M25 cluster
     simbad_id: "U+Sgr",
     card_url: "#card-usgr",
     type: "Classical Cepheid Variable  |  Open Cluster M25",
@@ -64,12 +66,17 @@ const featured_objects = [
     name: "HD 344787 | v = 9.32",
     ra_deg: 295.872,
     dec_deg: 23.178,
+    fov_deg: 0.5,
     simbad_id: "HD344787",
     pipeline: true,
     type: "Active Investigation  |  Northern Sky",
     writeup: "At the 247th AAS meeting, I watched Dupree et al. present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris (<a href=\"https://doi.org/10.1051/0004-6361/202040123\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">Ripepi et al. 2021</a>)? Is it alone, or is something else there, invisible and waiting to be found?"
   }
 ];
+
+// single source of truth for featured object colors — indexed parallel to featured_objects.
+// used in build_stars (canvas markers), draw_canvas_legend, and legend_items.
+const FEATURED_COLORS = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a', '#e8c97a'];
 
 // rendering state
 let star_data = [];
@@ -168,7 +175,6 @@ function build_stars(catalog) {
   }
 
   // add featured research objects on top
-  const featured_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a', '#e8c97a']; // one color per featured object (n=6)
   for (let fi = 0; fi < featured_objects.length; fi++) {
     const obj = featured_objects[fi];
     const pos = project(obj.ra_deg, obj.dec_deg);
@@ -193,9 +199,9 @@ function build_stars(catalog) {
       cos_phase: Math.cos(f_phase),
       featured: true,
       obj_data: obj,
-      color: featured_colors[fi] || '#c4a258',
-      rgba_glow0: hex_to_rgba(featured_colors[fi] || '#c4a258', 1),
-      rgba_full:  hex_to_rgba(featured_colors[fi] || '#c4a258', 1)
+      color: FEATURED_COLORS[fi] || FEATURED_COLORS[0],
+      rgba_glow0: hex_to_rgba(FEATURED_COLORS[fi] || FEATURED_COLORS[0], 1),
+      rgba_full:  hex_to_rgba(FEATURED_COLORS[fi] || FEATURED_COLORS[0], 1)
     });
   }
 
@@ -375,10 +381,9 @@ function draw_hover_ring(s) {
 }
 
 // pre-computed legend items — built once, not every frame
-const legend_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
 const legend_items = featured_objects.map((obj, i) => ({
   label: obj.name,
-  color: legend_colors[i] || '#c4a258'
+  color: FEATURED_COLORS[i] || FEATURED_COLORS[0]
 }));
 let legend_col_w = 0; // measured once after font loads
 
@@ -632,22 +637,33 @@ function on_click(e) {
   if (performance.now() - last_touch_action_ts < 600) return;
   // ignore clicks that originated on UI elements layered above the canvas
   if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card')) return;
-  if (!hover_star) { close_popover(); return; }
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
-  if (hover_star.featured) {
+
+  // fresh inline scan for featured stars — hover_star may be stale from previous
+  // render frame (draw() runs at 30fps; a fast click can arrive between frames)
+  const cx = e.clientX, cy = e.clientY;
+  let best_f = null, best_fd = 20;
+  for (const s of featured_stars) {
+    const dx = cx - s.x, dy = cy - s.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < best_fd) { best_fd = d; best_f = s; }
+  }
+  if (best_f) {
     close_popover();
     dismiss_hint();
-    open_modal(hover_star.obj_data);
-  } else {
-    // ctrl/cmd+click: bypass confirmation and open directly
-    if (e.ctrlKey || e.metaKey) {
-      const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
-      window.open(url, '_blank', 'noopener');
-      return;
-    }
-    const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
-    open_popover(hover_star.name, url, e.clientX, e.clientY);
+    open_modal(best_f.obj_data);
+    return;
   }
+
+  // named catalog stars — hover_star is fine here (popover is less time-sensitive)
+  if (!hover_star) { close_popover(); return; }
+  const simbad_url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
+  // ctrl/cmd+click: bypass confirmation and open directly
+  if (e.ctrlKey || e.metaKey) {
+    window.open(simbad_url, '_blank', 'noopener');
+    return;
+  }
+  open_popover(hover_star.name, simbad_url, cx, cy);
 }
 
 // ── touch disambiguation ──────────────────────────────────────────────────────
@@ -723,10 +739,7 @@ function on_touch_end(e) {
     dismiss_hint();
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
     open_popover(best_named.name, url, tx, ty);
-  }
-}
-
-function open_popover(name, url, cx, cy) {
+  }(name, url, cx, cy) {
   popover_name.textContent = name;
   popover_btn.href = url;
 
@@ -749,6 +762,16 @@ function close_popover() {
   popover.classList.remove('visible');
 }
 
+// returns the canonical external URL for a featured object —
+// JPL for solar system bodies, SIMBAD for everything else.
+function get_external_url(obj) {
+  return obj.catalog_url
+    || `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id || '')}`;
+}
+
+// cached at init — avoids getElementById + conditional insertBefore on every open_modal call
+let modal_img_wrap = null;
+
 function open_modal(obj) {
   document.getElementById('modal-type').textContent = obj.type;
   document.getElementById('modal-name').textContent = obj.name;
@@ -756,19 +779,12 @@ function open_modal(obj) {
 
   // ── object image ────────────────────────────────────────────────────────
   // provided image (asteroids) or DSS2 sky cutout (stellar objects with real coords)
-  let modal_img_wrap = document.getElementById('modal-img-wrap');
-  if (!modal_img_wrap) {
-    modal_img_wrap = document.createElement('div');
-    modal_img_wrap.id = 'modal-img-wrap';
-    const modal_body = document.getElementById('modal-body');
-    modal_body.parentNode.insertBefore(modal_img_wrap, modal_body);
-  }
-
+  const fov = obj.fov_deg || 0.8; // per-object field of view; 0.8° default for point sources
   const img_src = obj.image_url || (
     obj.ra_deg != null && obj.dec_deg != null
       ? `https://alasky.u-strasbg.fr/hips-image-services/hips2fits`
         + `?hips=CDS%2FP%2FDSS2%2Fcolor&width=480&height=280`
-        + `&fov=0.8&projection=TAN&coordsys=icrs`
+        + `&fov=${fov}&projection=TAN&coordsys=icrs`
         + `&ra=${obj.ra_deg}&dec=${obj.dec_deg}&format=jpg`
       : null
   );
@@ -789,14 +805,11 @@ function open_modal(obj) {
   } else {
     modal_img_wrap.style.display = 'none';
   }
+
   const link = document.getElementById('modal-simbad');
-  if (obj.catalog_url) {
-    link.href = obj.catalog_url;
-    link.textContent = 'View on JPL Small-Body Database';
-  } else {
-    link.href = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id)}`;
-    link.textContent = 'View on SIMBAD';
-  }
+  link.href = get_external_url(obj);
+  link.textContent = obj.catalog_url ? 'View on JPL Small-Body Database' : 'View on SIMBAD';
+
   // show "View Research Card" link if this object maps to a card
   const card_link = document.getElementById('modal-card-link');
   if (obj.card_url) {
@@ -939,6 +952,15 @@ function init() {
   canvas.height = window.innerHeight;
 
   refresh_hero_cache(); // Bug 2 / Opt 7: seed cache before first mousemove or scroll
+
+  // cache modal_img_wrap once — open_modal reuses it on every click
+  modal_img_wrap = document.getElementById('modal-img-wrap');
+  if (!modal_img_wrap) {
+    modal_img_wrap = document.createElement('div');
+    modal_img_wrap.id = 'modal-img-wrap';
+    const modal_body = document.getElementById('modal-body');
+    modal_body.parentNode.insertBefore(modal_img_wrap, modal_body);
+  }
 
   // pause render loop when hero is off-screen, resume when it returns
   const hero_observer = new IntersectionObserver((entries) => {
