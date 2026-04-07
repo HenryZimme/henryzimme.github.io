@@ -16,7 +16,7 @@ const featured_objects = [
     name: "OGLE-LMC-CEP-1347 | v = 17.08",
     ra_deg: 83.625,
     dec_deg: -69.27,
-    fov_deg: 3.0, // LMC field — wide enough to show context
+    fov_deg: 3.0, // LMC field, wide enough to show context
     simbad_id: "OGLE+LMC+CEP+1347",
     card_url: "#card-cep1347",
     type: "Binary Cepheid Variable  |  Large Magellanic Cloud",
@@ -58,9 +58,9 @@ const featured_objects = [
     dec_deg: 41.03,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=4715&view=VOP",
     image_url: "/images/4715_shape_model.png",
-    // card_url: "#card-astcadence",  // uncomment when research card is live
-    type: "Jupiter Trojan  |  L5 Trailing Camp  |  Indicative sky position",
-    writeup: "(4715) Medesicaste is the asteroid that started a question I couldn\u2019t let go of. Lam et al. (2023) showed that non-uniform sampling suppressed aliased Fourier period solutions for this L5 trojan more effectively than the quasi-uniform WISE cadence, but no framework existed to empirically optimize that cadence for the single-night ground-based case. I built one. It runs in two phases: window function minimization, then a multi-stage CMA-ES search trained and validated on ALCDEF light curves with injected Gaussian noise. The largest gains show up consistently in the 8\u201316 hr period bin, the regime that contains Medesicaste\u2019s 8.8 hr rotation period and the most densely populated period range among asteroids and trojans. Paper in preparation. Marker position is from MPC/RECON astrometry (2026 Sep 7) magnitude is indicative."
+    // card_url: "#card-astcadence", // uncomment when research card is live
+    type: "Jupiter Trojan, L5 Trailing Camp  |  Indicative sky position",
+    writeup: "(4715) Medesicaste is the asteroid that started a question I couldn\u2019t let go of. Lam et al. (2023) showed that non-uniform sampling suppressed aliased Fourier period solutions for this L5 trojan more effectively than the quasi-uniform WISE cadence, but no framework existed to empirically optimize that cadence for the single-night ground-based case. I built one. It runs in two phases: window function minimization, then a multi-stage CMA-ES search trained and validated on ALCDEF light curves with injected Gaussian noise. The largest gains show up consistently in the 8\u201316 hr period bin, the regime that contains Medesicaste\u2019s 8.8 hr rotation period and the most densely populated period range among asteroids. Paper in preparation. Marker position is from MPC/RECON astrometry (2026 Sep 7) magnitude is indicative."
   },
   {
     name: "HD 344787 | v = 9.32",
@@ -74,7 +74,7 @@ const featured_objects = [
   }
 ];
 
-// single source of truth for featured object colors — indexed parallel to featured_objects.
+// single source of truth for featured object colors, indexed parallel to featured_objects.
 // used in build_stars (canvas markers), draw_canvas_legend, and legend_items.
 const FEATURED_COLORS = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a', '#e8c97a'];
 
@@ -87,7 +87,7 @@ let featured_stars = []; // Opt 4: pre-filtered; avoids full scan on touch event
 let mouse = { x: -9999, y: -9999 };
 let hover_star = null;
 
-// touch disambiguation — distinguishes taps from scrolls
+// touch disambiguation: distinguishes taps from scrolls
 let touch_start_x = 0;
 let touch_start_y = 0;
 let touch_is_scroll = false;
@@ -99,7 +99,7 @@ let raf_id = null;
 let hero_visible = true;
 let cursor_is_pointer = false; // track to avoid per-frame style writes
 let last_frame_ts = 0;
-const FRAME_INTERVAL = 1000 / 30; // target 30fps — star field needs no more
+const FRAME_INTERVAL = 1000 / 30; // target 30fps, star field needs no more
 
 // deterministic rng, used only for per-star twinkle phase assignment
 function make_rng(seed) {
@@ -135,7 +135,7 @@ function build_stars(catalog) {
 
   // sort: named stars first (interactive layer loads first), then by magnitude
   // ascending (brightest = lowest vmag first) within each group.
-  // O(n log n) once at load time — zero runtime cost.
+  // O(n log n) once at load time w/ zero runtime cost.
   const sorted = catalog.slice().sort((a, b) => {
     const a_named = a[4] !== null ? 0 : 1;
     const b_named = b[4] !== null ? 0 : 1;
@@ -213,7 +213,7 @@ function build_stars(catalog) {
     bg_stars_by_color[s.color].push(s);
   }
 
-  // Opt 4: pre-filtered views — avoids full star_data scan on every touch event
+  // opt 4: pre-filtered views, avoids full star_data scan on every touch event
   featured_stars  = star_data.filter(s => s.featured);
   named_stars     = star_data.filter(s => s.name && !s.featured);
   bg_bright_stars = star_data.filter(s => !s.featured && !s.name && s.size > 1.0);
@@ -230,7 +230,7 @@ const FREQ_MIN = 0.3, FREQ_MAX = 1.7;
 const twinkle_sin_lut = new Float32Array(TWINKLE_BUCKETS); // sin(time_s * bucket_freq)
 const twinkle_cos_lut = new Float32Array(TWINKLE_BUCKETS); // cos(time_s * bucket_freq)
 
-// Opt 5: pre-computed per-bucket frequencies — eliminates 64 multiply-adds every frame
+// opt 5: pre-computed per-bucket frequencies, eliminates 64 multiply-adds every frame
 const twinkle_bucket_freqs = new Float32Array(TWINKLE_BUCKETS);
 for (let i = 0; i < TWINKLE_BUCKETS; i++) {
   twinkle_bucket_freqs[i] = FREQ_MIN + (i / (TWINKLE_BUCKETS - 1)) * (FREQ_MAX - FREQ_MIN);
@@ -245,8 +245,7 @@ function update_twinkle_lut() {
 }
 
 // twinkle value for a star: lerps between adjacent LUT buckets using freq_lerp.
-// Each star gets a unique effective frequency within its bin — full variation,
-// zero per-star trig. Cost: 2 LUT lookups + 1 lerp (3 multiplies, 2 adds).
+// each star gets a unique effective frequency within its bin, full variation, zero per-star trig. Cost: 2 LUT lookups + 1 lerp (3 multiplies, 2 adds).
 function star_twinkle(s) {
   const i = s.freq_bucket;
   const t = s.freq_lerp;
@@ -265,19 +264,17 @@ function hex_to_rgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// Opt 1: alpha-bucket batching — star_twinkle() returns [0.56, 1.0], so
-// alpha = 0.32 + 0.24 * t ∈ [BG_ALPHA_MIN, BG_ALPHA_MAX].
-// Quantising into BG_ALPHA_BUCKETS steps lets us batch all stars at the same
-// (color, alpha) into one compound path, reducing fill() calls 9000 → ~40.
+// opt 1: alpha-bucket batching, star_twinkle() returns [0.56, 1.0], so alpha = 0.32 + 0.24 * t ∈ [BG_ALPHA_MIN, BG_ALPHA_MAX].
+// quantising into BG_ALPHA_BUCKETS steps lets us batch all stars at the same (color, alpha) into one compound path, reducing fill() calls 9000 -> ~40.
 const BG_ALPHA_BUCKETS = 8;
 const BG_ALPHA_MIN   = 0.32 + 0.24 * 0.56; // ≈ 0.4544
 const BG_ALPHA_MAX   = 0.32 + 0.24 * 1.00; // = 0.56
 const BG_ALPHA_RANGE = BG_ALPHA_MAX - BG_ALPHA_MIN;
-// Pre-allocated bucket arrays — cleared each frame with .length = 0, no GC churn
+// pre-allocated bucket arrays, cleared each frame with .length = 0, no GC churn
 const _bg_buckets = Array.from({ length: BG_ALPHA_BUCKETS }, () => []);
 
-// batched background star drawing — uses pre-grouped color buckets built at catalog load.
-// Sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
+// batched background star drawing, uses pre-grouped color buckets built at catalog load.
+// sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
 function draw_background_stars_batched() {
   const TWO_PI = Math.PI * 2;
   for (const color in bg_stars_by_color) {
@@ -290,7 +287,7 @@ function draw_background_stars_batched() {
                   Math.max(0, Math.floor((alpha - BG_ALPHA_MIN) / BG_ALPHA_RANGE * BG_ALPHA_BUCKETS)));
       _bg_buckets[b].push(s);
     }
-    // One compound path + one fill() per non-empty (color, alpha-bucket) pair
+    // one compound path + one fill() per non-empty (color, alpha-bucket) pair
     ctx.fillStyle = color;
     for (let b = 0; b < BG_ALPHA_BUCKETS; b++) {
       const group = _bg_buckets[b];
@@ -306,7 +303,7 @@ function draw_background_stars_batched() {
   }
   ctx.globalAlpha = 1;
 
-  // white hot core pass — one compound path + one fill for all qualifying bg stars.
+  // white hot core pass, one compound path + one fill for all qualifying bg stars.
   // size * 0.32 keeps the core sub-pixel on faint stars and a clean pinpoint on brighter ones.
   ctx.fillStyle = '#ffffff';
   ctx.globalAlpha = 0.62;
@@ -338,8 +335,6 @@ function draw_named_star(s) {
 
 function draw_featured_star(s) {
   const is_pipeline = s.obj_data && s.obj_data.pipeline;
-  // Bug 1: star_twinkle returns [0.56, 1.0]; remap to [0, 1] for correct pulse range
-  // clamp as defense — out-of-range twinkle values would produce negative radii
   const pulse = Math.max(0, Math.min(1, (star_twinkle(s) - 0.56) / 0.44));
   const glow_r = 16 + pulse * 5;
   const c = s.color;
@@ -347,7 +342,7 @@ function draw_featured_star(s) {
   const ring_base  = is_pipeline ? 0.12 : 0.28;
   const ring_pulse = is_pipeline ? 0.22 : 0.45;
 
-  // radial glow — use hex_to_rgba only for the variable alpha (pulse-dependent)
+  // radial glow, use hex_to_rgba only for the variable alpha (pulse-dependent)
   const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glow_r);
   grd.addColorStop(0, hex_to_rgba(c, glow_alpha * pulse));
   grd.addColorStop(1, hex_to_rgba(c, 0));
@@ -380,7 +375,7 @@ function draw_hover_ring(s) {
   ctx.stroke();
 }
 
-// pre-computed legend items — built once, not every frame
+// pre-computed legend items, built once, not every frame
 const legend_items = featured_objects.map((obj, i) => ({
   label: obj.name,
   color: FEATURED_COLORS[i] || FEATURED_COLORS[0]
@@ -418,7 +413,7 @@ function draw_canvas_legend() {
     const row_y = (two_rows && i >= items_per_row) ? y_bottom : y_top;
     const cx = x + dot_r;
 
-    // pulsing dot — use bucket 0..4 mapped across LUT for variety
+    // pulsing dot, use bucket 0..4 mapped across LUT for variety
     const lut_i = Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1));
     const pulse = 0.5 + 0.5 * twinkle_sin_lut[lut_i];
     const glow = ctx.createRadialGradient(cx, row_y, 0, cx, row_y, dot_r * 3);
@@ -481,7 +476,7 @@ function draw_canvas_legend() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // backdrop pill — slightly more opaque for visibility
+    // backdrop pill, slightly more opaque for visibility
     ctx.fillStyle = 'rgba(7,9,26,0.72)';
     ctx.beginPath();
     ctx.roundRect(lx - label_w / 2, ly - label_h / 2, label_w, label_h, 5);
@@ -528,7 +523,7 @@ function draw_canvas_legend() {
 // ── main render loop ──────────────────────────────────────────────────────────
 
 function draw(ts) {
-  // throttle to ~30fps — star field doesn't benefit from 60fps
+  // throttle to ~30fps, star field doesn't benefit from 60fps
   if (ts - last_frame_ts < FRAME_INTERVAL) {
     if (hero_visible) raf_id = requestAnimationFrame(draw);
     else raf_id = null;
@@ -593,7 +588,7 @@ function draw(ts) {
 // Bug 2 / Opt 7: cache hero element + derived measurements so neither
 // getElementById nor getBoundingClientRect runs on every mousemove or scroll.
 // hero_rect_cache is refreshed on scroll (layout already dirty) and resize.
-// hero_scroll_bottom is stable between resizes — uses offsetTop + offsetHeight.
+// hero_scroll_bottom is stable between resizes, uses offsetTop + offsetHeight.
 let hero_el         = null;
 let hero_rect_cache = null;  // viewport-relative rect for canvas_exposed_at
 let hero_scroll_bottom = 0;  // doc-absolute bottom edge for scroll spy
@@ -606,7 +601,7 @@ function refresh_hero_cache() {
 }
 
 function canvas_exposed_at(x, y) {
-  // Bug 2: use cached rect — no forced reflow on every mousemove
+  // Bug 2: use cached rect, no forced reflow on every mousemove
   const r = hero_rect_cache;
   return r !== null && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
@@ -639,7 +634,7 @@ function on_click(e) {
   if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card')) return;
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
 
-  // fresh inline scan for featured stars — hover_star may be stale from previous
+  // fresh inline scan for featured stars, hover_star may be stale from previous
   // render frame (draw() runs at 30fps; a fast click can arrive between frames)
   const cx = e.clientX, cy = e.clientY;
   let best_f = null, best_fd = 20;
@@ -655,7 +650,7 @@ function on_click(e) {
     return;
   }
 
-  // named catalog stars — hover_star is fine here (popover is less time-sensitive)
+  // named catalog stars, hover_star is fine here (popover is less time-sensitive)
   if (!hover_star) { close_popover(); return; }
   const simbad_url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
   // ctrl/cmd+click: bypass confirmation and open directly
@@ -667,7 +662,7 @@ function on_click(e) {
 }
 
 // ── touch disambiguation ──────────────────────────────────────────────────────
-// touchstart only records position — no action taken yet.
+// touchstart only records position, no action taken yet.
 // touchmove flags the gesture as a scroll if movement exceeds TOUCH_SLOP.
 // touchend acts only if the gesture was not a scroll.
 // This ensures page scrolling is never intercepted.
@@ -696,8 +691,7 @@ function on_touch_end(e) {
   const tx = touch.clientX;
   const ty = touch.clientY;
 
-  // don't intercept taps on UI elements layered above the canvas —
-  // popover is fixed-position over the hero and would otherwise trigger star detection
+  // don't intercept taps on UI elements layered above the canvas, popover is fixed-position over the hero and would otherwise trigger star detection
   const el = document.elementFromPoint(tx, ty);
   if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card'))) return;
 
@@ -707,7 +701,7 @@ function on_touch_end(e) {
   mouse.x = tx;
   mouse.y = ty;
 
-  // check featured stars first (larger tap target) — Opt 4: use pre-built array
+  // check featured stars first (larger tap target), opt 4: use pre-built array
   let best = null;
   let best_d = 38;
   for (const s of featured_stars) {
@@ -717,14 +711,14 @@ function on_touch_end(e) {
   }
 
   if (best) {
-    e.preventDefault(); // suppress synthetic click — more reliable than a time-based guard
+    e.preventDefault(); // suppress synthetic click, more reliable than a time-based guard
     last_touch_action_ts = performance.now();
     dismiss_hint();
     open_modal(best.obj_data);
     return;
   }
 
-  // fallback: named catalog stars with slightly wider radius than mouse — Opt 4: pre-built array
+  // fallback: named catalog stars with slightly wider radius than mouse, opt 4: pre-built array again
   let best_named = null;
   let best_nd = 22;
   for (const s of named_stars) {
@@ -765,14 +759,13 @@ function close_popover() {
   popover.classList.remove('visible');
 }
 
-// returns the canonical external URL for a featured object —
-// JPL for solar system bodies, SIMBAD for everything else.
+// returns the canonical external URL for a featured object, JPL for solar system bodies, & SIMBAD for everything else.
 function get_external_url(obj) {
   return obj.catalog_url
     || `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id || '')}`;
 }
 
-// cached at init — avoids getElementById + conditional insertBefore on every open_modal call
+// cached at init, avoids getElementById + conditional insertBefore on every open_modal call
 let modal_img_wrap = null;
 
 function open_modal(obj) {
@@ -842,13 +835,13 @@ function close_modal() {
 }
 
 // ── object disambiguation menu ───────────────────────────────────────────────
-// Activate when the star field grows dense enough for click-radius collisions
-// (~15–20 objects). Replace the direct open_modal() calls in on_click() and
+// activate when the star field grows dense enough for click-radius collisions
+// (~15–20 objects). replace the direct open_modal() calls in on_click() and
 // on_touch_end() with open_disambiguation_menu() whenever candidates.length > 1.
 //
 // function open_disambiguation_menu(candidates, cx, cy) {
 //   // candidates: array of star objects within click/tap radius
-//   // cx, cy:     client coords of the click — used to position the menu
+//   // cx, cy:     client coords of the click, used to position the menu
 //
 //   const menu = document.createElement('div');
 //   menu.id = 'disambig-menu';
@@ -888,7 +881,7 @@ function close_modal() {
 // }
 //
 // ── wire into on_click() ────────────────────────────────────────────────────
-// Replace the `if (hover_star.featured)` branch with:
+// replace the `if (hover_star.featured)` branch with:
 //
 //   if (hover_star.featured) {
 //     const CLICK_RADIUS = 18;
@@ -906,7 +899,7 @@ function close_modal() {
 //   }
 //
 // ── wire into on_touch_end() ────────────────────────────────────────────────
-// After finding `best`, also collect all featured stars within the tap radius:
+// after finding `best`, also collect all featured stars within the tap radius:
 //
 //   if (best) {
 //     e.preventDefault();
@@ -925,6 +918,8 @@ function close_modal() {
 //   }
 
 // prevent touches on the modal from reaching the canvas touch handler
+
+
 const modal_inner = document.querySelector('.modal-inner');
 modal_inner.addEventListener('touchstart', (e) => {
   e.stopPropagation();
@@ -956,7 +951,7 @@ function init() {
 
   refresh_hero_cache(); // Bug 2 / Opt 7: seed cache before first mousemove or scroll
 
-  // cache modal_img_wrap once — open_modal reuses it on every click
+  // cache modal_img_wrap once, open_modal reuses it on every click
   modal_img_wrap = document.getElementById('modal-img-wrap');
   if (!modal_img_wrap) {
     modal_img_wrap = document.createElement('div');
@@ -974,7 +969,7 @@ function init() {
   }, { threshold: 0 });
   hero_observer.observe(document.getElementById('hero'));
 
-  // start render loop immediately — draw() guards on catalog_loaded internally
+  // start render loop immediately, draw() guards on catalog_loaded internally
   raf_id = requestAnimationFrame(draw);
 
   fetch('/data/stars.json')
@@ -1061,7 +1056,7 @@ document.querySelectorAll('.book-spine').forEach(spine => {
     const container_inner_w = container_rect.width - padding_left - padding_right;
 
     // n_per_row: fit 1 expanded + (n-1) collapsed + (n-1) gaps within the container.
-    // On mobile we subtract a small extra margin so books aren't flush to the edge.
+    // on mobile subtract a small extra margin so books aren't flush to the edge.
     const effective_w = is_mobile ? container_inner_w - 20 : container_inner_w;
     const n_per_row = Math.max(2, 1 + Math.floor((effective_w - w_exp) / (w_col + gap)));
 
@@ -1088,9 +1083,9 @@ document.querySelectorAll('.book-spine').forEach(spine => {
   }
 
   layout_shelves();
-  // re-run after first paint — container may have width 0 at parse time
+  // re-run after first paint, container may have width 0 at parse time
   requestAnimationFrame(layout_shelves);
-  // re-run after async fonts settle — eb garamond load shifts container dimensions
+  // re-run after async fonts settle, eb garamond load shifts container dimensions
   document.fonts.ready.then(layout_shelves);
 
   let resize_timer;
@@ -1159,7 +1154,7 @@ const back_to_top_btn = document.getElementById('back-to-top');
 window.addEventListener('scroll', () => {
   back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
 
-  // Opt 7: compare scrollY against cached doc-absolute bottom — no getElementById or getBoundingClientRect
+  // Opt 7: compare scrollY against cached doc-absolute bottom, no getElementById or getBoundingClientRect
   nav_el.classList.toggle('nav--scrolled', window.scrollY >= hero_scroll_bottom);
 
   // Bug 2: refresh viewport rect on scroll (layout is already dirty here) so
@@ -1228,7 +1223,7 @@ setTimeout(() => {
 }, 1200);
 
 (function() {
-  const u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
+  const u = ['henry.s.zimmer', 'man', '@gmail.com'].join(''); // 3mAiI 0bfusciati0n
   const el = document.getElementById('contact-email');
   if (el) {
     const a = document.createElement('a');
