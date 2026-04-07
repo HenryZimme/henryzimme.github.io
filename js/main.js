@@ -168,7 +168,7 @@ function build_stars(catalog) {
   }
 
   // add featured research objects on top
-  const featured_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a'];
+  const featured_colors = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a', '#e8c97a']; // one color per featured object (n=6)
   for (let fi = 0; fi < featured_objects.length; fi++) {
     const obj = featured_objects[fi];
     const pos = project(obj.ra_deg, obj.dec_deg);
