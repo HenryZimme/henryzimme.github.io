@@ -44,6 +44,44 @@
 
 <a href="#about" class="skip-link">Skip to main content</a>
 <canvas id="star-canvas"></canvas>
+
+<script>
+// Micro-renderer: draws featured objects immediately, zero network dependency.
+// main.js init() will take over and re-render with twinkle + full catalog.
+(function () {
+  const canvas = document.getElementById('star-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const objs = [
+    { ra: 83.625,  dec: -69.27,  color: '#c4a258' },
+    { ra: 277.972, dec: -19.125, color: '#8ab8ff' },
+    { ra: 163.5,   dec:  14.2,   color: '#5ecfbf' },
+    { ra: 210.0,   dec:   8.5,   color: '#b07ecf' },
+    { ra: 88.05,   dec:  41.03,  color: '#d4693a' },
+    { ra: 295.872, dec:  23.178, color: '#e8c97a' },
+  ];
+
+  for (const o of objs) {
+    const x = (o.ra / 360) * canvas.width;
+    const y = (1 - (o.dec + 90) / 180) * canvas.height;
+    // glow
+    const grd = ctx.createRadialGradient(x, y, 0, x, y, 14);
+    grd.addColorStop(0, o.color + 'aa');
+    grd.addColorStop(1, o.color + '00');
+    ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2);
+    ctx.fillStyle = grd; ctx.fill();
+    // ring
+    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.strokeStyle = o.color + '66'; ctx.lineWidth = 1; ctx.stroke();
+    // core
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = o.color; ctx.fill();
+  }
+})();
+</script>
+
 <div id="star-tooltip"></div>
 
 <div id="star-popover">
