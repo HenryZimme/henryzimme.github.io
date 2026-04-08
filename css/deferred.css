@@ -1,4 +1,4 @@
-    /* tooltip */
+/* tooltip */
     #star-tooltip {
       position: fixed;
       background: rgba(7, 9, 26, 0.92);
@@ -1103,14 +1103,13 @@
       aspect-ratio: 613 / 661; /* reserves space before image loads — eliminates CLS */
       display: block;
       opacity: 0.95;
-      filter: contrast(1.05);
-      transition: opacity 0.4s ease, filter 0.4s ease;
+      transition: opacity 0.4s ease;
     }
 
-    /* LQIP state: softened while small placeholder is visible */
+    /* LQIP state: dimmed while tiny placeholder is visible; blur comes
+       naturally from the 80px source scaled up — no CSS filter needed */
     .profile-frame img.profile-img-lqip {
       opacity: 0.6;
-      filter: contrast(1.05) blur(2px);
     }
 
     /* research card deep-link from modal */
