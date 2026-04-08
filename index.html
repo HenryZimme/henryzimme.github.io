@@ -18,6 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preload" as="fetch" href="/data/stars_named.json" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- FILL IN: open DevTools > Network > filter "font", reload, copy the fonts.gstatic.com URL for EB Garamond italic 400 woff2 -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="REPLACE_WITH_GSTATIC_URL_FOR_EB_GARAMOND_ITALIC_400_WOFF2">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
@@ -30,6 +32,17 @@
       --panel: rgba(7, 9, 26, 0.84);
       --panel-border: rgba(196, 162, 88, 0.18);
       --blue: #78a5d2;
+    }
+
+    /* Metric-matched Georgia fallback reduces layout shift while EB Garamond loads.
+       Tune size-adjust (±2%) if Georgia appears too large/small on swap-in. */
+    @font-face {
+      font-family: 'EB Garamond Fallback';
+      src: local('Georgia'), local('Georgia-Regular');
+      size-adjust: 88%;
+      ascent-override: 93%;
+      descent-override: 24%;
+      line-gap-override: 0%;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -110,7 +123,7 @@
     }
 
     .nav-name {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 18px;
       letter-spacing: 0.04em;
       color: var(--text);
@@ -161,7 +174,7 @@
     }
 
     .hero-name {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: clamp(54px, 9vw, 104px);
       font-weight: 400;
       line-height: 0.95;
@@ -238,7 +251,7 @@
     }
     .nav-mobile.open { display: flex; }
     .nav-mobile a {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 28px;
       color: var(--text-dim);
       text-decoration: none;
@@ -299,7 +312,7 @@
     #pl-ceph { animation: pl-ceph-pulse 1.55s ease-in-out 1.5s infinite; }
     #pl-comp { animation: pl-comp-twinkle 2.3s ease-in-out 1.7s infinite; }
     #page-loader-name {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 22px;
       font-weight: 400;
       font-style: italic;
@@ -469,7 +482,7 @@
     }
 
     .modal-name {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 28px;
       font-weight: 400;
       line-height: 1.2;
@@ -508,7 +521,7 @@
       color: var(--text-dim);
       font-size: 18px;
       cursor: pointer;
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       line-height: 1;
       transition: color 0.15s;
     }
@@ -570,7 +583,7 @@
 
     /* ::before = mono label pulled from data-label; ::after = decorative rule */
     .section-heading {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: clamp(32px, 5vw, 48px);
       font-weight: 400;
       line-height: 1.1;
@@ -618,7 +631,7 @@
     }
 
     .about-text .about-lead {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 22px;
       line-height: 1.58;
       color: var(--text);
@@ -704,7 +717,7 @@
     }
 
     .card-title {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 22px;
       font-weight: 400;
       margin-bottom: 14px;
@@ -856,7 +869,7 @@
     }
 
     .writing-content h3 {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 20px;
       font-weight: 400;
       margin-bottom: 8px;
@@ -910,7 +923,7 @@
     }
 
     .highlights-item h4 {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 18.5px;
       font-weight: 400;
       margin-bottom: 5px;
@@ -953,7 +966,7 @@
     }
 
     .footer-left {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 14px;
       color: var(--text-dim);
       font-style: italic;
@@ -1043,7 +1056,7 @@
       margin: 0 0 10px;
     }
     .sim-title {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: clamp(22px, 3vw, 34px);
       font-weight: 400;
       color: var(--text);
@@ -1369,7 +1382,7 @@
     .spine-title span {
       display: block;
       white-space: nowrap;
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 12px;
       letter-spacing: 0.05em;
       color: rgba(226,221,212,0.60);
@@ -1407,7 +1420,7 @@
     }
 
     .spine-book-title {
-      font-family: 'EB Garamond', serif;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 13px;
       line-height: 1.3;
       color: var(--text);
@@ -1683,6 +1696,7 @@
                  data-full-jpeg="/images/HSZ_Headshot_BW.jpeg"
                  width="613" height="661"
                  alt="Henry Zimmerman headshot"
+                 loading="lazy"
                  decoding="async"
                  class="profile-img-lqip">
           </div>
