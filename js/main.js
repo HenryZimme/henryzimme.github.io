@@ -759,7 +759,7 @@ function on_touch_end(e) {
     last_touch_action_ts = performance.now();
     dismiss_hint();
     const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
-    open_popover(best_named.name, url, tx, ty);
+    open_popover(best_named.name, url, best_named.x, best_named.y);
   }
 }
 
