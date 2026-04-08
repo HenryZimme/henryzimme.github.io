@@ -75,7 +75,7 @@ const featured_objects = [
 ];
 
 // single source of truth for featured object colors, indexed parallel to featured_objects.
-// used in build_stars (canvas markers), draw_canvas_legend, and legend_items.
+// used in build_featured_only / build_stars_staged (canvas markers), draw_canvas_legend, and legend_items.
 const FEATURED_COLORS = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a', '#e8c97a'];
 
 // rendering state
@@ -127,60 +127,17 @@ function reproject() {
   }
 }
 
-// build internal star_data from parsed catalog array
-// catalog entry format: [ra_deg, dec_deg, vmag, color_hex, name_or_null]
-function build_stars(catalog) {
+// ── phase 0: featured objects only (no network dependency) ───────────────────
+// called immediately at init() so the canvas is never blank while stars.json loads.
+// featured_objects is hardcoded in JS; nothing here touches the catalog.
+function build_featured_only() {
   star_data = [];
-  const rng = make_rng(31415);
-
-  // sort: named stars first (interactive layer loads first), then by magnitude
-  // ascending (brightest = lowest vmag first) within each group.
-  // O(n log n) once at load time w/ zero runtime cost.
-  const sorted = catalog.slice().sort((a, b) => {
-    const a_named = a[4] !== null ? 0 : 1;
-    const b_named = b[4] !== null ? 0 : 1;
-    if (a_named !== b_named) return a_named - b_named;
-    return a[2] - b[2]; // vmag ascending (brighter first)
-  });
-
-  for (const [ra_deg, dec_deg, vmag, color, name] of sorted) {
-    const pos = project(ra_deg, dec_deg);
-    const size = Math.max(0.4, (7.2 - vmag) * 0.38);
-    const is_named = name !== null;
-    const phase = rng() * Math.PI * 2;
-    const freq  = 0.3 + rng() * 1.4;
-    // floor bucket + fractional remainder for LUT interpolation
-    const bucket_f = (freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
-    const freq_bucket = Math.min(TWINKLE_BUCKETS - 2, Math.floor(bucket_f)); // -2 so bucket+1 is always valid
-    const freq_lerp   = bucket_f - freq_bucket;
-
-    star_data.push({
-      x: pos.x,
-      y: pos.y,
-      ra_deg,
-      dec_deg,
-      size,
-      mag: vmag,
-      name: is_named ? name : null,
-      simbad_id: is_named ? name : null,
-      freq_bucket,
-      freq_lerp,
-      sin_phase: Math.sin(phase),
-      cos_phase: Math.cos(phase),
-      featured: false,
-      color,
-      rgba_glow0: hex_to_rgba(color, 0.20),
-      rgba_full:  hex_to_rgba(color, 1)
-    });
-  }
-
-  // add featured research objects on top
   for (let fi = 0; fi < featured_objects.length; fi++) {
     const obj = featured_objects[fi];
     const pos = project(obj.ra_deg, obj.dec_deg);
     const rng2 = make_rng(99999 + fi * 7);
-    const f_phase  = rng2() * Math.PI * 2;
-    const f_freq   = 1.2 + fi * 0.2;
+    const f_phase    = rng2() * Math.PI * 2;
+    const f_freq     = 1.2 + fi * 0.2;
     const f_bucket_f = (f_freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
     const f_bucket   = Math.min(TWINKLE_BUCKETS - 2, Math.max(0, Math.floor(f_bucket_f)));
     const f_lerp     = Math.min(1, Math.max(0, f_bucket_f - f_bucket));
@@ -204,19 +161,79 @@ function build_stars(catalog) {
       rgba_full:  hex_to_rgba(FEATURED_COLORS[fi] || FEATURED_COLORS[0], 1)
     });
   }
+  featured_stars  = star_data.slice(); // all entries are featured at this point
+  named_stars     = [];
+  bg_stars_by_color = {};
+  bg_bright_stars = [];
+}
 
-  // pre-group background stars by color so draw loop doesn't rebuild every frame
+// shared helper: rebuild all pre-filtered index arrays from current star_data.
+// called after each phase so draw loop and touch handlers stay consistent.
+function rebuild_indexes() {
   bg_stars_by_color = {};
   for (const s of star_data) {
     if (s.featured || s.name) continue;
     if (!bg_stars_by_color[s.color]) bg_stars_by_color[s.color] = [];
     bg_stars_by_color[s.color].push(s);
   }
-
-  // opt 4: pre-filtered views, avoids full star_data scan on every touch event
   featured_stars  = star_data.filter(s => s.featured);
   named_stars     = star_data.filter(s => s.name && !s.featured);
   bg_bright_stars = star_data.filter(s => !s.featured && !s.name && s.size > 1.0);
+}
+
+// ── phases 1 & 2: named then background, each yielding to the browser ────────
+// catalog entry format: [ra_deg, dec_deg, vmag, color_hex, name_or_null]
+function build_stars_staged(catalog) {
+  // pre-sort each group brightest-first; named goes in phase 1, bg in phase 2.
+  const named = catalog.filter(e => e[4] !== null).sort((a, b) => a[2] - b[2]);
+  const bg    = catalog.filter(e => e[4] === null ).sort((a, b) => a[2] - b[2]);
+
+  // single rng instance shared across both phases so twinkle assignments are
+  // deterministic and match what the old build_stars produced for the same seed.
+  const rng = make_rng(31415);
+
+  function add_entries(entries) {
+    for (const [ra_deg, dec_deg, vmag, color, name] of entries) {
+      const pos  = project(ra_deg, dec_deg);
+      const size = Math.max(0.4, (7.2 - vmag) * 0.38);
+      const is_named = name !== null;
+      const phase = rng() * Math.PI * 2;
+      const freq  = 0.3 + rng() * 1.4;
+      const bucket_f   = (freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
+      const freq_bucket = Math.min(TWINKLE_BUCKETS - 2, Math.floor(bucket_f));
+      const freq_lerp   = bucket_f - freq_bucket;
+      star_data.push({
+        x: pos.x,
+        y: pos.y,
+        ra_deg,
+        dec_deg,
+        size,
+        mag: vmag,
+        name: is_named ? name : null,
+        simbad_id: is_named ? name : null,
+        freq_bucket,
+        freq_lerp,
+        sin_phase: Math.sin(phase),
+        cos_phase: Math.cos(phase),
+        featured: false,
+        color,
+        rgba_glow0: hex_to_rgba(color, 0.20),
+        rgba_full:  hex_to_rgba(color, 1)
+      });
+    }
+  }
+
+  // phase 1: all named stars (only ~80, no need to split further)
+  add_entries(named);
+  rebuild_indexes();
+  // catalog_loaded is already true from build_featured_only; named stars now visible
+
+  // phase 2: background stars — yield first so the browser can paint phase 1
+  setTimeout(() => {
+    add_entries(bg);
+    rebuild_indexes();
+    pick_hint_target(); // revalidate now that full star field is present
+  }, 0);
 }
 
 // ── twinkle lookup table ──────────────────────────────────────────────────────
@@ -944,7 +961,7 @@ function on_resize() {
   if (catalog_loaded) pick_hint_target(); // revalidate hint target after viewport change
 }
 
-// ── init: fetch catalog, build stars, start loop ───────────────
+// ── init: build featured immediately, fetch catalog, stage the rest ──────────
 function init() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -969,16 +986,18 @@ function init() {
   }, { threshold: 0 });
   hero_observer.observe(document.getElementById('hero'));
 
-  // start render loop immediately, draw() guards on catalog_loaded internally
+  // phase 0: featured objects are hardcoded in JS — render them immediately,
+  // no network dependency. sets catalog_loaded = true so draw() starts painting.
+  build_featured_only();
+  catalog_loaded = true;
+  pick_hint_target();
   raf_id = requestAnimationFrame(draw);
 
+  // phases 1 & 2: named then background, added progressively as JSON arrives.
+  // the preload hint in <head> means this fetch is already in flight.
   fetch('/data/stars.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(catalog => {
-      build_stars(catalog);
-      catalog_loaded = true;
-      pick_hint_target();
-    })
+    .then(catalog => build_stars_staged(catalog))
     .catch(err => console.error('Star catalog load error:', err));
 }
 
