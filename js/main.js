@@ -1316,3 +1316,46 @@ if (card_ids.includes(hash_target)) {
 }
 
 init();
+
+// ── progressive profile image: small LQIP → full-res ────────────────────────
+// Load HSZ_Headshot_BW_small.webp immediately (set in HTML src).
+// When the about section nears the viewport, preload the full-res version in
+// the background and swap it in once cached — no layout shift, no flash.
+(function() {
+  const img = document.getElementById('profile-img');
+  if (!img || !img.dataset.fullWebp) return;
+
+  let fullLoaded = false;
+
+  function swapToFull() {
+    if (fullLoaded) return;
+    fullLoaded = true;
+    // Prefer WebP; fall back to JPEG if the data attr is missing
+    img.src = img.dataset.fullWebp || img.dataset.fullJpeg || img.src;
+    img.classList.remove('profile-img-lqip');
+  }
+
+  // Start preloading full-res as soon as the about section approaches the viewport
+  const aboutSection = document.getElementById('about');
+  if (aboutSection && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        io.disconnect();
+        // If LQIP already visible, preload full-res then swap
+        const fullSrc = img.dataset.fullWebp || img.dataset.fullJpeg;
+        if (fullSrc) {
+          const preloader = new Image();
+          preloader.onload = swapToFull;
+          preloader.onerror = swapToFull; // swap anyway — LQIP is better than broken
+          preloader.src = fullSrc;
+        }
+        break;
+      }
+    }, { rootMargin: '200px 0px' }); // start loading ~200px before visible
+    io.observe(aboutSection);
+  } else {
+    // IntersectionObserver not available — swap immediately
+    swapToFull();
+  }
+})();
