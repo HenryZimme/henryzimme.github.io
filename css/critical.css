@@ -240,3 +240,175 @@
       .nav-links { gap: 22px; }
       #hero { padding: 0 24px 64px; }
     }
+
+    /* bookshelf */
+    #bookshelf {
+      background: var(--panel);
+      border-top: 1px solid var(--panel-border);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 100px 52px;
+    }
+
+    .bookshelf-intro {
+      max-width: 600px;
+      margin-bottom: 3.5rem;
+    }
+
+    .bookshelf-intro p {
+      font-size: 16px;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+
+    .bookshelf-intro a {
+      color: var(--blue);
+      text-decoration: none;
+      border-bottom: 1px solid var(--blue);
+      transition: opacity 0.18s;
+      opacity: 0.65;
+    }
+    .bookshelf-intro a:hover { opacity: 1; }
+
+    /* shelf row */
+    .book-shelf {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 5px;
+      padding-bottom: 0;
+      overflow-x: auto;
+      overflow-y: visible;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-top: 14px;
+      margin-bottom: 0;
+    }
+    .book-shelf::-webkit-scrollbar { display: none; }
+
+    /* shelf surface line */
+    .book-shelf-surface {
+      height: 2px;
+      background: linear-gradient(to right, var(--panel-border), rgba(196,162,88,0.35), var(--panel-border));
+      margin-top: 0;
+      margin-bottom: 20px;
+      border-radius: 1px;
+    }
+
+    /* individual book spine — base height; JS overrides per content length */
+    .book-spine {
+      position: relative;
+      flex-shrink: 0;
+      width: 46px;
+      height: 220px;
+      background: rgba(196,162,88,0.05);
+      border: 2px solid var(--panel-border);
+      border-bottom: 2px solid rgba(196,162,88,0.22);
+      cursor: pointer;
+      overflow: hidden;
+      transition: width 0.35s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.25s cubic-bezier(0.22,1,0.36,1);
+    }
+    .book-spine::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(196,162,88,0.42);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+
+    .book-spine:hover,
+    .book-spine.active {
+      width: 172px;
+      transform: translateY(-8px);
+      z-index: 2;
+    }
+    .book-spine:hover::after,
+    .book-spine.active::after {
+      opacity: 1;
+    }
+
+    .book-spine:nth-child(odd)  { background: rgba(196,162,88,0.04); }
+    .book-spine:nth-child(even) { background: rgba(120,165,210,0.04); }
+    .book-spine:nth-child(3n)   { background: rgba(94,207,191,0.03); }
+
+    .spine-title {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .spine-title span {
+      display: block;
+      white-space: nowrap;
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: rgba(226,221,212,0.60);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
+      max-height: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .book-spine:hover .spine-title,
+    .book-spine.active .spine-title {
+      opacity: 0;
+    }
+
+    .spine-panel {
+      position: absolute;
+      inset: 0;
+      padding: 16px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 5px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s 0.12s ease;
+    }
+
+    .book-spine:hover .spine-panel,
+    .book-spine.active .spine-panel {
+      opacity: 1;
+    }
+
+    .spine-book-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      line-height: 1.3;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .spine-author {
+      font-family: 'Spectral', serif;
+      font-style: italic;
+      font-size: 12px;
+      color: var(--gold);
+      line-height: 1.3;
+    }
+
+    .spine-impact {
+      font-family: 'Spectral', serif;
+      font-size: 12px;
+      color: rgba(226,221,212,0.65);
+      line-height: 1.5;
+      margin-top: 5px;
+    }
+
+    @media (max-width: 740px) {
+      #bookshelf { padding: 72px 24px; }
+      .book-spine { width: 40px; }
+      .book-spine:hover,
+      .book-spine.active { width: 150px; }
+    }
