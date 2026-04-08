@@ -186,64 +186,59 @@ function rebuild_indexes() {
 
 // ── phases 1 & 2: named then background, each yielding to the browser ────────
 // catalog entry format: [ra_deg, dec_deg, vmag, color_hex, name_or_null]
-function build_stars_staged(catalog) {
-  // pre-sort each group brightest-first; named goes in phase 1, bg in phase 2.
-  const named = catalog.filter(e => e[4] !== null).sort((a, b) => a[2] - b[2]);
-  const bg    = catalog.filter(e => e[4] === null ).sort((a, b) => a[2] - b[2]);
+// single rng instance shared across named and bg phases so twinkle assignments
+// are deterministic and match the previous single-fetch ordering.
+let catalog_rng = null;
 
-  // single rng instance shared across both phases so twinkle assignments are
-  // deterministic and match what the old build_stars produced for the same seed.
-  const rng = make_rng(31415);
-
-  function add_entries(entries) {
-    for (const [ra_deg, dec_deg, vmag, color, name] of entries) {
-      const pos  = project(ra_deg, dec_deg);
-      const size = Math.max(0.4, (7.2 - vmag) * 0.38);
-      const is_named = name !== null;
-      const phase = rng() * Math.PI * 2;
-      const freq  = 0.3 + rng() * 1.4;
-      const bucket_f   = (freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
-      const freq_bucket = Math.min(TWINKLE_BUCKETS - 2, Math.floor(bucket_f));
-      const freq_lerp   = bucket_f - freq_bucket;
-      star_data.push({
-        x: pos.x,
-        y: pos.y,
-        ra_deg,
-        dec_deg,
-        size,
-        mag: vmag,
-        name: is_named ? name : null,
-        simbad_id: is_named ? name : null,
-        freq_bucket,
-        freq_lerp,
-        sin_phase: Math.sin(phase),
-        cos_phase: Math.cos(phase),
-        featured: false,
-        color,
-        rgba_glow0: hex_to_rgba(color, 0.20),
-        rgba_full:  hex_to_rgba(color, 1)
-      });
-    }
+function _add_entries(entries) {
+  for (const [ra_deg, dec_deg, vmag, color, name] of entries) {
+    const pos  = project(ra_deg, dec_deg);
+    const size = Math.max(0.4, (7.2 - vmag) * 0.38);
+    const is_named = name !== null;
+    const phase = catalog_rng() * Math.PI * 2;
+    const freq  = 0.3 + catalog_rng() * 1.4;
+    const bucket_f   = (freq - FREQ_MIN) / (FREQ_MAX - FREQ_MIN) * (TWINKLE_BUCKETS - 1);
+    const freq_bucket = Math.min(TWINKLE_BUCKETS - 2, Math.floor(bucket_f));
+    const freq_lerp   = bucket_f - freq_bucket;
+    star_data.push({
+      x: pos.x,
+      y: pos.y,
+      ra_deg,
+      dec_deg,
+      size,
+      mag: vmag,
+      name: is_named ? name : null,
+      simbad_id: is_named ? name : null,
+      freq_bucket,
+      freq_lerp,
+      sin_phase: Math.sin(phase),
+      cos_phase: Math.cos(phase),
+      featured: false,
+      color,
+      rgba_glow0: hex_to_rgba(color, 0.20),
+      rgba_full:  hex_to_rgba(color, 1)
+    });
   }
+}
 
-  // phase 1: all named stars (only ~80, no need to split further)
-  add_entries(named);
+function build_named(named) {
+  // named is already sorted brightest-first by the split script
+  _add_entries(named);
   rebuild_indexes();
-  // catalog_loaded is already true from build_featured_only; named stars now visible
 
-  // phase 2: background stars — yield first so the browser can paint phase 1
-  setTimeout(() => {
-    add_entries(bg);
-    rebuild_indexes();
-    pick_hint_target(); // revalidate now that full star field is present
+  // dismiss loader — named stars are visible, page is interactive
+  const loader = document.getElementById('page-loader');
+  if (loader) {
+    loader.classList.add('loader-hidden');
+    loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+  }
+}
 
-    // dismiss loader now that the full canvas is ready
-    const loader = document.getElementById('page-loader');
-    if (loader) {
-      loader.classList.add('loader-hidden');
-      loader.addEventListener('transitionend', () => loader.remove(), { once: true });
-    }
-  }, 0);
+function build_bg(bg) {
+  // bg is already sorted brightest-first by the split script
+  _add_entries(bg);
+  rebuild_indexes();
+  pick_hint_target(); // revalidate now that full star field is present
 }
 
 // ── twinkle lookup table ──────────────────────────────────────────────────────
@@ -1020,12 +1015,26 @@ function init() {
   pick_hint_target();
   raf_id = requestAnimationFrame(draw);
 
-  // phases 1 & 2: named then background, added progressively as JSON arrives.
-  // the preload hint in <head> means this fetch is already in flight.
-  fetch('/data/stars.json')
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(catalog => build_stars_staged(catalog))
-    .catch(err => console.error('Star catalog load error:', err));
+  // seed shared RNG once here so named and bg phases draw from the same sequence
+  catalog_rng = make_rng(31415);
+
+  // fetch named and bg in parallel; process named first (RNG order), then bg.
+  // stars_named.json is 4KB and preloaded — arrives near-instantly.
+  // stars_bg.json is 340KB and starts fetching simultaneously in the background.
+  const named_p = fetch('/data/stars_named.json')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  const bg_p = fetch('/data/stars_bg.json')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+
+  named_p
+    .then(named => {
+      build_named(named);
+      // bg_p is already in flight; add bg stars once both named processing and
+      // the bg fetch are done. yield to paint named stars first.
+      bg_p.then(bg => setTimeout(() => build_bg(bg), 0))
+          .catch(err => console.error('Star catalog (bg) load error:', err));
+    })
+    .catch(err => console.error('Star catalog (named) load error:', err));
 }
 
 window.addEventListener('mousemove', on_mouse_move);
