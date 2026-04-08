@@ -1416,14 +1416,13 @@
       aspect-ratio: 613 / 661; /* reserves space before image loads — eliminates CLS */
       display: block;
       opacity: 0.95;
-      filter: contrast(1.05);
-      transition: opacity 0.4s ease, filter 0.4s ease;
+      transition: opacity 0.4s ease;
     }
 
-    /* LQIP state: softened while small placeholder is visible */
+    /* LQIP state: dimmed while 80px placeholder is visible; natural upscale blur
+       replaces CSS blur — avoids non-composited animation CLS flag */
     .profile-frame img.profile-img-lqip {
       opacity: 0.6;
-      filter: contrast(1.05) blur(2px);
     }
 
     /* research card deep-link from modal */
@@ -1584,7 +1583,7 @@
         <div class="about-meta">
           <div class="profile-frame">
             <img id="profile-img"
-                 src="/images/HSZ_Headshot_BW_medium.webp"
+                 src="/images/HSZ_Headshot_BW_small.webp"
                  data-full-webp="/images/HSZ_Headshot_BW.webp"
                  data-full-jpeg="/images/HSZ_Headshot_BW.jpeg"
                  width="613" height="661"
