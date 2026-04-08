@@ -18,8 +18,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preload" as="fetch" href="/data/stars_named.json" fetchpriority="high" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- FILL IN: open DevTools > Network > filter "font", reload, copy the fonts.gstatic.com URL for EB Garamond italic 400 woff2 -->
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="REPLACE_WITH_GSTATIC_URL_FOR_EB_GARAMOND_ITALIC_400_WOFF2">
+  <!-- EB Garamond woff2 preloads — bypasses the two-hop googleapis -> gstatic chain.
+       URLs are versioned (v32). If Google updates the font the hash changes and these
+       will 404 silently. Verify by filtering Network > Font in DevTools periodically. -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
