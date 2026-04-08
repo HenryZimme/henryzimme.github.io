@@ -1,0 +1,242 @@
+:root {
+      --bg: #07091a;
+      --gold: #c4a258;
+      --gold-dim: rgba(196, 162, 88, 0.25);
+      --text: #e2ddd4;
+      --text-dim: rgba(226, 221, 212, 0.72);
+      --panel: rgba(7, 9, 26, 0.84);
+      --panel-border: rgba(196, 162, 88, 0.18);
+      --blue: #78a5d2;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    /* skip link — hidden until focused */
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 9999;
+      padding: 10px 20px;
+      background: var(--gold);
+      color: var(--bg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 400;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+    }
+    .skip-link:focus { left: 0; }
+
+    /* global focus-visible ring — gold outline on all interactive elements */
+    :focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+    /* suppress focus ring for mouse users on elements that have a clear hover state */
+    :focus:not(:focus-visible) { outline: none; }
+
+    /* card-cta anchors: mirror hover state on keyboard focus */
+    .card-cta:focus-visible {
+      border-color: rgba(120, 165, 210, 0.45) !important;
+      background: rgba(120, 165, 210, 0.09) !important;
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.72;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--blue); }
+
+    /* canvas */
+    #star-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.65) 0%, transparent 100%);
+      transition: background 0.3s ease;
+    }
+
+    /* on mobile only: go fully opaque once the user scrolls past the hero */
+    @media (max-width: 740px) {
+      nav.nav--scrolled {
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--panel-border);
+      }
+    }
+
+    .nav-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-decoration: none;
+      font-style: italic;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 38px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a.active { color: var(--gold); opacity: 1; }
+
+    /* layout */
+    main { position: relative; z-index: 1; }
+
+    /* hero */
+    #hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 52px 84px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      opacity: 0;
+      will-change: transform, opacity;
+      animation: fadeUp 0.9s 0.3s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+
+    .hero-name {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(54px, 9vw, 104px);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 28px;
+      opacity: 0;
+      will-change: transform, opacity;
+      animation: fadeUp 0.9s 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+
+    .hero-tagline {
+      font-family: 'Spectral', serif;
+      font-size: clamp(15px, 1.8vw, 19px);
+      font-style: italic;
+      color: var(--text-dim);
+      max-width: 500px;
+      line-height: 1.7;
+      opacity: 0;
+      will-change: transform, opacity;
+      animation: fadeUp 0.9s 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+
+    .hero-arrow {
+      margin-top: 52px;
+      opacity: 0;
+      will-change: transform, opacity;
+      animation: fadeUp 0.9s 1.1s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .hero-arrow svg {
+      display: block;
+      animation: bounce-down 2.2s 2.2s ease-in-out infinite;
+    }
+    @keyframes bounce-down {
+      0%, 100% { transform: translateY(0); opacity: 0.35; }
+      50%       { transform: translateY(7px); opacity: 0.65; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* hamburger */
+    .nav-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 51;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--text-dim);
+      transition: transform 0.22s, opacity 0.22s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .nav-mobile {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #07091a;
+      z-index: 49;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      font-family: 'EB Garamond', serif;
+      font-size: 28px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav-mobile a:hover, .nav-mobile a.active { color: var(--gold); }
+    @media (max-width: 740px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+    }
+    /* reduced motion — collapse all CSS animations and transitions for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-width: 740px) {
+      nav { padding: 18px 24px; }
+      .nav-links { gap: 22px; }
+      #hero { padding: 0 24px 64px; }
+    }
