@@ -1104,6 +1104,13 @@
       display: block;
       opacity: 0.95;
       filter: contrast(1.05);
+      transition: opacity 0.4s ease, filter 0.4s ease;
+    }
+
+    /* LQIP state: softened while small placeholder is visible */
+    .profile-frame img.profile-img-lqip {
+      opacity: 0.6;
+      filter: contrast(1.05) blur(2px);
     }
 
     /* research card deep-link from modal */
