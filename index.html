@@ -24,8 +24,8 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2">
   <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
   <style>:root {
       --bg: #07091a;
       --gold: #c4a258;
@@ -2333,6 +2333,40 @@
     s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
     document.head.appendChild(s);
   }, { rootMargin: '300px' }).observe(document.getElementById('research'));
+</script>
+
+<script>
+  // load eb garamond 500 just before #bookshelf enters the viewport
+  (function () {
+    var loaded = false;
+    var target = document.getElementById('bookshelf');
+    if (!target) return;
+
+    function load_garamond_500() {
+      if (loaded) return;
+      loaded = true;
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500&display=swap';
+      document.head.appendChild(link);
+    }
+
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(
+        function (entries) {
+          if (entries[0].isIntersecting) {
+            load_garamond_500();
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '1200px' }  // fires ~1200px before section reaches viewport
+      );
+      observer.observe(target);
+    } else {
+      // fallback: load immediately if IntersectionObserver unsupported
+      load_garamond_500();
+    }
+  })();
 </script>
 </body>
 </html>
