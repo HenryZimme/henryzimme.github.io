@@ -98,6 +98,9 @@ let catalog_loaded = false;
 let raf_id = null;
 let hero_visible = true;
 let cursor_is_pointer = false; // track to avoid per-frame style writes
+let tooltip_tw = 160, tooltip_th = 28; // cached tooltip dims (avoids forced reflow on mousemove)
+let tooltip_last_content = '';
+let popover_pw = 0, popover_ph = 0; // cached popover dims (measure once, reuse)
 let last_frame_ts = 0;
 const FRAME_INTERVAL = 1000 / 30; // target 30fps, star field needs no more
 
@@ -631,12 +634,24 @@ function on_mouse_move(e) {
     const mag_str = hover_star.featured
       ? ''
       : `  | v = ${hover_star.mag.toFixed(2)}`;
-    tooltip.textContent = `${hover_star.name}${mag_str}`;
+    const content = `${hover_star.name}${mag_str}`;
+    tooltip.textContent = content;
     tooltip.classList.add('visible');
-    const tw = tooltip.offsetWidth  || 160;
-    const th = tooltip.offsetHeight || 28;
+    // Use cached dims to avoid forced reflow after DOM writes
+    const tw = tooltip_tw;
+    const th = tooltip_th;
     tooltip.style.left = Math.max(8, Math.min(e.clientX + 16, window.innerWidth  - tw - 8)) + 'px';
     tooltip.style.top  = Math.max(8, Math.min(e.clientY - 28, window.innerHeight - th - 8)) + 'px';
+    // Refresh cache on content change (deferred to next frame to avoid reflow)
+    if (content !== tooltip_last_content) {
+      tooltip_last_content = content;
+      requestAnimationFrame(() => {
+        if (tooltip.classList.contains('visible')) {
+          tooltip_tw = tooltip.offsetWidth || 160;
+          tooltip_th = tooltip.offsetHeight || 28;
+        }
+      });
+    }
   } else {
     tooltip.classList.remove('visible');
     // dismiss stale popover once cursor leaves all named stars
@@ -761,8 +776,9 @@ function open_popover(name, url, cx, cy) {
   popover.style.left = '0px';
   popover.style.top  = '0px';
   popover.classList.add('visible');
-  const pw = popover.offsetWidth;
-  const ph = popover.offsetHeight;
+  // Cache after first measure; popover CSS is fixed-size so cache stays valid
+  const pw = popover_pw || (popover_pw = popover.offsetWidth);
+  const ph = popover_ph || (popover_ph = popover.offsetHeight);
   // visualViewport accounts for mobile browser chrome (address bar, home indicator)
   const vw = window.visualViewport ? window.visualViewport.width  : window.innerWidth;
   const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -953,8 +969,10 @@ document.addEventListener('click', (e) => {
 // ── resize ───────────────────────────────────────────────────────────────────
 
 function on_resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const iw = window.innerWidth;
+  const ih = window.innerHeight;
+  canvas.width  = iw;
+  canvas.height = ih;
   legend_col_w = 0; // remeasure legend on next draw
   reproject();
   refresh_hero_cache(); // Bug 2 / Opt 7: re-measure after layout change
@@ -963,8 +981,10 @@ function on_resize() {
 
 // ── init: build featured immediately, fetch catalog, stage the rest ──────────
 function init() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const iw = window.innerWidth;
+  const ih = window.innerHeight;
+  canvas.width  = iw;
+  canvas.height = ih;
 
   refresh_hero_cache(); // Bug 2 / Opt 7: seed cache before first mousemove or scroll
 
@@ -1045,6 +1065,16 @@ document.querySelectorAll('.book-spine').forEach(spine => {
   // grab all spines once; moving a node preserves its event listeners
   const spines = Array.from(pool.children);
 
+  // helper: batch-read container inner width (no pending writes when called)
+  function get_container_inner_w() {
+    const rect = rows_el.parentElement.getBoundingClientRect();
+    const cs = window.getComputedStyle(rows_el.parentElement);
+    return rect.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  }
+
+  // hoist: read container dims BEFORE spine height writes to avoid forced reflow
+  const initial_container_inner_w = get_container_inner_w();
+
   // content-driven heights: measure text length across title + author + impact,
   // map linearly to 190–250px range. Applied as inline style so nth-child
   // scope doesn't matter (nth-child resets per parent row, not pool).
@@ -1062,17 +1092,17 @@ document.querySelectorAll('.book-spine').forEach(spine => {
     spine.style.height = h + 'px';
   });
 
-  function layout_shelves() {
+  function layout_shelves(cached_inner_w) {
     const is_mobile = window.innerWidth <= 740;
     const w_col = is_mobile ? 40 : 46;
     const w_exp = is_mobile ? 150 : 172;
     const gap = 5;
 
-    const container_rect = rows_el.parentElement.getBoundingClientRect();
-    const computed_style = window.getComputedStyle(rows_el.parentElement);
-    const padding_left = parseFloat(computed_style.paddingLeft);
-    const padding_right = parseFloat(computed_style.paddingRight);
-    const container_inner_w = container_rect.width - padding_left - padding_right;
+    // Use cached dims on first call (after spine writes) to skip forced reflow;
+    // re-read on subsequent calls (resize / fonts.ready) where no spine writes are pending.
+    const container_inner_w = cached_inner_w != null
+      ? cached_inner_w
+      : get_container_inner_w();
 
     // n_per_row: fit 1 expanded + (n-1) collapsed + (n-1) gaps within the container.
     // on mobile subtract a small extra margin so books aren't flush to the edge.
@@ -1101,7 +1131,7 @@ document.querySelectorAll('.book-spine').forEach(spine => {
     }
   }
 
-  layout_shelves();
+  layout_shelves(initial_container_inner_w);
   // re-run after first paint, container may have width 0 at parse time
   requestAnimationFrame(layout_shelves);
   // re-run after async fonts settle, eb garamond load shifts container dimensions
