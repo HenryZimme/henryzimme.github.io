@@ -1032,7 +1032,7 @@ function init() {
   // fetch named and bg in parallel; process named first (RNG order), then bg.
   // stars_named.json is 4KB and preloaded — arrives near-instantly.
   // stars_bg.json is 340KB and starts fetching simultaneously in the background.
-  const named_p = fetch('/data/stars_named.json')
+  const named_p = fetch('/data/stars_named.json', { priority: 'high' })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
   const bg_p = fetch('/data/stars_bg.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
