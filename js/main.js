@@ -97,6 +97,7 @@ let time_s = 0;
 let catalog_loaded = false;
 let raf_id = null;
 let hero_visible = true;
+let twinkle_active = false; // false until profile image fully loads; loop deferred to keep TBT low
 let cursor_is_pointer = false; // track to avoid per-frame style writes
 let tooltip_tw = 160, tooltip_th = 28; // cached tooltip dims (avoids forced reflow on mousemove)
 let tooltip_last_content = '';
@@ -182,6 +183,26 @@ function rebuild_indexes() {
   featured_stars  = star_data.filter(s => s.featured);
   named_stars     = star_data.filter(s => s.name && !s.featured);
   bg_bright_stars = star_data.filter(s => !s.featured && !s.name && s.size > 1.0);
+  build_named_grad_cache();
+}
+
+// pre-build CanvasGradient objects for each named star × GRAD_BUCKETS twinkle levels.
+// geometry (x, y, radius) is fixed after projection; only alpha varies with twinkle.
+// quantising twinkle into GRAD_BUCKETS slots eliminates createRadialGradient() every frame.
+// must be called again after reproject() since star positions change.
+function build_named_grad_cache() {
+  for (const s of named_stars) {
+    const gr = Math.max(s.size * 3.4, 2.5);
+    s._grads = Array.from({ length: GRAD_BUCKETS }, (_, b) => {
+      const tw = 0.56 + (b / (GRAD_BUCKETS - 1)) * 0.44;
+      const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
+      grd.addColorStop(0,    `rgba(255,255,255,${(0.90 + 0.10 * tw).toFixed(2)})`);
+      grd.addColorStop(0.12, hex_to_rgba(s.color, 0.70 + 0.30 * tw));
+      grd.addColorStop(0.40, hex_to_rgba(s.color, 0.30 * tw));
+      grd.addColorStop(1,    hex_to_rgba(s.color, 0));
+      return grd;
+    });
+  }
 }
 
 // ── phases 1 & 2: named then background, each yielding to the browser ────────
@@ -225,6 +246,8 @@ function build_named(named) {
   // named is already sorted brightest-first by the split script
   _add_entries(named);
   rebuild_indexes();
+  // static phase: new stars arrived — paint one frame
+  if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
 }
 
 function build_bg(bg) {
@@ -232,6 +255,8 @@ function build_bg(bg) {
   _add_entries(bg);
   rebuild_indexes();
   pick_hint_target(); // revalidate now that full star field is present
+  // static phase: full catalog now loaded — paint one frame
+  if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
 }
 
 // ── twinkle lookup table ──────────────────────────────────────────────────────
@@ -241,6 +266,7 @@ function build_bg(bg) {
 // Per frame: compute sin/cos for each bucket (64 calls total).
 // Per star: one lookup + 2 multiplies + 1 add. No per-star trig.
 const TWINKLE_BUCKETS = 64;
+const GRAD_BUCKETS = 8; // named-star gradient cache: quantise twinkle [0.56,1.0] into 8 slots
 const FREQ_MIN = 0.3, FREQ_MAX = 1.7;
 const twinkle_sin_lut = new Float32Array(TWINKLE_BUCKETS); // sin(time_s * bucket_freq)
 const twinkle_cos_lut = new Float32Array(TWINKLE_BUCKETS); // cos(time_s * bucket_freq)
@@ -334,14 +360,19 @@ function draw_background_stars_batched() {
 
 function draw_named_star(s) {
   const twinkle = star_twinkle(s);
-  // unified PSF gradient: white hot core → star color → transparent
-  // replaces the former conditional glow + flat disc with a single draw call
+  // look up pre-built gradient for this twinkle level — no allocation per frame
+  const bucket = Math.min(GRAD_BUCKETS - 1, Math.floor((twinkle - 0.56) / 0.44 * GRAD_BUCKETS));
+  const grd = s._grads ? s._grads[bucket] : (() => {
+    // fallback: build inline if cache is missing (e.g. during resize race)
+    const gr = Math.max(s.size * 3.4, 2.5);
+    const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
+    g.addColorStop(0,    `rgba(255,255,255,${(0.90 + 0.10 * twinkle).toFixed(2)})`);
+    g.addColorStop(0.12, hex_to_rgba(s.color, 0.70 + 0.30 * twinkle));
+    g.addColorStop(0.40, hex_to_rgba(s.color, 0.30 * twinkle));
+    g.addColorStop(1,    hex_to_rgba(s.color, 0));
+    return g;
+  })();
   const gr = Math.max(s.size * 3.4, 2.5);
-  const grd = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
-  grd.addColorStop(0,    `rgba(255,255,255,${(0.90 + 0.10 * twinkle).toFixed(2)})`);
-  grd.addColorStop(0.12, hex_to_rgba(s.color, (0.70 + 0.30 * twinkle)));
-  grd.addColorStop(0.40, hex_to_rgba(s.color, 0.30 * twinkle));
-  grd.addColorStop(1,    hex_to_rgba(s.color, 0));
   ctx.beginPath();
   ctx.arc(s.x, s.y, gr, 0, Math.PI * 2);
   ctx.fillStyle = grd;
@@ -537,30 +568,17 @@ function draw_canvas_legend() {
 
 // ── main render loop ──────────────────────────────────────────────────────────
 
-function draw(ts) {
-  // throttle to ~30fps, star field doesn't benefit from 60fps
-  if (ts - last_frame_ts < FRAME_INTERVAL) {
-    if (hero_visible) raf_id = requestAnimationFrame(draw);
-    else raf_id = null;
-    return;
-  }
-  last_frame_ts = ts;
-
-  time_s = ts * 0.001;
+// Shared render pass used by both the static phase and the animated loop.
+// Clears canvas, draws stars + hover ring + legend, updates hover_star.
+// Twinkle LUT should be updated before calling this in animated mode;
+// in static mode the LUT stays at zero → stars render at fixed brightness (0.78).
+function draw_frame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (!catalog_loaded) {
-    if (hero_visible) raf_id = requestAnimationFrame(draw);
-    else raf_id = null;
-    return;
-  }
-
-  update_twinkle_lut(); // 64 sin/cos calls instead of ~9000
+  if (!catalog_loaded) return;
 
   hover_star = null;
   let min_d = 14;
 
-  // draw all background stars batched by color (pre-grouped at catalog load)
   draw_background_stars_batched();
 
   for (const s of star_data) {
@@ -568,14 +586,12 @@ function draw(ts) {
       draw_featured_star(s);
     } else if (s.name) {
       draw_named_star(s);
-      // hover detection only for named + featured stars
       const dx = mouse.x - s.x, dy = mouse.y - s.y;
       const d = Math.sqrt(dx * dx + dy * dy);
       if (d < min_d) { min_d = d; hover_star = s; }
     }
   }
 
-  // featured hover detection (drawn after named so they win proximity ties)
   for (const s of star_data) {
     if (!s.featured) continue;
     const dx = mouse.x - s.x, dy = mouse.y - s.y;
@@ -591,6 +607,37 @@ function draw(ts) {
   }
 
   draw_canvas_legend();
+}
+
+function draw(ts) {
+  // Static phase: twinkle loop deferred until profile image fully loads.
+  // Each trigger (catalog build, resize, mousemove) fires exactly one frame —
+  // no rescheduling. Keeps every frame well under the 50ms long-task threshold
+  // during FCP→TTI, eliminating TBT accumulation.
+  if (!twinkle_active) {
+    draw_frame();
+    raf_id = null;
+    return;
+  }
+
+  // Animated phase: throttle to ~30fps, star field doesn't benefit from 60fps
+  if (ts - last_frame_ts < FRAME_INTERVAL) {
+    if (hero_visible) raf_id = requestAnimationFrame(draw);
+    else raf_id = null;
+    return;
+  }
+  last_frame_ts = ts;
+
+  time_s = ts * 0.001;
+
+  if (!catalog_loaded) {
+    if (hero_visible) raf_id = requestAnimationFrame(draw);
+    else raf_id = null;
+    return;
+  }
+
+  update_twinkle_lut(); // 64 sin/cos calls instead of ~9000
+  draw_frame();
   if (hero_visible) {
     raf_id = requestAnimationFrame(draw);
   } else {
@@ -624,6 +671,12 @@ function canvas_exposed_at(x, y) {
 function on_mouse_move(e) {
   mouse.x = e.clientX;
   mouse.y = e.clientY;
+
+  // In the static phase the loop isn't running; schedule one frame so hover
+  // rings repaint as the cursor moves across the star field.
+  if (!twinkle_active && hero_visible && !raf_id && catalog_loaded) {
+    raf_id = requestAnimationFrame(draw);
+  }
 
   if (hover_star && canvas_exposed_at(e.clientX, e.clientY)) {
     const mag_str = hover_star.featured
@@ -970,8 +1023,11 @@ function on_resize() {
   canvas.height = ih;
   legend_col_w = 0; // remeasure legend on next draw
   reproject();
+  build_named_grad_cache(); // star positions changed — rebuild gradient cache
   refresh_hero_cache(); // Bug 2 / Opt 7: re-measure after layout change
   if (catalog_loaded) pick_hint_target(); // revalidate hint target after viewport change
+  // In static phase the loop isn't running; trigger one repaint after resize
+  if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
 }
 
 // ── init: build featured immediately, fetch catalog, stage the rest ──────────
@@ -1142,10 +1198,18 @@ document.querySelectorAll('.book-spine').forEach(spine => {
   }
 
   layout_shelves(initial_container_inner_w);
-  // re-run after first paint, container may have width 0 at parse time
-  requestAnimationFrame(() => layout_shelves());
+  // re-run after first paint, container may have width 0 at parse time;
+  // read width here (before callback) so no getBoundingClientRect fires
+  // after the pending spine.style.height writes → avoids 79ms forced reflow.
+  requestAnimationFrame(() => {
+    const w = get_container_inner_w();
+    layout_shelves(w);
+  });
   // re-run after async fonts settle, eb garamond load shifts container dimensions
-  document.fonts.ready.then(() => layout_shelves());
+  document.fonts.ready.then(() => {
+    const w = get_container_inner_w();
+    layout_shelves(w);
+  });
 
   let resize_timer;
   window.addEventListener('resize', () => {
@@ -1343,6 +1407,10 @@ init();
     // Prefer WebP; fall back to JPEG if the data attr is missing
     img.src = img.dataset.fullWebp || img.dataset.fullJpeg || img.src;
     img.classList.remove('profile-img-lqip');
+    // Profile image is loaded — start the animated star loop now.
+    // Until this point stars were drawn statically to keep TBT near zero.
+    twinkle_active = true;
+    if (hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
   }
 
   // Start preloading full-res as soon as the about section approaches the viewport
