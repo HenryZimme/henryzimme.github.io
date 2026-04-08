@@ -1133,9 +1133,9 @@ document.querySelectorAll('.book-spine').forEach(spine => {
 
   layout_shelves(initial_container_inner_w);
   // re-run after first paint, container may have width 0 at parse time
-  requestAnimationFrame(layout_shelves);
+  requestAnimationFrame(() => layout_shelves());
   // re-run after async fonts settle, eb garamond load shifts container dimensions
-  document.fonts.ready.then(layout_shelves);
+  document.fonts.ready.then(() => layout_shelves());
 
   let resize_timer;
   window.addEventListener('resize', () => {
