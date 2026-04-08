@@ -1347,7 +1347,7 @@
       aspect-ratio: 613 / 661; /* reserves space before image loads — eliminates CLS */
       display: block;
       opacity: 0.95;
-      filter: contrast(1.05);
+      transition: opacity 0.4s ease;
     }
 
     /* research card deep-link from modal */
