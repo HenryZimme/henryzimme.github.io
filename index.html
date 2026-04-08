@@ -2306,6 +2306,13 @@
 <button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
 <script src="/js/main.js" defer data-cfasync="false"></script>
 <script>
+  // Service worker — cache-first for static assets, network-first for HTML
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+
   const simObserver = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {
       const s = document.createElement('script');
