@@ -236,6 +236,13 @@ function build_stars_staged(catalog) {
     add_entries(bg);
     rebuild_indexes();
     pick_hint_target(); // revalidate now that full star field is present
+
+    // dismiss loader now that the full canvas is ready
+    const loader = document.getElementById('page-loader');
+    if (loader) {
+      loader.classList.add('loader-hidden');
+      loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+    }
   }, 0);
 }
 
