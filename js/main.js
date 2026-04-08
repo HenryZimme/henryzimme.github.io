@@ -225,13 +225,6 @@ function build_named(named) {
   // named is already sorted brightest-first by the split script
   _add_entries(named);
   rebuild_indexes();
-
-  // dismiss loader — named stars are visible, page is interactive
-  const loader = document.getElementById('page-loader');
-  if (loader) {
-    loader.classList.add('loader-hidden');
-    loader.addEventListener('transitionend', () => loader.remove(), { once: true });
-  }
 }
 
 function build_bg(bg) {
@@ -1018,6 +1011,24 @@ function init() {
   // seed shared RNG once here so named and bg phases draw from the same sequence
   catalog_rng = make_rng(31415);
 
+  // repeat-visit detection: localStorage flag set on first successful load.
+  // returning users skip the loader entirely — they've already seen the intro.
+  const is_repeat = localStorage.getItem('hsz_visited') === '1';
+  const loader_el = document.getElementById('page-loader');
+  if (is_repeat && loader_el) loader_el.remove();
+
+  // animation promise: full loader sequence takes ~3.1s.
+  // on first visits, dismiss only when both data AND animation are done —
+  // so the loader never disappears mid-sequence on fast connections.
+  const anim_p = is_repeat ? null : new Promise(resolve => setTimeout(resolve, 3100));
+
+  function dismiss_loader() {
+    const el = document.getElementById('page-loader');
+    if (!el) return;
+    el.classList.add('loader-hidden');
+    el.addEventListener('transitionend', () => el.remove(), { once: true });
+  }
+
   // fetch named and bg in parallel; process named first (RNG order), then bg.
   // stars_named.json is 4KB and preloaded — arrives near-instantly.
   // stars_bg.json is 340KB and starts fetching simultaneously in the background.
@@ -1029,8 +1040,15 @@ function init() {
   named_p
     .then(named => {
       build_named(named);
-      // bg_p is already in flight; add bg stars once both named processing and
-      // the bg fetch are done. yield to paint named stars first.
+      localStorage.setItem('hsz_visited', '1');
+
+      if (!is_repeat) {
+        // dismiss when data is ready AND the animation has completed
+        anim_p.then(dismiss_loader);
+      }
+
+      // bg_p is already in flight; add bg stars once named processing is done.
+      // yield to let the browser paint named stars before adding 9000 more.
       bg_p.then(bg => setTimeout(() => build_bg(bg), 0))
           .catch(err => console.error('Star catalog (bg) load error:', err));
     })
