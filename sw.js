@@ -5,18 +5,20 @@
 //   - Third-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
 //
 // Bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
 
-// Pre-cached on install. These are the assets that matter most on first repeat visit.
+// Pre-cached on install. Keep this list small: only JS, CSS, and small JSON.
+// Large binaries (stars_bg.bin, images) must NOT be here — CacheStorage reads
+// for large files are catastrophically slow on low-end devices. Serve those
+// via HTTP Cache-Control headers instead (max-age=86400, immutable on Cloudflare).
 const PRECACHE = [
   '/',
   '/js/main.js',
   '/css/deferred.css',
   '/data/stars_named.json',
-  '/data/stars_bg.bin',
   '/favicon.svg',
   // EB Garamond woff2 — bump CACHE_VERSION if Google updates these URLs
   'https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2',
@@ -76,18 +78,27 @@ self.addEventListener('fetch', e => {
 
 // ── Strategies ────────────────────────────────────────────────────────────────
 
-// Cache-first: serve from cache immediately; update cache in background.
+// Cache-first with stale-while-revalidate.
+// Background refresh ONLY fires on a cache hit — not unconditionally.
+// This prevents re-downloading the full PRECACHE on every page visit.
+// Pair with Cache-Control: max-age=3600 on origin responses so background
+// refetches return 304 Not Modified when nothing has changed.
 async function cacheFirst(request, cacheName) {
-  const cache    = await caches.open(cacheName);
-  const cached   = await cache.match(request);
-  const fetchProm = fetch(request)
-    .then(res => {
-      if (res.ok) cache.put(request, res.clone());
-      return res;
-    })
-    .catch(() => null);
+  const cache  = await caches.open(cacheName);
+  const cached = await cache.match(request);
 
-  return cached || fetchProm;
+  if (cached) {
+    // Serve stale immediately; refresh in background.
+    fetch(request)
+      .then(res => { if (res.ok) cache.put(request, res.clone()); })
+      .catch(() => {});
+    return cached;
+  }
+
+  // Cache miss: single fetch, store, and return.
+  const res = await fetch(request).catch(() => null);
+  if (res?.ok) cache.put(request, res.clone());
+  return res;
 }
 
 // Network-first: try network, fall back to cache on failure.
