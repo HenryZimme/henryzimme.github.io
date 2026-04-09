@@ -30,7 +30,7 @@ const featured_objects = [
     simbad_id: "U+Sgr",
     card_url: "#card-usgr",
     type: "Classical Cepheid Variable  |  Open Cluster M25",
-    writeup: "My first independent research target. I performed multi-band (V and I) differential photometry of this classical Cepheid in open cluster M25 and measured a 40.8% distance error in V-band versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths. Color index correlation (r = 0.85) provided independent evidence for the kappa-mechanism."
+    writeup: "My first independent research target. U Sgr sits inside M25, a loose open cluster you can just resolve in binoculars, which made it a good starting point: bright enough to work with a modest telescope, with enough nearby cluster stars to build a reliable differential photometry reference frame. What I didn't expect was how cleanly dust extinction would separate the V-band error from the I-band."
   },
   {
     name: "7605 Cindygraber | v = 16.0",
@@ -40,7 +40,7 @@ const featured_objects = [
     image_url: "/images/cindygraber_sub.jpg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
-    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I am coordinating a multi-site Slooh campaign with citizen scientists operating telescopes remotely in Chile, Australia, and the Canary Islands to measure it. I built an open-source scheduler integrating orbital ephemerides and site visibility constraints to optimize cadence, and am extracting spectra from diffraction grating images to constrain taxonomic classification. Marker position and magnitude are indicative."
+    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would to fail on it, which is why the scheduler mattered as much as the telescope time. Marker position and magnitude are indicative."
   },
   {
     name: "19243 Bunting | v = 15.9",
