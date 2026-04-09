@@ -1430,7 +1430,7 @@ init();
         }
         break;
       }
-    }, { rootMargin: '200px 0px' }); // start loading ~200px before visible
+    }, { rootMargin: '0px' }); // start loading when section enters the viewport
     io.observe(aboutSection);
   } else {
     // IntersectionObserver not available — swap immediately
