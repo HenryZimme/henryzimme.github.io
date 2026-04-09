@@ -5,7 +5,7 @@
 //   - Third-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
 //
 // Bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
@@ -16,7 +16,7 @@ const PRECACHE = [
   '/js/main.js',
   '/css/deferred.css',
   '/data/stars_named.json',
-  '/data/stars_bg.json',
+  '/data/stars_bg.bin',
   '/favicon.svg',
   // EB Garamond woff2 — bump CACHE_VERSION if Google updates these URLs
   'https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2',
