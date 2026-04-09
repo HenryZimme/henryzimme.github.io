@@ -259,6 +259,99 @@ function build_bg(bg) {
   if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
 }
 
+// Binary chunked loader for stars_bg.bin.
+// Format:
+//   [0-3]  magic 'STBG'
+//   [4]    version u8
+//   [5-8]  num_stars u32 LE
+//   [9]    num_colors u8
+//   [10..] color table: num_colors × 7 ASCII bytes (e.g. '#adc4ff')
+//   then:  num_stars × 13 bytes — ra f32LE, dec f32LE, vmag f32LE, color_idx u8
+//
+// Stars arrive sorted brightest-first (same order as the old JSON).
+// Each chunk of CHUNK_SIZE stars is added and painted immediately so the sky
+// populates progressively rather than all-at-once after the full file arrives.
+async function load_bg_binary(resp) {
+  const RECORD_BYTES = 13; // 3×f32 + 1×u8
+  const CHUNK_STARS  = 1500;
+  const decoder      = new TextDecoder('ascii');
+
+  // Accumulate raw bytes from the ReadableStream.
+  const reader  = resp.body.getReader();
+  let buf       = new Uint8Array(0);
+
+  function append(chunk) {
+    const next = new Uint8Array(buf.length + chunk.length);
+    next.set(buf);
+    next.set(chunk, buf.length);
+    buf = next;
+  }
+
+  // Read at least `need` total bytes into buf.
+  async function read_until(need) {
+    while (buf.length < need) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      append(value);
+    }
+  }
+
+  // ── parse fixed header ────────────────────────────────────────────────────
+  const HEADER_FIXED = 10; // magic(4) + ver(1) + num_stars(4) + num_colors(1)
+  await read_until(HEADER_FIXED);
+
+  if (decoder.decode(buf.slice(0, 4)) !== 'STBG')
+    throw new Error('stars_bg.bin: bad magic');
+
+  const hdr_view  = new DataView(buf.buffer, buf.byteOffset);
+  const num_stars  = hdr_view.getUint32(5, /*LE=*/true);
+  const num_colors = buf[9];
+  const palette_end = HEADER_FIXED + num_colors * 7;
+
+  // ── parse color palette ───────────────────────────────────────────────────
+  await read_until(palette_end);
+  const colors = [];
+  for (let i = 0; i < num_colors; i++) {
+    colors.push(decoder.decode(buf.slice(HEADER_FIXED + i * 7, HEADER_FIXED + (i + 1) * 7)));
+  }
+
+  // ── stream star records in chunks ─────────────────────────────────────────
+  let offset = palette_end;
+  let processed = 0;
+
+  while (processed < num_stars) {
+    const remaining   = num_stars - processed;
+    const batch_count = Math.min(CHUNK_STARS, remaining);
+    await read_until(offset + batch_count * RECORD_BYTES);
+
+    // Build entries array from raw bytes, feeding into the same _add_entries pipeline.
+    const view    = new DataView(buf.buffer, buf.byteOffset + offset);
+    const entries = new Array(batch_count);
+    for (let i = 0; i < batch_count; i++) {
+      const b = i * RECORD_BYTES;
+      entries[i] = [
+        view.getFloat32(b,      true), // ra_deg
+        view.getFloat32(b + 4,  true), // dec_deg
+        view.getFloat32(b + 8,  true), // vmag
+        colors[buf[offset + b + 12]],  // color hex
+        null,                          // name (all null in bg catalog)
+      ];
+    }
+
+    _add_entries(entries);
+    rebuild_indexes();
+    if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
+
+    offset    += batch_count * RECORD_BYTES;
+    processed += batch_count;
+
+    // Yield to the browser between chunks so each batch paints before the next arrives.
+    if (processed < num_stars) await new Promise(r => setTimeout(r, 0));
+  }
+
+  pick_hint_target(); // revalidate with full catalog
+}
+
 // ── twinkle lookup table ──────────────────────────────────────────────────────
 // Instead of Math.sin(time_s * freq + phase) per star (~9000 calls/frame),
 // we quantize frequencies into TWINKLE_BUCKETS bins and use the angle-addition
@@ -1069,20 +1162,23 @@ function init() {
 
   // fetch named and bg in parallel; process named first (RNG order), then bg.
   // stars_named.json is preloaded — arrives near-instantly.
-  // stars_bg.json is 340KB and loads in the background.
+  // stars_bg.bin is binary (66% smaller than JSON) and streams in chunked.
   const named_p = fetch('/data/stars_named.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
-  const bg_p = fetch('/data/stars_bg.json')
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+
+  // Kick off binary fetch immediately so it's in flight while named processes.
+  const bg_resp_p = fetch('/data/stars_bg.bin')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r; });
 
   named_p
     .then(named => {
       build_named(named);
-
-      // bg_p is already in flight; add bg stars once named processing is done.
-      // yield to let the browser paint named stars before adding 9000 more.
-      bg_p.then(bg => setTimeout(() => build_bg(bg), 0))
+      // yield to let the browser paint named stars, then stream bg binary
+      setTimeout(() => {
+        bg_resp_p
+          .then(resp => load_bg_binary(resp))
           .catch(err => console.error('Star catalog (bg) load error:', err));
+      }, 0);
     })
     .catch(err => console.error('Star catalog (named) load error:', err));
 }
