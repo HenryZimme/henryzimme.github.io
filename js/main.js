@@ -1536,10 +1536,7 @@ init();
 
 // ── reading trail ────────────────────────────────────────────────────────────
 (function () {
-  var LS_FOUND     = 'trailFound';
-  var LS_DISMISSED = 'trailDismissed';
-
-  if (sessionStorage.getItem(LS_DISMISSED) === 'true') return;
+  var LS_FOUND = 'trailFound';
 
   // derive word list from DOM — single source of truth
   var WORDS = Array.from(document.querySelectorAll('.trail-word'))
@@ -1669,7 +1666,6 @@ init();
 
   dismiss.addEventListener('click', function () {
     hideCard();
-    sessionStorage.setItem(LS_DISMISSED, 'true');
     toggle.classList.remove('trail-ready');
     toggle.style.opacity = '0';
     toggle.style.pointerEvents = 'none';
