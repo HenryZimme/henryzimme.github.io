@@ -1590,6 +1590,15 @@ init();
       var el = document.createElement('div');
       el.className = 'trail-found-word';
       el.textContent = w;
+      el.title = 'Jump to this passage';
+      el.addEventListener('click', function () {
+        var target = document.querySelector('.trail-word[data-word="' + w + '"]');
+        if (!target) return;
+        hideCard();
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.classList.add('trail-scroll-highlight');
+        setTimeout(function () { target.classList.remove('trail-scroll-highlight'); }, 1600);
+      });
       listEl.appendChild(el);
       requestAnimationFrame(function () {
         requestAnimationFrame(function () { el.classList.add('trail-word-show'); });
@@ -1599,6 +1608,18 @@ init();
     if (found.length === TOTAL) {
       completeEl.classList.add('trail-complete-show');
       card.classList.add('trail-flash');
+      var msgEl = document.getElementById('trail-connect-msg');
+      var emailEl = document.getElementById('trail-connect-email');
+      if (msgEl && !msgEl.textContent) {
+        msgEl.textContent = "You made it this far, so I'd love to know what you thought.";
+        var u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
+        var a = document.createElement('a');
+        a.href = 'mailto:' + u;
+        a.textContent = u;
+        a.className = 'trail-connect-link';
+        emailEl.appendChild(a);
+        document.getElementById('trail-connect').classList.add('trail-connect-show');
+      }
     }
   }
 
@@ -1655,7 +1676,15 @@ init();
   });
 
   activateListeners();
-  setTimeout(function () { toggle.classList.add('trail-ready'); }, 1800);
+  setTimeout(function () {
+    toggle.classList.add('trail-ready');
+    if (found.length === 0) {
+      toggle.classList.add('trail-pulse');
+      toggle.addEventListener('animationend', function () {
+        toggle.classList.remove('trail-pulse');
+      }, { once: true });
+    }
+  }, 1800);
 
   if (found.length > 0) markSpans();
 })();
