@@ -1375,48 +1375,23 @@
 
     /* floating arrow callout */
     #trail-arrow {
-      position: absolute;
-      left: 262px;
+      position: fixed;
+      left: 260px;
       z-index: 300;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      padding: 7px 11px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      color: var(--gold);
-      white-space: nowrap;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 11px solid var(--gold);
       opacity: 0;
       pointer-events: none;
-      transform: translateX(6px);
-      transition: opacity 0.25s, transform 0.25s;
+      transition: opacity 0.25s;
     }
-    #trail-arrow::before {
-      content: '';
-      position: absolute;
-      left: -7px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 0;
-      height: 0;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
-      border-right: 7px solid var(--panel-border);
-    }
-    #trail-arrow::after {
-      content: '';
-      position: absolute;
-      left: -5px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 0;
-      height: 0;
-      border-top: 5px solid transparent;
-      border-bottom: 5px solid transparent;
-      border-right: 6px solid var(--panel);
+    @keyframes trail-arrow-nudge {
+      0%, 100% { transform: translateX(0); }
+      50%       { transform: translateX(4px); }
     }
     #trail-arrow.trail-arrow-visible {
-      opacity: 1;
-      pointer-events: none;
-      transform: translateX(0);
+      opacity: 0.85;
+      animation: trail-arrow-nudge 1s ease-in-out 3;
     }
