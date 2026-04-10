@@ -1269,6 +1269,45 @@
       opacity: 0;
       transform: translateY(4px);
       transition: opacity 0.25s, transform 0.25s;
+      cursor: pointer;
+    }
+    .trail-found-word:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .trail-word.trail-scroll-highlight {
+      color: var(--gold);
+      border-bottom: 1px solid var(--gold);
+      transition: color 0.3s, border-color 0.3s;
+    }
+    #trail-connect {
+      margin-top: 10px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.5s 0.6s, transform 0.5s 0.6s;
+    }
+    #trail-connect.trail-connect-show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #trail-connect-msg {
+      font-family: 'Spectral', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--text-dim);
+      margin: 0 0 7px;
+      line-height: 1.5;
+    }
+    .trail-connect-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+    }
+    .trail-connect-link:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
     .trail-found-word.trail-word-show {
       opacity: 1;
@@ -1302,8 +1341,15 @@
     }
     #trail-complete.trail-complete-show { opacity: 1; }
     @keyframes trail-flash {
-      0%   { box-shadow: 0 0 0 0 rgba(196,162,88,0); }
-      40%  { box-shadow: 0 0 16px 4px rgba(196,162,88,0.18); }
-      100% { box-shadow: 0 0 0 0 rgba(196,162,88,0); }
+      0%   { box-shadow: 0 0 0 0 rgba(196,162,88,0); border-color: var(--panel-border); }
+      35%  { box-shadow: 0 0 20px 6px rgba(196,162,88,0.22); border-color: rgba(196,162,88,0.7); }
+      100% { box-shadow: 0 0 0 0 rgba(196,162,88,0); border-color: var(--panel-border); }
+    }
+    @keyframes trail-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(196,162,88,0); border-color: var(--panel-border); }
+      50%       { box-shadow: 0 0 0 7px rgba(196,162,88,0.15); border-color: rgba(196,162,88,0.55); }
+    }
+    #trail-toggle.trail-pulse {
+      animation: trail-pulse 1.8s ease-in-out 4;
     }
     #trail-card.trail-flash { animation: trail-flash 1.4s ease forwards; }
