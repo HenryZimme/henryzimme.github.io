@@ -1148,7 +1148,7 @@
       transition: color 0.15s, border-color 0.15s;
     }
     .trail-active .trail-word {
-      border-bottom: 1px solid rgba(196,162,88,0.35);
+      border-bottom: 1px solid rgba(196,162,88,0.6);
       cursor: pointer;
     }
     .trail-active .trail-word:hover {
