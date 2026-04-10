@@ -1142,3 +1142,162 @@
       .footer-cssda img { width: 16px; height: 16px; }
       #modal-img-wrap { aspect-ratio: 4 / 3; margin-bottom: 20px; }
     }
+
+    /* ── reading trail ─────────────────────────────────────────────────────── */
+    .trail-word {
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .trail-active .trail-word {
+      border-bottom: 1px solid rgba(196,162,88,0.35);
+      cursor: pointer;
+    }
+    .trail-active .trail-word:hover {
+      border-bottom-color: var(--gold);
+      color: rgba(226,221,212,0.9);
+    }
+    .trail-active .trail-word.found {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* toggle — left side, clear of back-to-top */
+    #trail-toggle {
+      position: fixed;
+      bottom: 32px;
+      left: 32px;
+      z-index: 300;
+      width: 40px;
+      height: 40px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--text-dim);
+      font-size: 16px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, border-color 0.18s, color 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #trail-toggle.trail-ready {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #trail-toggle.trail-on {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    #trail-toggle:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* floating card */
+    #trail-card {
+      position: fixed;
+      bottom: 80px;
+      left: 32px;
+      z-index: 300;
+      width: 214px;
+      background: rgba(7,9,26,0.97);
+      border: 1px solid var(--panel-border);
+      padding: 18px 20px 16px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    #trail-card.trail-card-visible {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+    .trail-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .trail-card-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .trail-card-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .trail-card-count em { font-style: normal; color: var(--gold); }
+    .trail-dots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+    .trail-dot {
+      width: 7px;
+      height: 7px;
+      border: 1px solid rgba(196,162,88,0.28);
+      border-radius: 50%;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .trail-dot.trail-dot-lit {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .trail-words-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-height: 20px;
+    }
+    .trail-found-word {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.05em;
+      color: var(--gold);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    .trail-found-word.trail-word-show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #trail-dismiss {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 14px;
+      cursor: pointer;
+      opacity: 0.45;
+      transition: opacity 0.15s;
+      font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
+      line-height: 1;
+    }
+    #trail-dismiss:hover { opacity: 1; }
+    #trail-complete {
+      font-family: 'Spectral', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text-dim);
+      margin-top: 12px;
+      border-top: 1px solid var(--panel-border);
+      padding-top: 12px;
+      opacity: 0;
+      transition: opacity 0.5s 0.3s;
+    }
+    #trail-complete.trail-complete-show { opacity: 1; }
+    @keyframes trail-flash {
+      0%   { box-shadow: 0 0 0 0 rgba(196,162,88,0); }
+      40%  { box-shadow: 0 0 16px 4px rgba(196,162,88,0.18); }
+      100% { box-shadow: 0 0 0 0 rgba(196,162,88,0); }
+    }
+    #trail-card.trail-flash { animation: trail-flash 1.4s ease forwards; }
