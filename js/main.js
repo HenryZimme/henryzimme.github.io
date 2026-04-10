@@ -1545,12 +1545,17 @@ init();
   var TOTAL = WORDS.length;
 
   // found stored in discovery order
-  var found  = JSON.parse(localStorage.getItem(LS_FOUND) || '[]');
-  var active = false;
+  var found     = JSON.parse(sessionStorage.getItem(LS_FOUND) || '[]');
+  var active    = false;
+  var arrowShown = false;
+  var arrowTimer = null;
+  var observer  = null;
 
   var toggle     = document.getElementById('trail-toggle');
   var card       = document.getElementById('trail-card');
   var dismiss    = document.getElementById('trail-dismiss');
+  var hintText   = document.getElementById('trail-hint-text');
+  var arrow      = document.getElementById('trail-arrow');
   var nEl        = document.getElementById('trail-n');
   var totalEl    = document.getElementById('trail-total');
   var dotsEl     = document.getElementById('trail-dots');
@@ -1570,7 +1575,7 @@ init();
   });
 
   function save() {
-    localStorage.setItem(LS_FOUND, JSON.stringify(found));
+    sessionStorage.setItem(LS_FOUND, JSON.stringify(found));
   }
 
   function render() {
@@ -1630,6 +1635,7 @@ init();
     if (!active) return;
     var word = e.currentTarget.dataset.word;
     if (found.indexOf(word) !== -1) return;
+    dismissHint();
     found.push(word);
     save();
     document.querySelectorAll('.trail-word[data-word="' + word + '"]').forEach(function (s) {
@@ -1644,6 +1650,42 @@ init();
     });
   }
 
+  function showArrow(targetEl) {
+    if (!arrow || arrowShown) return;
+    arrowShown = true;
+    var rect = targetEl.getBoundingClientRect();
+    arrow.style.top  = Math.round(rect.top + window.scrollY + rect.height / 2 - 16) + 'px';
+    arrow.classList.add('trail-arrow-visible');
+    arrowTimer = setTimeout(hideArrow, 4000);
+  }
+
+  function hideArrow() {
+    if (!arrow) return;
+    clearTimeout(arrowTimer);
+    arrow.classList.remove('trail-arrow-visible');
+  }
+
+  function dismissHint() {
+    if (hintText) hintText.classList.add('trail-hint-gone');
+    hideArrow();
+    if (observer) { observer.disconnect(); observer = null; }
+  }
+
+  function startObserver() {
+    if (observer || arrowShown) return;
+    observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && active) {
+          showArrow(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.trail-word').forEach(function (span) {
+      if (found.indexOf(span.dataset.word) === -1) observer.observe(span);
+    });
+  }
+
   function showCard() {
     active = true;
     document.body.classList.add('trail-active');
@@ -1651,6 +1693,7 @@ init();
     card.classList.add('trail-card-visible');
     markSpans();
     render();
+    if (found.length === 0) startObserver();
   }
 
   function hideCard() {
@@ -1658,6 +1701,8 @@ init();
     document.body.classList.remove('trail-active');
     toggle.classList.remove('trail-on');
     card.classList.remove('trail-card-visible');
+    hideArrow();
+    if (observer) { observer.disconnect(); observer = null; }
   }
 
   toggle.addEventListener('click', function () {
