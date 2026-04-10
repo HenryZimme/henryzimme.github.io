@@ -1536,48 +1536,40 @@ init();
 
 // ── reading trail ────────────────────────────────────────────────────────────
 (function () {
-  var WORDS = [
-    'false certainty',
-    'why am I likely wrong',
-    'alias',
-    'merger spindown',
-    'builds the refutation into the proof',
-    'curtail the very iterative thinking',
-    'deception was revealed',
-    'which of your ideas hold up',
-    'unplanned thinking',
-  ];
-  var TOTAL = WORDS.length;
   var LS_FOUND     = 'trailFound';
   var LS_DISMISSED = 'trailDismissed';
 
   if (localStorage.getItem(LS_DISMISSED) === 'true') return;
 
-  var found   = JSON.parse(localStorage.getItem(LS_FOUND) || '[]');
-  var active  = false;
+  // derive word list from DOM — single source of truth
+  var WORDS = Array.from(document.querySelectorAll('.trail-word'))
+    .map(function (s) { return s.dataset.word; })
+    .filter(function (w, i, a) { return a.indexOf(w) === i; });
+  var TOTAL = WORDS.length;
 
-  var toggle   = document.getElementById('trail-toggle');
-  var card     = document.getElementById('trail-card');
-  var dismiss  = document.getElementById('trail-dismiss');
-  var nEl      = document.getElementById('trail-n');
-  var dotsEl   = document.getElementById('trail-dots');
-  var listEl   = document.getElementById('trail-words-list');
+  // found stored in discovery order
+  var found  = JSON.parse(localStorage.getItem(LS_FOUND) || '[]');
+  var active = false;
+
+  var toggle     = document.getElementById('trail-toggle');
+  var card       = document.getElementById('trail-card');
+  var dismiss    = document.getElementById('trail-dismiss');
+  var nEl        = document.getElementById('trail-n');
+  var totalEl    = document.getElementById('trail-total');
+  var dotsEl     = document.getElementById('trail-dots');
+  var listEl     = document.getElementById('trail-words-list');
   var completeEl = document.getElementById('trail-complete');
 
   if (!toggle || !card) return;
 
-  // build dots and word slots
-  WORDS.forEach(function (w) {
+  // set total count from DOM
+  if (totalEl) totalEl.textContent = TOTAL;
+
+  // build dots — one per word, progress indicator only
+  WORDS.forEach(function () {
     var dot = document.createElement('div');
     dot.className = 'trail-dot';
-    dot.dataset.trailDot = w;
     dotsEl.appendChild(dot);
-
-    var slot = document.createElement('div');
-    slot.className = 'trail-found-word';
-    slot.dataset.trailSlot = w;
-    slot.textContent = w;
-    listEl.appendChild(slot);
   });
 
   function save() {
@@ -1586,13 +1578,24 @@ init();
 
   function render() {
     nEl.textContent = found.length;
-    WORDS.forEach(function (w, i) {
-      var dot  = dotsEl.children[i];
-      var slot = listEl.children[i];
-      var isFound = found.indexOf(w) !== -1;
-      dot.classList.toggle('trail-dot-lit', isFound);
-      slot.classList.toggle('trail-word-show', isFound);
+
+    // dots: fill left-to-right by count
+    Array.from(dotsEl.children).forEach(function (dot, i) {
+      dot.classList.toggle('trail-dot-lit', i < found.length);
     });
+
+    // word list: discovery order — rebuild from found[]
+    listEl.innerHTML = '';
+    found.forEach(function (w) {
+      var el = document.createElement('div');
+      el.className = 'trail-found-word';
+      el.textContent = w;
+      listEl.appendChild(el);
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { el.classList.add('trail-word-show'); });
+      });
+    });
+
     if (found.length === TOTAL) {
       completeEl.classList.add('trail-complete-show');
       card.classList.add('trail-flash');
@@ -1601,9 +1604,7 @@ init();
 
   function markSpans() {
     document.querySelectorAll('.trail-word').forEach(function (span) {
-      if (found.indexOf(span.dataset.word) !== -1) {
-        span.classList.add('found');
-      }
+      span.classList.toggle('found', found.indexOf(span.dataset.word) !== -1);
     });
   }
 
@@ -1652,12 +1653,8 @@ init();
     toggle.style.pointerEvents = 'none';
   });
 
-  // show toggle after a short delay — don't compete with page load animations
   activateListeners();
-  setTimeout(function () {
-    toggle.classList.add('trail-ready');
-  }, 1800);
+  setTimeout(function () { toggle.classList.add('trail-ready'); }, 1800);
 
-  // restore found state from prior visit
   if (found.length > 0) markSpans();
 })();
