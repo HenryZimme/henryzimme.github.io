@@ -1539,7 +1539,7 @@ init();
   var LS_FOUND     = 'trailFound';
   var LS_DISMISSED = 'trailDismissed';
 
-  if (localStorage.getItem(LS_DISMISSED) === 'true') return;
+  if (sessionStorage.getItem(LS_DISMISSED) === 'true') return;
 
   // derive word list from DOM — single source of truth
   var WORDS = Array.from(document.querySelectorAll('.trail-word'))
@@ -1609,6 +1609,7 @@ init();
   }
 
   function onWordClick(e) {
+    if (!active) return;
     var word = e.currentTarget.dataset.word;
     if (found.indexOf(word) !== -1) return;
     found.push(word);
@@ -1647,7 +1648,7 @@ init();
 
   dismiss.addEventListener('click', function () {
     hideCard();
-    localStorage.setItem(LS_DISMISSED, 'true');
+    sessionStorage.setItem(LS_DISMISSED, 'true');
     toggle.classList.remove('trail-ready');
     toggle.style.opacity = '0';
     toggle.style.pointerEvents = 'none';
