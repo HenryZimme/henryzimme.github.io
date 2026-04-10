@@ -1654,7 +1654,7 @@ init();
     if (!arrow || arrowShown) return;
     arrowShown = true;
     var rect = targetEl.getBoundingClientRect();
-    arrow.style.top  = Math.round(rect.top + window.scrollY + rect.height / 2 - 16) + 'px';
+    arrow.style.top  = Math.round(rect.top + rect.height / 2 - 8) + 'px';
     arrow.classList.add('trail-arrow-visible');
     arrowTimer = setTimeout(hideArrow, 4000);
   }
