@@ -1762,18 +1762,6 @@
     </div>
   </div>
 
-  <!-- epilepsy warning modal -->
-  <div id="epilepsy-modal">
-    <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
-      <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
-      <p class="epilepsy-body">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
-      <div style="display:flex;gap:1rem;">
-        <button id="epilepsy-cancel" class="epilepsy-btn epilepsy-btn--cancel">Cancel</button>
-        <button id="epilepsy-confirm" class="epilepsy-btn epilepsy-btn--confirm">I understand, continue</button>
-      </div>
-    </div>
-  </div>
-
   <!-- controls -->
   <div id="sim-controls">
     <div class="mode-pill">
@@ -1785,6 +1773,18 @@
   <p class="sim-params">K&#8321; = 28.5 km/s &middot; K&#8322; = 51.6 km/s &middot; P<sub>orb</sub> = 58.85 d &middot; Pulsation P<sub>puls</sub> = 0.690 d | Orbital and physical parameters from <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener" class="sim-cite">Espinoza-Arancibia &amp; Pilecki (2025)</a> and <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener" class="sim-cite">Pilecki et al. (2022)</a>.</p>
 
 </section>
+
+  <!-- epilepsy warning modal — must live outside #cepheid-sim (isolation:isolate breaks position:fixed) -->
+  <div id="epilepsy-modal">
+    <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
+      <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
+      <p class="epilepsy-body">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
+      <div style="display:flex;gap:1rem;">
+        <button id="epilepsy-cancel" class="epilepsy-btn epilepsy-btn--cancel">Cancel</button>
+        <button id="epilepsy-confirm" class="epilepsy-btn epilepsy-btn--confirm">I understand, continue</button>
+      </div>
+    </div>
+  </div>
 
   <!-- writing -->
   <section id="writing" class="section">
