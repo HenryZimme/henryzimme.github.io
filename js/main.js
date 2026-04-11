@@ -40,7 +40,7 @@ const featured_objects = [
     image_url: "/images/cindygraber_sub.jpg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
-    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would to fail on it, which is why the scheduler mattered as much as the telescope time. Marker position and magnitude are indicative."
+    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler mattered as much as the telescope time. Marker position and magnitude are indicative."
   },
   {
     name: "19243 Bunting | v = 15.9",
