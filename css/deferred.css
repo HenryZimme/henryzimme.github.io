@@ -1439,14 +1439,23 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .epilepsy-btn--cancel {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.5);
 }
+.epilepsy-btn--cancel:hover {
+  border-color: rgba(255,255,255,0.28);
+  color: rgba(255,255,255,0.75);
+}
 .epilepsy-btn--confirm {
   background: rgba(196,162,88,0.12);
   border: 1px solid rgba(196,162,88,0.4);
   color: #c4a258;
+}
+.epilepsy-btn--confirm:hover {
+  background: rgba(196,162,88,0.22);
+  border-color: rgba(196,162,88,0.65);
 }
