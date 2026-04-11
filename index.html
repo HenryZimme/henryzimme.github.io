@@ -297,10 +297,11 @@
     }
 
     /* ── overlay guard: prevent these rendering in-flow before deferred.css loads ── */
-    #star-tooltip { position: fixed; opacity: 0; pointer-events: none; }
-    #star-popover { position: fixed; opacity: 0; pointer-events: none; }
-    #object-modal { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 200; display: flex; align-items: center; justify-content: center; }
-    #back-to-top  { position: fixed; opacity: 0; pointer-events: none; }
+    #star-tooltip   { position: fixed; opacity: 0; pointer-events: none; }
+    #star-popover   { position: fixed; opacity: 0; pointer-events: none; }
+    #object-modal   { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 200; display: flex; align-items: center; justify-content: center; }
+    #epilepsy-modal { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 900; display: flex; align-items: center; justify-content: center; }
+    #back-to-top    { position: fixed; opacity: 0; pointer-events: none; }
 
 
 </style>
@@ -500,65 +501,49 @@
       letter-spacing: 0.08em;
       color: rgba(226, 221, 212, 0.28);
     }
-    /* ── epilepsy warning modal ── */
+    /* ── epilepsy warning modal (fallback before deferred.css loads) ── */
     #epilepsy-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 900;
-      background: rgba(7, 9, 26, 0.88);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      align-items: center;
-      justify-content: center;
+      background: rgba(7,9,26,0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding: 1.5rem;
+      transition: opacity 0.28s;
     }
-    #epilepsy-modal.visible {
-      display: flex;
-    }
+    #epilepsy-modal.visible { opacity: 1; pointer-events: all; }
     #epilepsy-modal > div {
       max-width: 420px;
       width: 100%;
-      background: rgba(10, 13, 35, 0.97);
-      border: 1px solid rgba(196, 162, 88, 0.35);
+      background: rgba(10,13,35,0.97);
+      border: 1px solid rgba(196,162,88,0.35);
       border-radius: 12px;
       padding: 2rem 2rem 1.75rem;
       font-family: 'JetBrains Mono', monospace;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
     }
     .epilepsy-body {
-      font-size: 12.5px;
-      color: rgba(226, 221, 212, 0.82);
-      line-height: 1.75;
-      margin: 0 0 1.5rem;
+      font-size: 13px;
+      color: rgba(226,221,212,0.85);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
     }
     .epilepsy-btn {
       flex: 1;
-      padding: 0.6rem 1rem;
+      padding: 0.6rem;
       border-radius: 6px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.06em;
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s, color 0.15s;
     }
     .epilepsy-btn--cancel {
       background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      color: rgba(226, 221, 212, 0.45);
-    }
-    .epilepsy-btn--cancel:hover {
-      border-color: rgba(255, 255, 255, 0.28);
-      color: rgba(226, 221, 212, 0.7);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.5);
     }
     .epilepsy-btn--confirm {
-      background: rgba(196, 162, 88, 0.1);
-      border: 1px solid rgba(196, 162, 88, 0.4);
+      background: rgba(196,162,88,0.12);
+      border: 1px solid rgba(196,162,88,0.4);
       color: #c4a258;
-    }
-    .epilepsy-btn--confirm:hover {
-      background: rgba(196, 162, 88, 0.2);
-      border-color: rgba(196, 162, 88, 0.65);
     }
 
     /* sections */
