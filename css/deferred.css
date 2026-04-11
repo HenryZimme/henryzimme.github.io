@@ -1432,6 +1432,8 @@
   opacity: 1;
   pointer-events: all;
 }
+#epilepsy-modal > div { pointer-events: none; }
+#epilepsy-modal.visible > div { pointer-events: auto; }
 .epilepsy-btn {
   flex: 1;
   padding: 0.6rem;
