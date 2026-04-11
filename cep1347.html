@@ -648,7 +648,7 @@
       document.documentElement.classList.add('film-mode');
 
       // lock setMode to orbital only
-      var _setMode_orig = window.setMode;
+      let _setMode_orig = window.setMode;
       Object.defineProperty(window, 'setMode', {
         set: function(fn) {
           _setMode_orig = fn;
@@ -663,28 +663,28 @@
 
       // load engine immediately (no IntersectionObserver needed; canvas is visible from frame 1)
       window.addEventListener('DOMContentLoaded', function() {
-        var s = document.createElement('script');
+        let s = document.createElement('script');
         s.src = '/js/cepheid-engine.js';
         s.dataset.bootJson = '/data/master_data_boot.json';
         s.dataset.fullJson = '/data/master_data.json';
         document.body.appendChild(s);
 
         // update diag bar: shown only when ?diag is explicitly in the URL
-        var diag   = document.getElementById('film-diag');
-        var showDiag = window.location.search.indexOf('diag') !== -1;
-        var clean  = window.location.search.indexOf('clean')  !== -1;
+        let diag   = document.getElementById('film-diag');
+        let showDiag = window.location.search.indexOf('diag') !== -1;
+        let clean  = window.location.search.indexOf('clean')  !== -1;
         if (showDiag && !clean && diag) diag.style.display = 'block';
         if (clean) {
-          var wm = document.getElementById('film-watermark');
+          let wm = document.getElementById('film-watermark');
           if (wm) wm.style.display = 'none';
         }
         function updateDiag() {
-          var c = document.getElementById('simCanvas');
+          let c = document.getElementById('simCanvas');
           if (!c || !diag || !showDiag || clean) return;
-          var dpr = window.devicePixelRatio || 1;
-          var w = Math.round(c.width / dpr);
-          var h = Math.round(c.height / dpr);
-          var onTarget = (Math.round(c.width) === 1920 && Math.round(c.height) === 1080);
+          let dpr = window.devicePixelRatio || 1;
+          let w = Math.round(c.width / dpr);
+          let h = Math.round(c.height / dpr);
+          let onTarget = (Math.round(c.width) === 1920 && Math.round(c.height) === 1080);
           diag.textContent = w + '\u00d7' + h + ' \u00b7 DPR ' + dpr.toFixed(1) + ' \u00b7 ORBITAL \u00b7 ' + (onTarget ? '\u2713 1920\u00d71080' : '1920\u00d71080 target');
           diag.style.color = onTarget ? 'rgba(134,239,172,0.55)' : 'rgba(196,162,88,0.40)';
         }
@@ -696,7 +696,7 @@
 
   <!-- back to top -->
   <script>
-    var btt = document.getElementById('back-to-top');
+    let btt = document.getElementById('back-to-top');
     window.addEventListener('scroll', function() {
       if (window.pageYOffset > 300) btt.classList.add('visible');
       else btt.classList.remove('visible');
@@ -712,7 +712,7 @@
       if (!entries[0].isIntersecting) return;
       obs.disconnect();
       if (document.documentElement.classList.contains('film-mode')) return; // film-mode loads engine separately
-      var s = document.createElement('script');
+      let s = document.createElement('script');
       s.src = '/js/cepheid-engine.js';
       s.dataset.bootJson = '/data/master_data_boot.json';
       s.dataset.fullJson = '/data/master_data.json';
