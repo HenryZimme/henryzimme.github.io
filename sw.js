@@ -1,17 +1,17 @@
 // sw.js — henryzimmerman.net
-// Strategy:
-//   - Static assets (JS, CSS, JSON, fonts, images): cache-first, background-update
+// strat:
+//   - static assets (JS, CSS, JSON, fonts, images): cache-first, background-update
 //   - HTML pages: network-first, fall back to cache
-//   - Third-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
+//   - 3rd-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
 //
-// Bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v15';
+// bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
+const CACHE_VERSION = 'v16';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
 
-// Pre-cached on install. Keep this list small: only JS, CSS, and small JSON.
-// Large binaries (stars_bg.bin, images) must NOT be here — CacheStorage reads
+// pre-cached on install. Keep this list small: only JS, CSS, and small JSON.
+// large binaries (stars_bg.bin, images) must NOT be here: CacheStorage reads
 // for large files are catastrophically slow on low-end devices. Serve those
 // via HTTP Cache-Control headers instead (max-age=86400, immutable on Cloudflare).
 const PRECACHE = [
@@ -20,12 +20,12 @@ const PRECACHE = [
   '/css/deferred.css',
   '/data/stars_named.json',
   '/favicon.svg',
-  // EB Garamond woff2 — bump CACHE_VERSION if Google updates these URLs
+  // EB Garamond woff2: bump CACHE_VERSION if Google updates these URLs
   'https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2',
   'https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2',
 ];
 
-// ── Install: pre-cache core assets ───────────────────────────────────────────
+// ---
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_STATIC)
@@ -34,7 +34,7 @@ self.addEventListener('install', e => {
   );
 });
 
-// ── Activate: delete old caches ───────────────────────────────────────────────
+// ---
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -47,7 +47,7 @@ self.addEventListener('activate', e => {
   );
 });
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
+// ---
 self.addEventListener('fetch', e => {
   const { request } = e;
   const url = new URL(request.url);
@@ -63,7 +63,6 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Skip non-same-origin
   if (url.origin !== self.location.origin) return;
 
   // HTML: network-first so content updates land immediately
@@ -72,16 +71,16 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Everything else (JS, CSS, JSON, images, fonts): cache-first
+  // everything else (JS, CSS, JSON, images, fonts): cache-first
   e.respondWith(cacheFirst(request, CACHE_STATIC));
 });
 
-// ── Strategies ────────────────────────────────────────────────────────────────
+// ---
 
-// Cache-first with stale-while-revalidate.
-// Background refresh ONLY fires on a cache hit — not unconditionally.
-// This prevents re-downloading the full PRECACHE on every page visit.
-// Pair with Cache-Control: max-age=3600 on origin responses so background
+// cache-first with stale-while-revalidate.
+// background refresh ONLY fires on a cache hit — not unconditionally.
+// this prevents re-downloading the full PRECACHE on every page visit.
+// pair with Cache-Control: max-age=3600 on origin responses so background
 // refetches return 304 Not Modified when nothing has changed.
 async function cacheFirst(request, cacheName) {
   const cache  = await caches.open(cacheName);
@@ -95,13 +94,13 @@ async function cacheFirst(request, cacheName) {
     return cached;
   }
 
-  // Cache miss: single fetch, store, and return.
+  // cache miss: single fetch, store, and return.
   const res = await fetch(request).catch(() => null);
   if (res?.ok) cache.put(request, res.clone());
   return res;
 }
 
-// Network-first: try network, fall back to cache on failure.
+// network-first: try network, fall back to cache on failure.
 async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
