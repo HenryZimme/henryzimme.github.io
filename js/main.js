@@ -82,8 +82,8 @@ const FEATURED_COLORS = ['#c4a258', '#8ab8ff', '#5ecfbf', '#b07ecf', '#d4693a', 
 let star_data = [];
 let bg_stars_by_color = {}; // pre-grouped background stars, built once in build_stars
 let bg_bright_stars = []; // pre-filtered background stars (size > 1.0) for core dot pass
-let named_stars   = []; // Opt 4: pre-filtered; avoids full scan on touch events
-let featured_stars = []; // Opt 4: pre-filtered; avoids full scan on touch events
+let named_stars   = []; // pre-filtered; avoids full scan on touch events
+let featured_stars = []; // pre-filtered; avoids full scan on touch events
 let mouse = { x: -9999, y: -9999 };
 let hover_star = null;
 
@@ -131,7 +131,7 @@ function reproject() {
   }
 }
 
-// ── phase 0: featured objects only (no network dependency) ───────────────────
+// ---
 // called immediately at init() so the canvas is never blank while stars.json loads.
 // featured_objects is hardcoded in JS; nothing here touches the catalog.
 function build_featured_only() {
@@ -205,7 +205,7 @@ function build_named_grad_cache() {
   }
 }
 
-// ── phases 1 & 2: named then background, each yielding to the browser ────────
+// ---
 // catalog entry format: [ra_deg, dec_deg, vmag, color_hex, name_or_null]
 // single rng instance shared across named and bg phases so twinkle assignments
 // are deterministic and match the previous single-fetch ordering.
@@ -296,7 +296,7 @@ async function load_bg_binary(resp) {
     }
   }
 
-  // ── parse fixed header ────────────────────────────────────────────────────
+  // ---
   const HEADER_FIXED = 10; // magic(4) + ver(1) + num_stars(4) + num_colors(1)
   await read_until(HEADER_FIXED);
 
@@ -308,14 +308,14 @@ async function load_bg_binary(resp) {
   const num_colors = buf[9];
   const palette_end = HEADER_FIXED + num_colors * 7;
 
-  // ── parse color palette ───────────────────────────────────────────────────
+  // ---
   await read_until(palette_end);
   const colors = [];
   for (let i = 0; i < num_colors; i++) {
     colors.push(decoder.decode(buf.slice(HEADER_FIXED + i * 7, HEADER_FIXED + (i + 1) * 7)));
   }
 
-  // ── stream star records in chunks ─────────────────────────────────────────
+  // ---
   let offset = palette_end;
   let processed = 0;
 
@@ -352,7 +352,7 @@ async function load_bg_binary(resp) {
   pick_hint_target(); // revalidate with full catalog
 }
 
-// ── twinkle lookup table ──────────────────────────────────────────────────────
+// ---
 // Instead of Math.sin(time_s * freq + phase) per star (~9000 calls/frame),
 // we quantize frequencies into TWINKLE_BUCKETS bins and use the angle-addition
 // identity: sin(t*f + p) = sin(t*f)*cos(p) + cos(t*f)*sin(p).
@@ -372,7 +372,7 @@ for (let i = 0; i < TWINKLE_BUCKETS; i++) {
 
 function update_twinkle_lut() {
   for (let i = 0; i < TWINKLE_BUCKETS; i++) {
-    const a = time_s * twinkle_bucket_freqs[i]; // Opt 5: freq is pre-computed, no multiply-add
+    const a = time_s * twinkle_bucket_freqs[i]; // freq is pre-computed, no multiply-add
     twinkle_sin_lut[i] = Math.sin(a);
     twinkle_cos_lut[i] = Math.cos(a);
   }
@@ -659,7 +659,7 @@ function draw_canvas_legend() {
   ctx.restore(); // matches ctx.save() at top of draw_canvas_legend
 }
 
-// ── main render loop ──────────────────────────────────────────────────────────
+// ---
 
 // Shared render pass used by both the static phase and the animated loop.
 // Clears canvas, draws stars + hover ring + legend, updates hover_star.
@@ -738,9 +738,9 @@ function draw(ts) {
   }
 }
 
-// ── interaction ───────────────────────────────────────────────────────────────
+// ---
 
-// Bug 2 / Opt 7: cache hero element + derived measurements so neither
+// cache hero element + derived measurements so neither
 // getElementById nor getBoundingClientRect runs on every mousemove or scroll.
 // hero_rect_cache is refreshed on scroll (layout already dirty) and resize.
 // hero_scroll_bottom is stable between resizes, uses offsetTop + offsetHeight.
@@ -756,7 +756,7 @@ function refresh_hero_cache() {
 }
 
 function canvas_exposed_at(x, y) {
-  // Bug 2: use cached rect, no forced reflow on every mousemove
+  // use cached rect, no forced reflow on every mousemove
   const r = hero_rect_cache;
   return r !== null && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
@@ -834,7 +834,7 @@ function on_click(e) {
   open_popover(hover_star.name, simbad_url, cx, cy);
 }
 
-// ── touch disambiguation ──────────────────────────────────────────────────────
+// ---
 // touchstart only records position, no action taken yet.
 // touchmove flags the gesture as a scroll if movement exceeds TOUCH_SLOP.
 // touchend acts only if the gesture was not a scroll.
@@ -947,7 +947,7 @@ function open_modal(obj) {
   document.getElementById('modal-name').textContent = obj.name;
   document.getElementById('modal-body').innerHTML = obj.writeup;
 
-  // ── object image ────────────────────────────────────────────────────────
+  // ---
   // provided image (asteroids) or DSS2 sky cutout (stellar objects with real coords)
   const fov = obj.fov_deg || 0.8; // per-object field of view; 0.8° default for point sources
   const img_src = obj.image_url || (
@@ -1008,88 +1008,6 @@ function close_modal() {
   modal.classList.remove('visible');
 }
 
-// ── object disambiguation menu ───────────────────────────────────────────────
-// activate when the star field grows dense enough for click-radius collisions
-// (~15–20 objects). replace the direct open_modal() calls in on_click() and
-// on_touch_end() with open_disambiguation_menu() whenever candidates.length > 1.
-//
-// function open_disambiguation_menu(candidates, cx, cy) {
-//   // candidates: array of star objects within click/tap radius
-//   // cx, cy:     client coords of the click, used to position the menu
-//
-//   const menu = document.createElement('div');
-//   menu.id = 'disambig-menu';
-//   // Style like #star-popover: fixed, dark bg, border --accent-dim, Spectral font.
-//   // Clamp to viewport so it never clips off-screen.
-//   menu.style.cssText = `
-//     position: fixed;
-//     left: ${Math.min(cx + 12, window.innerWidth - 200)}px;
-//     top:  ${Math.min(cy - 8,  window.innerHeight - (candidates.length * 36 + 16))}px;
-//     z-index: 120;
-//     background: var(--bg-deep);
-//     border: 1px solid var(--accent-dim);
-//     padding: 8px 0;
-//     min-width: 180px;
-//   `;
-//   for (const s of candidates) {
-//     const row = document.createElement('button');
-//     row.textContent = s.obj_data.name;
-//     // Style: full-width, transparent bg, color var(--text-main), hover accent.
-//     row.addEventListener('click', () => {
-//       close_disambiguation_menu();
-//       dismiss_hint();
-//       open_modal(s.obj_data);
-//     });
-//     menu.appendChild(row);
-//   }
-//   document.body.appendChild(menu);
-//   // dismiss on any outside click
-//   setTimeout(() => {
-//     document.addEventListener('click', close_disambiguation_menu, { once: true });
-//   }, 0);
-// }
-//
-// function close_disambiguation_menu() {
-//   const el = document.getElementById('disambig-menu');
-//   if (el) el.remove();
-// }
-//
-// ── wire into on_click() ────────────────────────────────────────────────────
-// replace the `if (hover_star.featured)` branch with:
-//
-//   if (hover_star.featured) {
-//     const CLICK_RADIUS = 18;
-//     const nearby = featured_stars.filter(s => {
-//       const dx = e.clientX - s.x, dy = e.clientY - s.y;
-//       return Math.sqrt(dx * dx + dy * dy) < CLICK_RADIUS;
-//     });
-//     close_popover();
-//     dismiss_hint();
-//     if (nearby.length > 1) {
-//       open_disambiguation_menu(nearby, e.clientX, e.clientY);
-//     } else {
-//       open_modal(hover_star.obj_data);
-//     }
-//   }
-//
-// ── wire into on_touch_end() ────────────────────────────────────────────────
-// after finding `best`, also collect all featured stars within the tap radius:
-//
-//   if (best) {
-//     e.preventDefault();
-//     last_touch_action_ts = performance.now();
-//     dismiss_hint();
-//     const nearby = featured_stars.filter(s => {
-//       const dx = tx - s.x, dy = ty - s.y;
-//       return Math.sqrt(dx * dx + dy * dy) < 38;
-//     });
-//     if (nearby.length > 1) {
-//       open_disambiguation_menu(nearby, tx, ty);
-//     } else {
-//       open_modal(best.obj_data);
-//     }
-//     return;
-//   }
 
 // prevent touches on the modal from reaching the canvas touch handler
 
@@ -1107,7 +1025,7 @@ document.addEventListener('click', (e) => {
   if (!popover.contains(e.target) && e.target !== canvas) close_popover();
 });
 
-// ── resize ───────────────────────────────────────────────────────────────────
+// ---
 
 function on_resize() {
   const iw = window.innerWidth;
@@ -1117,20 +1035,20 @@ function on_resize() {
   legend_col_w = 0; // remeasure legend on next draw
   reproject();
   build_named_grad_cache(); // star positions changed — rebuild gradient cache
-  refresh_hero_cache(); // Bug 2 / Opt 7: re-measure after layout change
+  refresh_hero_cache(); // re-measure after layout change
   if (catalog_loaded) pick_hint_target(); // revalidate hint target after viewport change
   // In static phase the loop isn't running; trigger one repaint after resize
   if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
 }
 
-// ── init: build featured immediately, fetch catalog, stage the rest ──────────
+// ---
 function init() {
   const iw = window.innerWidth;
   const ih = window.innerHeight;
   canvas.width  = iw;
   canvas.height = ih;
 
-  refresh_hero_cache(); // Bug 2 / Opt 7: seed cache before first mousemove or scroll
+  refresh_hero_cache(); // seed cache before first mousemove or scroll
 
   // cache modal_img_wrap once, open_modal reuses it on every click
   modal_img_wrap = document.getElementById('modal-img-wrap');
@@ -1193,9 +1111,9 @@ window.addEventListener('touchend',   on_touch_end);
 // -- tab visibility: restart rAF loop and refresh caches on tab return --
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) return;
-  // Bug B fix: viewport rect may be stale after tab switch
+  // viewport rect may be stale after tab switch
   refresh_hero_cache();
-  // Bug A fix: IntersectionObserver can fire isIntersecting:false while tab is
+  // IntersectionObserver can fire isIntersecting:false while tab is
   // hidden, killing the rAF loop. Re-derive hero_visible from actual geometry
   // and restart the loop if it died.
   if (hero_el) {
@@ -1318,7 +1236,7 @@ document.querySelectorAll('.book-spine').forEach(spine => {
 const nav_sections = ['hero','about', 'research', 'cepheid-sim', 'writing', 'highlights', 'bookshelf'];
 const nav_links_array = Array.from(document.querySelectorAll('.nav-links a'));
 
-const observerOptions = {
+const observer_options = {
   root: null,
   rootMargin: '-20% 0px -60% 0px', // Triggers when the section reaches the upper-middle of screen
   threshold: 0
@@ -1338,7 +1256,7 @@ const observer = new IntersectionObserver((entries) => {
       history.replaceState(null, null, id === 'hero' ? '/' : '#' + id);
     }
   });
-}, observerOptions);
+}, observer_options);
 
 nav_sections.forEach(id => {
   const el = document.getElementById(id);
@@ -1373,10 +1291,10 @@ const back_to_top_btn = document.getElementById('back-to-top');
 window.addEventListener('scroll', () => {
   back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
 
-  // Opt 7: compare scrollY against cached doc-absolute bottom, no getElementById or getBoundingClientRect
+  // compare scrollY against cached doc-absolute bottom, no getElementById or getBoundingClientRect
   nav_el.classList.toggle('nav--scrolled', window.scrollY >= hero_scroll_bottom);
 
-  // Bug 2: refresh viewport rect on scroll (layout is already dirty here) so
+  // refresh viewport rect on scroll (layout is already dirty here) so
   // canvas_exposed_at never calls getBoundingClientRect on mousemove
   if (hero_el) hero_rect_cache = hero_el.getBoundingClientRect();
 }, { passive: true });
@@ -1485,9 +1403,22 @@ if (card_ids.includes(hash_target)) {
   }
 }
 
+// -- epilepsy modal --
+const epilepsy_modal = document.getElementById('epilepsy-modal');
+document.getElementById('btn-realtime').addEventListener('click', () => {
+  epilepsy_modal.classList.add('visible');
+});
+document.getElementById('epilepsy-cancel').addEventListener('click', () => {
+  epilepsy_modal.classList.remove('visible');
+});
+document.getElementById('epilepsy-confirm').addEventListener('click', () => {
+  epilepsy_modal.classList.remove('visible');
+  window.setMode('realtime');
+});
+
 init();
 
-// ── progressive profile image: small LQIP → full-res ────────────────────────
+// ---
 // Load HSZ_Headshot_BW_small.webp immediately (set in HTML src).
 // When the about section nears the viewport, preload the full-res version in
 // the background and swap it in once cached — no layout shift, no flash.
@@ -1534,33 +1465,33 @@ init();
   }
 })();
 
-// ── reading trail ────────────────────────────────────────────────────────────
+// ---
 (function () {
-  var LS_FOUND = 'trailFound';
+  const LS_FOUND = 'trailFound';
 
   // derive word list from DOM — single source of truth
-  var WORDS = Array.from(document.querySelectorAll('.trail-word'))
+  const WORDS = Array.from(document.querySelectorAll('.trail-word'))
     .map(function (s) { return s.dataset.word; })
     .filter(function (w, i, a) { return a.indexOf(w) === i; });
-  var TOTAL = WORDS.length;
+  const TOTAL = WORDS.length;
 
   // found stored in discovery order
-  var found     = JSON.parse(sessionStorage.getItem(LS_FOUND) || '[]');
-  var active    = false;
-  var arrowShown = false;
-  var arrowTimer = null;
-  var observer  = null;
+  let found     = JSON.parse(sessionStorage.getItem(LS_FOUND) || '[]');
+  let active    = false;
+  let arrowShown = false;
+  let arrowTimer = null;
+  let observer  = null;
 
-  var toggle     = document.getElementById('trail-toggle');
-  var card       = document.getElementById('trail-card');
-  var dismiss    = document.getElementById('trail-dismiss');
-  var hintText   = document.getElementById('trail-hint-text');
-  var arrow      = document.getElementById('trail-arrow');
-  var nEl        = document.getElementById('trail-n');
-  var totalEl    = document.getElementById('trail-total');
-  var dotsEl     = document.getElementById('trail-dots');
-  var listEl     = document.getElementById('trail-words-list');
-  var completeEl = document.getElementById('trail-complete');
+  const toggle     = document.getElementById('trail-toggle');
+  const card       = document.getElementById('trail-card');
+  const dismiss    = document.getElementById('trail-dismiss');
+  const hintText   = document.getElementById('trail-hint-text');
+  const arrow      = document.getElementById('trail-arrow');
+  const nEl        = document.getElementById('trail-n');
+  const totalEl    = document.getElementById('trail-total');
+  const dotsEl     = document.getElementById('trail-dots');
+  const listEl     = document.getElementById('trail-words-list');
+  const completeEl = document.getElementById('trail-complete');
 
   if (!toggle || !card) return;
 
@@ -1569,7 +1500,7 @@ init();
 
   // build dots — one per word, progress indicator only
   WORDS.forEach(function () {
-    var dot = document.createElement('div');
+    const dot = document.createElement('div');
     dot.className = 'trail-dot';
     dotsEl.appendChild(dot);
   });
@@ -1589,12 +1520,12 @@ init();
     // word list: discovery order — rebuild from found[]
     listEl.innerHTML = '';
     found.forEach(function (w) {
-      var el = document.createElement('div');
+      const el = document.createElement('div');
       el.className = 'trail-found-word';
       el.textContent = w;
       el.title = 'Jump to this passage';
       el.addEventListener('click', function () {
-        var target = document.querySelector('.trail-word[data-word="' + w + '"]');
+        const target = document.querySelector('.trail-word[data-word="' + w + '"]');
         if (!target) return;
         hideCard();
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1610,12 +1541,12 @@ init();
     if (found.length === TOTAL) {
       completeEl.classList.add('trail-complete-show');
       card.classList.add('trail-flash');
-      var msgEl = document.getElementById('trail-connect-msg');
-      var emailEl = document.getElementById('trail-connect-email');
+      const msgEl = document.getElementById('trail-connect-msg');
+      const emailEl = document.getElementById('trail-connect-email');
       if (msgEl && !msgEl.textContent) {
         msgEl.textContent = "You made it this far, so I'd love to know what you thought.";
-        var u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
-        var a = document.createElement('a');
+        const u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
+        const a = document.createElement('a');
         a.href = 'mailto:' + u;
         a.textContent = u;
         a.className = 'trail-connect-link';
@@ -1633,7 +1564,7 @@ init();
 
   function onWordClick(e) {
     if (!active) return;
-    var word = e.currentTarget.dataset.word;
+    const word = e.currentTarget.dataset.word;
     if (found.indexOf(word) !== -1) return;
     dismissHint();
     found.push(word);
@@ -1653,7 +1584,7 @@ init();
   function showArrow(targetEl) {
     if (!arrow || arrowShown) return;
     arrowShown = true;
-    var rect = targetEl.getBoundingClientRect();
+    const rect = targetEl.getBoundingClientRect();
     arrow.style.top  = Math.round(rect.top + rect.height / 2 - 8) + 'px';
     arrow.classList.add('trail-arrow-visible');
     arrowTimer = setTimeout(hideArrow, 4000);
