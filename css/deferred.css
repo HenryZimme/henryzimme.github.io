@@ -1127,7 +1127,18 @@
     }
     .modal-card-link:hover { opacity: 1; }
 
-    /* card call-to-action block hover — replaces inline onmouseover/onmouseout */
+    
+/* card call-to-action base layout */
+.card-cta {
+  display: block;
+  margin-top: 24px;
+  padding: 16px 20px;
+  border: 1px solid rgba(120, 165, 210, 0.22);
+  background: rgba(120, 165, 210, 0.04);
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+/* card call-to-action block hover — replaces inline onmouseover/onmouseout */
     .card-cta:hover {
       border-color: rgba(120, 165, 210, 0.45) !important;
       background: rgba(120, 165, 210, 0.09) !important;
@@ -1395,3 +1406,47 @@
       opacity: 0.85;
       animation: trail-arrow-nudge 1s ease-in-out 3;
     }
+
+/* epilepsy warning modal */
+.epilepsy-body {
+  font-size: 13px;
+  color: rgba(226,221,212,0.85);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+#epilepsy-modal {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(7,9,26,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s;
+}
+#epilepsy-modal.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.epilepsy-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+.epilepsy-btn--cancel {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.5);
+}
+.epilepsy-btn--confirm {
+  background: rgba(196,162,88,0.12);
+  border: 1px solid rgba(196,162,88,0.4);
+  color: #c4a258;
+}
