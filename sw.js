@@ -11,9 +11,8 @@ const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
 
 // pre-cached on install. Keep this list small: only JS, CSS, and small JSON.
-// large binaries (stars_bg.bin, images) must NOT be here: CacheStorage reads
-// for large files are catastrophically slow on low-end devices. Serve those
-// via HTTP Cache-Control headers instead (max-age=86400, immutable on Cloudflare).
+// large binaries (stars_bg.bin, images) must NOT be here: CacheStorage reads for large files are catastrophically slow on low-end devices. 
+// serve those w/ HTTP Cache-Control headers instead (max-age=86400, immutable on Cloudflare).
 const PRECACHE = [
   '/',
   '/js/main.js',
