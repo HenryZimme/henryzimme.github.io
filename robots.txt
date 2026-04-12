@@ -6,6 +6,7 @@ Disallow: /casap.html
 # allow everything else (css, js, images, data, main HTML pages)
 
 # block AI training crawlers
+# note that AI web search is not prohibited
 User-agent: GPTBot
 Disallow: /
 
