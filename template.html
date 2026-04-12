@@ -9,89 +9,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/subpages.css">
   <style>
-    :root {
-      --bg:           #07091a;
-      --gold:         #c4a258;
-      --gold-dim:     rgba(196,162,88,0.25);
-      --text:         #e2ddd4;
-      --text-dim:     rgba(226,221,212,0.72);
-      --panel-border: rgba(196,162,88,0.2);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'EB Garamond', serif;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    nav {
-      position: fixed;
-      top: 0; width: 100%;
-      padding: 24px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 100;
-      background: linear-gradient(to bottom, var(--bg) 80%, transparent 100%);
-    }
-
-    .nav-name {
-      font-family: 'JetBrains Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: 13px;
-      color: var(--gold);
-      text-decoration: none;
-    }
-
-    .nav-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
-
+    /* page-specific overrides */
     .article-wrap {
       max-width: 680px;
-      margin: 0 auto;
       padding: 160px 24px 100px;
-    }
-
-    .article-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--gold);
-      letter-spacing: 0.2em;
-      margin-bottom: 12px;
     }
 
     .article-title {
       font-size: clamp(32px, 5vw, 44px);
-      font-weight: 400;
       line-height: 1.1;
       margin: 0 0 32px;
-      color: var(--text);
-    }
-
-    .article-divider {
-      border: 0;
-      border-top: 1px solid var(--panel-border);
-      margin: 40px 0;
-    }
-
-    .article-body p {
-      font-size: 20px;
-      margin-bottom: 28px;
     }
 
     .article-body blockquote {
@@ -100,37 +29,6 @@
       padding-left: 28px;
       font-style: italic;
       color: var(--text-dim);
-    }
-
-    .footer-nav {
-      margin-top: 80px;
-      padding-top: 40px;
-      border-top: 1px solid var(--panel-border);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    #back-to-top {
-      position: fixed;
-      bottom: 40px; right: 40px;
-      background: none;
-      border: 1px solid var(--panel-border);
-      color: var(--gold);
-      width: 44px; height: 44px;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s, border-color 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    #back-to-top.visible { opacity: 1; pointer-events: auto; }
-    #back-to-top:hover { border-color: var(--gold); }
-
-    @media (max-width: 600px) {
-      nav { padding: 20px; }
-      .article-wrap { padding-top: 120px; }
     }
   </style>
 </head>
