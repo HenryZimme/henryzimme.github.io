@@ -20,9 +20,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/subpages.css">
   <style>
-html { scroll-behavior: smooth; }
+    :root {
+      --bg:           #07091a;
+      --gold:         #c4a258;
+      --gold-dim:     rgba(196,162,88,0.25);
+      --text:         #e2ddd4;
+      --text-dim:     rgba(226,221,212,0.72);
+      --panel-border: rgba(196,162,88,0.2);
+      --red:          #f87171;
+      --blue:         #60a5fa;
+      --green:        #86efac;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       background-color: var(--bg);
@@ -34,12 +47,36 @@ html { scroll-behavior: smooth; }
     }
 
     /* ── nav ── */
-    
+    nav {
+      position: fixed;
+      top: 0; width: 100%;
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+      background: linear-gradient(to bottom, var(--bg) 70%, transparent 100%);
+    }
 
-    
+    .nav-name {
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      color: var(--gold);
+      text-decoration: none;
+    }
 
-    
-    
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
 
     /* ── sim viewport ── */
     #sim-section {
@@ -220,7 +257,11 @@ html { scroll-behavior: smooth; }
       color: var(--text);
     }
 
-    
+    .article-divider {
+      border: 0;
+      border-top: 1px solid var(--panel-border);
+      margin: 40px 0;
+    }
 
     .exp-body p {
       font-size: 20px;
@@ -318,17 +359,43 @@ html { scroll-behavior: smooth; }
     .ref-list a:hover { color: var(--gold); }
 
     /* footer nav */
-    .footer-
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* back to top */
+    #back-to-top {
+      position: fixed;
+      bottom: 40px; right: 40px;
+      background: none;
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      width: 44px; height: 44px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 100;
+    }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+    #back-to-top:hover { border-color: var(--gold); }
 
     /* mobile */
     /* ── film mode (?film query param) ── */
     /* hides all chrome, locks to full-viewport canvas, 1920x1080 capture ready */
     html.film-mode body        { overflow: hidden; cursor: none; }
-    html.film-mode 
-    html.film-mode 
+    html.film-mode *           { cursor: none !important; }
+    html.film-mode nav         { display: none !important; }
     html.film-mode #hud-stats  { top: 20px; }
     html.film-mode #explanation { display: none !important; }
-    html.film-mode 
+    html.film-mode #back-to-top { display: none !important; }
     html.film-mode #scroll-hint { display: none !important; }
     html.film-mode #mode-bar   { display: none !important; }
     html.film-mode #epilepsy-modal { display: none !important; }
@@ -378,7 +445,10 @@ html { scroll-behavior: smooth; }
     }
     html.film-mode #film-diag { display: none; }
 
-    @media (max-width: 740px) {#hud-stats { top: 64px; left: 12px; }
+    @media (max-width: 740px) {
+      nav { padding: 20px; }
+
+      #hud-stats { top: 64px; left: 12px; }
       .hud-label { width: 56px; }
 
       #mode-bar {
@@ -395,12 +465,11 @@ html { scroll-behavior: smooth; }
 
       #explanation { padding: 60px 20px 80px; }
       .exp-body p { font-size: 18px; }
-      .footer-}
-</style>
+      .footer-nav { flex-direction: column; gap: 16px; }
+    }
+  </style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to main content</a>
-
 
   <!-- nav -->
   <nav aria-label="Primary">
@@ -426,7 +495,7 @@ html { scroll-behavior: smooth; }
   <!-- sim viewport -->
   <section id="sim-section" aria-label="Interactive simulation of OGLE-LMC-CEP-1347">
 
-    <canvas id="simCanvas" role="img" aria-label="Interactive simulation of binary Cepheid system OGLE-LMC-CEP-1347: orbital motion, stellar pulsation, radial velocity curves, and V-band light curve.">Interactive simulation of OGLE-LMC-CEP-1347. Enable JavaScript to view the animated simulation.</canvas>
+    <canvas id="simCanvas"></canvas>
 
     <!-- loading sequence -->
     <div id="sim-preview">
@@ -482,7 +551,7 @@ html { scroll-behavior: smooth; }
   </section>
 
   <!-- explanation -->
-  <section id="main" class="explanation-section">
+  <section id="explanation">
     <div class="exp-meta">Binary Cepheid &middot; Large Magellanic Cloud</div>
     <h1 class="exp-title">OGLE-LMC-CEP-1347</h1>
 
