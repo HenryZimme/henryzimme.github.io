@@ -909,8 +909,6 @@
     ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
     ctx.fillStyle = '#f87171';
     ctx.fillText('\u2014 Companion', px + pw - inset, py + 18);
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText('\u2022 Pilecki+ 2022', px + pw - inset, py + 30);
 
     ctx.restore();
   }
