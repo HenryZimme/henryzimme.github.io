@@ -10,26 +10,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap">
+  <link rel="stylesheet" href="/css/subpages.css">
   <style>
-    :root {
-      --bg:           #07091a;
-      --gold:         #c4a258;
-      --gold-dim:     rgba(196, 162, 88, 0.22);
-      --text:         #e2ddd4;
-      --text-dim:     rgba(226, 221, 212, 0.62);
-      --panel:        rgba(7, 9, 26, 0.84);
-      --panel-border: rgba(196, 162, 88, 0.18);
-      --blue:         #78a5d2;
-    }
+html { scroll-behavior: smooth; }
 
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-
-    :focus-visible {
-      outline: 2px solid var(--gold);
-      outline-offset: 3px;
-    }
-    :focus:not(:focus-visible) { outline: none; }
+    
+    
 
     body {
       background: var(--bg);
@@ -52,26 +38,10 @@
     }
 
     /* ── Nav ─────────────────────────────────────────────── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 50;
-      padding: 22px 52px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(to bottom, rgba(7,9,26,0.65) 0%, transparent 100%);
-    }
+    
 
-    .nav-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--text);
-      text-decoration: none;
-      font-style: italic;
-    }
-    .nav-name:hover { color: var(--gold); }
+    
+    
 
     .nav-links {
       display: flex;
@@ -89,10 +59,7 @@
     }
     .nav-links a:hover { color: var(--gold); }
 
-    @media (max-width: 600px) {
-      nav { padding: 20px 24px; }
-      .nav-links { display: none; }
-    }
+    @media (max-width: 600px) {.nav-links { display: none; }}
 
     /* ── 404 content ─────────────────────────────────────── */
     main {
@@ -218,13 +185,13 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 600px) {
-      main { padding: 0 24px 64px; }
-      .signal-note { right: 24px; bottom: 24px; }
-    }
-  </style>
+    @media (max-width: 600px) {main { padding: 0 24px 64px; }
+      .signal-note { right: 24px; bottom: 24px; }}
+</style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
 
 <canvas id="star-canvas"></canvas>
 
@@ -237,7 +204,7 @@
   </ul>
 </nav>
 
-<main>
+<main id="main">
   <p class="err-label">HTTP 404 · Not Found</p>
   <h1 class="err-code">404</h1>
   <div class="err-rule"></div>
