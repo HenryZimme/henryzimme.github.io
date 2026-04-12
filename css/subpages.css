@@ -35,7 +35,7 @@ body {
 }
 
 a {
-  color: var(--blue);
+  color: var(--gold);
   text-decoration: none;
 }
 a:hover { text-decoration: underline; }
