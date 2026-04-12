@@ -1,6 +1,6 @@
 # block all crawlers from test and draft directories
 User-agent: *
-Disallow: /docs/
+Disallow: /404.html
 Disallow: /casap.html
 
 # allow everything else (css, js, images, data, main HTML pages)
