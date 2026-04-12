@@ -19,21 +19,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/subpages.css">
   <style>
-    :root {
-      --bg:           #07091a;
-      --gold:         #c4a258;
-      --gold-dim:     rgba(196,162,88,0.25);
-      --text:         #e2ddd4;
-      --text-dim:     rgba(226,221,212,0.72);
-      --panel:        rgba(7,9,26,0.84);
-      --panel-border: rgba(196,162,88,0.18);
-      --blue:         #78a5d2;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
+body {
       background: var(--bg);
       color: var(--text);
       font-family: 'Spectral', Georgia, serif;
@@ -41,46 +29,16 @@
       line-height: 1.75;
     }
 
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    
+    
 
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 50;
-      padding: 22px 52px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(to bottom, rgba(7,9,26,0.92) 0%, transparent 100%);
-    }
+    
 
-    .nav-name {
-      font-family: 'EB Garamond', serif;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--text);
-      text-decoration: none;
-      font-style: italic;
-    }
-    .nav-name:hover { color: var(--gold); text-decoration: none; }
+    
+    
 
-    .nav-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 2px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .nav-back:hover {
-      color: var(--gold);
-      border-color: var(--gold-dim);
-      text-decoration: none;
-    }
+    
+    
 
     .article-wrap {
       max-width: 65ch;
@@ -88,14 +46,7 @@
       padding: 120px 28px 100px;
     }
 
-    .article-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--gold);
-      text-transform: uppercase;
-      margin-bottom: 18px;
-    }
+    
 
     .article-title {
       font-family: 'EB Garamond', serif;
@@ -106,19 +57,9 @@
       margin-bottom: 10px;
     }
 
-    .article-byline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      margin-bottom: 36px;
-    }
+    
 
-    .article-divider {
-      border: none;
-      border-top: 1px solid var(--panel-border);
-      margin-bottom: 40px;
-    }
+    
 
     .article-body p {
       margin-bottom: 1.4em;
@@ -166,29 +107,9 @@
     }
 
     /* Poster & Button CSS */
-    .btn-download {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1.5em;
-      padding: 12px 24px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      letter-spacing: 0.1em;
-      color: var(--gold);
-      text-transform: uppercase;
-      text-decoration: none;
-      border: 1px solid var(--gold);
-      background-color: transparent;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
     
-    .btn-download:hover {
-      background-color: var(--gold);
-      color: var(--bg);
-      text-decoration: none;
-    }
+    
+    
 
     .poster-breakout {
       width: 100vw;
@@ -209,42 +130,12 @@
     }
 
     /* Back to Top Button CSS */
-    #back-to-top {
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      z-index: 300;
-      width: 40px;
-      height: 40px;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      color: var(--gold);
-      font-size: 18px;
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, border-color 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0;
-      padding: 0;
-    }
-    #back-to-top.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #back-to-top:hover {
-      border-color: var(--gold);
-    }
+    
+    
+    
 
-    @media (max-width: 600px) {
-      nav { padding: 18px 24px; }
-      .article-wrap { padding: 90px 18px 72px; }
-      #back-to-top { bottom: 20px; right: 20px; }
-      .poster-breakout { padding: 0 18px; }
-      .poster-iframe { aspect-ratio: auto; height: 400px; }
-    }
+    @media (max-width: 600px) {.poster-breakout { padding: 0 18px; }
+      .poster-iframe { aspect-ratio: auto; height: 400px; }}
 
     /* ── pulsation simulation ── */
     figure#usgr-sim {
@@ -312,22 +203,22 @@
     figure#usgr-sim figcaption {
       display: none; /* caption handled inside canvas */
     }
-    @media (max-width: 600px) {
-      figure#usgr-sim { height: 460px; }
+    @media (max-width: 600px) {figure#usgr-sim { height: 460px; }
       #usgr-plot { height: 280px; }
       #usgr-hud { top: 10px; right: 10px; gap: 6px; }
-      .usgr-hud-val { font-size: 11px; }
-    }
-  </style>
+      .usgr-hud-val { font-size: 11px; }}
+</style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
 
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
     <a href="index.html#research" class="nav-back">← Back to Research</a>
   </nav>
 
-  <article class="article-wrap">
+  <article id="main" class="article-wrap">
     <header>
       <div class="article-meta">PHY440 &middot; Phillips Academy Andover</div>
       <h1 class="article-title">Characterizing Variability in Classical Cepheid U Sagittarii with Differential V<sub>c</sub> - I<sub>c</sub> Photometry</h1>
