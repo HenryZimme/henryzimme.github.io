@@ -1,0 +1,300 @@
+/* 
+   subpages.css: shared chrome for all subpages
+   covers: tokens, reset, nav, article scaffold, back-to-top, footer-nav,
+           skip link, focus-visible, reduced-motion
+   each page's <style> block keeps only its page-specific overrides
+*/
+
+/* tokens */
+:root {
+  --bg:           #07091a;
+  --gold:         #c4a258;
+  --gold-dim:     rgba(196, 162, 88, 0.25);
+  --text:         #e2ddd4;
+  --text-dim:     rgba(226, 221, 212, 0.72);
+  --panel:        rgba(7, 9, 26, 0.84);
+  --panel-border: rgba(196, 162, 88, 0.18);
+  --blue:         #78a5d2;
+}
+
+/* reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* base */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 19px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* accessibility: focus ring  */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* accessibility: skip link  */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 10px 20px;
+  background: var(--gold);
+  color: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+.skip-link:focus { left: 0; }
+
+/* nav  */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 22px 52px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(7, 9, 26, 0.92) 0%, transparent 100%);
+}
+
+.nav-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-name:hover { color: var(--text); text-decoration: none; }
+
+.nav-back {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.nav-back:hover {
+  color: var(--gold);
+  border-color: var(--gold-dim);
+  text-decoration: none;
+}
+
+/* article scaffold */
+.article-wrap {
+  max-width: 65ch;
+  margin: 0 auto;
+  padding: 120px 28px 100px;
+}
+
+.article-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 18px;
+}
+
+.article-title {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(26px, 5vw, 40px);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.article-byline {
+  font-style: italic;
+  color: var(--text-dim);
+  margin-bottom: 40px;
+}
+
+.article-divider {
+  border: none;
+  border-top: 1px solid var(--panel-border);
+  margin-bottom: 40px;
+}
+
+.article-body p {
+  font-size: 20px;
+  margin-bottom: 1.4em;
+}
+
+.article-body h2 {
+  font-family: 'EB Garamond', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 2.4em 0 0.9em;
+  letter-spacing: 0.01em;
+}
+
+/* figs */
+.article-figure,
+.article-body figure {
+  margin: 2em 0;
+  display: block;
+}
+.article-figure img,
+.article-body figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--panel-border);
+}
+.article-figure figcaption,
+.article-body figcaption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.8;
+  margin-top: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* footnotes */
+sup a {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 0.72em;
+  vertical-align: super;
+  line-height: 0;
+}
+sup a:hover { text-decoration: underline; }
+
+.footnotes {
+  margin-top: 3em;
+  border-top: 1px solid var(--panel-border);
+  padding-top: 1.5em;
+}
+.footnotes hr { display: none; }
+.footnotes ol {
+  padding-left: 1.5em;
+  list-style: decimal;
+}
+.footnotes li {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  margin-bottom: 0.75em;
+  line-height: 1.6;
+}
+.footnote-back {
+  color: var(--blue);
+  text-decoration: none;
+  margin-left: 4px;
+  font-size: 0.85em;
+}
+.footnote-back:hover { text-decoration: underline; }
+
+/* bib */
+.bibliography p {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin-bottom: 0.9em;
+  line-height: 1.65;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+}
+
+/* footer nav */
+.footer-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--panel-border);
+}
+
+/* back to top */
+#back-to-top {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  z-index: 300;
+  width: 44px;
+  height: 44px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  color: var(--gold);
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  padding: 0;
+}
+#back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+#back-to-top:hover { border-color: var(--gold); }
+
+/* download button (shared across research pages) */
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1em;
+  padding: 11px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--gold);
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.btn-download:hover {
+  background: var(--gold);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+/* reduced motion  */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* responsive */
+@media (max-width: 600px) {
+  nav { padding: 18px 24px; }
+  .article-wrap { padding: 90px 18px 72px; }
+  #back-to-top { bottom: 20px; right: 20px; }
+}
