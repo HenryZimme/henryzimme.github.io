@@ -19,26 +19,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=EB+Garamond:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    /* site palette — matches index.html chrome */
-    --bg:           #07091a;
-    --gold:         #c4a258;
-    --gold-dim:     rgba(196,162,88,0.25);
-    --text:         #e2ddd4;
-    --text-dim:     rgba(226,221,212,0.72);
-    --panel:        rgba(7,9,26,0.84);
-    --panel-border: rgba(196,162,88,0.18);
-    --blue:         #78a5d2;
-    /* canvas drawing constants (also mirrored as JS vars) */
-    --grid:         #0d0f20;
-    --divider:      rgba(196,162,88,0.12);
-    --mono:         'JetBrains Mono', monospace;
-  }
-
-  html { height: 100%; background: var(--bg); }
+<link rel="stylesheet" href="/css/subpages.css">
+  <style>
+html { height: 100%; background: var(--bg); }
   body {
     width: 100%; min-height: 100%;
     background: var(--bg);
@@ -51,40 +34,12 @@
   }
 
   /* ── site nav ──────────────────────────────────────────────────────────── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 50;
-    padding: 18px 44px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(to bottom, rgba(7,9,26,0.96) 0%, transparent 100%);
-    pointer-events: none;
-  }
+  
   nav a { pointer-events: auto; }
-  .nav-name {
-    font-family: 'EB Garamond', serif;
-    font-size: 18px;
-    font-style: italic;
-    letter-spacing: 0.04em;
-    color: var(--text);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .nav-name:hover { color: var(--gold); }
-  .nav-back {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.10em;
-    color: var(--text-dim);
-    text-decoration: none;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--panel-border);
-    padding-bottom: 2px;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .nav-back:hover { color: var(--gold); border-color: var(--gold-dim); }
+  
+  
+  
+  
 
   /* ── info panel — grid: subtitle full-width, then body | note ──────────── */
   #info-panel {
@@ -266,9 +221,8 @@
   }
 
   /* ── mobile ────────────────────────────────────────────────────────────── */
-  @media (max-width: 600px) {
-    /* tighter nav */
-    nav { padding: 14px 22px; }
+  @media (max-width: 600px) {/* tighter nav */
+    
 
     /* collapse info panel to subtitle line only — body + note hidden */
     #info-panel {
@@ -293,13 +247,13 @@
     .spd-btn.step-btn    { display: none; }
     #date-label { min-width: 90px; font-size: 9px; }
 
-    #sim-wrap { min-height: 400px; }
-  }
-
-
+    #sim-wrap { min-height: 400px; }}
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div id="main" style="outline:none">
+
 
 <nav aria-label="Primary">
   <a href="index.html" class="nav-name">Henry Zimmerman</a>
@@ -1383,5 +1337,5 @@
 
 }());
 </script>
-</body>
+</div></body>
 </html>
