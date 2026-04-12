@@ -19,74 +19,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/subpages.css">
   <style>
-    :root {
-      --bg:           #07091a;
-      --gold:         #c4a258;
-      --gold-dim:     rgba(196,162,88,0.25);
-      --text:         #e2ddd4;
-      --text-dim:     rgba(226,221,212,0.72);
-      --panel:        rgba(7,9,26,0.84);
-      --panel-border: rgba(196,162,88,0.18);
-      --blue:         #78a5d2;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'EB Garamond', serif;
-      font-size: 19px;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding: 24px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
-    }
-
-    .nav-name {
-      font-family: 'JetBrains Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: 13px;
-      color: var(--gold);
-      text-decoration: none;
-    }
-
-    .nav-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
-
-    .article-wrap {
+.article-wrap {
       max-width: 720px;
       margin: 0 auto;
       padding: 140px 24px 100px;
     }
 
-    .article-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--gold);
-      letter-spacing: 0.15em;
-      margin-bottom: 12px;
-    }
+    
 
     .article-title {
       font-size: 42px;
@@ -96,22 +37,13 @@
       color: var(--text);
     }
 
-    .article-byline {
-      font-style: italic;
-      color: var(--text-dim);
-      margin-bottom: 40px;
-    }
+    
 
-    .article-divider {
-      border: 0;
-      border-top: 1px solid var(--panel-border);
-      margin: 40px 0;
-    }
+    
 
     .article-body p {
-      font-size: 20px;
-      margin-bottom: 28px;
-    }
+  font-size: 20px;
+}
 
     .article-body em {
       font-style: italic;
@@ -143,48 +75,24 @@
       margin-bottom: 12px;
     }
 
-    .footer-nav {
-      margin-top: 80px;
-      padding-top: 40px;
-      border-top: 1px solid var(--panel-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .footer-
 
-    #back-to-top {
-      position: fixed;
-      bottom: 40px;
-      right: 40px;
-      background: none;
-      border: 1px solid var(--panel-border);
-      color: var(--gold);
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #back-to-top.visible { opacity: 1; }
+    
+    
 
-    @media (max-width: 600px) {
-      .article-title { font-size: 32px; }
-      nav { padding: 18px 24px; }
-      .article-wrap { padding: 90px 18px 72px; }
-    }
-  </style>
+    @media (max-width: 600px) {.article-title { font-size: 32px; }}
+</style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
 
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
     <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
   </nav>
 
-  <article class="article-wrap">
+  <article id="main" class="article-wrap">
     <header>
       <div class="article-meta">Philosophy & Epistemology</div>
       <h1 class="article-title">Disproving Descartes’ Divine Definition Divination</h1>
