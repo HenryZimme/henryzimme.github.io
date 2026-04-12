@@ -404,7 +404,7 @@
       rvDelta.push(Math.abs(v1 - v2));
     }
 
-    // y-axis bounds from model + pulsation-corrected Pilecki points
+    // y-axis bounds from model + 1O pulsation-corrected Pilecki points
     rv_abs_min = Infinity; rv_abs_max = -Infinity;
     for (var j = 0; j < RV_N; j++) {
       var a1 = rv1[j] + GAMMA_SYS;
@@ -416,7 +416,7 @@
     }
     for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
       var row = PILECKI_RV_RAW[pi];
-      // pulsation-corrected Cepheid RV for bounds check
+      // 1O pulsation-corrected Cepheid RV for bounds check
       var hjd_pi = row[0] + 2450000.0;
       var pp = (((hjd_pi - T0_PULS) % P_PULS) / P_PULS + 1) % 1;
       var pidx = Math.round(pp * Np) % Np;
@@ -619,7 +619,7 @@
     }
     phase_offset = best_d;
 
-    // 2. store pulsation-corrected Cepheid RVs and raw companion RVs
+    // 2. store 1O pulsation-corrected Cepheid RVs and raw companion RVs
     var Np = v_puls_cycle.length;
     pilecki_phased = [];
     for (var pi = 0; pi < PILECKI_RV_RAW.length; pi++) {
@@ -895,7 +895,7 @@
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
+      ctx.fillText('orbital model, i=57\u00B0, 1O pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
     }
 
     // canvas legend, replaces #rv-legend HTML element, always drawn on canvas
