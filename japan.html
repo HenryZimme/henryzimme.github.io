@@ -19,81 +19,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/subpages.css">
   <style>
-    :root {
-      --bg:           #07091a;
-      --gold:         #c4a258;
-      --gold-dim:     rgba(196,162,88,0.25);
-      --text:         #e2ddd4;
-      --text-dim:     rgba(226,221,212,0.72);
-      --panel:        rgba(7,9,26,0.84);
-      --panel-border: rgba(196,162,88,0.18);
-      --blue:         #78a5d2;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'EB Garamond', Georgia, serif;
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    a { color: var(--gold); text-decoration: none; }
+a { color: var(--gold); text-decoration: none; }
     a:hover { text-decoration: underline; color: var(--text); }
-
-    nav {
-      position: fixed;
-      top: 0; width: 100%;
-      padding: 24px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 100;
-      background: linear-gradient(to bottom, var(--bg) 80%, transparent 100%);
-    }
-
-    .nav-name {
-      font-family: 'JetBrains Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: 13px;
-      color: var(--gold);
-      text-decoration: none;
-    }
-
-    .nav-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .nav-back:hover {
-      color: var(--gold);
-      border-bottom-color: var(--gold-dim);
-      text-decoration: none;
-    }
-
     .article-wrap {
       max-width: 680px;
       margin: 0 auto;
       padding: 160px 24px 100px;
     }
-
-    .article-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--gold);
-      letter-spacing: 0.2em;
-      margin-bottom: 12px;
-    }
-
     .article-title {
       font-size: clamp(28px, 5vw, 42px);
       font-weight: 400;
@@ -102,22 +36,9 @@
       color: var(--text);
     }
 
-    .article-byline {
-      font-style: italic;
-      color: var(--text-dim);
-      margin-bottom: 40px;
-    }
-
-    .article-divider {
-      border: 0;
-      border-top: 1px solid var(--panel-border);
-      margin: 40px 0;
-    }
-
     .article-body p {
-      font-size: 20px;
-      margin-bottom: 28px;
-    }
+  font-size: 20px;
+}
 
     .article-body h2 {
       font-family: 'EB Garamond', serif;
@@ -134,22 +55,7 @@
       margin-top: 3em;
     }
 
-    .bibliography p {
-      font-size: 16px;
-      line-height: 1.55;
-      color: var(--text-dim);
-      margin-bottom: 14px;
-      padding-left: 2em;
-      text-indent: -2em;
-    }
-
-    .footer-nav {
-      margin-top: 80px;
-      padding-top: 40px;
-      border-top: 1px solid var(--panel-border);
-      display: flex;
-      justify-content: space-between;
-    }
+    .footer-
 
     .article-figure {
       margin: 2em 0;
@@ -171,40 +77,17 @@
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
-
-    #back-to-top {
-      position: fixed;
-      bottom: 40px; right: 40px;
-      background: none;
-      border: 1px solid var(--panel-border);
-      color: var(--gold);
-      width: 44px; height: 44px;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s, border-color 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    #back-to-top.visible { opacity: 1; pointer-events: auto; }
-    #back-to-top:hover { border-color: var(--gold); }
-
-    @media (max-width: 600px) {
-      nav { padding: 20px; }
-      .article-wrap { padding-top: 120px; }
-      #back-to-top { bottom: 20px; right: 20px; }
-    }
-  </style>
+</style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
 
   <nav>
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
     <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
   </nav>
 
-  <article class="article-wrap">
+  <article id="main" class="article-wrap">
     <header>
       <div class="article-meta">Economics &amp; Policy</div>
       <h1 class="article-title">Changes in Japan's Labor and Immigration Policy Address Depopulation Concerns</h1>
