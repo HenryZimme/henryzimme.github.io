@@ -859,7 +859,7 @@
       ctx.translate(px + 14, py + padTop + drawH / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.font = '10px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('km s\u207B\u00B9', 0, 0);
@@ -867,7 +867,7 @@
 
       // y-axis ticks, brighter, larger font
       ctx.font = '10px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'right';
       var ts = 20;
@@ -882,7 +882,7 @@
     if (!getStarArea().mobile) {
       ctx.textBaseline = 'top';
       ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
       ctx.font = '10px \'JetBrains Mono\', monospace';
       for (var xp = 0; xp <= 1; xp += 0.25) {
         ctx.textAlign = xp === 0 ? 'left' : xp === 1 ? 'right' : 'center';
@@ -894,7 +894,7 @@
       ctx.font = '9px \'JetBrains Mono\', monospace';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.fillText('orbital model, i=57\u00B0, pulsation-corrected \u00B7 Pilecki+ 2022', px + inset, py + ph - 6);
     }
 
@@ -902,7 +902,7 @@
     ctx.font = '10px \'JetBrains Mono\', monospace';
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(96,165,250,0.65)';
+    ctx.fillStyle = 'rgba(96,165,250,0.85)';
     ctx.fillText('RADIAL VELOCITIES (KM/S) \u00B7 ORBITAL PHASE', px + inset, py + 6);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#ffe4a0';
@@ -949,7 +949,7 @@
       ctx.translate(px + 10, py + padTop + drawH / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.font = '9px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(96,165,250,0.55)';
+      ctx.fillStyle = 'rgba(96,165,250,0.85)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('V mag', 0, 0);
@@ -1010,7 +1010,7 @@
     // y-axis magnitude ticks (bright = small mag = top; faint = large mag = bottom)
     if (!getStarArea().mobile) {
       ctx.font = '10px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'right';
       var magStep = 0.1;
@@ -1025,7 +1025,7 @@
 
     // title
     ctx.font = '10px \'JetBrains Mono\', monospace';
-    ctx.fillStyle = 'rgba(96,165,250,0.65)';
+    ctx.fillStyle = 'rgba(96,165,250,0.85)';
     ctx.textAlign = 'left';
     ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, py + 14);
 
@@ -1034,7 +1034,7 @@
     ctx.textAlign = 'right';
     ctx.fillStyle = '#60a5fa';
     ctx.fillText('Fourier fit', px + pw - inset, py + padTop + 10);
-    ctx.fillStyle = 'rgba(96,165,250,0.60)';
+    ctx.fillStyle = 'rgba(96,165,250,0.85)';
     ctx.fillText('\u2022 OGLE photometry', px + pw - inset, py + padTop + 22);
 
     // ── radius vs phase mini-curve (bottom strip, BW-integrated) ──
@@ -1080,7 +1080,7 @@
     // radius axis ticks (desktop only — strip is too narrow on mobile)
     if (!getStarArea().mobile) {
       ctx.font = '10px \'JetBrains Mono\', monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       var rTickStep = 0.2;
@@ -1588,7 +1588,7 @@
       ctx.font = '10px \'JetBrains Mono\', monospace';
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
-      ctx.fillStyle = 'rgba(255,255,255,0.38)';
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.fillText('OGLE-LMC-CEP-1347  /  LMC', 10, 10);
       ctx.restore();
     }
@@ -1791,13 +1791,13 @@
 
           // citations
           ctx.font = '11px \'JetBrains Mono\', monospace';
-          ctx.fillStyle = 'rgba(226,221,212,0.52)';
+          ctx.fillStyle = 'rgba(226,221,212,0.60)';
           ctx.fillText('Espinoza-Arancibia & Pilecki 2025, ApJ 981 L35', ecX, ecY + 36);
           ctx.fillText('Pilecki et al. 2022, ApJ 940 L48  \u00B7  OGLE-IV photometry', ecX, ecY + 54);
 
           // author line
           ctx.font = '11px \'JetBrains Mono\', monospace';
-          ctx.fillStyle = 'rgba(196,162,88,0.58)';
+          ctx.fillStyle = 'rgba(196,162,88,0.80)';
           ctx.fillText('Simulation by H. Zimmerman  \u00B7  henryzimmerman.net', ecX, ecY + 96);
 
           ctx.restore();
