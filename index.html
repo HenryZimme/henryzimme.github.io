@@ -337,22 +337,22 @@
       min-width: 180px;
       max-width: 260px;
       
-      /* 1. When hidden, it shouldn't block clicks */
+      /* 1. when hidden, it shouldn't block clicks */
       opacity: 0;
       pointer-events: none; 
       
-      /* 2. Wait 0.4 seconds before fading out and disabling clicks */
+      /* 2. wait 0.4 seconds before fading out and disabling clicks */
       transition: opacity 0.2s ease 0.4s, pointer-events 0s linear 0.4s;
     }
 
     #star-popover.visible { 
-      /* 3. Appear instantly with NO delay when the class is added */
+      /* 3. appear instantly with NO delay when the class is added */
       opacity: 1; 
       pointer-events: all;
       transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s;
     }
     
-    /* 4. The Magic Trick: Keep it visible if the mouse makes it to the popover! */
+    /* 4. keep it visible if the mouse makes it to the popover! */
     #star-popover:hover {
       opacity: 1;
       pointer-events: all;
@@ -471,7 +471,7 @@
     }
     .modal-close:hover { color: var(--text); }
 
-    /* modal object image — DSS sky cutout or provided photo */
+    /* modal object image: DSS sky cutout or provided photo */
     #modal-img-wrap {
       width: 100%;
       aspect-ratio: 480 / 280;
@@ -501,7 +501,7 @@
       letter-spacing: 0.08em;
       color: rgba(226, 221, 212, 0.28);
     }
-    /* ── epilepsy warning modal (fallback before deferred.css loads) ── */
+    /* epilepsy warning modal (fallback before deferred.css loads) */
     #epilepsy-modal {
       background: rgba(7,9,26,0.92);
       backdrop-filter: blur(8px);
