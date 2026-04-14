@@ -476,9 +476,11 @@
       gap: 24px;
       padding: 28px 0;
       border-bottom: 1px solid rgba(196, 162, 88, 0.1);
+      opacity: 0.88;
+      transition: opacity 0.18s;
     }
     .writing-item:first-child { border-top: 1px solid rgba(196, 162, 88, 0.1); }
-    .writing-item:hover { opacity: 0.85; }
+    .writing-item:hover { opacity: 1; }
 
     .writing-meta {
       display: flex;
