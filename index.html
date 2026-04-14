@@ -835,9 +835,11 @@
       gap: 24px;
       padding: 28px 0;
       border-bottom: 1px solid rgba(196, 162, 88, 0.1);
+      opacity: 0.88;
+      transition: opacity 0.18s;
     }
     .writing-item:first-child { border-top: 1px solid rgba(196, 162, 88, 0.1); }
-    .writing-item:hover { opacity: 0.85; }
+    .writing-item:hover { opacity: 1; }
 
     .writing-meta {
       display: flex;
@@ -1683,6 +1685,7 @@
           <div class="card-id">Co-Investigator &amp; Primary Author, with Bogumił Pilecki</div>
           <h3 class="card-title">Asteroseismology of CEP-1347 & VLT Follow-up</h3>
           <p class="card-summary">After six years of OGLE-LMC-CEP-1347 photometry revealed a candidate rotational signal suggesting <span class="trail-word" data-word="merger spindown">merger spindown</span>, my own window function analysis identified it as a 1-year sampling <span class="trail-word" data-word="alias">alias</span>, a diagnostic that drove the pivot to a VLT/ESPRESSO spectroscopic proposal with Dr. Bogumił Pilecki, where chemical abundances will provide a template for identifying merger-origin Cepheids.</p>
+          <div style="margin-bottom: 16px;"><a class="card-link" href="/1347_methods" target="_blank" rel="noopener">Alias Diagnostic: The Analysis That Invalidated My Own Result &rarr;</a></div>
           <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-1">Read more &#8595;</button>
           <div class="card-expand" id="card-expand-1">
             <p class="card-body">
