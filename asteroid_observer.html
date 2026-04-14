@@ -33,7 +33,7 @@ html { height: 100%; background: var(--bg); }
     overflow-y: auto;
   }
 
-  /* ── site nav ──────────────────────────────────────────────────────────── */
+  /*  site nav  */
   
   nav a { pointer-events: auto; }
   
@@ -41,7 +41,7 @@ html { height: 100%; background: var(--bg); }
   
   
 
-  /* ── info panel — grid: subtitle full-width, then body | note ──────────── */
+  /* ── info panel grid: subtitle full-width, then body | note  */
   #info-panel {
     flex-shrink: 0;
     display: grid;
@@ -220,11 +220,11 @@ html { height: 100%; background: var(--bg); }
     opacity: 0.85;
   }
 
-  /* ── mobile ────────────────────────────────────────────────────────────── */
+  /*  mobile  */
   @media (max-width: 600px) {/* tighter nav */
     
 
-    /* collapse info panel to subtitle line only — body + note hidden */
+    /* collapse info panel to subtitle line only, body + note hidden */
     #info-panel {
       grid-template-columns: 1fr;
       grid-template-rows: auto;
@@ -335,7 +335,7 @@ html { height: 100%; background: var(--bg); }
   const R_RIGHT = [-_sa,         _ca,          0   ];
   const R_UP    = [-_se * _ca,  -_se * _sa,    _ce ];
 
-  // scale + origin — updated on resize
+  // scale + origin, updated on resize
   let scale = 120;    // px per AU
   let scene_cx = 0;   // canvas pixel coord of heliocentric origin
   let scene_cy = 0;
@@ -839,7 +839,7 @@ html { height: 100%; background: var(--bg); }
     draw_dot3d(ear[0], ear[1], ear[2], 5.5, C_EARTH);
     draw_text3d(ear[0], ear[1], ear[2], 'Earth', 'rgba(58,127,212,0.6)', 9, 8, -5);
 
-    // asteroid (drawn last — on top)
+    // asteroid (drawn last, on top)
     const ast_col = in_gap ? C_GAP : C_AST;
     if (in_gap) {
       // soft glow when in gap
@@ -909,7 +909,7 @@ html { height: 100%; background: var(--bg); }
     // on mobile portrait the right panel is below the scene, not beside it
     const dial_panel_top = MOBILE_PORTRAIT ? HEADER_H + SCENE_H : HEADER_H;
 
-    // panel background — fill exactly the dial zone, never into HUD
+    // panel background, fill exactly the dial zone, never into HUD
     ctx.save();
     ctx.beginPath(); ctx.rect(RIGHT_X, dial_panel_top, RIGHT_W, HUD_Y - dial_panel_top);
     ctx.fillStyle = C_BG; ctx.fill();
@@ -973,7 +973,7 @@ html { height: 100%; background: var(--bg); }
     ctx.fillStyle = '#ffffff'; ctx.fill();
     ctx.restore();
 
-    // dial hand — tweened angle
+    // dial hand, tweened angle
     let theta = hand_angle;
     const hx = cx + Math.cos(theta) * R * 0.78;
     const hy = cy + Math.sin(theta) * R * 0.78;
