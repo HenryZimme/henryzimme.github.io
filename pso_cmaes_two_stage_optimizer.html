@@ -1,0 +1,307 @@
+
+<h2 class="sr-only">Two-stage PSO → CMA-ES optimization on a non-convex 2D landscape with adjustable hyperparameters and step-by-step playback</h2>
+<style>
+.ctr{margin-bottom:9px}
+.clb{font-size:12px;color:var(--color-text-secondary);display:flex;justify-content:space-between;margin-bottom:2px}
+.met{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:7px 10px;text-align:center}
+.mv{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.ml{font-size:11px;color:var(--color-text-secondary)}
+</style>
+<div style="position:relative;width:100%;padding-top:72%;margin-bottom:10px">
+  <canvas id="viz" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)"></canvas>
+</div>
+<div style="margin-bottom:8px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+    <span id="ph-lbl" style="font-size:12px;font-weight:500;min-width:115px;color:#185FA5">PSO — step 0</span>
+    <div style="flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;position:relative;overflow:hidden">
+      <div id="pbar" style="position:absolute;left:0;top:0;height:100%;background:#185FA5;border-radius:3px 0 0 3px"></div>
+      <div id="cbar" style="position:absolute;top:0;height:100%;background:#0F6E56;border-radius:0 3px 3px 0"></div>
+    </div>
+    <button id="play-btn" style="font-size:12px;padding:3px 10px">▶ Play</button>
+  </div>
+  <input type="range" id="step-slider" min="0" max="70" value="0" style="width:100%">
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px">
+  <div class="met"><div class="mv" id="m-ph">PSO</div><div class="ml">phase</div></div>
+  <div class="met"><div class="mv" id="m-st">0</div><div class="ml">step</div></div>
+  <div class="met"><div class="mv" id="m-bf">—</div><div class="ml">best f(x)</div></div>
+  <div class="met"><div class="mv" id="m-sg">—</div><div class="ml">σ (CMA-ES)</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px">
+    <div style="font-size:12px;font-weight:500;color:#185FA5;margin-bottom:8px">PSO hyperparameters</div>
+    <div class="ctr"><div class="clb"><span>Particles n</span><span id="v-n">20</span></div><input type="range" id="s-n" min="5" max="40" value="20" step="1" style="width:100%"></div>
+    <div class="ctr"><div class="clb"><span>Inertia w</span><span id="v-w">0.70</span></div><input type="range" id="s-w" min="0.3" max="0.95" value="0.7" step="0.05" style="width:100%"></div>
+    <div class="ctr"><div class="clb"><span>Cognitive c₁</span><span id="v-c1">1.5</span></div><input type="range" id="s-c1" min="0.5" max="2.5" value="1.5" step="0.1" style="width:100%"></div>
+    <div class="ctr"><div class="clb"><span>Social c₂</span><span id="v-c2">1.5</span></div><input type="range" id="s-c2" min="0.5" max="2.5" value="1.5" step="0.1" style="width:100%"></div>
+    <div class="ctr"><div class="clb"><span>Iterations</span><span id="v-pi">30</span></div><input type="range" id="s-pi" min="10" max="60" value="30" step="1" style="width:100%"></div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px">
+    <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:8px">CMA-ES hyperparameters</div>
+    <div class="ctr"><div class="clb"><span>Initial σ₀</span><span id="v-s0">1.0</span></div><input type="range" id="s-s0" min="0.1" max="2.5" value="1.0" step="0.1" style="width:100%"></div>
+    <div class="ctr"><div class="clb"><span>Population λ</span><span id="v-lm">12</span></div><input type="range" id="s-lm" min="4" max="30" value="12" step="1" style="width:100%"></div>
+    <div class="ctr"><div class="clb"><span>Iterations</span><span id="v-ci">40</span></div><input type="range" id="s-ci" min="10" max="80" value="40" step="1" style="width:100%"></div>
+    <div style="margin-top:10px;padding:8px;background:var(--color-background-primary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)">
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.6">μ = ⌊λ/2⌋ selected per gen<br>Rank-1 + rank-μ C update<br>CSA step-size adaptation</div>
+    </div>
+  </div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <button id="run-btn" style="padding:5px 16px;font-size:12px">Recompute ↻</button>
+  <span id="status" style="font-size:12px;color:var(--color-text-secondary)"></span>
+</div>
+<p id="desc" style="font-size:12px;color:var(--color-text-secondary);margin:0;min-height:16px;line-height:1.5"></p>
+<script>
+const CW=600,CH=432,X0=-4,X1=4,Y0=-4,Y1=4;
+function f(x,y){
+  return -2.0*Math.exp(-0.5*((x-1.5)**2+(y-1.5)**2))
+        -1.5*Math.exp(-0.5*((x+2)**2+(y+1)**2))
+        -1.0*Math.exp(-0.8*((x-1)**2+(y+2)**2))
+        -0.8*Math.exp(-1.2*((x+1.5)**2+(y-2)**2))
+        +0.04*(x*x+y*y);
+}
+const vadd=(a,b)=>[a[0]+b[0],a[1]+b[1]];
+const vdot=(a,b)=>a[0]*b[0]+a[1]*b[1];
+const vnorm=v=>Math.sqrt(vdot(v,v));
+const mvmul=(A,v)=>[A[0]*v[0]+A[1]*v[1],A[2]*v[0]+A[3]*v[1]];
+const msc=(A,s)=>A.map(x=>x*s);
+const madd=(A,B)=>A.map((x,i)=>x+B[i]);
+const mrk1=v=>[v[0]*v[0],v[0]*v[1],v[1]*v[0],v[1]*v[1]];
+function eig2(A){
+  const a=A[0],b=A[1],d=A[3];
+  const disc=Math.sqrt(Math.max(0,((a-d)/2)**2+b*b));
+  const l1=(a+d)/2+disc,l2=(a+d)/2-disc;
+  let v1,v2;
+  if(Math.abs(b)>1e-9){
+    const mk=l=>{const n=Math.sqrt(b*b+(l-a)**2);return n>1e-9?[b/n,(l-a)/n]:[1,0];};
+    v1=mk(l1);v2=mk(l2);
+  }else{v1=a>=d?[1,0]:[0,1];v2=a>=d?[0,1]:[1,0];}
+  return{l:[Math.max(l1,1e-12),Math.max(l2,1e-12)],v:[v1,v2]};
+}
+function mfn(A,fn){
+  const{l,v}=eig2(A),fl=l.map(fn);
+  return[fl[0]*v[0][0]*v[0][0]+fl[1]*v[1][0]*v[1][0],fl[0]*v[0][0]*v[0][1]+fl[1]*v[1][0]*v[1][1],
+         fl[0]*v[0][1]*v[0][0]+fl[1]*v[1][1]*v[1][0],fl[0]*v[0][1]*v[0][1]+fl[1]*v[1][1]*v[1][1]];
+}
+const csqrt=A=>mfn(A,x=>Math.sqrt(Math.max(x,0)));
+const cinvh=A=>mfn(A,x=>1/Math.sqrt(Math.max(x,1e-20)));
+function randn(){return Math.sqrt(-2*Math.log(Math.random()+1e-300))*Math.cos(2*Math.PI*Math.random());}
+function w2c(wx,wy){return[(wx-X0)/(X1-X0)*CW,(Y1-wy)/(Y1-Y0)*CH];}
+
+let contourC=null;
+function buildContour(){
+  contourC=document.createElement('canvas');
+  contourC.width=CW;contourC.height=CH;
+  const ctx=contourC.getContext('2d'),img=ctx.createImageData(CW,CH);
+  let mn=Infinity,mx=-Infinity;
+  const g=[];
+  for(let j=0;j<CH;j++){const r=[];for(let i=0;i<CW;i++){const x=X0+(i/CW)*(X1-X0),y=Y1-(j/CH)*(Y1-Y0),v=f(x,y);r.push(v);if(v<mn)mn=v;if(v>mx)mx=v;}g.push(r);}
+  const stops=[[12,25,110],[18,100,175],[28,165,135],[145,195,40],[215,120,20],[205,28,20]];
+  for(let j=0;j<CH;j++)for(let i=0;i<CW;i++){
+    const t=Math.pow((g[j][i]-mn)/(mx-mn+1e-9),0.4);
+    const p=t*(stops.length-1),ii=Math.min(Math.floor(p),stops.length-2),ff=p-ii;
+    const[r,gg,b]=stops[ii].map((c,k)=>Math.round(c*(1-ff)+stops[ii+1][k]*ff));
+    const idx=(j*CW+i)*4;img.data[idx]=r;img.data[idx+1]=gg;img.data[idx+2]=b;img.data[idx+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+}
+
+function runPSO({n,w,c1,c2,iters}){
+  let ps=Array.from({length:n},()=>{
+    const x=[X0+Math.random()*(X1-X0),Y0+Math.random()*(Y1-Y0)],v=[randn()*0.5,randn()*0.5],fv=f(x[0],x[1]);
+    return{x:[...x],v:[...v],pb:[...x],pbf:fv};
+  });
+  let gbf=Infinity,gbx=[0,0];
+  ps.forEach(p=>{if(p.pbf<gbf){gbf=p.pbf;gbx=[...p.pb];}});
+  const snap=()=>({pts:ps.map(p=>({x:[...p.x],v:[...p.v],pb:[...p.pb],pbf:p.pbf})),gbx:[...gbx],gbf});
+  const frames=[snap()];
+  for(let it=0;it<iters;it++){
+    for(const p of ps){
+      const r1=Math.random(),r2=Math.random(),mv=2.5;
+      p.v=[Math.max(-mv,Math.min(mv,w*p.v[0]+c1*r1*(p.pb[0]-p.x[0])+c2*r2*(gbx[0]-p.x[0]))),
+           Math.max(-mv,Math.min(mv,w*p.v[1]+c1*r1*(p.pb[1]-p.x[1])+c2*r2*(gbx[1]-p.x[1])))];
+      p.x=[Math.max(X0,Math.min(X1,p.x[0]+p.v[0])),Math.max(Y0,Math.min(Y1,p.x[1]+p.v[1]))];
+      const fv=f(p.x[0],p.x[1]);if(fv<p.pbf){p.pbf=fv;p.pb=[...p.x];}
+    }
+    const best=ps.reduce((b,p)=>p.pbf<b.pbf?p:b,ps[0]);
+    if(best.pbf<gbf){gbf=best.pbf;gbx=[...best.pb];}
+    frames.push(snap());
+  }
+  return frames;
+}
+
+function runCMAES(init,sigma0,lambda,iters){
+  const n=2,mu=Math.max(1,Math.floor(lambda/2));
+  const rw=Array.from({length:mu},(_,i)=>Math.log(mu+0.5)-Math.log(i+1));
+  const sw=rw.reduce((a,b)=>a+b,0),wts=rw.map(w=>w/sw);
+  const mueff=1/wts.reduce((s,w)=>s+w*w,0);
+  const cs=(mueff+2)/(n+mueff+5),ds=1+2*Math.max(0,Math.sqrt((mueff-1)/(n+1))-1)+cs;
+  const cc=(4+mueff/n)/(n+4+2*mueff/n),c1e=2/((n+1.3)**2+mueff);
+  const cmu=Math.min(1-c1e,2*(mueff-2+1/mueff)/((n+2)**2+mueff));
+  const chi=Math.sqrt(n)*(1-1/(4*n)+1/(21*n**2));
+  let mean=[...init],sigma=sigma0,C=[1,0,0,1],psi=[0,0],pc=[0,0];
+  let bF=f(mean[0],mean[1]),bX=[...mean];
+  const frames=[{mean:[...mean],sigma,C:[...C],samps:[],bF,bX:[...bX]}];
+  for(let gen=0;gen<iters;gen++){
+    const Sq=csqrt(C);
+    const samps=Array.from({length:lambda},()=>{
+      const z=[randn(),randn()],y=mvmul(Sq,z);
+      const x=[Math.max(X0,Math.min(X1,mean[0]+sigma*y[0])),Math.max(Y0,Math.min(Y1,mean[1]+sigma*y[1]))];
+      return{x,y,fv:f(x[0],x[1])};
+    });
+    samps.sort((a,b)=>a.fv-b.fv);
+    if(samps[0].fv<bF){bF=samps[0].fv;bX=[...samps[0].x];}
+    const nm=[0,0],yw=[0,0];
+    for(let i=0;i<mu;i++){nm[0]+=wts[i]*samps[i].x[0];nm[1]+=wts[i]*samps[i].x[1];yw[0]+=wts[i]*samps[i].y[0];yw[1]+=wts[i]*samps[i].y[1];}
+    const Cih=cinvh(C),Cy=mvmul(Cih,yw),sqf=Math.sqrt(cs*(2-cs)*mueff);
+    psi=[(1-cs)*psi[0]+sqf*Cy[0],(1-cs)*psi[1]+sqf*Cy[1]];
+    sigma=Math.max(1e-7,Math.min(4,sigma*Math.exp((cs/ds)*(vnorm(psi)/chi-1))));
+    const hs=(vnorm(psi)/(Math.sqrt(1-(1-cs)**(2*(gen+1)))*chi))<1.4+2/(n+1)?1:0;
+    const cf=Math.sqrt(cc*(2-cc)*mueff);
+    pc=[(1-cc)*pc[0]+hs*cf*yw[0],(1-cc)*pc[1]+hs*cf*yw[1]];
+    let rmu=[0,0,0,0];
+    for(let i=0;i<mu;i++)rmu=madd(rmu,msc(mrk1(samps[i].y),wts[i]));
+    C=madd(madd(msc(C,1-c1e-cmu),msc(madd(mrk1(pc),msc(C,(1-hs)*cc*(2-cc))),c1e)),msc(rmu,cmu));
+    C[1]=C[2]=(C[1]+C[2])/2;
+    mean=nm;
+    frames.push({mean:[...mean],sigma,C:[...C],samps:samps.map((s,i)=>({x:[...s.x],fv:s.fv,sel:i<mu})),bF,bX:[...bX]});
+  }
+  return frames;
+}
+
+function drawStar(ctx,cx,cy,r,fill){
+  ctx.beginPath();
+  for(let i=0;i<10;i++){const a=Math.PI/5*i-Math.PI/2,rr=i%2?r*0.42:r;i?ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)):ctx.moveTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}
+  ctx.closePath();ctx.fillStyle=fill;ctx.fill();
+}
+
+function drawEllipse(ctx,mean,sigma,C,ns,stroke,dash){
+  const{l,v}=eig2(C),a=ns*sigma*Math.sqrt(l[0]),b=ns*sigma*Math.sqrt(l[1]);
+  ctx.beginPath();
+  for(let i=0;i<=80;i++){
+    const t=(i/80)*2*Math.PI;
+    const[wx,wy]=[mean[0]+a*Math.cos(t)*v[0][0]+b*Math.sin(t)*v[1][0],mean[1]+a*Math.cos(t)*v[0][1]+b*Math.sin(t)*v[1][1]];
+    const[cx,cy]=w2c(wx,wy);i?ctx.lineTo(cx,cy):ctx.moveTo(cx,cy);
+  }
+  ctx.closePath();ctx.setLineDash(dash||[]);ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);
+}
+
+function render(canvas,frame,phase,psoGbx,trail){
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,CW,CH);
+  if(contourC)ctx.drawImage(contourC,0,0,CW,CH);
+  if(phase==='pso'){
+    const{pts,gbx}=frame;
+    for(const p of pts){const[cx,cy]=w2c(p.pb[0],p.pb[1]);ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.28)';ctx.fill();}
+    for(const p of pts){
+      const[cx,cy]=w2c(p.x[0],p.x[1]);
+      const ex=cx+(p.v[0]/(X1-X0)*CW)*5,ey=cy-(p.v[1]/(Y1-Y0)*CH)*5;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.strokeStyle='rgba(90,180,255,0.38)';ctx.lineWidth=1;ctx.stroke();
+      ctx.beginPath();ctx.arc(cx,cy,4.5,0,Math.PI*2);ctx.fillStyle='#5AB4FF';ctx.fill();ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1;ctx.stroke();
+    }
+    const[gx,gy]=w2c(gbx[0],gbx[1]);drawStar(ctx,gx,gy,11,'#FFD740');
+  }else{
+    const{mean,sigma,C,samps,bX}=frame;
+    if(psoGbx){const[px,py]=w2c(psoGbx[0],psoGbx[1]);ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fillStyle='rgba(255,215,64,0.18)';ctx.fill();}
+    if(trail&&trail.length>1){
+      ctx.beginPath();
+      trail.forEach((m,i)=>{const[cx,cy]=w2c(m[0],m[1]);i?ctx.lineTo(cx,cy):ctx.moveTo(cx,cy);});
+      ctx.strokeStyle='rgba(29,158,117,0.42)';ctx.lineWidth=1.5;ctx.stroke();
+    }
+    for(const s of samps){const[cx,cy]=w2c(s.x[0],s.x[1]);ctx.beginPath();ctx.arc(cx,cy,s.sel?3.5:2,0,Math.PI*2);ctx.fillStyle=s.sel?'rgba(55,210,140,0.85)':'rgba(130,200,155,0.38)';ctx.fill();}
+    drawEllipse(ctx,mean,sigma,C,2,'rgba(29,158,117,0.22)',[5,4]);
+    drawEllipse(ctx,mean,sigma,C,1,'rgba(29,158,117,0.88)',[]);
+    const[mx,my]=w2c(mean[0],mean[1]);ctx.beginPath();ctx.arc(mx,my,6,0,Math.PI*2);ctx.fillStyle='#1D9E75';ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=1.5;ctx.stroke();
+    if(bX){const[bx,by]=w2c(bX[0],bX[1]);drawStar(ctx,bx,by,10,'#FFD740');}
+  }
+  const lw=phase==='pso'?128:152,lh=phase==='pso'?60:78;
+  ctx.fillStyle='rgba(0,0,0,0.52)';ctx.fillRect(6,6,lw,lh);
+  ctx.font='11px system-ui,sans-serif';ctx.textBaseline='middle';
+  if(phase==='pso'){
+    ctx.fillStyle='#5AB4FF';ctx.beginPath();ctx.arc(17,21,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText('particle',28,21);
+    ctx.fillStyle='rgba(255,255,255,0.28)';ctx.beginPath();ctx.arc(17,38,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText('personal best',28,38);
+    drawStar(ctx,17,55,7,'#FFD740');ctx.fillStyle='#fff';ctx.fillText('global best',28,55);
+  }else{
+    ctx.fillStyle='rgba(55,210,140,0.85)';ctx.beginPath();ctx.arc(17,20,3.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText('selected (top μ)',28,20);
+    ctx.fillStyle='rgba(130,200,155,0.38)';ctx.beginPath();ctx.arc(17,35,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText('rejected sample',28,35);
+    ctx.fillStyle='#1D9E75';ctx.beginPath();ctx.arc(17,51,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#fff';ctx.fillText('mean m',28,51);
+    drawStar(ctx,17,68,7,'#FFD740');ctx.fillStyle='#fff';ctx.fillText('best found',28,68);
+  }
+}
+
+let psoF=[],cmaF=[],psoGbx=null,totalSteps=0,cur=0,playing=false,animId=null;
+
+function getP(){
+  const g=s=>+document.getElementById(s).value;
+  return{n:g('s-n'),w:g('s-w'),c1:g('s-c1'),c2:g('s-c2'),pi:g('s-pi'),s0:g('s-s0'),lm:g('s-lm'),ci:g('s-ci')};
+}
+
+function recompute(){
+  stopPlay();document.getElementById('status').textContent='Computing…';
+  setTimeout(()=>{
+    const p=getP();
+    psoF=runPSO({n:p.n,w:p.w,c1:p.c1,c2:p.c2,iters:p.pi});
+    psoGbx=[...psoF[psoF.length-1].gbx];
+    cmaF=runCMAES(psoGbx,p.s0,p.lm,p.ci);
+    totalSteps=psoF.length+cmaF.length;
+    const sl=document.getElementById('step-slider');sl.max=totalSteps-1;sl.value=0;
+    updateBar();goStep(0);
+    document.getElementById('status').textContent='';
+  },10);
+}
+
+function goStep(s){
+  cur=s;
+  const canvas=document.getElementById('viz'),isPso=s<psoF.length;
+  const frame=isPso?psoF[s]:cmaF[s-psoF.length];
+  const trail=!isPso?cmaF.slice(0,s-psoF.length+1).map(fr=>fr.mean):null;
+  render(canvas,frame,isPso?'pso':'cma',psoGbx,trail);
+  document.getElementById('m-ph').textContent=isPso?'PSO':'CMA-ES';
+  document.getElementById('m-st').textContent=s;
+  document.getElementById('m-bf').textContent=(isPso?frame.gbf:frame.bF).toFixed(3);
+  document.getElementById('m-sg').textContent=isPso?'—':frame.sigma.toFixed(3);
+  const lbl=document.getElementById('ph-lbl');
+  if(isPso){lbl.textContent='PSO — step '+s;lbl.style.color='#185FA5';}
+  else{lbl.textContent='CMA-ES — gen '+(s-psoF.length);lbl.style.color='#0F6E56';}
+  const cstep=s-psoF.length,desc=document.getElementById('desc');
+  if(isPso&&s===0)desc.textContent='Swarm initialized: particles scattered uniformly, velocities randomized.';
+  else if(isPso&&s<psoF.length*0.35)desc.textContent='Exploration phase: inertia w='+getP().w.toFixed(2)+' keeps particles mobile; social pull tugs toward the current global best (star).';
+  else if(isPso)desc.textContent='Convergence phase: swarm clustering around basins — global best may still jump to a better basin.';
+  else if(cstep===0)desc.textContent='PSO handoff → CMA-ES seeded at global best with σ₀ = '+frame.sigma.toFixed(2)+'. Covariance C = I (spherical).';
+  else desc.textContent='CMA-ES gen '+cstep+': σ = '+frame.sigma.toFixed(3)+' — ellipse rotating and scaling to match local curvature. Teal trail shows mean trajectory.';
+}
+
+function updateBar(){
+  if(!totalSteps)return;
+  const pf=psoF.length/totalSteps*100,cf=cmaF.length/totalSteps*100;
+  document.getElementById('pbar').style.width=pf+'%';
+  document.getElementById('cbar').style.left=pf+'%';
+  document.getElementById('cbar').style.width=cf+'%';
+}
+
+function stopPlay(){
+  if(animId){clearInterval(animId);animId=null;}
+  playing=false;document.getElementById('play-btn').textContent='▶ Play';
+}
+
+function togglePlay(){
+  if(playing){stopPlay();return;}
+  playing=true;document.getElementById('play-btn').textContent='⏸ Pause';
+  if(cur>=totalSteps-1)cur=0;
+  animId=setInterval(()=>{
+    if(cur>=totalSteps-1){stopPlay();return;}
+    cur++;document.getElementById('step-slider').value=cur;goStep(cur);
+  },100);
+}
+
+window.addEventListener('load',()=>{
+  const canvas=document.getElementById('viz');canvas.width=CW;canvas.height=CH;
+  buildContour();
+  const bind=[['s-n','v-n',v=>v],['s-w','v-w',v=>(+v).toFixed(2)],['s-c1','v-c1',v=>(+v).toFixed(1)],['s-c2','v-c2',v=>(+v).toFixed(1)],['s-pi','v-pi',v=>v],['s-s0','v-s0',v=>(+v).toFixed(1)],['s-lm','v-lm',v=>v],['s-ci','v-ci',v=>v]];
+  for(const[s,d,fmt]of bind){const el=document.getElementById(s);document.getElementById(d).textContent=fmt(el.value);el.addEventListener('input',()=>document.getElementById(d).textContent=fmt(el.value));}
+  document.getElementById('step-slider').addEventListener('input',e=>{stopPlay();goStep(+e.target.value);});
+  document.getElementById('play-btn').addEventListener('click',togglePlay);
+  document.getElementById('run-btn').addEventListener('click',recompute);
+  recompute();
+});
+</script>
