@@ -1578,12 +1578,24 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     });
   }
 
-  // Pulse the word itself — no external arrow needed
+  // Inject fixed-position chip above the word — no z-index/overflow issues
+  var beaconChip = document.getElementById('trail-beacon-chip');
   function showWordBeacon(wordEl) {
-    if (beaconShown || !wordEl) return;
+    if (beaconShown || !wordEl || !beaconChip) return;
     beaconShown = true;
     wordEl.classList.add('trail-beacon');
-    setTimeout(function () { wordEl.classList.remove('trail-beacon'); }, 3800);
+    var rect = wordEl.getBoundingClientRect();
+    var chipW = beaconChip.offsetWidth || 30;
+    beaconChip.style.left = Math.round(rect.left + rect.width / 2 - chipW / 2) + 'px';
+    beaconChip.style.top  = Math.round(rect.top - 24) + 'px';
+    // rAF ensures position is committed before animation class triggers
+    requestAnimationFrame(function () {
+      beaconChip.classList.add('beacon-visible');
+    });
+    setTimeout(function () {
+      beaconChip.classList.remove('beacon-visible');
+      wordEl.classList.remove('trail-beacon');
+    }, 3800);
   }
 
   function dismissHint() {
