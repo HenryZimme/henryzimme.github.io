@@ -1179,19 +1179,18 @@
       bottom: 32px;
       left: 32px;
       z-index: 300;
-      width: 40px;
+      min-width: 40px;
       height: 40px;
       background: var(--panel);
       border: 1px solid var(--panel-border);
       cursor: pointer;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease, border-color 0.18s, width 0.25s ease;
+      transition: opacity 0.25s ease, border-color 0.18s;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0;
-      overflow: hidden;
       white-space: nowrap;
     }
     #trail-toggle img {
@@ -1211,6 +1210,7 @@
       color: var(--gold);
       opacity: 0;
       max-width: 0;
+      overflow: hidden;
       transition: opacity 0.25s ease 0.1s, max-width 0.25s ease;
       pointer-events: none;
     }
@@ -1219,7 +1219,6 @@
       pointer-events: auto;
     }
     #trail-toggle.trail-label-show {
-      width: auto;
       padding: 0 12px 0 10px;
       gap: 7px;
     }
