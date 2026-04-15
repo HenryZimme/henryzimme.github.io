@@ -5,7 +5,7 @@
 //   - 3rd-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
 //
 // bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v26';
+const CACHE_VERSION = 'v27';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
