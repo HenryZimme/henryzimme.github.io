@@ -1186,22 +1186,46 @@
       cursor: pointer;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease, border-color 0.18s;
+      transition: opacity 0.25s ease, border-color 0.18s, width 0.25s ease;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0;
+      overflow: hidden;
+      white-space: nowrap;
     }
     #trail-toggle img {
       width: 26px;
       height: 26px;
       display: block;
-      opacity: 0.7;
+      flex-shrink: 0;
+      opacity: 0.85;
       transition: opacity 0.18s;
+    }
+    /* label shown once on first visit, before any word is found */
+    #trail-toggle .trail-toggle-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0;
+      max-width: 0;
+      transition: opacity 0.25s ease 0.1s, max-width 0.25s ease;
+      pointer-events: none;
     }
     #trail-toggle.trail-ready {
       opacity: 1;
       pointer-events: auto;
+    }
+    #trail-toggle.trail-label-show {
+      width: auto;
+      padding: 0 12px 0 10px;
+      gap: 7px;
+    }
+    #trail-toggle.trail-label-show .trail-toggle-label {
+      opacity: 1;
+      max-width: 80px;
     }
     #trail-toggle.trail-on {
       border-color: var(--gold);
@@ -1387,41 +1411,16 @@
     }
 
     /* floating arrow callout */
-    /* word beacon chip — fixed-position, JS-anchored above first trail word */
-    #trail-beacon-chip {
-      position: fixed;
-      z-index: 400;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 8px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--gold);
-      background: rgba(7,9,26,0.95);
-      border: 1px solid rgba(196,162,88,0.45);
-      padding: 2px 7px;
-      white-space: nowrap;
-      border-radius: 2px;
-      pointer-events: none;
-      opacity: 0;
-      transform: translateY(3px);
-      transition: none;
+    /* first-word hint — pulses the underline of the first unclicked word when trail opens */
+    @keyframes first-word-hint {
+      0%   { border-bottom-color: rgba(196,162,88,0.6); }
+      30%  { border-bottom-color: rgba(196,162,88,1);   }
+      60%  { border-bottom-color: rgba(196,162,88,0.6); }
+      80%  { border-bottom-color: rgba(196,162,88,0.9); }
+      100% { border-bottom-color: rgba(196,162,88,0.6); }
     }
-    #trail-beacon-chip.beacon-visible {
-      animation: beacon-chip 6s ease forwards;
-    }
-    @keyframes beacon-chip {
-      0%   { opacity: 0; transform: translateY(3px); }
-      8%   { opacity: 1; transform: translateY(0); }
-      82%  { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(0); }
-    }
-    @keyframes beacon-word-glow {
-      0%, 100% { text-shadow: none; }
-      30%       { text-shadow: 0 0 10px rgba(196,162,88,0.55); }
-      65%       { text-shadow: 0 0 6px rgba(196,162,88,0.3); }
-    }
-    .trail-active .trail-word.trail-beacon {
-      animation: beacon-word-glow 3.6s ease forwards;
+    .trail-active .trail-word.trail-first {
+      animation: first-word-hint 1.8s ease 0.3s 2;
     }
 
 /* epilepsy warning modal */
