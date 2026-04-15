@@ -1387,17 +1387,10 @@
     }
 
     /* floating arrow callout */
-    /* word beacon — pulses the trail-word itself on first scroll-into-view */
-    .trail-word.trail-beacon {
-      display: inline-block;
-      position: relative;
-    }
-    .trail-word.trail-beacon::after {
-      content: 'click';
-      position: absolute;
-      bottom: calc(100% + 5px);
-      left: 50%;
-      transform: translateX(-50%);
+    /* word beacon chip — fixed-position, JS-anchored above first trail word */
+    #trail-beacon-chip {
+      position: fixed;
+      z-index: 400;
       font-family: 'JetBrains Mono', monospace;
       font-size: 8px;
       letter-spacing: 0.14em;
@@ -1409,13 +1402,18 @@
       white-space: nowrap;
       border-radius: 2px;
       pointer-events: none;
+      opacity: 0;
+      transform: translateY(3px);
+      transition: none;
+    }
+    #trail-beacon-chip.beacon-visible {
       animation: beacon-chip 3.6s ease forwards;
     }
     @keyframes beacon-chip {
-      0%   { opacity: 0; transform: translateX(-50%) translateY(3px); }
-      12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-      75%  { opacity: 1; }
-      100% { opacity: 0; }
+      0%   { opacity: 0; transform: translateY(3px); }
+      12%  { opacity: 1; transform: translateY(0); }
+      75%  { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(0); }
     }
     @keyframes beacon-word-glow {
       0%, 100% { text-shadow: none; }
