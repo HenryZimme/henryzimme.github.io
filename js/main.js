@@ -1416,8 +1416,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   window.setMode('realtime');
 });
 
-init();
-
 // ---
 // Load HSZ_Headshot_BW_small.webp immediately (set in HTML src).
 // When the about section nears the viewport, preload the full-res version in
@@ -1477,16 +1475,15 @@ init();
 
   // found stored in discovery order
   let found     = JSON.parse(sessionStorage.getItem(LS_FOUND) || '[]');
-  let active    = false;
-  let arrowShown = false;
-  let arrowTimer = null;
-  let observer  = null;
+  let active      = false;
+  let dismissed   = false;
+  let beaconShown = false;
+  let observer    = null;
 
   const toggle     = document.getElementById('trail-toggle');
   const card       = document.getElementById('trail-card');
   const dismiss    = document.getElementById('trail-dismiss');
   const hintText   = document.getElementById('trail-hint-text');
-  const arrow      = document.getElementById('trail-arrow');
   const nEl        = document.getElementById('trail-n');
   const totalEl    = document.getElementById('trail-total');
   const dotsEl     = document.getElementById('trail-dots');
@@ -1581,40 +1578,17 @@ init();
     });
   }
 
-  function showArrow(targetEl) {
-    if (!arrow || arrowShown) return;
-    arrowShown = true;
-    const rect = targetEl.getBoundingClientRect();
-    arrow.style.top  = Math.round(rect.top + rect.height / 2 - 8) + 'px';
-    arrow.classList.add('trail-arrow-visible');
-    arrowTimer = setTimeout(hideArrow, 4000);
-  }
-
-  function hideArrow() {
-    if (!arrow) return;
-    clearTimeout(arrowTimer);
-    arrow.classList.remove('trail-arrow-visible');
+  // Pulse the word itself — no external arrow needed
+  function showWordBeacon(wordEl) {
+    if (beaconShown || !wordEl) return;
+    beaconShown = true;
+    wordEl.classList.add('trail-beacon');
+    setTimeout(function () { wordEl.classList.remove('trail-beacon'); }, 3800);
   }
 
   function dismissHint() {
     if (hintText) hintText.classList.add('trail-hint-gone');
-    hideArrow();
     if (observer) { observer.disconnect(); observer = null; }
-  }
-
-  function startObserver() {
-    if (observer || arrowShown) return;
-    observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting && active) {
-          showArrow(entry.target);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.5 });
-    document.querySelectorAll('.trail-word').forEach(function (span) {
-      if (found.indexOf(span.dataset.word) === -1) observer.observe(span);
-    });
   }
 
   function showCard() {
@@ -1624,7 +1598,6 @@ init();
     card.classList.add('trail-card-visible');
     markSpans();
     render();
-    if (found.length === 0) startObserver();
   }
 
   function hideCard() {
@@ -1632,7 +1605,6 @@ init();
     document.body.classList.remove('trail-active');
     toggle.classList.remove('trail-on');
     card.classList.remove('trail-card-visible');
-    hideArrow();
     if (observer) { observer.disconnect(); observer = null; }
   }
 
@@ -1641,6 +1613,7 @@ init();
   });
 
   dismiss.addEventListener('click', function () {
+    dismissed = true;
     hideCard();
     toggle.classList.remove('trail-ready');
     toggle.style.opacity = '0';
@@ -1659,4 +1632,45 @@ init();
   }, 1800);
 
   if (found.length > 0) markSpans();
+
+  // — Hero scroll trigger: auto-open card once hero exits viewport —
+  // Only for fresh visitors who haven't found any words yet
+  if (found.length === 0 && !sessionStorage.getItem('trailIntroShown')) {
+    var heroEl = document.getElementById('hero');
+    if (heroEl && 'IntersectionObserver' in window) {
+      var heroSeen = false;
+      var heroObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!heroSeen && entry.isIntersecting) {
+            heroSeen = true;
+          } else if (heroSeen && !entry.isIntersecting && entry.boundingClientRect.top < 0) {
+            // hero has scrolled off the top
+            heroObs.disconnect();
+            sessionStorage.setItem('trailIntroShown', '1');
+            if (!dismissed && !active) showCard();
+          }
+        });
+      }, { threshold: 0 });
+      heroObs.observe(heroEl);
+    }
+  }
+
+  // — First-word beacon: pulse the word itself when it enters view —
+  // Fires independently of card state; only for new visitors
+  if (found.length === 0) {
+    var firstWord = document.querySelector('.trail-word');
+    if (firstWord && 'IntersectionObserver' in window) {
+      var wordObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            wordObs.disconnect();
+            setTimeout(function () { showWordBeacon(firstWord); }, 600);
+          }
+        });
+      }, { threshold: 0.8 });
+      wordObs.observe(firstWord);
+    }
+  }
 })();
+
+init();
