@@ -1387,26 +1387,43 @@
     }
 
     /* floating arrow callout */
-    #trail-arrow {
-      position: fixed;
-      left: 260px;
-      z-index: 300;
-      width: 0;
-      height: 0;
-      border-top: 8px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-left: 11px solid var(--gold);
-      opacity: 0;
+    /* word beacon — pulses the trail-word itself on first scroll-into-view */
+    .trail-word.trail-beacon {
+      display: inline-block;
+      position: relative;
+    }
+    .trail-word.trail-beacon::after {
+      content: 'click';
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(7,9,26,0.95);
+      border: 1px solid rgba(196,162,88,0.45);
+      padding: 2px 7px;
+      white-space: nowrap;
+      border-radius: 2px;
       pointer-events: none;
-      transition: opacity 0.25s;
+      animation: beacon-chip 3.6s ease forwards;
     }
-    @keyframes trail-arrow-nudge {
-      0%, 100% { transform: translateX(0); }
-      50%       { transform: translateX(4px); }
+    @keyframes beacon-chip {
+      0%   { opacity: 0; transform: translateX(-50%) translateY(3px); }
+      12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      75%  { opacity: 1; }
+      100% { opacity: 0; }
     }
-    #trail-arrow.trail-arrow-visible {
-      opacity: 0.85;
-      animation: trail-arrow-nudge 1s ease-in-out 3;
+    @keyframes beacon-word-glow {
+      0%, 100% { text-shadow: none; }
+      30%       { text-shadow: 0 0 10px rgba(196,162,88,0.55); }
+      65%       { text-shadow: 0 0 6px rgba(196,162,88,0.3); }
+    }
+    .trail-active .trail-word.trail-beacon {
+      animation: beacon-word-glow 3.6s ease forwards;
     }
 
 /* epilepsy warning modal */
