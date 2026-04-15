@@ -1407,12 +1407,12 @@
       transition: none;
     }
     #trail-beacon-chip.beacon-visible {
-      animation: beacon-chip 3.6s ease forwards;
+      animation: beacon-chip 6s ease forwards;
     }
     @keyframes beacon-chip {
       0%   { opacity: 0; transform: translateY(3px); }
-      12%  { opacity: 1; transform: translateY(0); }
-      75%  { opacity: 1; transform: translateY(0); }
+      8%   { opacity: 1; transform: translateY(0); }
+      82%  { opacity: 1; transform: translateY(0); }
       100% { opacity: 0; transform: translateY(0); }
     }
     @keyframes beacon-word-glow {
