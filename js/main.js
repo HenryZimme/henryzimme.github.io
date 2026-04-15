@@ -1560,7 +1560,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   }
 
   function onWordClick(e) {
-    if (!active) return;
+    if (!active) showCard();
     const word = e.currentTarget.dataset.word;
     if (found.indexOf(word) !== -1) return;
     dismissHint();
@@ -1595,7 +1595,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     setTimeout(function () {
       beaconChip.classList.remove('beacon-visible');
       wordEl.classList.remove('trail-beacon');
-    }, 3800);
+    }, 6100);
   }
 
   function dismissHint() {
