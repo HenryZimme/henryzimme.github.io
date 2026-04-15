@@ -1645,4 +1645,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
 
   if (found.length > 0) markSpans();
 
+})();
+
 init();
