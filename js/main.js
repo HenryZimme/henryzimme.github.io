@@ -1475,10 +1475,9 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
 
   // found stored in discovery order
   let found     = JSON.parse(sessionStorage.getItem(LS_FOUND) || '[]');
-  let active      = false;
-  let dismissed   = false;
-  let beaconShown = false;
-  let observer    = null;
+  let active    = false;
+  let dismissed = false;
+  let observer  = null;
 
   const toggle     = document.getElementById('trail-toggle');
   const card       = document.getElementById('trail-card');
@@ -1563,6 +1562,8 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     if (!active) showCard();
     const word = e.currentTarget.dataset.word;
     if (found.indexOf(word) !== -1) return;
+    // remove first-word hint from clicked element
+    e.currentTarget.classList.remove('trail-first');
     dismissHint();
     found.push(word);
     save();
@@ -1578,25 +1579,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     });
   }
 
-  // Inject fixed-position chip above the word — no z-index/overflow issues
-  var beaconChip = document.getElementById('trail-beacon-chip');
-  function showWordBeacon(wordEl) {
-    if (beaconShown || !wordEl || !beaconChip) return;
-    beaconShown = true;
-    wordEl.classList.add('trail-beacon');
-    var rect = wordEl.getBoundingClientRect();
-    var chipW = beaconChip.offsetWidth || 30;
-    beaconChip.style.left = Math.round(rect.left + rect.width / 2 - chipW / 2) + 'px';
-    beaconChip.style.top  = Math.round(rect.top - 24) + 'px';
-    // rAF ensures position is committed before animation class triggers
-    requestAnimationFrame(function () {
-      beaconChip.classList.add('beacon-visible');
-    });
-    setTimeout(function () {
-      beaconChip.classList.remove('beacon-visible');
-      wordEl.classList.remove('trail-beacon');
-    }, 6100);
-  }
 
   function dismissHint() {
     if (hintText) hintText.classList.add('trail-hint-gone');
@@ -1607,8 +1589,17 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     active = true;
     document.body.classList.add('trail-active');
     toggle.classList.add('trail-on');
+    toggle.classList.remove('trail-label-show');
     card.classList.add('trail-card-visible');
     markSpans();
+    // pulse the first unclicked word as a hint
+    var firstUnfound = document.querySelector('.trail-word:not(.found)');
+    if (firstUnfound) {
+      firstUnfound.classList.remove('trail-first');
+      // force reflow so re-opening re-triggers the animation
+      void firstUnfound.offsetWidth;
+      firstUnfound.classList.add('trail-first');
+    }
     render();
   }
 
@@ -1637,52 +1628,21 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     toggle.classList.add('trail-ready');
     if (found.length === 0) {
       toggle.classList.add('trail-pulse');
+      toggle.classList.add('trail-label-show');
       toggle.addEventListener('animationend', function () {
         toggle.classList.remove('trail-pulse');
+      }, { once: true });
+      // hide the label once the user clicks or after 8s
+      var labelTimer = setTimeout(function () {
+        toggle.classList.remove('trail-label-show');
+      }, 8000);
+      toggle.addEventListener('click', function () {
+        clearTimeout(labelTimer);
+        toggle.classList.remove('trail-label-show');
       }, { once: true });
     }
   }, 1800);
 
   if (found.length > 0) markSpans();
-
-  // — Hero scroll trigger: auto-open card once hero exits viewport —
-  // Only for fresh visitors who haven't found any words yet
-  if (found.length === 0 && !sessionStorage.getItem('trailIntroShown')) {
-    var heroEl = document.getElementById('hero');
-    if (heroEl && 'IntersectionObserver' in window) {
-      var heroSeen = false;
-      var heroObs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (!heroSeen && entry.isIntersecting) {
-            heroSeen = true;
-          } else if (heroSeen && !entry.isIntersecting && entry.boundingClientRect.top < 0) {
-            // hero has scrolled off the top
-            heroObs.disconnect();
-            sessionStorage.setItem('trailIntroShown', '1');
-            if (!dismissed && !active) showCard();
-          }
-        });
-      }, { threshold: 0 });
-      heroObs.observe(heroEl);
-    }
-  }
-
-  // — First-word beacon: pulse the word itself when it enters view —
-  // Fires independently of card state; only for new visitors
-  if (found.length === 0) {
-    var firstWord = document.querySelector('.trail-word');
-    if (firstWord && 'IntersectionObserver' in window) {
-      var wordObs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            wordObs.disconnect();
-            setTimeout(function () { showWordBeacon(firstWord); }, 600);
-          }
-        });
-      }, { threshold: 0.8 });
-      wordObs.observe(firstWord);
-    }
-  }
-})();
 
 init();
