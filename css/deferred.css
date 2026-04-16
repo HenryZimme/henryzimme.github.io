@@ -1158,11 +1158,13 @@
 
     /* ── reading trail ─────────────────────────────────────────────────────── */
     .trail-word {
-      transition: color 0.15s, border-color 0.15s;
+      border-bottom: 1px dotted rgba(196,162,88,0.35);
+      cursor: pointer;
+      transition: color 0.15s, border-bottom-color 0.15s;
     }
     .trail-active .trail-word {
-      border-bottom: 1px solid rgba(196,162,88,0.6);
-      cursor: pointer;
+      border-bottom-style: solid;
+      border-bottom-color: rgba(196,162,88,0.6);
     }
     .trail-active .trail-word:hover {
       border-bottom-color: var(--gold);
@@ -1179,15 +1181,14 @@
       bottom: 32px;
       left: 32px;
       z-index: 300;
-      width: auto;
-      max-width: 40px;
+      width: 40px;
       height: 40px;
       background: var(--panel);
       border: 1px solid var(--panel-border);
       cursor: pointer;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease, border-color 0.18s, max-width 0.25s ease, padding 0.25s ease;
+      transition: opacity 0.25s ease, border-color 0.18s, width 0.25s ease, padding 0.25s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1217,14 +1218,6 @@
     #trail-toggle.trail-ready {
       opacity: 1;
       pointer-events: auto;
-    }
-    #trail-toggle.trail-label-show {
-      max-width: 120px;
-      padding: 0 12px 0 10px;
-      gap: 7px;
-    }
-    #trail-toggle.trail-label-show .trail-toggle-label {
-      opacity: 1;
     }
     #trail-toggle.trail-on {
       border-color: var(--gold);
@@ -1380,13 +1373,6 @@
       0%   { box-shadow: 0 0 0 0 rgba(196,162,88,0); border-color: var(--panel-border); }
       35%  { box-shadow: 0 0 20px 6px rgba(196,162,88,0.22); border-color: rgba(196,162,88,0.7); }
       100% { box-shadow: 0 0 0 0 rgba(196,162,88,0); border-color: var(--panel-border); }
-    }
-    @keyframes trail-pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(196,162,88,0); border-color: var(--panel-border); }
-      50%       { box-shadow: 0 0 0 7px rgba(196,162,88,0.15); border-color: rgba(196,162,88,0.55); }
-    }
-    #trail-toggle.trail-pulse {
-      animation: trail-pulse 1.8s ease-in-out 4;
     }
     #trail-card.trail-flash { animation: trail-flash 1.4s ease forwards; }
 
