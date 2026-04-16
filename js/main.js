@@ -746,13 +746,16 @@ function draw(ts) {
 // hero_scroll_bottom is stable between resizes, uses offsetTop + offsetHeight.
 let hero_el         = null;
 let hero_rect_cache = null;  // viewport-relative rect for canvas_exposed_at
-let hero_scroll_bottom = 0;  // doc-absolute bottom edge for scroll spy
+let hero_scroll_bottom  = 0;  // doc-absolute bottom edge for scroll spy
+let research_scroll_top = 0;  // doc-absolute top of #research for back-to-top visibility
 const nav_el = document.querySelector('nav');
 
 function refresh_hero_cache() {
   if (!hero_el) hero_el = document.getElementById('hero');
   hero_rect_cache    = hero_el.getBoundingClientRect();
   hero_scroll_bottom = hero_el.offsetTop + hero_el.offsetHeight; // stable until resize
+  const research_el  = document.getElementById('research');
+  if (research_el) research_scroll_top = research_el.offsetTop;
 }
 
 function canvas_exposed_at(x, y) {
@@ -1289,7 +1292,7 @@ mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
 // -- back to top --
 const back_to_top_btn = document.getElementById('back-to-top');
 window.addEventListener('scroll', () => {
-  back_to_top_btn.classList.toggle('visible', window.scrollY > 500);
+  back_to_top_btn.classList.toggle('visible', window.scrollY >= research_scroll_top);
 
   // compare scrollY against cached doc-absolute bottom, no getElementById or getBoundingClientRect
   nav_el.classList.toggle('nav--scrolled', window.scrollY >= hero_scroll_bottom);
@@ -1589,7 +1592,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     active = true;
     document.body.classList.add('trail-active');
     toggle.classList.add('trail-on');
-    toggle.classList.remove('trail-label-show');
     card.classList.add('trail-card-visible');
     markSpans();
     // pulse the first unclicked word as a hint
@@ -1624,24 +1626,26 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   });
 
   activateListeners();
-  setTimeout(function () {
+
+  function activateToggle() {
     toggle.classList.add('trail-ready');
-    if (found.length === 0) {
-      toggle.classList.add('trail-pulse');
-      toggle.classList.add('trail-label-show');
-      toggle.addEventListener('animationend', function () {
-        toggle.classList.remove('trail-pulse');
-      }, { once: true });
-      // hide the label once the user clicks or after 8s
-      var labelTimer = setTimeout(function () {
-        toggle.classList.remove('trail-label-show');
-      }, 8000);
-      toggle.addEventListener('click', function () {
-        clearTimeout(labelTimer);
-        toggle.classList.remove('trail-label-show');
-      }, { once: true });
-    }
-  }, 1800);
+  }
+
+  var aboutEl = document.getElementById('about');
+  if (aboutEl && 'IntersectionObserver' in window) {
+    var aboutIO = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) {
+          aboutIO.disconnect();
+          setTimeout(activateToggle, 1800);
+          break;
+        }
+      }
+    }, { rootMargin: '0px' });
+    aboutIO.observe(aboutEl);
+  } else {
+    setTimeout(activateToggle, 1800);
+  }
 
   if (found.length > 0) markSpans();
 
