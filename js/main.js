@@ -1641,7 +1641,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
           break;
         }
       }
-    }, { rootMargin: '0px' });
+    }, { rootMargin: '0px 0px -72px 0px', threshold: 0 });
     aboutIO.observe(aboutEl);
   } else {
     setTimeout(activateToggle, 1800);
