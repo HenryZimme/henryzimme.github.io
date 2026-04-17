@@ -1728,8 +1728,13 @@
               Using photometric measurements from the ALCDEF Light Curve Database, I developed statistical models to estimate period convergence requirements and used those results to design an observing strategy.
             </p>
             <p class="card-body">
-              To improve observational efficiency under variable viewing conditions, I built an open-source scheduling tool that integrates orbital ephemerides, lunar sky brightness models, and site visibility constraints to prioritize high-quality observing windows. The goal is to reduce wasted telescope time and improve cadence reliability through more reliable phase sampling. The tool recently completed its commissioning with success, coordinating photometry across four observatories in the Canary Islands, Chile, Australia, and Andover to recover a rotational period that's resonant with an Earth day. Our team is preparing the results for submission to the Minor Planet Bulletin.
+              To improve observational efficiency under variable viewing conditions, I built an open-source scheduling tool that integrates orbital ephemerides, lunar sky brightness models, and site visibility constraints to prioritize high-quality observing windows. The goal is to reduce wasted telescope time and improve cadence reliability through more reliable phase sampling. The tool recently completed its commissioning with success, coordinating photometry across four observatories in the Canary Islands, Chile, Australia, and Andover to recover a rotational period that's resonant with an Earth day. 
             </p>
+
+            <p class="card-body">
+              The call went out publicly on March 2, featured by Slooh's community team after I coordinated with their staff. Jo booked three Canary One missions that day. Shad0 imaged from Chile Two and Australia One, returned plate-solved files with confirmed ephemeris matches, and asked what else needed filling. Lee scheduled 99 over the following three weeks, lost power to high winds once, taught himself Google Drive to transfer the files, and delivered 80 FITS before Cindygraber faded below the noise floor. Our team is preparing the results for submission to the Minor Planet Bulletin.
+            </p>
+            
             <p class="card-body">
               A note on methods: I evaluated supervised learning approaches for period convergence prediction early in this project, but found statistical modeling better supported by the dataset characteristics. This work inspired me to separately apply CMA-ES evolutionary optimization to cadence scheduling.
             </p>
