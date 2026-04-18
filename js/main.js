@@ -553,7 +553,7 @@ function draw_canvas_legend() {
     const cx = x + dot_r;
 
     // pulsing dot, use bucket 0..4 mapped across LUT for variety
-    const lut_i = Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1));
+    const lut_i = legend_items.length > 1 ? Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1)) : 0;
     const pulse = 0.5 + 0.5 * twinkle_sin_lut[lut_i];
     const glow = ctx.createRadialGradient(cx, row_y, 0, cx, row_y, dot_r * 3);
     glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
