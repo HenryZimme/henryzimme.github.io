@@ -6,7 +6,7 @@
   <title>Diagnosing a 1/year Sampling Alias in OGLE-LMC-CEP-1347 | Henry Zimmerman.</title>
   <meta name="description" content="Methodological appendix for the OGLE-LMC-CEP-1347 binary Cepheid research project, detailing frequency analysis, alias detection, and orbital modeling.">
   <meta property="og:title" content="Methodological Appendix: CEP-1347 Analysis | Henry Zimmerman">
-  <meta property="og:description" content="Methodological appendix for the OGLE-LMC-CEP-1347 binary Cepheid research project, detailing frequency analysis, alias detection, and orbital modeling.">
+  <meta property="og:description" content="Methodological appendix for the OGLE-LMC-CEP-1347 binary Cepheid research project, covering frequency analysis, alias detection, and orbital modeling.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.henryzimmerman.net/1347_methods.html">
   <meta property="og:image" content="https://www.henryzimmerman.net/images/og-preview.jpg">
@@ -109,9 +109,10 @@ body {
 
   <div class="article-content">
     <h2>1. The Theoretical Motivator: Chandrasekhar and the Kappa Mechanism</h2>
-    <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism, specifically whether the non-linear dynamics of Cepheid pulsation survive intact inside a binary with extreme tidal forces. After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I searched for an observational perspective on tidal impacts in high-mass variables, yet found a significant gap in the literature.</p>
+    <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism, specifically whether the non-linear dynamics of Cepheid pulsation survive intact inside a binary with extreme tidal forces. After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I looked for an observational study on tidal impacts in 
+      Cepheids, yet found a significant gap in the literature.</p>
     
-    <p>At the 247th AAS Meeting, I discussed this gap for several hours with Dr. Barry Madore. The consensus was that while tidal impacts were theoretically inevitable in short period systems, none had been found yet. This was because to become Cepheids, stars would first have to survive Red Giant Branch expansion, which would consume any close companions. Neilson et al. (2015) documented how rarely Cepheids survive short-period orbits without prior mass transfer. Following the discovery of OGLE-LMC-CEP-1347 by Bogumił Pilecki ($P_{orb} = 58.85d$), I realized this target was a rare chance to test those structural predictions directly.</p>
+    <p>At the 247th AAS Meeting, I discussed this gap with many Cepheid researchers (including Scott Call, Barry Madore, and Eric Hintz). The consensus was that while tidal impacts were theoretically inevitable in short period systems, none were expected to exist, and none had been found. This was because to become Cepheids, stars would first have to survive Red Giant Branch expansion, which would consume any close companions. Neilson et al. (2015) documented how rarely Cepheids survive short-period orbits without prior mass transfer, and derived a theoretical limit of $P_{orb} > 240$ days from angular momentum transport calculations. Following the discovery of OGLE-LMC-CEP-1347 by Bogumił Pilecki ($P_{orb} = 58.85d$), I realized this system was a rare chance to test Cepheid pulsation models directly.</p>
 
 
     <p>To isolate the residuals, I fit and subtracted multiple Fourier series to the $1O$ and $2O$ pulsation modes. Because the star is in a tight orbit, I applied a barycentric correction ($t_{corr} = t_{obs} - z/c$) using orbital parameters from Pilecki et al. (2022). This pipeline achieved a residual precision of ~0.01 mag RMS. That is comparable to the amplitude of a low-amplitude non-radial mode, which set the sensitivity floor for what the photometry could plausibly detect.</p>
