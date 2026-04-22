@@ -21,33 +21,21 @@
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
-body {
+    
+    body {
       background: var(--bg);
       color: var(--text);
       font-family: 'Spectral', Georgia, serif;
       font-size: 17px;
       line-height: 1.75;
     }
-
     
-    
-
-    
-
-    
-    
-
-    
-    
-
     .article-wrap {
       max-width: 65ch;
       margin: 0 auto;
       padding: 120px 28px 100px;
     }
-
     
-
     .article-title {
       font-family: 'EB Garamond', serif;
       font-size: clamp(26px, 5vw, 40px);
@@ -56,10 +44,6 @@ body {
       color: var(--text);
       margin-bottom: 10px;
     }
-
-    
-
-    
 
     .article-body p {
       margin-bottom: 1.4em;
@@ -84,7 +68,7 @@ body {
       margin: 2em 0 0.7em;
     }
 
-    /* Figure & Image CSS */
+    /* fig & img CSS */
     .article-body figure {
       margin: 2em 0;
       display: block;
@@ -94,7 +78,7 @@ body {
       height: auto;
       display: block;
       border: 1px solid var(--panel-border);
-      background-color: white; /* Ensures GIF transparency displays correctly */
+      background-color: white; /* ensure GIF transparency displays correctly */
     }
     .article-body figcaption {
       font-family: 'JetBrains Mono', monospace;
@@ -106,10 +90,7 @@ body {
       letter-spacing: 0.03em;
     }
 
-    /* Poster & Button CSS */
-    
-    
-    
+    /* poster + button */
 
     .poster-breakout {
       width: 100vw;
@@ -129,7 +110,7 @@ body {
       background-color: #fff;
     }
 
-    /* Back to Top Button CSS */
+    /* back to top */
     
     
     
@@ -137,7 +118,7 @@ body {
     @media (max-width: 600px) {.poster-breakout { padding: 0 18px; }
       .poster-iframe { aspect-ratio: auto; height: 400px; }}
 
-    /* ── pulsation simulation ── */
+    /*pulsation sim*/
     figure#usgr-sim {
       position: relative;
       width: 100%;
@@ -333,10 +314,10 @@ body {
   <script>
     // ── u sgr pulsation engine ──────────────────────────────────────────────
     // RV curve reconstructed via Hocdé et al. (2026) – A&A arXiv:2603.11748
-    // Fourier order 7; calibration from Table 1; phase lag Δφ₁=−0.28 rad (Ogłoza+2000)
+    // Fourier order 7; calibration from Table 1; phase lag delta phi_1 =−0.28 rad (Ogłoza+2000)
     // p-factor = 1.27 (Mérand+2005 CHARA; Groenewegen 2007; Trahin+2021 mean p=1.26±0.07)
     // P-R anchor: Trahin+2021 (Gaia EDR3, 63 Cepheids): log R = 1.763+0.653*(logP-0.9)
-    //   → R_mean = 52.07 R_sun  (verified against δ Cep interferometry: 43 R_sun ✓)
+    //   → R_mean = 52.07 R_sun  (verified against δ Cep interferometry: 43 R_sun)
     (function() {
       // config
       var NP           = 200;    // phase points (0.000-0.995, step 0.005)
@@ -356,16 +337,16 @@ body {
 
       // ── Hocdé et al. 2026 (arXiv:2603.11748) ───────────────────────────
       // RV pulsation curve (km/s, systemic velocity subtracted)
-      // Reconstructed from order-7 Fourier decomposition of Berdnikov LC
-      // Calibration: Table 1 relations; R21(LC)=0.3631, R31(LC)=0.1340
+      // reconstructed from order-7 Fourier decomposition of Berdnikov LC
+      // calibration: tbl 1 relations; R21(LC)=0.3631, R31(LC)=0.1340
       // A1(RV)=14.71 km/s; phase lag Δφ₁=−0.28 rad (Ogłoza et al. 2000)
       var RV_PULS = [-2.617,-2.336,-2.056,-1.779,-1.507,-1.238,-0.975,-0.717,-0.465,-0.218,0.023,0.259,0.490,0.716,0.937,1.154,1.367,1.575,1.779,1.978,2.172,2.362,2.546,2.724,2.896,3.063,3.224,3.380,3.531,3.678,3.823,3.968,4.113,4.262,4.416,4.578,4.751,4.937,5.140,5.360,5.600,5.862,6.147,6.456,6.789,7.145,7.524,7.924,8.343,8.779,9.229,9.690,10.160,10.634,11.112,11.589,12.063,12.534,12.998,13.457,13.909,14.355,14.796,15.232,15.666,16.099,16.533,16.968,17.407,17.849,18.295,18.743,19.191,19.638,20.077,20.505,20.914,21.298,21.647,21.954,22.208,22.400,22.520,22.558,22.505,22.353,22.095,21.723,21.235,20.628,19.900,19.053,18.090,17.016,15.837,14.563,13.204,11.770,10.276,8.734,7.158,5.562,3.961,2.368,0.796,-0.743,-2.237,-3.676,-5.053,-6.361,-7.593,-8.746,-9.818,-10.806,-11.711,-12.535,-13.278,-13.943,-14.535,-15.055,-15.508,-15.899,-16.229,-16.505,-16.728,-16.902,-17.030,-17.115,-17.159,-17.164,-17.132,-17.066,-16.968,-16.838,-16.680,-16.495,-16.287,-16.056,-15.807,-15.542,-15.264,-14.976,-14.681,-14.383,-14.084,-13.787,-13.496,-13.211,-12.935,-12.670,-12.417,-12.176,-11.947,-11.731,-11.527,-11.334,-11.150,-10.975,-10.807,-10.644,-10.485,-10.328,-10.172,-10.016,-9.859,-9.700,-9.539,-9.376,-9.210,-9.042,-8.873,-8.703,-8.532,-8.360,-8.189,-8.019,-7.849,-7.680,-7.511,-7.342,-7.173,-7.003,-6.831,-6.655,-6.475,-6.290,-6.099,-5.900,-5.694,-5.479,-5.255,-5.022,-4.780,-4.529,-4.271,-4.006,-3.735,-3.459,-3.180,-2.899];
 
-      // Radius in R_sun: Baade-Wesselink integration of RV curve
+      // radius in R_sun: Baade-Wesselink integration of RV curve
       // p=1.27 (Mérand+2005 CHARA direct δ Cep; consistent with Trahin+2021 p=1.26±0.07)
       // P-R anchor: Trahin+2021 A&A 656 A102 (Gaia EDR3, 63 Cepheids):
       //   log R = 1.763 + 0.653*(logP − 0.9) → R_mean = 52.07 R_sun
-      //   Cross-checked: δ Cep (P=5.37d) → 44.8 R_sun vs 42.7 R_sun interferometric ✓
+      //   cross-checked: δ Cep (P=5.37d) → 44.8 R_sun vs 42.7 R_sun interferometric ✓
       //   Range: 48.71–54.13 R_sun;  ΔR ≈ 5.4 R_sun
       var R_BW = [54.067,54.079,54.09,54.1,54.108,54.114,54.119,54.123,54.126,54.127,54.127,54.125,54.123,54.119,54.114,54.108,54.101,54.092,54.083,54.072,54.061,54.048,54.035,54.02,54.005,53.988,53.971,53.953,53.934,53.915,53.895,53.873,53.852,53.829,53.805,53.781,53.756,53.729,53.702,53.674,53.644,53.613,53.58,53.546,53.51,53.472,53.432,53.389,53.345,53.298,53.249,53.198,53.144,53.087,53.028,52.966,52.902,52.835,52.766,52.695,52.621,52.544,52.466,52.385,52.301,52.216,52.128,52.037,51.945,51.85,51.753,51.653,51.551,51.446,51.34,51.231,51.119,51.006,50.891,50.774,50.656,50.537,50.417,50.297,50.177,50.058,49.941,49.825,49.712,49.603,49.497,49.395,49.299,49.209,49.124,49.047,48.977,48.914,48.86,48.813,48.775,48.745,48.724,48.712,48.708,48.711,48.723,48.743,48.77,48.804,48.844,48.891,48.943,49.0,49.063,49.129,49.2,49.274,49.351,49.431,49.514,49.598,49.685,49.773,49.862,49.951,50.042,50.133,50.224,50.316,50.407,50.498,50.588,50.677,50.766,50.854,50.94,51.026,51.11,51.193,51.274,51.353,51.432,51.508,51.583,51.656,51.728,51.798,51.867,51.935,52.001,52.065,52.129,52.191,52.253,52.313,52.372,52.431,52.488,52.545,52.601,52.655,52.71,52.763,52.815,52.867,52.918,52.968,53.016,53.065,53.112,53.158,53.203,53.248,53.291,53.334,53.376,53.417,53.457,53.496,53.534,53.571,53.607,53.643,53.677,53.711,53.743,53.775,53.805,53.834,53.862,53.889,53.914,53.938,53.961,53.982,54.002,54.021,54.037,54.053];
 
@@ -460,7 +441,7 @@ body {
         if (!box) return;
         var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-        // ── layout: three stacked panels ──────────────────────────────────
+        //  layout: three stacked panels 
         var inset   = 20;
         var gap     = 2;       // gap between panels
         var lc_h    = Math.floor(ph * 0.42);  // LC panel height
@@ -476,9 +457,8 @@ body {
 
         ctx.save();
 
-        // ═══════════════════════════════════════════════════════════════════
         // PANEL 1: V-band light curve
-        // ═══════════════════════════════════════════════════════════════════
+        
         var pad_top_lc = 20, pad_bot_lc = 36;
         var draw_h_lc  = lc_h - pad_top_lc - pad_bot_lc;
         var mid_mag    = (v_min + v_max) / 2;
@@ -558,9 +538,8 @@ body {
         ctx.lineTo(px + pw, lc_py + lc_h);
         ctx.stroke();
 
-        // ═══════════════════════════════════════════════════════════════════
         // PANEL 2: Radial velocity curve (Hocdé 2026, arXiv:2603.11748)
-        // ═══════════════════════════════════════════════════════════════════
+      
         var pad_top_rv = 18, pad_bot_rv = 12;
         var draw_h_rv  = rv_h - pad_top_rv - pad_bot_rv;
         var rv_rng = rv_max - rv_min;
@@ -643,9 +622,8 @@ body {
         ctx.lineTo(px + pw, rv_py + rv_h);
         ctx.stroke();
 
-        // ═══════════════════════════════════════════════════════════════════
         // PANEL 3: Radius (Baade-Wesselink)
-        // ═══════════════════════════════════════════════════════════════════
+        
         var r_rng = r_max - r_min;
         var ry = rad_py, rh = rad_h;
         var r_to_y = function(r) { return ry + rh - (r - r_min) / r_rng * rh; };
@@ -690,7 +668,7 @@ body {
         ctx.restore();
       }
 
-      // visibility flags: set by IntersectionObserver and visibilitychange
+      // viz flags: set by IntersectionObserver and visibilitychange
       var in_viewport = false;
       var tab_visible = !document.hidden;
 
