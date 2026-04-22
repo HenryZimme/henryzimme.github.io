@@ -745,7 +745,7 @@
       function init() {
         if (!canvas || !ctx) return;
         
-        // Wait for page to fully load before first resize to prevent layout shift
+        // wait for page to fully load before first resize to prevent layout shift
         if (document.readyState === 'complete') {
           resize();
         } else {
