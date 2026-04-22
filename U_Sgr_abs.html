@@ -352,11 +352,10 @@
 
       var V_GAMMA = 26.4; // km/s systemic velocity of U Sgr in M25
 
-      // phase-correct rv curve and bw radius: rotate - 0.36 phase (+ 128 indices) so that
       // max expansion velocity (most negative rv) falls at phi=0 (max light)
       // kappa mechanism: star expands fastest at max brightness, reaches max size while
       // already cooling, and is at minimum size just before the next brightening.
-      var _sh = 128;
+      var _sh = 28;
       RV_PULS = RV_PULS.slice(NP - _sh).concat(RV_PULS.slice(0, NP - _sh));
       R_BW    = R_BW.slice(NP - _sh).concat(R_BW.slice(0, NP - _sh));
 
