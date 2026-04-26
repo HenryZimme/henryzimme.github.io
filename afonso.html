@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asserting African Agency: King Afonso I of Kongo | Henry Zimmerman</title>
-  <meta name="description" content="How King Afonso I of Kongo used syncretic Christianity and control of the Portuguese slave trade to reshape West Central Africa and assert African agency in the face of European exploration.">
+  <meta name="description" content="How Afonso I of Kongo used syncretic Christianity and the slave trade to reshape West Central Africa and assert African agency against European encroachment.">
   <meta property="og:title" content="Asserting African Agency: King Afonso I of Kongo | Henry Zimmerman">
   <meta property="og:description" content="How King Afonso I of Kongo used syncretic Christianity and control of the Portuguese slave trade to reshape West Central Africa.">
   <meta property="og:type" content="article">
@@ -62,7 +62,22 @@
       color: var(--text-dim);
       margin-top: 1.2em;
     }
-</style>
+
+  @media print {
+    nav, #back-to-top, #trail-toggle, #trail-panel, .epilepsy-modal,
+    .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
+    body { background: #fff !important; color: #000 !important; font-size: 12pt; line-height: 1.6; }
+    h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
+    p, blockquote { orphans: 3; widows: 3; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
+    a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
+    img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
+    pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
+  }
+  </style>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#07091a">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
