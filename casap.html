@@ -236,6 +236,12 @@
 
 <script>
 (function(){
+  // URL bypass: ?fail=performative skips the gate
+  if(new URLSearchParams(window.location.search).get('fail')==='performative'){
+    document.getElementById('gate').style.display='none';
+    return;
+  }
+
   // Check session first — no flicker on return visits
   if(sessionStorage.getItem('casap_auth')==='1'){
     document.getElementById('gate').style.display='none';
