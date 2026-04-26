@@ -109,7 +109,22 @@ a { color: var(--gold); text-decoration: none; }
     
 
     .footer-
-</style>
+
+  @media print {
+    nav, #back-to-top, #trail-toggle, #trail-panel, .epilepsy-modal,
+    .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
+    body { background: #fff !important; color: #000 !important; font-size: 12pt; line-height: 1.6; }
+    h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
+    p, blockquote { orphans: 3; widows: 3; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
+    a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
+    img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
+    pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
+  }
+  </style>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#07091a">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -135,7 +150,7 @@ a { color: var(--gold); text-decoration: none; }
       
 
       <figure class="article-figure">
-        <img src="images/baghdad-ancient-map.jpg" alt="Map of ancient Baghdad" />
+        <picture><source srcset="images/baghdad-ancient-map.webp" type="image/webp"><img src="images/baghdad-ancient-map.jpg" alt="Map of ancient Baghdad"></picture>
         <figcaption><em>A map of ancient Baghdad</em><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></figcaption>
       </figure>
 
