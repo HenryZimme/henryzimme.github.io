@@ -249,6 +249,9 @@ html { height: 100%; background: var(--bg); }
 
     #sim-wrap { min-height: 400px; }}
 </style>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#07091a">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -286,7 +289,7 @@ html { height: 100%; background: var(--bg); }
     <div id="scrub-wrap">
       <button class="spd-btn step-btn" id="btn-minus-1d">◄◄ 1d</button>
       <button class="spd-btn step-btn" id="btn-minus-1h">◄ 1h</button>
-      <input type="range" id="scrub" min="0" step="1" value="0">
+      <input type="range" id="scrub" min="0" step="1" value="0" aria-label="Scrub timeline">
       <button class="spd-btn step-btn" id="btn-plus-1h">1h ►</button>
       <button class="spd-btn step-btn" id="btn-plus-1d">1d ►►</button>
     </div>
