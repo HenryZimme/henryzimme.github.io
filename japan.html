@@ -77,7 +77,22 @@ a { color: var(--gold); text-decoration: none; }
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
-</style>
+
+  @media print {
+    nav, #back-to-top, #trail-toggle, #trail-panel, .epilepsy-modal,
+    .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
+    body { background: #fff !important; color: #000 !important; font-size: 12pt; line-height: 1.6; }
+    h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
+    p, blockquote { orphans: 3; widows: 3; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
+    a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
+    img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
+    pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
+  }
+  </style>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#07091a">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -107,7 +122,7 @@ a { color: var(--gold); text-decoration: none; }
       <figure class="article-figure">
         <picture>
           <source srcset="images/japan_airport.webp" type="image/webp">
-          <img src="images/japan_airport.png" alt="Japan airport arrivals" />
+          <picture><source srcset="images/japan_airport.webp" type="image/webp"><img src="images/japan_airport.png" alt="Japan airport arrivals"></picture>
         </picture>
         <figcaption>Foreign arrivals at a Japanese airport</figcaption>
       </figure>
@@ -117,7 +132,7 @@ a { color: var(--gold); text-decoration: none; }
       <p>Japan's demographic issues aren't as simple as opening the borders and granting visas at will. Japan has a fraught relationship with foreigners, so while importing workers is economically beneficial, it is also unpopular due to nationalistic sentiments and negative views of immigrants (Trostel-Shaw et al., 2021). The latter has prevailed in the past, buoyed by a lack of urgency supported by increases in worker productivity (Masai et al., 2024). However, Japan has reached a point where worker productivity alone can no longer keep pace with depopulation (Lang, 2024).</p>
 
       <figure class="article-figure">
-        <img src="images/labor_shortage_timeseries.png" alt="Japan labor shortage over time" />
+        <picture><source srcset="images/labor_shortage_timeseries.webp" type="image/webp"><img src="images/labor_shortage_timeseries.png" alt="Japan labor shortage over time"></picture>
         <figcaption>Japan's labor shortage by sector, 2022–2040</figcaption>
       </figure>
 
@@ -128,7 +143,7 @@ a { color: var(--gold); text-decoration: none; }
       <p>One measure that has proven to be effective on a large scale is coordinated initiatives to increase labor force participation. Many of these efforts are based on 'Womenomics', the idea put forward by Shinzo Abe, the former prime minister of Japan, that more women in the workplace are essential for the economy (Groysberg et al., 2017). These endeavors have been largely successful, as the labor force participation rate for women has risen from a low of 48% in 2012 to a high of 55% in 2023, an increase of 4.5 million workers (<em>Labor Force Participation Rate, Female — Japan</em>, n.d.). Much of this has been achieved by improving daycare access, delegitimizing traditional gender roles, and setting targets for women in the workplace.</p>
 
       <figure class="article-figure">
-        <img src="images/women_participation.png" alt="Female labor force participation rate in Japan" />
+        <picture><source srcset="images/women_participation.webp" type="image/webp"><img src="images/women_participation.png" alt="Female labor force participation rate in Japan"></picture>
         <figcaption>Female labor force participation rate in Japan, 1968–2016 (World Bank / ILO)</figcaption>
       </figure>
 
