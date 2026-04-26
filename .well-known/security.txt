@@ -1,0 +1,4 @@
+Contact: mailto:henry.s.zimmerman@gmail.com
+Expires: 2027-06-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://www.henryzimmerman.net/.well-known/security.txt
