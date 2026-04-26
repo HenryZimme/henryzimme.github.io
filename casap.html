@@ -169,8 +169,188 @@
     .result-byline { font-size: 12px; color: rgba(29,158,117,0.6); margin-top: 20px; letter-spacing: 1px; }
     #resultParticles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   </style>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#07091a">
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="
+  position:fixed;inset:0;z-index:9999;
+  background:#07091a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'Courier New',monospace;
+  padding:24px;
+">
+  <canvas id="gate-stars" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0.5"></canvas>
+  <div style="position:relative;text-align:center;max-width:420px;width:100%;">
+    <div id="gate-label" style="
+      font-size:11px;letter-spacing:0.18em;color:rgba(196,162,88,0.5);
+      text-transform:uppercase;margin-bottom:32px;
+    ">CLEARANCE REQUIRED</div>
+
+    <div style="
+      font-size:13px;color:rgba(226,221,212,0.5);
+      margin-bottom:48px;line-height:1.7;
+    ">
+      You have reached a document of<br>
+      <span style="color:#c4a258">questionable institutional value.</span><br>
+      Proceed only if you know what you're doing.
+    </div>
+
+    <div style="position:relative;margin-bottom:16px;">
+      <input id="gate-input" type="password" autocomplete="off" spellcheck="false"
+        placeholder="enter the word"
+        style="
+          width:100%;box-sizing:border-box;
+          background:transparent;
+          border:none;border-bottom:1px solid rgba(196,162,88,0.3);
+          color:#e2ddd4;font-family:'Courier New',monospace;font-size:18px;
+          padding:12px 0;text-align:center;letter-spacing:0.12em;
+          outline:none;transition:border-color 0.3s;
+          caret-color:#c4a258;
+        "
+      >
+      <div id="gate-bar" style="
+        position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+        width:0%;height:1px;background:#c4a258;
+        transition:width 0.4s cubic-bezier(0.22,1,0.36,1);
+      "></div>
+    </div>
+
+    <div id="gate-hint" style="
+      font-size:11px;letter-spacing:0.08em;color:rgba(226,221,212,0.25);
+      min-height:18px;margin-bottom:40px;transition:color 0.3s,opacity 0.3s;
+    ">&nbsp;</div>
+
+    <button id="gate-btn" onclick="gateCheck()" style="
+      background:transparent;border:1px solid rgba(196,162,88,0.4);
+      color:rgba(196,162,88,0.7);font-family:'Courier New',monospace;
+      font-size:11px;letter-spacing:0.2em;text-transform:uppercase;
+      padding:12px 36px;cursor:pointer;
+      transition:border-color 0.3s,color 0.3s,background 0.3s;
+    ">enter</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Check session first — no flicker on return visits
+  if(sessionStorage.getItem('casap_auth')==='1'){
+    document.getElementById('gate').style.display='none';
+    return;
+  }
+
+  const HASH = 'e4cdb27a4b58803c9b76b1e8821cc1cbd924c59dbc1589a84cf11352c15d3cea';
+  const input = document.getElementById('gate-input');
+  const hint  = document.getElementById('gate-hint');
+  const bar   = document.getElementById('gate-bar');
+  const btn   = document.getElementById('gate-btn');
+  let attempts = 0;
+
+  // Starfield
+  const canvas = document.getElementById('gate-stars');
+  const ctx    = canvas.getContext('2d');
+  let stars    = [];
+  function resizeCanvas(){
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  function initStars(){
+    resizeCanvas();
+    stars = Array.from({length:160}, () => ({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      r: Math.random()*1.2+0.2,
+      o: Math.random()*0.5+0.1,
+      d: (Math.random()-0.5)*0.008
+    }));
+  }
+  function drawStars(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(s => {
+      s.o = Math.max(0.05, Math.min(0.7, s.o+s.d));
+      if(Math.random()<0.001) s.d *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(196,162,88,${s.o})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+  initStars();
+  drawStars();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Animate bar on input
+  input.addEventListener('input', () => {
+    const len = input.value.length;
+    bar.style.width = len ? Math.min(len * 8, 100) + '%' : '0%';
+    hint.textContent = '\u00a0';
+    hint.style.color = 'rgba(226,221,212,0.25)';
+    input.style.borderBottomColor = 'rgba(196,162,88,0.3)';
+  });
+
+  input.addEventListener('keydown', e => {
+    if(e.key === 'Enter') gateCheck();
+  });
+
+  // Hover state on button
+  btn.addEventListener('mouseenter', () => {
+    btn.style.borderColor = 'rgba(196,162,88,0.9)';
+    btn.style.color = '#c4a258';
+    btn.style.background = 'rgba(196,162,88,0.06)';
+  });
+  btn.addEventListener('mouseleave', () => {
+    btn.style.borderColor = 'rgba(196,162,88,0.4)';
+    btn.style.color = 'rgba(196,162,88,0.7)';
+    btn.style.background = 'transparent';
+  });
+
+  window.gateCheck = async function(){
+    const val = input.value.trim().toLowerCase();
+    if(!val) return;
+
+    const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+    const hex  = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+    if(hex === HASH){
+      sessionStorage.setItem('casap_auth','1');
+      const gate = document.getElementById('gate');
+      gate.style.transition = 'opacity 0.6s ease';
+      gate.style.opacity = '0';
+      setTimeout(() => gate.style.display = 'none', 620);
+    } else {
+      attempts++;
+      input.value = '';
+      bar.style.width = '0%';
+      input.style.borderBottomColor = 'rgba(200,80,80,0.6)';
+
+      const msgs = [
+        'that is not it.',
+        'think harder.',
+        'you know this.',
+        'it\'s a single word.',
+        'the site is watching.',
+        'incorrect. obviously.',
+        'still no.',
+        'are you sure you were invited?',
+      ];
+      hint.style.color = 'rgba(200,100,100,0.7)';
+      hint.textContent = msgs[Math.min(attempts-1, msgs.length-1)];
+
+      input.animate([
+        {transform:'translateX(-6px)'},{transform:'translateX(6px)'},
+        {transform:'translateX(-4px)'},{transform:'translateX(4px)'},
+        {transform:'translateX(0)'}
+      ], {duration:300, easing:'ease-out'});
+    }
+  };
+})();
+</script>
+
+<!-- END GATE -->
 
   <div id="panicTimer">PORTAL CLOSES IN: 02:59</div>
   <div id="progressBar"></div>
