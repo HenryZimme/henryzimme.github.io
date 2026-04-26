@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Henry Zimmerman | Astrophysics Researcher &amp; Writer</title>
-  <meta name="description" content="Henry Zimmerman: astro researcher, writer, and cross country captain at Phillips Academy Andover. Leading a VLT/ESPRESSO observing proposal and coordinating multi-site asteroid observations.">
+  <meta name="description" content="Astrophysics researcher, writer, and cross-country captain at Phillips Academy Andover. Cepheid variables, asteroid photometry, behavioral economics.">
   <meta property="og:title" content="Henry Zimmerman | Astrophysics Researcher &amp; Writer">
   <meta property="og:description" content="I'm a very confident person who is generally wary of confidence and false certainty (especially my own). Time-domain astronomy, philosophy, running, and a lot of reading.">
   <meta property="og:type" content="website">
@@ -1506,6 +1506,52 @@
       #modal-img-wrap { aspect-ratio: 4 / 3; margin-bottom: 20px; }
     }
 
+    /* bookshelf: pool visible by default (no-JS fallback); JS empties it so :empty collapses it */
+    #bookshelf-pool {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 680px;
+      margin: 32px auto 0;
+      list-style: none;
+      padding: 0;
+    }
+    #bookshelf-pool:empty { display: none; }
+    #bookshelf-pool .book-spine {
+      border-left: 2px solid rgba(196,162,88,0.4);
+      padding-left: 16px;
+      width: auto !important;
+      height: auto !important;
+      background: none !important;
+    }
+    #bookshelf-pool .spine-title { display: none; }
+    #bookshelf-pool .spine-panel {
+      display: block !important;
+      position: static !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      background: none !important;
+      border: none !important;
+      padding: 0 !important;
+      width: auto !important;
+    }
+    #bookshelf-pool .spine-book-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.05rem;
+      color: var(--gold);
+      line-height: 1.5;
+    }
+    #bookshelf-pool .spine-author {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+    }
+    #bookshelf-pool .spine-impact {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    /* when JS has run, pool is empty — :empty collapses it */
+
   </style>
   <script type="application/ld+json">
   {
@@ -1523,7 +1569,10 @@
     "knowsAbout": ["Time-domain astronomy", "Binary Cepheid variables", "Asteroid photometry", "Philosophy of science"]
   }
   </script>
-  </head>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#07091a">
+</head>
 
 <body>
 
@@ -1576,7 +1625,7 @@
 
 <div id="object-modal">
   <div class="modal-inner">
-    <button class="modal-close" id="modal-close-btn">&#x2715;</button>
+    <button class="modal-close" id="modal-close-btn" aria-label="Close">&#x2715;</button>
     <div class="modal-type" id="modal-type">Featured Object</div>
     <h2 class="modal-name" id="modal-name"></h2>
     <p class="modal-body" id="modal-body"></p>
@@ -2008,7 +2057,7 @@
         <p>The books below are the ones I return to in my head. These aren't necessarily the most important, but they're the ones that changed how I see something specific and didn't let me forget them.</p>
       </div>
 
-      <div id="bookshelf-pool" style="display:none">
+      <div id="bookshelf-pool">
 
         <div class="book-spine" role="listitem">
           <div class="spine-title"><span>Misbehaving</span></div>
