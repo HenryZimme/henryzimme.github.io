@@ -1,0 +1,22 @@
+{
+  "name": "Henry Zimmerman",
+  "short_name": "Henry Z",
+  "description": "Astrophysics researcher and writer at Phillips Academy Andover.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#07091a",
+  "theme_color": "#07091a",
+  "icons": [
+    {
+      "src": "/images/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
