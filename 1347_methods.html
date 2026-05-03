@@ -123,7 +123,7 @@ body {
   </header>
 
   <div class="article-content">
-    <h2>1. The Theoretical Motivator: Chandrasekhar and the Kappa Mechanism</h2>
+    <h2>1. Chandrasekhar and the Kappa Mechanism</h2>
     <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism, specifically whether the non-linear dynamics of Cepheid pulsation survive intact inside a binary with extreme tidal forces. After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I looked for an observational study on tidal impacts in 
       Cepheids, yet found a significant gap in the literature.</p>
     
@@ -140,8 +140,8 @@ body {
       <figcaption>Figure 1: First-overtone (1O) mode phased light curve. Prewhitening this dominant signal was the prerequisite for investigating the underlying residuals predicted by distorted polytrope models.</figcaption>
     </figure>
 
-    <h2>2. The Madore Reanalysis & Bayesian Model Selection</h2>
-    <p>Initial searches for phase-locked amplitude modulation yielded null results. However, following a reanalysis suggested by Dr. Barry Madore, I performed a deeper interrogation of the residual power spectrum. Using simultaneous weighted dual-domain fitting across the OGLE $V$ and $I$ bands, I identified a symmetric frequency triplet with a spacing of $\Delta f \approx 0.0074$ c/d. The ΔBIC surface, however, showed significance concentrated at two isolated epochs rather than persisting across the full baseline. That looked like a window function artifact, not a coherent stellar mode.</p>
+    <h2>2. Frequency Analysis & Bayesian Model Selection</h2>
+    <p>Initial searches for phase-locked amplitude modulation yielded ambiguous results. However, following a reanalysis suggested by Dr. Barry Madore, I performed a deeper look into the residual power spectrum. Using simultaneous weighted dual-domain fitting across the OGLE $V$ and $I$ bands, I found a symmetric frequency triplet with a spacing of $\Delta f \approx 0.0074$ c/d. The ΔBIC surface, however, showed significance concentrated at two isolated epochs rather than persisting across the full baseline. That looked like a window function artifact, not a coherent stellar mode.</p>
 
     <figure>
       <picture>
@@ -159,7 +159,7 @@ body {
       <figcaption>Figure 3: Lomb-Scargle periodogram of residuals (log-scale) centered on $f_1$. The absence of coherent power at the orbital sidebands ($f_1 \pm f_{orb}$) establishes a firm upper limit on tidal interaction. The sensitivity limit ($\sim$14 mmag) is comparable to the predicted 0.1% tidal signal, motivating the transition to spectroscopic velocity diagnostics.</figcaption>
     </figure>
 
-    <h2>4. Window Function Diagnostic: The "Null" Discovery</h2>
+    <h2>4. Window Function Diagnostic and the Discovery That Wasn't</h2>
     <p>The dual-domain analysis had produced a concrete result: a candidate rotation period of 135 ± 15 days, over five σ longer than the 58.85-day orbit and superficially consistent with the tidal synchronization picture. This seemed like a very solid finding, but the ΔBIC surface had shown significance concentrated at two isolated epochs rather than persisting across the full baseline, and I wanted to understand why before attaching a physical interpretation to the period.</p>
 
     <p>The statistical favorability for the rotational model required a check against the sampling artifacts of the OGLE cadence. I modeled the spectral window using exact timestamps and unit weights. The result was definitive: the candidate splitting $\Delta f \approx 0.0074$ c/d aligned almost perfectly with a harmonic of the $1/yr$ ($\approx 0.0027$ c/d) sampling alias.</p>
