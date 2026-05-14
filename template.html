@@ -3,72 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07091a">
+
+  <!-- page identity: replace all {{PLACEHOLDERS}} -->
   <title>{{TITLE}} | Henry Zimmerman</title>
   <meta name="description" content="{{DESCRIPTION}}">
-  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+
+  <!-- open graph -->
+  <meta property="og:title"       content="{{OG_TITLE}}">
+  <meta property="og:description" content="{{DESCRIPTION}}">
+  <meta property="og:type"        content="article">
+  <meta property="og:url"         content="https://www.henryzimmerman.net/{{SLUG}}.html">
+  <meta property="og:image"       content="https://www.henryzimmerman.net/images/og-preview.jpeg">
+
+  <!-- twitter card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="{{TWITTER_TITLE}}">
+  <meta name="twitter:description" content="{{TWITTER_DESCRIPTION}}">
+  <meta name="twitter:image"       content="https://www.henryzimmerman.net/images/og-preview.jpeg">
+
+  <!-- canonical + icons -->
+  <link rel="canonical"      href="https://www.henryzimmerman.net/{{SLUG}}.html">
+  <link rel="icon"           href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="manifest"       href="/site.webmanifest">
+
+  <!-- fonts: always load all three families -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+  <!-- shared styles -->
   <link rel="stylesheet" href="/css/subpages.css">
+
   <style>
-    /* page-specific overrides */
-    .article-wrap {
-      max-width: 680px;
-      padding: 160px 24px 100px;
-    }
+    /*
+      page-specific overrides only.
+      do NOT redefine: article-wrap, article-title, article-body p/h2,
+      figure, figcaption, or @media print — all of those live in subpages.css.
+      if a rule applies to more than one page, move it to subpages.css instead.
 
-    .article-title {
-      font-size: clamp(32px, 5vw, 44px);
-      line-height: 1.1;
-      margin: 0 0 32px;
-    }
-
-    .article-body blockquote {
-      border-left: 2px solid var(--gold-dim);
-      margin: 40px 0;
-      padding-left: 28px;
-      font-style: italic;
-      color: var(--text-dim);
-    }
+      common legitimate uses:
+        - blockquote styling (if this page has long quoted passages)
+        - a custom layout class unique to this page (e.g. .two-col-figures)
+        - article-subtitle if the page has one
+        - works-cited / bibliography variant if different from .bibliography
+    */
   </style>
 </head>
 <body>
 
-  <nav>
+  <!-- skip link: targets id="main" on the article element below -->
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!--
+    nav:
+      - {{SECTION}} is the index.html anchor, e.g. "writing" or "research"
+      - {{SECTION_LABEL}} is the human-readable label, e.g. "Writing" or "Research"
+      - writing pages:  href="index.html#writing"   label="← Back to Writing"
+      - research pages: href="index.html#research"  label="← Back to Research"
+  -->
+  <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
+    <a href="index.html#{{SECTION}}" class="nav-back">← Back to {{SECTION_LABEL}}</a>
   </nav>
 
-  <article class="article-wrap">
+  <!--
+    article-wrap: do not override max-width or padding in the page <style> block.
+    subpages.css defines: max-width 65ch, padding 120px 28px 100px.
+    if this page genuinely needs a wider layout (e.g. a research page with data tables),
+    add class="article-wrap article-wrap--wide" and define .article-wrap--wide in subpages.css.
+  -->
+  <article id="main" class="article-wrap">
+
     <header>
-      <div class="article-meta">{{CATEGORY}}</div>
+      <!--
+        article-meta:
+          - encode & as &amp; always
+          - use &middot; as separator between category and term: "History &amp; Science &middot; Fall 2025"
+          - if no term (e.g. a standalone project), just the category: "Philosophy &amp; Epistemology"
+      -->
+      <div class="article-meta">{{CATEGORY}} &middot; {{TERM}}</div>
+
       <h1 class="article-title">{{TITLE}}</h1>
+
+      <!--
+        article-byline:
+          - solo:        "By Henry Zimmerman"
+          - co-authored: "Henry Zimmerman and Firstname Lastname"   (no "By")
+          - multi-author: "Henry Zimmerman &middot; Dr. X &middot; Ms. Y"
+          - if no byline is appropriate for the piece, omit this div entirely
+      -->
+      <div class="article-byline">By Henry Zimmerman</div>
+
+      <!--
+        optional: article-subtitle (e.g. lisbon.html)
+        <p class="article-subtitle">Subtitle text here</p>
+      -->
     </header>
-    
+
     <hr class="article-divider">
 
     <div class="article-body">
-      </div>
 
+      <!-- page content goes here -->
+
+    </div><!-- /.article-body -->
+
+    <!--
+      footer-nav:
+        - always use <footer>, never <div>
+        - "back" link always present, matches nav back link above
+        - "next" link optional
+          internal next: <a href="/page.html" class="nav-back">Next: Title →</a>
+          external next: <a href="https://..." class="nav-back" target="_blank" rel="noopener noreferrer">Next: Title →</a>
+          no target="_blank" on internal links
+    -->
     <footer class="footer-nav">
-      <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
-      <a href="descartes.html" class="nav-back">Next: On Descartes →</a>
+      <a href="index.html#{{SECTION}}" class="nav-back">← Back to {{SECTION_LABEL}}</a>
+      <a href="/{{NEXT_SLUG}}.html" class="nav-back">Next: {{NEXT_TITLE}} →</a>
     </footer>
-      </article>
 
-  <button id="back-to-top" aria-label="Back to top">
-    &uarr;
-  </button>
+  </article>
+
+  <!--
+    back-to-top:
+      - threshold: 400px (standardized)
+      - pattern: classList.toggle with scrollY (not pageYOffset)
+      - passive: true on the scroll listener
+      - variable name: btt
+      - arrow: ↑ (literal unicode, not &uarr;)
+  -->
+  <button id="back-to-top" aria-label="Back to top">↑</button>
 
   <script>
     const btt = document.getElementById('back-to-top');
     window.addEventListener('scroll', () => {
-      if (window.pageYOffset > 300) btt.classList.add('visible');
-      else btt.classList.remove('visible');
-    });
-    btt.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      btt.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   </script>
+
 </body>
 </html>
