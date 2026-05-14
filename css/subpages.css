@@ -301,13 +301,29 @@ sup a:hover { text-decoration: underline; }
 
 /* print */
 @media print {
-  nav, #back-to-top, #trail-toggle, #trail-panel, .epilepsy-modal,
+  /* redefine tokens so all var(--x) references resolve correctly on white paper */
+  :root {
+    --bg:           #ffffff;
+    --text:         #000000;
+    --text-dim:     #333333;
+    --panel:        #f8f8f8;
+    --panel-border: #cccccc;
+    --gold:         #7a5c10;
+    --gold-dim:     rgba(122, 92, 16, 0.35);
+    --blue:         #1a4a8a;
+  }
+
+  nav, #back-to-top, .epilepsy-modal,
   .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
-  body { background: #fff !important; color: #000 !important; font-size: 12pt; line-height: 1.6; }
-  h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
+
+  body { font-size: 12pt; line-height: 1.6; }
+
+  h1, h2, h3 { page-break-after: avoid; }
   p, blockquote { orphans: 3; widows: 3; }
+
   a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
   a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
+
   img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
   pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
 }
