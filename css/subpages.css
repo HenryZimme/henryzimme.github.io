@@ -35,7 +35,7 @@ body {
 }
 
 a {
-  color: var(--gold);
+  color: var(--blue);
   text-decoration: none;
 }
 a:hover { text-decoration: underline; }
@@ -76,15 +76,15 @@ nav {
 }
 
 .nav-name {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font-family: 'EB Garamond', serif;
+  font-size: 18px;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: var(--text);
   text-decoration: none;
   transition: color 0.15s;
 }
-.nav-name:hover { color: var(--text); text-decoration: none; }
+.nav-name:hover { color: var(--gold); text-decoration: none; }
 
 .nav-back {
   font-family: 'JetBrains Mono', monospace;
