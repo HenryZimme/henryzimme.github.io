@@ -4,10 +4,6 @@
 //
 // section values: 'writing' | 'research'
 // slug must match the filename without .html
-//
-// orphaned pages (exist but not on index writing section) are marked.
-// add them to index.html#writing or remove from this array if intentional.
-
 const nav_pages = [
   { slug: 'descartes',       title: 'Disproving Descartes',          section: 'writing'  },
   { slug: 'believingbelief', title: 'Believing Belief',              section: 'writing'  },
@@ -15,9 +11,6 @@ const nav_pages = [
   { slug: 'lisbon',          title: 'The Lisbon Catalyst',           section: 'writing'  },
   { slug: 'calls',           title: 'Calls',                        section: 'writing'  },
   { slug: 'afonso',          title: 'King Afonso I',                 section: 'writing'  },
-  { slug: 'baghdad',         title: 'Abbasid Baghdad',               section: 'writing'  }, // not on index
-  { slug: 'japan',           title: "Japan's Labor Policy",          section: 'writing'  }, // not on index
-  { slug: 'muralism',        title: 'Death to the Invader',          section: 'writing'  }, // not on index
   { slug: 'ccd_calibration', title: 'CCD Characterization',         section: 'research' },
 ];
 
