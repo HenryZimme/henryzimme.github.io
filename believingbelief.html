@@ -9,11 +9,11 @@
   <meta property="og:description" content="A philosophical podcast series examining theodicy, divine perfection, and the epistemology of religious faith. Co-created by Henry Zimmerman and Genie Han.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.henryzimmerman.net/believingbelief.html">
-  <meta property="og:image" content="https://www.henryzimmerman.net/images/og-preview.jpg">
+  <meta property="og:image" content="https://www.henryzimmerman.net/images/og-preview.jpeg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Believing Belief | Henry Zimmerman">
   <meta name="twitter:description" content="A philosophical podcast on theodicy, divine perfection, and the epistemology of religious faith.">
-  <meta name="twitter:image" content="https://www.henryzimmerman.net/images/og-preview.jpg">
+  <meta name="twitter:image" content="https://www.henryzimmerman.net/images/og-preview.jpeg">
   <link rel="canonical" href="https://www.henryzimmerman.net/believingbelief.html">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -275,18 +275,6 @@ body {
       .excerpt-header { flex-direction: column; gap: 0.4em; }
       .cta-box { padding: 1.8em 1.4em; }
     }
-
-  @media print {
-    nav, #back-to-top, #trail-toggle, #trail-panel, .epilepsy-modal,
-    .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
-    body { background: #fff !important; color: #000 !important; font-size: 12pt; line-height: 1.6; }
-    h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
-    p, blockquote { orphans: 3; widows: 3; }
-    a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
-    a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
-    img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
-    pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
-  }
   </style>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
@@ -358,23 +346,19 @@ body {
       </div>
     </div>
 
-    <footer class="footer-nav">
-      <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
-      <a href="/descartes" class="nav-back">Next: Descartes →</a>
-    </footer>
+    <footer class="footer-nav"></footer>
   </article>
 
-  <button id="back-to-top" aria-label="Back to top">
-    &uarr;
-  </button>
+  <button id="back-to-top" aria-label="Back to top">↑</button>
 
-  <script>
-    const backToTopBtn = document.getElementById('back-to-top');
-    
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 500) {
-        backToTopBtn.classList.add('visible');
-      } else {
-        backToTopBtn.classList.remove('visible');
-      }
-    }, {
+<script>
+  const btt = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btt.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+  <script src="/js/writing-nav.js" defer></script>
+</body>
+</html>
