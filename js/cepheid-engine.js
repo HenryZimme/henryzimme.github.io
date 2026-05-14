@@ -1820,14 +1820,16 @@
 
     document.querySelectorAll('.btn-mode').forEach(function(b) {
       b.style.background = 'transparent';
-      b.style.color = 'rgba(255,255,255,0.4)';
+      b.style.color = 'rgba(255,255,255,0.52)';
       b.style.boxShadow = 'none';
+      b.setAttribute('aria-pressed', 'false');
     });
     var btn = document.getElementById('btn-' + mode);
     if (btn) {
-      btn.style.background = 'rgba(255,255,255,0.18)';
-      btn.style.color = '#ffffff';
-      btn.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.3)';
+      btn.style.background = 'rgba(196,162,88,0.18)';
+      btn.style.color = '#c4a258';
+      btn.style.boxShadow = 'inset 0 0 0 1px rgba(196,162,88,0.45)';
+      btn.setAttribute('aria-pressed', 'true');
     }
   };
 
