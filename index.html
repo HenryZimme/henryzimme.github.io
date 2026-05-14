@@ -180,6 +180,7 @@
     /* hero */
     #hero {
       height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
@@ -305,6 +306,57 @@
     #epilepsy-modal { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 900; display: flex; align-items: center; justify-content: center; }
     #back-to-top    { position: fixed; opacity: 0; pointer-events: none; }
 
+    /* ── print ── */
+    @media print {
+      /* redefine tokens so all var(--x) references resolve to readable values on white */
+      :root {
+        --bg:           #ffffff;
+        --text:         #000000;
+        --text-dim:     #333333;
+        --panel:        #f5f5f5;
+        --panel-border: #cccccc;
+        --gold:         #7a5c10;
+        --gold-dim:     rgba(122, 92, 16, 0.35);
+        --blue:         #1a4a8a;
+      }
+
+      /* hide everything that isn't content */
+      #star-canvas, nav, #star-tooltip, #star-popover, #object-modal,
+      #epilepsy-modal, #back-to-top, #trail-toggle, #trail-card,
+      #cepheid-sim, footer, .hero-arrow,
+      .card-toggle, .card-expand { display: none !important; }
+
+      body { font-size: 11pt; line-height: 1.65; }
+
+      /* hero: just name + tagline, no full-height */
+      #hero {
+        height: auto !important;
+        padding: 24pt 0 16pt !important;
+      }
+      .hero-eyebrow { opacity: 1 !important; }
+      .hero-name    { opacity: 1 !important; font-size: 32pt !important; }
+      .hero-tagline { opacity: 1 !important; }
+
+      /* sections: remove backdrop blur, borders readable on white */
+      .section {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        padding: 24pt 0 !important;
+        border-top: 1pt solid #ccc !important;
+      }
+
+      /* research cards expand fully */
+      .card-expand { display: block !important; max-height: none !important; }
+
+      /* no sticky headings needed in print */
+      .section-heading { position: static !important; }
+
+      h2, h3, h4 { page-break-after: avoid; }
+      p, li { orphans: 3; widows: 3; }
+
+      a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
+      a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
+    }
 
 </style>
   <link rel="preload" href="/css/deferred.css" as="style" onload="this.onload=null;this.rel='stylesheet'" onerror="document.getElementById('deferred-fallback').disabled=false">
@@ -1220,6 +1272,7 @@
       #cepheid-sim {
         height: auto;
         min-height: 100vh;
+        min-height: 100dvh;
         display: flex;
         flex-direction: column;
         overflow: visible;
