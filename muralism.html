@@ -9,16 +9,16 @@
   <meta property="og:description" content="An examination of David Alfaro Siqueiros’s anti-colonial mural in Chillán, Chile.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.henryzimmerman.net/muralism.html">
-  <meta property="og:image" content="https://www.henryzimmerman.net/images/og-preview.jpg">
+  <meta property="og:image" content="https://www.henryzimmerman.net/images/og-preview.jpeg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Muerte al Invasor: Siqueiros’s Activist Muralism">
   <meta name="twitter:description" content="Examining Siqueiros’s anti-colonial mural in Chillán, Chile.">
-  <meta name="twitter:image" content="https://www.henryzimmerman.net/images/og-preview.jpg">
+  <meta name="twitter:image" content="https://www.henryzimmerman.net/images/og-preview.jpeg">
   <link rel="canonical" href="https://www.henryzimmerman.net/muralism.html">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
 .article-wrap {
@@ -61,24 +61,6 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-
-    
-    
-    
-
-    .footer-
-
-  @media print {
-    nav, #back-to-top, #trail-toggle, #trail-panel, .epilepsy-modal,
-    .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
-    body { background: #fff !important; color: #000 !important; font-size: 12pt; line-height: 1.6; }
-    h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
-    p, blockquote { orphans: 3; widows: 3; }
-    a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
-    a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
-    img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
-    pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
-  }
   </style>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
@@ -88,15 +70,16 @@
   <a class="skip-link" href="#main">Skip to main content</a>
 
 
-  <nav>
+  <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
     <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
   </nav>
 
   <article id="main" class="article-wrap">
     <header>
-      <div class="article-meta">Art History & Politics</div>
+      <div class="article-meta">Art History &amp; Politics</div>
       <h1 class="article-title">Death to the Invader: Siqueiros, Anti-Colonialism, and Latin American Solidarity</h1>
+      <div class="article-byline">By Henry Zimmerman</div>
     </header>
     
     <hr class="article-divider">
@@ -136,24 +119,19 @@
         </ol>
       </section>
 
-      <footer class="footer-nav">
-        <a href="index.html#writing" class="nav-back">← Back to Writing</a>
-        <a href="https://the-revere.com/2025/03/whats-at-stake-in-greenland/" class="nav-back" rel="noopener">Next: Greenland Geopolitics →</a>
-      </footer>
+      <footer class="footer-nav"></footer>
     </div>
   </article>
 
   <button id="back-to-top" aria-label="Back to top">↑</button>
 
   <script>
-    const btt = document.getElementById('back-to-top');
-    window.addEventListener('scroll', () => {
-      if (window.pageYOffset > 300) btt.classList.add('visible');
-      else btt.classList.remove('visible');
-    });
-    btt.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  </script>
+  const btt = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btt.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+  <script src="/js/writing-nav.js" defer></script>
 </body>
 </html>
