@@ -1407,6 +1407,24 @@ if (card_ids.includes(hash_target)) {
 }
 
 // -- epilepsy modal --
+// -- footnote toggle --
+const footnote_toggle = document.querySelector('.footnote-toggle');
+const footnote_body   = document.getElementById('about-footnote-body');
+if (footnote_toggle && footnote_body) {
+  footnote_toggle.addEventListener('click', () => {
+    const open = footnote_body.hasAttribute('hidden') ? true : false;
+    if (open) {
+      footnote_body.removeAttribute('hidden');
+      footnote_toggle.textContent = 'About the star field ↑';
+      footnote_toggle.setAttribute('aria-expanded', 'true');
+    } else {
+      footnote_body.setAttribute('hidden', '');
+      footnote_toggle.textContent = 'About the star field ↓';
+      footnote_toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
 const epilepsy_modal = document.getElementById('epilepsy-modal');
 document.getElementById('btn-realtime').addEventListener('click', () => {
   epilepsy_modal.classList.add('visible');
