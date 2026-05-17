@@ -1,4 +1,5 @@
 /* tooltip */
+
     #star-tooltip {
       position: fixed;
       background: rgba(7, 9, 26, 0.92);
@@ -198,7 +199,11 @@
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
       padding: 100px 52px;
+      scroll-margin-top: 72px;
     }
+
+    /* cepheid-sim is not a .section but is a nav target */
+    #cepheid-sim { scroll-margin-top: 72px; }
 
     .section-inner {
       max-width: 880px;
@@ -282,7 +287,7 @@
     .about-meta {
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 20px;
     }
 
     .meta-item {
@@ -311,6 +316,12 @@
     }
     .meta-value a:hover { text-decoration: underline; }
 
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
     /* research */
     .research-cards {
       display: flex;
@@ -334,11 +345,13 @@
       transition: opacity 0.25s;
       pointer-events: none;
     }
-    .research-card:hover {
-      transform: translateY(-6px);
-    }
-    .research-card:hover::after {
-      opacity: 1;
+    @media (hover: hover) and (pointer: fine) {
+      .research-card:hover {
+        transform: translateY(-6px);
+      }
+      .research-card:hover::after {
+        opacity: 1;
+      }
     }
 
     .card-id {
@@ -433,8 +446,8 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       letter-spacing: 0.1em;
-      color: var(--blue);
-      border: 1px solid rgba(91, 138, 181, 0.28);
+      color: var(--text-dim);
+      border: 1px solid rgba(226, 221, 212, 0.15);
       padding: 3px 10px;
       text-transform: uppercase;
     }
@@ -480,7 +493,10 @@
       transition: opacity 0.18s;
     }
     .writing-item:first-child { border-top: 1px solid rgba(196, 162, 88, 0.1); }
-    .writing-item:hover { opacity: 1; }
+
+    @media (hover: hover) and (pointer: fine) {
+      .writing-item:hover { opacity: 1; }
+    }
 
     .writing-meta {
       display: flex;
@@ -518,7 +534,6 @@
       border-bottom: 1px solid rgba(226, 221, 212, 0.18);
       transition: opacity 0.18s;
     }
-    .writing-content h3 a:hover { opacity: 0.75; }
 
     .writing-content p {
       font-size: 14.5px;
@@ -913,7 +928,7 @@
         padding: 0 1.5rem 1.5rem;
         font-size: 10px;
       }
-      #rv-legend  { display: none; }
+      #rv-legend { display: none; }
     }
 
     /* bookshelf */
@@ -995,15 +1010,36 @@
     }
 
     /* hover and .active share identical expanded state */
-    .book-spine:hover,
-    .book-spine.active {
-      width: 172px;
-      transform: translateY(-8px);
-      z-index: 2;
+    @media (hover: hover) and (pointer: fine) {
+      .book-spine:hover,
+      .book-spine.active {
+        width: 172px;
+        transform: translateY(-8px);
+        z-index: 2;
+      }
+      .book-spine:hover::after,
+      .book-spine.active::after {
+        opacity: 1;
+      }
+      .book-spine:hover .spine-title,
+      .book-spine.active .spine-title {
+        opacity: 0;
+      }
+      .book-spine:hover .spine-panel,
+      .book-spine.active .spine-panel {
+        opacity: 1;
+      }
     }
-    .book-spine:hover::after,
-    .book-spine.active::after {
-      opacity: 1;
+    /* touch: .active class toggled by JS tap handles expand on non-hover devices */
+    @media not all and (hover: hover) {
+      .book-spine.active {
+        width: 172px;
+        transform: translateY(-8px);
+        z-index: 2;
+      }
+      .book-spine.active::after { opacity: 1; }
+      .book-spine.active .spine-title { opacity: 0; }
+      .book-spine.active .spine-panel { opacity: 1; }
     }
 
     /* subtle tint variation per book */
@@ -1037,13 +1073,9 @@
       text-overflow: ellipsis;
     }
 
-    /* hide title on hover or active tap */
-    .book-spine:hover .spine-title,
-    .book-spine.active .spine-title {
-      opacity: 0;
-    }
+    /* hide title on active tap */
 
-    /* expanded info panel — fades in on hover or tap */
+    /* expanded info panel — fades in on tap */
     .spine-panel {
       position: absolute;
       inset: 0;
@@ -1057,7 +1089,6 @@
       transition: opacity 0.18s 0.12s ease;
     }
 
-    .book-spine:hover .spine-panel,
     .book-spine.active .spine-panel {
       opacity: 1;
     }
@@ -1090,7 +1121,6 @@
     @media (max-width: 740px) {
       #bookshelf { padding: 72px 24px; }
       .book-spine { width: 40px; }
-      .book-spine:hover,
       .book-spine.active { width: 150px; }
     }
 
@@ -1154,9 +1184,48 @@
     }
 
 
+    /* desktop: restore sim after research via css order */
+    @media (min-width: 741px) {
+      #sim-research-wrapper {
+        display: flex;
+        flex-direction: column;
+      }
+      #research    { order: 1; }
+      #cepheid-sim { order: 2; }
+      /* epilepsy modal is position:fixed so order doesn't affect it visually */
+    }
+
     @media (max-width: 740px) {
       .section { padding: 72px 24px; }
+
+      /* two-column about: smaller photo left, compressed meta right */
       .about-grid { grid-template-columns: 1fr; gap: 44px; }
+      .about-meta {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 16px 20px;
+        align-items: start;
+      }
+      /* photo spans only its column; remove bottom margin */
+      .about-meta .profile-frame {
+        grid-column: 1;
+        grid-row: 1 / 3;
+        margin-bottom: 0;
+        width: 100%;
+      }
+      /* meta items stack in right column, tighter spacing */
+      .about-meta .meta-item {
+        grid-column: 2;
+        padding-left: 14px;
+      }
+      /* shrink meta text slightly to fit narrow column */
+      .about-meta .meta-label { font-size: 10px; }
+      .about-meta .meta-value { font-size: 13px; line-height: 1.5; }
+
+      /* sim: canvas first, hud table hidden (not co-visible with canvas at this width) */
+      #sim-stage { order: -1; }
+      #hud-table { display: none; }
+
       .highlights-row { grid-template-columns: 1fr; gap: 6px; }
       footer { flex-direction: column; gap: 20px; align-items: flex-start; padding: 36px 24px; }
       .footer-cssda img { width: 32px; height: 32px; }
