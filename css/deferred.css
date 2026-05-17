@@ -255,12 +255,32 @@
 
     /* about */
     .about-footnote {
-      margin-top: 28px;
+      margin-top: 12px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11.5px;
       color: var(--text-dim);
       opacity: 0.6;
       line-height: 1.6;
+    }
+    .footnote-wrap {
+      margin-top: 28px;
+    }
+    .footnote-toggle {
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(226, 221, 212, 0.2);
+      padding: 0 0 1px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      opacity: 0.45;
+      cursor: pointer;
+      transition: opacity 0.18s;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .footnote-toggle:hover { opacity: 0.85; }
     }
     .about-grid {
       display: grid;
