@@ -1407,20 +1407,38 @@ if (card_ids.includes(hash_target)) {
 }
 
 // -- epilepsy modal --
+// -- writing more toggle --
+const writing_more_btn = document.getElementById('writing-more-btn');
+const writing_overflow = document.getElementById('writing-overflow');
+if (writing_more_btn && writing_overflow) {
+  writing_more_btn.addEventListener('click', () => {
+    const open = writing_overflow.style.display === 'block';
+    if (open) {
+      writing_overflow.style.display = 'none';
+      writing_more_btn.textContent = '4 more pieces ↓';
+      writing_more_btn.setAttribute('aria-expanded', 'false');
+    } else {
+      writing_overflow.style.display = 'block';
+      writing_more_btn.textContent = 'Show less ↑';
+      writing_more_btn.setAttribute('aria-expanded', 'true');
+    }
+  });
+}
+
 // -- footnote toggle --
 const footnote_toggle = document.querySelector('.footnote-toggle');
 const footnote_body   = document.getElementById('about-footnote-body');
 if (footnote_toggle && footnote_body) {
   footnote_toggle.addEventListener('click', () => {
-    const open = footnote_body.hasAttribute('hidden') ? true : false;
+    const open = footnote_body.style.display === 'block';
     if (open) {
-      footnote_body.removeAttribute('hidden');
-      footnote_toggle.textContent = 'About the star field ↑';
-      footnote_toggle.setAttribute('aria-expanded', 'true');
-    } else {
-      footnote_body.setAttribute('hidden', '');
+      footnote_body.style.display = 'none';
       footnote_toggle.textContent = 'About the star field ↓';
       footnote_toggle.setAttribute('aria-expanded', 'false');
+    } else {
+      footnote_body.style.display = 'block';
+      footnote_toggle.textContent = 'About the star field ↑';
+      footnote_toggle.setAttribute('aria-expanded', 'true');
     }
   });
 }
