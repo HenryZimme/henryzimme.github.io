@@ -263,7 +263,6 @@
       line-height: 1.6;
     }
     .footnote-wrap {
-      margin-top: 28px;
     }
     .footnote-toggle {
       background: none;
@@ -1237,6 +1236,10 @@
       .about-meta .meta-item {
         grid-column: 2;
         padding-left: 14px;
+      }
+      /* footnote sits in right column too */
+      .about-meta .footnote-wrap {
+        grid-column: 2;
       }
       /* shrink meta text slightly to fit narrow column */
       .about-meta .meta-label { font-size: 10px; }
