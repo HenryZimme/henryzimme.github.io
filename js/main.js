@@ -1412,18 +1412,27 @@ const writing_more_btn = document.getElementById('writing-more-btn');
 const writing_overflow = document.getElementById('writing-overflow');
 if (writing_more_btn && writing_overflow) {
   writing_more_btn.addEventListener('click', () => {
-    const open = writing_overflow.style.display === 'block';
+    const open = writing_overflow.classList.contains('open');
     if (open) {
-      writing_overflow.style.display = 'none';
+      writing_overflow.classList.remove('open');
       writing_more_btn.textContent = '4 more pieces ↓';
       writing_more_btn.setAttribute('aria-expanded', 'false');
     } else {
-      writing_overflow.style.display = 'block';
+      writing_overflow.classList.add('open');
       writing_more_btn.textContent = 'Show less ↑';
       writing_more_btn.setAttribute('aria-expanded', 'true');
     }
   });
 }
+
+// -- writing row click: make whole row navigate to the piece --
+document.querySelectorAll('.writing-item').forEach(item => {
+  const link = item.querySelector('h3 a');
+  if (!link) return;
+  item.addEventListener('click', (e) => {
+    if (!e.target.closest('a')) link.click();
+  });
+});
 
 // -- footnote toggle --
 const footnote_toggle = document.querySelector('.footnote-toggle');
