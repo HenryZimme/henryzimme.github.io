@@ -1510,22 +1510,32 @@
       ctx.font = '12px \'JetBrains Mono\', monospace';
       ctx.textBaseline = 'middle';
 
-      var drawLabel = function(lx, ly, text, fgCol) {
+      // draws label right or left of star with soft crossfade as star approaches right edge.
+      // t=0: fully right, t=1: fully left; fade zone spans sw*0.50 → sw*0.68.
+      var drawLabel = function(sx, sy, pr, text, fgCol) {
         var pad = 5, tw = ctx.measureText(text).width;
-        var rw = tw + pad*2, rh = 18;
-        var rx = Math.min(lx, sw - rw - 4), ry = ly - 9;
-        ctx.fillStyle = 'rgba(7,9,26,0.72)';
-        ctx.beginPath();
-        ctx.roundRect(rx, ry, rw, rh, 3);
-        ctx.fill();
-        ctx.fillStyle = fgCol;
-        ctx.globalAlpha = labelAlpha * 0.92;
-        ctx.fillText(text, lx + pad, ly);
+        var rw = tw + pad * 2, rh = 18;
+        var gap = pr + 9;
+        var t = Math.max(0, Math.min(1, (sx - sw * 0.50) / (sw * 0.18)));
+        var drawAt = function(rx, alpha) {
+          if (alpha <= 0.01) return;
+          var clampedRx = Math.max(4, rx);
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = 'rgba(7,9,26,0.72)';
+          ctx.beginPath();
+          ctx.roundRect(clampedRx, sy - 9, rw, rh, 3);
+          ctx.fill();
+          ctx.fillStyle = fgCol;
+          ctx.globalAlpha = alpha * 0.92;
+          ctx.fillText(text, clampedRx + pad, sy);
+        };
+        drawAt(sx + gap,      (1 - t) * labelAlpha);
+        drawAt(sx - gap - rw, t       * labelAlpha);
         ctx.globalAlpha = labelAlpha;
       };
 
-      drawLabel(s1x + pr1 + 9, s1y, 'Cepheid',   '#ffe4a0');
-      drawLabel(s2x + pr2 + 9, s2y, 'Companion', '#f87171');
+      drawLabel(s1x, s1y, pr1, 'Cepheid',   '#ffe4a0');
+      drawLabel(s2x, s2y, pr2, 'Companion', '#f87171');
       ctx.restore();
     }
 
