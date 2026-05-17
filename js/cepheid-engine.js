@@ -1511,12 +1511,18 @@
       ctx.textBaseline = 'middle';
 
       // draws label right or left of star with soft crossfade as star approaches right edge.
-      // t=0: fully right, t=1: fully left; fade zone spans sw*0.50 → sw*0.68.
+      // zone: sw*0.44 → sw*0.68 (24% of canvas width vs previous 18%).
+      // starting earlier (0.44 vs 0.50) gives more orbital distance before the edge.
+      // smoothstep curve compresses dwell time at t=0.5 (both labels visible),
+      // spending more frames in the "decided" state at each end — consistent with
+      // weber-fechner: the high-contrast midpoint state is the most visually salient.
       var drawLabel = function(sx, sy, pr, text, fgCol) {
         var pad = 5, tw = ctx.measureText(text).width;
         var rw = tw + pad * 2, rh = 18;
         var gap = pr + 9;
-        var t = Math.max(0, Math.min(1, (sx - sw * 0.50) / (sw * 0.18)));
+        var t_raw = Math.max(0, Math.min(1, (sx - sw * 0.44) / (sw * 0.24)));
+        // smoothstep: eases in and out, reduces time in the ambiguous midpoint state
+        var t = t_raw * t_raw * (3 - 2 * t_raw);
         var drawAt = function(rx, alpha) {
           if (alpha <= 0.01) return;
           var clampedRx = Math.max(4, rx);
