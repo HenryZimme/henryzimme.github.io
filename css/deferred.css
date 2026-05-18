@@ -805,6 +805,7 @@
       flex-shrink: 0;
       background: rgba(7,9,26,0.82);
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--panel-border);
       border-radius: 0.75rem;
       padding: 1.25rem 1.5rem;
