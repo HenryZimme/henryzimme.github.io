@@ -1465,49 +1465,27 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
 });
 
 // ---
-// Load HSZ_Headshot_BW_small.webp immediately (set in HTML src).
-// When the about section nears the viewport, preload the full-res version in
-// the background and swap it in once cached — no layout shift, no flash.
+// profile image: <picture> with srcset handles source selection at parse time.
+// the only JS responsibility here is activating the twinkle loop once the
+// image is done — keeps TBT near zero until the image settles.
 (function() {
   const img = document.getElementById('profile-img');
-  if (!img || !img.dataset.fullWebp) return;
+  if (!img) return;
 
-  let fullLoaded = false;
-
-  function swapToFull() {
-    if (fullLoaded) return;
-    fullLoaded = true;
-    // Prefer WebP; fall back to JPEG if the data attr is missing
-    img.src = img.dataset.fullWebp || img.dataset.fullJpeg || img.src;
-    img.classList.remove('profile-img-lqip');
-    // Profile image is loaded — start the animated star loop now.
-    // Until this point stars were drawn statically to keep TBT near zero.
+  function on_profile_load() {
     twinkle_active = true;
     if (hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
+    // fade out shimmer and placeholder text
+    const frame = img.closest('.profile-frame');
+    if (frame) frame.classList.add('profile-loaded');
   }
 
-  // Start preloading full-res as soon as the about section approaches the viewport
-  const aboutSection = document.getElementById('about');
-  if (aboutSection && 'IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        io.disconnect();
-        // If LQIP already visible, preload full-res then swap
-        const fullSrc = img.dataset.fullWebp || img.dataset.fullJpeg;
-        if (fullSrc) {
-          const preloader = new Image();
-          preloader.onload = swapToFull;
-          preloader.onerror = swapToFull; // swap anyway — LQIP is better than broken
-          preloader.src = fullSrc;
-        }
-        break;
-      }
-    }, { rootMargin: '0px' }); // start loading when section enters the viewport
-    io.observe(aboutSection);
+  // already cached (complete before this script ran)
+  if (img.complete) {
+    on_profile_load();
   } else {
-    // IntersectionObserver not available — swap immediately
-    swapToFull();
+    img.addEventListener('load',  on_profile_load, { once: true });
+    img.addEventListener('error', on_profile_load, { once: true }); // fail gracefully
   }
 })();
 
