@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1515,27 +1514,75 @@
     /* profile image frame */
     .profile-frame {
       width: 100%;
-      aspect-ratio: 613 / 661; /* mirrors image ratio — grid column height stable at parse time */
+      aspect-ratio: 869 / 938;
       margin-bottom: 2rem;
       padding: 6px;
       border: 1px solid var(--gold-dim);
       background: rgba(196, 162, 88, 0.05);
       line-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        110deg,
+        transparent 30%,
+        rgba(196, 162, 88, 0.09) 50%,
+        transparent 70%
+      );
+      background-size: 200% 100%;
+      animation: profile-shimmer 2.2s ease-in-out infinite;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .profile-frame::after {
+      content: "don't worry,\A I'll be there\A in a second";
+      white-space: pre;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      line-height: 1.9;
+      color: var(--gold);
+      opacity: 0.35;
+      z-index: 2;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .profile-frame.profile-loaded::before,
+    .profile-frame.profile-loaded::after {
+      opacity: 0;
+    }
+
+    @keyframes profile-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .profile-frame::before { animation: none; }
     }
 
     .profile-frame img {
       width: 100%;
       height: auto;
-      aspect-ratio: 613 / 661; /* reserves space before image loads — eliminates CLS */
+      aspect-ratio: 869 / 938;
       display: block;
       opacity: 0.95;
       transition: opacity 0.4s ease;
-    }
-
-    /* LQIP state: dimmed while 80px placeholder is visible; natural upscale blur
-       replaces CSS blur — avoids non-composited animation CLS flag */
-    .profile-frame img.profile-img-lqip {
-      opacity: 0.6;
+      position: relative;
+      z-index: 3;
     }
 
     /* research card deep-link from modal */
@@ -1744,15 +1791,29 @@
 
         <div class="about-meta">
           <div class="profile-frame">
-            <img id="profile-img"
-                 src="/images/HSZ_Headshot_BW_small.webp"
-                 data-full-webp="/images/HSZ_Headshot_BW.webp"
-                 data-full-jpeg="/images/HSZ_Headshot_BW.jpeg"
-                 width="613" height="661"
-                 alt="Henry Zimmerman headshot"
-                 fetchpriority="high"
-                 decoding="async"
-                 class="profile-img-lqip">
+            <!-- picture element: browser preload scanner resolves the correct
+                 source at parse time — no JS swap, no LCP delay.
+                 sizes: 120px on mobile (profile-frame in 120px grid column),
+                        367px on desktop (0.9fr of 880px section-inner minus 64px gap).
+                 at 2x mobile the browser picks 435w; at 2x desktop it picks 869w. -->
+            <picture>
+              <source
+                type="image/webp"
+                srcset="
+                  /images/HSZ_Headshot_BW_medium.webp  435w,
+                  /images/HSZ_Headshot_BW.webp          869w
+                "
+                sizes="(max-width: 740px) 120px, 367px">
+              <source
+                type="image/jpeg"
+                srcset="/images/HSZ_Headshot_BW.jpeg 869w"
+                sizes="(max-width: 740px) 120px, 367px">
+              <img id="profile-img"
+                   src="/images/HSZ_Headshot_BW.jpeg"
+                   width="869" height="938"
+                   alt="Henry Zimmerman headshot"
+                   fetchpriority="high"
+                   decoding="async"></picture>
           </div>
 
           <div class="meta-item">
