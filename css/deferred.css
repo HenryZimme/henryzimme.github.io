@@ -1,5 +1,4 @@
 /* tooltip */
-
     #star-tooltip {
       position: fixed;
       background: rgba(7, 9, 26, 0.92);
@@ -1185,27 +1184,79 @@
     /* profile image frame */
     .profile-frame {
       width: 100%;
-      aspect-ratio: 613 / 661; /* mirrors image ratio — grid column height stable at parse time */
+      aspect-ratio: 869 / 938; /* actual image intrinsic ratio */
       margin-bottom: 2rem;
       padding: 6px;
       border: 1px solid var(--gold-dim);
       background: rgba(196, 162, 88, 0.05);
       line-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* shimmer sweep across the empty frame while the photo loads */
+    .profile-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        110deg,
+        transparent 30%,
+        rgba(196, 162, 88, 0.09) 50%,
+        transparent 70%
+      );
+      background-size: 200% 100%;
+      animation: profile-shimmer 2.2s ease-in-out infinite;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    /* easter egg placeholder text — monospace, centered, gently dim */
+    .profile-frame::after {
+      content: "don't worry,\A I'll be there\A in a second";
+      white-space: pre;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      line-height: 1.9;
+      color: var(--gold);
+      opacity: 0.35;
+      z-index: 2;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    /* once loaded: fade out shimmer and text */
+    .profile-frame.profile-loaded::before,
+    .profile-frame.profile-loaded::after {
+      opacity: 0;
+    }
+
+    @keyframes profile-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* respect reduced motion — keep text, kill the sweep */
+    @media (prefers-reduced-motion: reduce) {
+      .profile-frame::before { animation: none; }
     }
 
     .profile-frame img {
       width: 100%;
       height: auto;
-      aspect-ratio: 613 / 661; /* reserves space before image loads — eliminates CLS */
+      aspect-ratio: 869 / 938; /* reserves space before image loads — eliminates CLS */
       display: block;
       opacity: 0.95;
       transition: opacity 0.4s ease;
-    }
-
-    /* LQIP state: dimmed while tiny placeholder is visible; blur comes
-       naturally from the 80px source scaled up — no CSS filter needed */
-    .profile-frame img.profile-img-lqip {
-      opacity: 0.6;
+      position: relative;
+      z-index: 3; /* sits above shimmer and text */
     }
 
     /* research card deep-link from modal */
