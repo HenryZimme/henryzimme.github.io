@@ -294,8 +294,43 @@ sup a:hover { text-decoration: underline; }
 
 /* responsive */
 @media (max-width: 600px) {
-  nav { padding: 18px 24px; }
-  .article-wrap { padding: 90px 18px 72px; }
+  nav { padding: 18px 20px; }
+
+  /* more breathing room on narrow screens;
+     18px was too tight for Garamond at body size */
+  .article-wrap { padding: 88px 22px 68px; }
+
+  /* long-form reading needs slightly more vertical breathing room on mobile */
+  body { line-height: 1.72; }
+
+  /* article title: slightly tighter line-height for long titles that wrap */
+  .article-title { line-height: 1.15; }
+
+  /* body paragraphs: keep 20px but increase line-height for narrow measure */
+  .article-body p {
+    line-height: 1.78;
+    margin-bottom: 1.3em;
+  }
+
+  /* subheadings: bring down slightly and tighten leading */
+  .article-body h2 {
+    font-size: 22px;
+    margin: 2em 0 0.8em;
+  }
+
+  /* footnotes: already small, keep readable */
+  .footnotes li {
+    font-size: 13px;
+    line-height: 1.62;
+  }
+
+  /* footer nav links: stack vertically so they don't
+     squeeze against each other on very narrow screens */
+  .footer-nav {
+    flex-direction: column;
+    gap: 12px;
+  }
+
   #back-to-top { bottom: 20px; right: 20px; }
 }
 
@@ -326,4 +361,13 @@ sup a:hover { text-decoration: underline; }
 
   img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
   pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
+}
+/* utility: visually hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
 }
