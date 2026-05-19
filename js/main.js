@@ -828,7 +828,7 @@ function on_click(e) {
 
   // named catalog stars, hover_star is fine here (popover is less time-sensitive)
   if (!hover_star) { close_popover(); return; }
-  const simbad_url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
+  const simbad_url = `https://simbad.cds.unistra.fr/simbad/sim-id?Ident=${encodeURIComponent(hover_star.simbad_id)}`;
   // ctrl/cmd+click: bypass confirmation and open directly
   if (e.ctrlKey || e.metaKey) {
     window.open(simbad_url, '_blank', 'noopener');
@@ -907,7 +907,7 @@ function on_touch_end(e) {
     e.preventDefault(); // suppress synthetic click
     last_touch_action_ts = performance.now();
     dismiss_hint();
-    const url = `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
+    const url = `https://simbad.cds.unistra.fr/simbad/sim-id?Ident=${encodeURIComponent(best_named.simbad_id)}`;
     open_popover(best_named.name, url, best_named.x, best_named.y);
   }
 }
@@ -939,11 +939,15 @@ function close_popover() {
 // returns the canonical external URL for a featured object, JPL for solar system bodies, & SIMBAD for everything else.
 function get_external_url(obj) {
   return obj.catalog_url
-    || `https://simbad.u-strasbg.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id || '')}`;
+    || `https://simbad.cds.unistra.fr/simbad/sim-id?Ident=${encodeURIComponent(obj.simbad_id || '')}`;
 }
 
 // cached at init, avoids getElementById + conditional insertBefore on every open_modal call
 let modal_img_wrap = null;
+
+// in-memory image cache keyed by src url; stores loaded HTMLImageElement
+// so repeated modal opens for the same object skip the network round-trip
+const modal_img_cache = new Map();
 
 function open_modal(obj) {
   document.getElementById('modal-type').textContent = obj.type;
@@ -963,18 +967,28 @@ function open_modal(obj) {
   );
 
   if (img_src) {
-    modal_img_wrap.innerHTML = '<div id="modal-img-loading">loading image\u2026</div>';
     modal_img_wrap.style.display = '';
-    const img = new Image();
-    img.onload = () => {
+    if (modal_img_cache.has(img_src)) {
+      // cache hit: clone so the same node can be re-inserted each time
       modal_img_wrap.innerHTML = '';
-      img.alt = obj.name;
-      img.id = 'modal-img';
-      modal_img_wrap.appendChild(img);
-      requestAnimationFrame(() => requestAnimationFrame(() => { img.style.opacity = '1'; }));
-    };
-    img.onerror = () => { modal_img_wrap.style.display = 'none'; };
-    img.src = img_src;
+      const cached = modal_img_cache.get(img_src).cloneNode();
+      cached.id = 'modal-img';
+      cached.style.opacity = '1';
+      modal_img_wrap.appendChild(cached);
+    } else {
+      modal_img_wrap.innerHTML = '<div id="modal-img-loading">loading image\u2026</div>';
+      const img = new Image();
+      img.onload = () => {
+        modal_img_cache.set(img_src, img); // store on success before touching DOM
+        modal_img_wrap.innerHTML = '';
+        img.alt = obj.name;
+        img.id = 'modal-img';
+        modal_img_wrap.appendChild(img);
+        requestAnimationFrame(() => requestAnimationFrame(() => { img.style.opacity = '1'; }));
+      };
+      img.onerror = () => { modal_img_wrap.style.display = 'none'; };
+      img.src = img_src;
+    }
   } else {
     modal_img_wrap.style.display = 'none';
   }
