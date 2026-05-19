@@ -641,7 +641,7 @@
       letter-spacing: 0.05em;
     }
 
-    .highlights-item h4 {
+    .highlights-item h3 {
       font-family: 'EB Garamond', serif;
       font-size: 18.5px;
       font-weight: 400;
@@ -1317,14 +1317,40 @@
     }
 
     @media (max-width: 740px) {
-      .section { padding: 72px 24px; }
+      /* ── sections ─────────────────────────────────────────────────────────── */
+      .section { padding: 64px 20px; }
 
+      /* section heading: tighten label size and bottom gap so content
+         starts closer on a small screen */
+      .section-heading {
+        font-size: 28px;
+        margin-bottom: 36px;
+      }
+      .section-heading::before {
+        font-size: 13px;
+        letter-spacing: 0.22em;
+        margin-bottom: 8px;
+      }
+
+      /* ── about ────────────────────────────────────────────────────────────── */
       /* two-column about: smaller photo left, compressed meta right */
-      .about-grid { grid-template-columns: 1fr; gap: 44px; }
+      .about-grid { grid-template-columns: 1fr; gap: 36px; }
+
+      /* lead text slightly smaller so the first paragraph doesn't
+         crowd the small viewport */
+      .about-text .about-lead {
+        font-size: 20px;
+        line-height: 1.62;
+      }
+      .about-text p {
+        font-size: 15.5px;
+        line-height: 1.78;
+      }
+
       .about-meta {
         display: grid;
-        grid-template-columns: 120px 1fr;
-        gap: 16px 20px;
+        grid-template-columns: 112px 1fr;
+        gap: 16px 18px;
         align-items: start;
       }
       /* photo spans only its column; remove bottom margin */
@@ -1337,7 +1363,7 @@
       /* meta items stack in right column, tighter spacing */
       .about-meta .meta-item {
         grid-column: 2;
-        padding-left: 14px;
+        padding-left: 12px;
       }
       /* footnote spans full width below the two-column content */
       .about-meta .footnote-wrap {
@@ -1345,16 +1371,107 @@
       }
       /* shrink meta text slightly to fit narrow column */
       .about-meta .meta-label { font-size: 10px; }
-      .about-meta .meta-value { font-size: 13px; line-height: 1.5; }
+      .about-meta .meta-value { font-size: 13px; line-height: 1.52; }
 
-      /* sim: canvas first, hud table hidden (not co-visible with canvas at this width) */
+      /* ── research ─────────────────────────────────────────────────────────── */
+      /* give the intro blockquote more breath before the cards */
+      .research-intro {
+        font-size: 16px;
+        line-height: 1.78;
+        padding-left: 14px;
+        margin-bottom: 32px;
+      }
+
+      /* reduce card chrome so text has more room */
+      .research-card { padding: 22px 20px; }
+
+      /* bump body text slightly — 15px is hard to scan at arm's length */
+      .card-title    { font-size: 21px; }
+      .card-summary  { font-size: 15.5px; line-height: 1.8; }
+      .card-body     { font-size: 15.5px; line-height: 1.8; }
+
+      /* ── writing ──────────────────────────────────────────────────────────── */
+      /* on mobile the grid collapses to a single column; DOM order puts
+         writing-meta (venue, date) before writing-content (title, blurb).
+         that's backwards for scanning — promote the title to the top. */
+      .writing-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        padding: 22px 0;
+      }
+      .writing-content { order: 1; }
+      .writing-meta    {
+        order: 2;
+        display: flex;
+        flex-direction: row;
+        gap: 14px;
+        align-items: baseline;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(196,162,88,0.08);
+      }
+      .writing-content h3 {
+        font-size: 21px;
+        line-height: 1.28;
+        margin-bottom: 7px;
+      }
+      .writing-content p {
+        font-size: 15px;
+        line-height: 1.72;
+      }
+
+      /* ── highlights ───────────────────────────────────────────────────────── */
+      /* collapsed to single column; year needs to read as a label, not
+         run straight into the headline */
+      .highlights-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 22px 0;
+      }
+      .highlights-year {
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        margin-bottom: 8px;
+        opacity: 0.75;
+      }
+      .highlights-item h3 {
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .highlights-item p {
+        font-size: 14.5px;
+        line-height: 1.68;
+        margin-top: 4px;
+      }
+
+      /* ── modal ────────────────────────────────────────────────────────────── */
+      /* on a 375px screen 48px side padding → only ~240px of content width;
+         drop to 24px/20px so text has room to breathe */
+      .modal-inner {
+        padding: 40px 24px 28px;
+        width: calc(100% - 32px);
+      }
+      /* enlarge close button touch target on mobile */
+      .modal-close {
+        top: 12px;
+        right: 12px;
+        font-size: 22px;
+        padding: 8px;
+      }
+      #modal-img-wrap {
+        aspect-ratio: 4 / 3;
+        margin-bottom: 20px;
+      }
+
+      /* ── sim ──────────────────────────────────────────────────────────────── */
+      /* canvas first, hud table hidden (not co-visible with canvas at this width) */
       #sim-stage { order: -1; }
       #hud-table { display: none; }
 
-      .highlights-row { grid-template-columns: 1fr; gap: 6px; }
-      footer { flex-direction: column; gap: 20px; align-items: flex-start; padding: 36px 24px; }
+      /* ── footer ───────────────────────────────────────────────────────────── */
+      footer { flex-direction: column; gap: 20px; align-items: flex-start; padding: 36px 20px; }
       .footer-cssda img { width: 32px; height: 32px; }
-      #modal-img-wrap { aspect-ratio: 4 / 3; margin-bottom: 20px; }
     }
 
     /* ── reading trail ─────────────────────────────────────────────────────── */
