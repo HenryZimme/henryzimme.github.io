@@ -2,6 +2,7 @@ const canvas = document.getElementById('star-canvas');
 const ctx = canvas.getContext('2d');
 const tooltip = document.getElementById('star-tooltip');
 const modal = document.getElementById('object-modal');
+let _modal_trigger = null; // stores the element that opened the modal for focus restoration
 const popover = document.getElementById('star-popover');
 const popover_name = document.getElementById('star-popover-name');
 const popover_btn = document.getElementById('star-popover-btn');
@@ -1019,10 +1020,21 @@ function open_modal(obj) {
     card_link.style.display = 'none';
   }
   modal.classList.add('visible');
+  // move focus into modal and record trigger for restoration on close
+  _modal_trigger = document.activeElement;
+  requestAnimationFrame(() => {
+    const close_btn = document.getElementById('modal-close-btn');
+    if (close_btn) close_btn.focus();
+  });
 }
 
 function close_modal() {
   modal.classList.remove('visible');
+  // restore focus to the element that triggered the modal open
+  if (_modal_trigger && typeof _modal_trigger.focus === 'function') {
+    _modal_trigger.focus();
+  }
+  _modal_trigger = null;
 }
 
 
@@ -1036,6 +1048,24 @@ modal_inner.addEventListener('touchstart', (e) => {
 modal_inner.addEventListener('touchmove', (e) => {
   e.stopPropagation(); // lets modal scroll without moving star field
 }, { passive: true });
+
+// focus trap: keep Tab/Shift+Tab within the modal while it is open
+modal.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab' || !modal.classList.contains('visible')) return;
+  const focusable = Array.from(modal.querySelectorAll(
+    'button:not([disabled]), a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  )).filter(el => !el.closest('[aria-hidden="true"]'));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last  = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+});
 
 // close popover when clicking outside it (on non-star areas)
 document.addEventListener('click', (e) => {
@@ -1472,13 +1502,23 @@ if (footnote_toggle && footnote_body) {
 const epilepsy_modal = document.getElementById('epilepsy-modal');
 document.getElementById('btn-realtime').addEventListener('click', () => {
   epilepsy_modal.classList.add('visible');
+  requestAnimationFrame(() => {
+    const cancel_btn = document.getElementById('epilepsy-cancel');
+    if (cancel_btn) cancel_btn.focus();
+  });
 });
 document.getElementById('epilepsy-cancel').addEventListener('click', () => {
   epilepsy_modal.classList.remove('visible');
+  // restore focus to the realtime button that triggered this modal
+  const realtime_btn = document.getElementById('btn-realtime');
+  if (realtime_btn) realtime_btn.focus();
 });
 document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   epilepsy_modal.classList.remove('visible');
   window.setMode('realtime');
+  // focus stays on the canvas area after confirming realtime mode
+  const realtime_btn = document.getElementById('btn-realtime');
+  if (realtime_btn) realtime_btn.focus();
 });
 
 // ---
