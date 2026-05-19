@@ -1444,6 +1444,8 @@ document.querySelectorAll('.writing-item').forEach(item => {
   const link = item.querySelector('h3 a');
   if (!link) return;
   item.addEventListener('click', (e) => {
+    // don't intercept taps that land on or near the toggle buttons
+    if (e.target.closest('.writing-more-toggle') || e.target.closest('.card-toggle')) return;
     if (!e.target.closest('a')) link.click();
   });
 });
@@ -1453,7 +1455,8 @@ const footnote_toggle = document.querySelector('.footnote-toggle');
 const footnote_body   = document.getElementById('about-footnote-body');
 if (footnote_toggle && footnote_body) {
   footnote_toggle.addEventListener('click', () => {
-    const open = footnote_body.style.display === 'block';
+    // use getComputedStyle — initial hide is via stylesheet, not inline style
+    const open = window.getComputedStyle(footnote_body).display !== 'none';
     if (open) {
       footnote_body.style.display = 'none';
       footnote_toggle.textContent = 'About the star field ↓';
