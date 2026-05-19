@@ -359,7 +359,7 @@
     }
 
 </style>
-  <link rel="stylesheet" href="/css/deferred.css" media="print" onload="this.media='all';this.onload=null" onerror="...">
+  <link rel="stylesheet" href="/css/deferred.css" media="print" onload="this.media='all';this.onload=null" onerror="document.getElementById('deferred-fallback').disabled=false">
   <noscript><link rel="stylesheet" href="/css/deferred.css"></noscript>
   <style id="deferred-fallback" disabled>
     /* tooltip */
@@ -827,6 +827,34 @@
     }
     .card-toggle:hover { opacity: 1; }
 
+    .footnote-toggle {
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(226, 221, 212, 0.2);
+      padding: 0 0 1px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      opacity: 0.45;
+      cursor: pointer;
+    }
+
+    .writing-more-toggle {
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--gold-dim);
+      padding: 0 0 1px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0.70;
+      cursor: pointer;
+    }
+
     /* suppress hover lift when card is expanded */
     .research-card.card-open {
       transform: none;
@@ -1149,6 +1177,7 @@
       flex-shrink: 0;
       background: rgba(7,9,26,0.82);
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--panel-border);
       border-radius: 0.75rem;
       padding: 1.25rem 1.5rem;
