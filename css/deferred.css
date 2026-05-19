@@ -554,6 +554,18 @@
       .writing-more-toggle:hover { opacity: 0.9; }
     }
 
+    /* minimum ~44px tap target on touch devices (apple hig / wcag 2.5.5) */
+    @media (hover: none) {
+      .writing-more-toggle,
+      .footnote-toggle,
+      .card-toggle {
+        padding-top: 14px;
+        padding-bottom: 14px;
+        margin-top: -14px;
+        margin-bottom: -14px;
+      }
+    }
+
     .writing-meta {
       display: flex;
       flex-direction: column;
