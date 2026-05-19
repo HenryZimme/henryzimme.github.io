@@ -255,7 +255,7 @@ html { height: 100%; background: var(--bg); }
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
-  <div id="main" style="outline:none">
+  <main id="main" style="outline:none">
 
 
 <nav aria-label="Primary">
@@ -275,7 +275,7 @@ html { height: 100%; background: var(--bg); }
     <span id="header-right">heliocentric orbit · ecliptic j2000</span>
   </div>
 
-  <canvas id="canvas"></canvas>
+  <canvas id="canvas" role="img" aria-label="Interactive heliocentric orbit visualization of asteroid 7605 Cindygraber showing phase angle and illumination geometry"></canvas>
   <div id="divider"></div>
 
   <div id="controls">
@@ -1340,5 +1340,5 @@ html { height: 100%; background: var(--bg); }
 
 }());
 </script>
-</div></body>
+</main></body>
 </html>
