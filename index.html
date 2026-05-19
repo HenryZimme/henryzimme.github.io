@@ -1000,7 +1000,7 @@
       letter-spacing: 0.05em;
     }
 
-    .highlights-item h4 {
+    .highlights-item h3 {
       font-family: 'EB Garamond', 'EB Garamond Fallback', serif;
       font-size: 18.5px;
       font-weight: 400;
@@ -1716,7 +1716,7 @@
 <body>
 
 <a href="#about" class="skip-link">Skip to main content</a>
-<canvas id="star-canvas"></canvas>
+<canvas id="star-canvas" role="presentation" aria-hidden="true"></canvas>
 
 <script>
 // Micro-renderer: draws featured objects immediately, zero network dependency.
@@ -1762,7 +1762,7 @@
   <a id="star-popover-btn" href="#" target="_blank" rel="noopener">View on SIMBAD ↗</a>
 </div>
 
-<div id="object-modal">
+<div id="object-modal" role="dialog" aria-modal="true" aria-labelledby="modal-name" aria-describedby="modal-body">
   <div class="modal-inner">
     <button class="modal-close" id="modal-close-btn" aria-label="Close">&#x2715;</button>
     <div class="modal-type" id="modal-type">Featured Object</div>
@@ -1782,7 +1782,7 @@
     <li><a href="#highlights">Highlights</a></li>
     <li><a href="#bookshelf">Reading</a></li>
   </ul>
-  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-mobile"><span></span><span></span><span></span></button>
 </nav>
 
 <nav class="nav-mobile" id="nav-mobile" aria-label="Mobile">
@@ -1801,7 +1801,7 @@
     <h1 class="hero-name">Henry<br>Zimmerman</h1>
     <p class="hero-tagline">Eyes on the sky, feet on the ground.</p>
     <div class="hero-arrow">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
         <path d="M4 7l6 6 6-6" stroke="rgba(196,162,88,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
@@ -1901,7 +1901,7 @@
 
   <!-- stage: canvas + plot overlay -->
   <div id="sim-stage">
-    <canvas id="simCanvas"></canvas>
+    <canvas id="simCanvas" role="img" aria-label="Interactive simulation of the OGLE-LMC-CEP-1347 binary Cepheid system showing orbital and pulsation dynamics"></canvas>
     <div id="hud-plot-container"></div>
     <div id="sim-preview">
       <div class="sim-loading-panel">
@@ -1926,10 +1926,10 @@
 </section>
 
   <!-- epilepsy warning modal; must live outside #cepheid-sim (isolation:isolate breaks position:fixed) -->
-  <div id="epilepsy-modal">
+  <div id="epilepsy-modal" role="alertdialog" aria-modal="true" aria-labelledby="epilepsy-heading" aria-describedby="epilepsy-body">
     <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
-      <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
-      <p class="epilepsy-body">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
+      <div id="epilepsy-heading" style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
+      <p class="epilepsy-body" id="epilepsy-body">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
       <div style="display:flex;gap:1rem;">
         <button id="epilepsy-cancel" class="epilepsy-btn epilepsy-btn--cancel">Cancel</button>
         <button id="epilepsy-confirm" class="epilepsy-btn epilepsy-btn--confirm">I understand, continue</button>
@@ -1949,7 +1949,7 @@
           <h3 class="card-title">CEP-1347: Merger-origin Investigation & VLT Follow-up</h3>
           <p class="card-summary">After six years of OGLE-LMC-CEP-1347 photometry revealed a candidate rotational signal suggesting <span class="trail-word" data-word="merger spindown">merger spindown</span>, my window function analysis identified it as a 1-year sampling <span class="trail-word" data-word="alias">alias</span>, prompting my pivot to a VLT/ESPRESSO spectroscopic proposal with Dr. Bogumił Pilecki. With these chemical abundances, we will attempt to validate a dynamical template for identifying merger-origin Cepheids.</p>
           <div style="margin-bottom: 16px;"><a class="card-link" href="/1347_methods" target="_blank" rel="noopener">Alias Diagnostic: The Analysis That Invalidated My Own Result &rarr;</a></div>
-          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-1">Read more &#8595;</button>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-1" aria-label="Read more about CEP-1347 merger-origin investigation">Read more &#8595;</button>
           <div class="card-expand" id="card-expand-1">
             <p class="card-body">
               I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary in the Large Magellanic Cloud with the shortest known orbital period for a Cepheid (58.85 ± 0.08 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I isolated a frequency triplet consistent with a non-radial mode, with spacing $\Delta$f ≈ 0.0074 c/d. I validated this with dual-domain frequency and time-evolution $O-C$ Monte Carlo simulations, finding Prot ≈ 135 ± 15 days. This is over five σ longer than the 58.85 day orbit. Since tidal theory predicts synchronization precedes circularization by $>10$x, this asynchronous rotation in a circular orbit would suggest recent merger spindown.
@@ -1982,7 +1982,7 @@
           <div class="card-id">In Prep, with Dr. José Zorrilla and Caroline Odden</div>
           <h3 class="card-title">Rotation Period of 7605 Cindygraber</h3>
           <p class="card-summary">I coordinated a multi-site Slooh campaign with citizen scientists remotely operating telescopes across three continents to determine the rotation period of main-belt asteroid 7605 Cindygraber, using a custom open-source scheduler to optimize observing cadence under variable site conditions.</p>
-          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-2">Read more &#8595;</button>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-2" aria-label="Read more about rotation period of 7605 Cindygraber">Read more &#8595;</button>
           <div class="card-expand" id="card-expand-2">
             <p class="card-body">
               Using photometric measurements from the ALCDEF Light Curve Database, I developed statistical models to estimate period convergence requirements and used those results to design an observing strategy.
@@ -2021,7 +2021,7 @@
           <div class="card-id">Completed, with Dr. José Zorrilla</div>
           <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
           <p class="card-summary">Multi-band photometry of classical Cepheid U Sagittarii confirmed its 6.74-day period and produced a 40.8% vs. 1.9% V-to-I distance error gap, a direct demonstration of how interstellar dust corrupts Cepheid distance measurements.</p>
-          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-3">Read more &#8595;</button>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-3" aria-label="Read more about U Sagittarii distance scale calibration">Read more &#8595;</button>
           <div class="card-expand" id="card-expand-3">
             <p class="card-body">
               My first independent research target. I remotely operated the Slooh Chile 432mm telescope for two months, performing multi-band (V&minus;I) differential photometry of the classical Cepheid U Sgr in open cluster M25. Sinusoidal light curve fits confirmed the 6.74-day period (R&sup2; = 0.93 V-band, 0.70 I-band). V-band distance calculations yielded 40.8% error versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths and why accurate extinction corrections are critical for Cepheid distance work. Strong color index correlation (r = 0.85) provided independent evidence for pulsation, consistent with the kappa-mechanism. The project expanded into an investigation of metallicity-dependent corrections to the period-luminosity relation.
@@ -2194,7 +2194,7 @@
         <div class="highlights-row">
           <div class="highlights-year">2026&ndash;2027</div>
           <div class="highlights-item">
-            <h4>Fellowship Finalist, Brace Center for Gender Studies</h4>
+            <h3>Fellowship Finalist, Brace Center for Gender Studies</h3>
             <p>I was recently selected to write a 25-page archival research paper on Jewish masculinity and World War Two, examining the tension between cyclical and progressive models of Jewish masculinity and their connection to biblical texts.</p>
           </div>
         </div>
@@ -2202,7 +2202,7 @@
         <div class="highlights-row">
           <div class="highlights-year">2026 &ndash;</div>
           <div class="highlights-item">
-            <h4>Varsity Cross Country Captain</h4>
+            <h3>Varsity Cross Country Captain</h3>
             <p>I was elected captain of a 75-athlete roster for the 2026 season. I've been working to shift the team's metrics of success so that effort is recognized regardless of speed. Despite difficulties with Lower Leg Discrepancy, my personal records are 16:30 for 5K XC, and 4:24 for 1500m.</p>
           </div>
         </div>
@@ -2210,7 +2210,7 @@
         <div class="highlights-row">
           <div class="highlights-year">2025 &ndash;</div>
           <div class="highlights-item">
-            <h4>Writing Center Tutor, Phillips Academy</h4>
+            <h3>Writing Center Tutor, Phillips Academy</h3>
             <p>Before joining the tutoring staff, I booked 63 appointments as a student. Instead of asking for grammatical revisions, I went to discuss my ideas with other thinkers who care about rigorous peer review and dialogue. Now, as a tutor, I try to create that same Socratic, collaborative environment for others.</p>
           </div>
         </div>
@@ -2218,7 +2218,7 @@
         <div class="highlights-row">
           <div class="highlights-year">2025 &ndash;</div>
           <div class="highlights-item">
-            <h4><a href="https://andoverecon.org" target="_blank" rel="noopener">Andover Economics Society &#8599;</a>, Co-President</h4>
+            <h3><a href="https://andoverecon.org" target="_blank" rel="noopener">Andover Economics Society &#8599;</a>, Co-President</h3>
             <p>I founded the school's first Fed Challenge team partly because I wanted to know what it felt like to do a collaborative deep dive into an economic concept that feels real: music, this year's Fed Challenge topic. The research colloquium we launched has students writing policy briefs and presenting to Boston policymakers, which turns out to be a very fast way to find out <span class="trail-word" data-word="which of your ideas hold up">which of your ideas hold up</span>.</p>
           </div>
         </div>
@@ -2226,7 +2226,7 @@
         <div class="highlights-row">
           <div class="highlights-year">2025</div>
           <div class="highlights-item">
-            <h4>The Webster Award, History &amp; Social Sciences</h4>
+            <h3>The Webster Award, History &amp; Social Sciences</h3>
             <p>Phillips Academy's departmental honor in history and the social sciences, given to roughly a dozen sophomores. I mention it mainly because it marked the year I took a course with Ms. Frey, who encouraged me and gave me room to research and write beyond the curriculum's limits.</p>
           </div>
         </div>
@@ -2234,7 +2234,7 @@
         <div class="highlights-row">
           <div class="highlights-year">2024</div>
           <div class="highlights-item">
-            <h4>Media Fluency Curriculum Module, Phillips Academy</h4>
+            <h3>Media Fluency Curriculum Module, Phillips Academy</h3>
             <p>In collaboration with a teacher in freshman year, I built a fabricated historical website with false citations for deployment across multiple junior-level History 300 classes. We distributed it as an authentic primary source, and the site was accepted as genuine by the majority of students before the <span class="trail-word" data-word="deception was revealed">deception was revealed</span>. The point was to teach students that sources of information must be scrutinized, even if they come from an authoritative source  (like a teacher in this case).</p>
           </div>
         </div>
