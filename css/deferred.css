@@ -545,7 +545,7 @@
       letter-spacing: 0.14em;
       color: var(--text-dim);
       text-transform: uppercase;
-      opacity: 0.55;
+      opacity: 0.75;
       transition: opacity 0.18s;
       padding: 0;
     }
