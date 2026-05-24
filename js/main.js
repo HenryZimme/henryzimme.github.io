@@ -38,7 +38,7 @@ const featured_objects = [
     ra_deg: 163.5,
     dec_deg: 14.2,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605&view=VOP",
-    image_url: "/images/cindygraber_sub.jpeg",
+    image_url: "/assets/pops/cindygraber_sub.jpeg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
     writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler mattered as much as the telescope time. Marker position and magnitude are indicative."
@@ -48,7 +48,7 @@ const featured_objects = [
     ra_deg: 210.0,
     dec_deg: 8.5,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243&view=VOP",
-    image_url: "/images/bunting_sub.jpeg",
+    image_url: "/assets/pops/bunting_sub.jpeg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Indicative sky position",
     writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
@@ -58,7 +58,7 @@ const featured_objects = [
     ra_deg: 88.05,
     dec_deg: 41.03,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=4715&view=VOP",
-    image_url: "/images/4715_shape_model.png",
+    image_url: "/assets/pops/4715_shape_model.png",
     // card_url: "#card-astcadence", // uncomment when research card is live
     type: "Jupiter Trojan, L5 Trailing Camp  |  Indicative sky position",
     writeup: "4715 Medesicaste is the asteroid that started a question I couldn\u2019t let go of. Lam et al. (2023) showed that non-uniform sampling suppressed aliased Fourier period solutions for this L5 trojan more effectively than the quasi-uniform WISE cadence, but no framework existed to empirically optimize that cadence for the single-night ground-based case. I built one. It runs in two phases: window function minimization, then a multi-stage CMA-ES search trained and validated on ALCDEF light curves with injected Gaussian noise. The largest gains show up consistently in the 8\u201316 hr period bin, the regime that contains Medesicaste\u2019s 8.8 hr rotation period and the most densely populated period range among asteroids. Paper in preparation. Marker position is from MPC/RECON astrometry (2026 Sep 7) magnitude is indicative."

@@ -10,11 +10,11 @@ orbital modeling.">
   <meta property="og:description" content="Methodological appendix for the OGLE-LMC-CEP-1347 binary Cepheid research project, covering frequency analysis, alias detection, and orbital modeling.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.henryzimmerman.net/1347_methods.html">
-  <meta property="og:image" content="https://www.henryzimmerman.net/images/og-preview.jpeg">
+  <meta property="og:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Methodological Appendix: CEP-1347 Analysis">
   <meta name="twitter:description" content="Frequency analysis, alias detection, and orbital modeling for OGLE-LMC-CEP-1347.">
-  <meta name="twitter:image" content="https://www.henryzimmerman.net/images/og-preview.jpeg">
+  <meta name="twitter:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
   <link rel="canonical" href="https://www.henryzimmerman.net/1347_methods.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,7 +104,7 @@ body {
   }
   </style>
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#07091a">
 </head>
 <body>
@@ -136,8 +136,8 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
 
     <figure>
       <picture>
-        <source srcset="images/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.webp" type="image/webp">
-        <picture><source srcset="images/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.webp" type="image/webp"><img src="images/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.png" alt="Period-folded OGLE I-band light curve of OGLE-LMC-CEP-1347, first overtone mode."></picture>
+        <source srcset="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.webp" type="image/webp">
+        <picture><source srcset="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.webp" type="image/webp"><img src="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.png" alt="Period-folded OGLE I-band light curve of OGLE-LMC-CEP-1347, first overtone mode."></picture>
       </picture>
       <figcaption>Figure 1: First-overtone (1O) mode phased light curve. Prewhitening this dominant signal was the prerequisite for investigating the underlying residuals predicted by distorted polytrope models.</figcaption>
     </figure>
@@ -147,8 +147,8 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
 
     <figure>
       <picture>
-        <source srcset="images/CEP-1347_dynamic_spectrum.webp" type="image/webp">
-        <picture><source srcset="images/CEP-1347_dynamic_spectrum.webp" type="image/webp"><img src="images/CEP-1347_dynamic_spectrum.png" alt="Dynamic spectrum of residual frequencies."></picture>
+        <source srcset="assets/figs/CEP-1347_dynamic_spectrum.webp" type="image/webp">
+        <picture><source srcset="assets/figs/CEP-1347_dynamic_spectrum.webp" type="image/webp"><img src="assets/figs/CEP-1347_dynamic_spectrum.png" alt="Dynamic spectrum of residual frequencies."></picture>
       </picture>
       <figcaption>Figure 2: Dynamic spectrum used to verify the candidate multiplet. The signal's temporal incoherence across the baseline suggested it wasn't necessarily intrinsic to the stellar surface.</figcaption>
     </figure>
@@ -157,7 +157,7 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
     <p>Applying Kepler’s Third Law to the system masses ($M_{\text{cep}} = 3.41 \pm 0.08 M_{\odot}$, $M_{\text{comp}} = 1.89 \pm 0.04 M_{\odot}$), I determined an orbital separation of 111 $R_{\odot}$. Using the approximation $\Delta R / R \approx (M_{\text{comp}}/M_{\text{cep}}) \cdot (R_{\text{cep}}/a)^3$, I estimated a geometric tidal modulation of ~0.1%. Marginal signals were detected phase-locked with the orbit at a ~3$\sigma$ level, though these remain ambiguous due to potential photometric blending with the companion. The detected power also shows a pronounced asymmetry between the two sidebands (SNR = 9.2 at $f_1 - f_{\text{orb}}$ versus 5.8 at $f_1 + f_{\text{orb}}$), inconsistent with the symmetric response expected from a genuine tidal modulation and further supporting a non-astrophysical origin.</p>
 
     <figure>
-      <picture><source srcset="images/CEP_1347_residual_frequency_analysis_orbital.webp" type="image/webp"><img src="images/CEP_1347_residual_frequency_analysis_orbital.jpeg" alt="Residual amplitude binned by orbital phase."></picture>
+      <picture><source srcset="assets/figs/CEP_1347_residual_frequency_analysis_orbital.webp" type="image/webp"><img src="assets/figs/CEP_1347_residual_frequency_analysis_orbital.jpeg" alt="Residual amplitude binned by orbital phase."></picture>
       <figcaption>Figure 3: Lomb-Scargle periodogram of residuals (log-scale) centered on $f_1$. The absence of coherent power at the orbital sidebands ($f_1 \pm f_{\text{orb}}$) establishes a firm upper limit on tidal interaction. The sensitivity limit ($\sim$14 mmag) is comparable to the predicted 0.1% tidal signal, motivating the transition to spectroscopic velocity diagnostics.</figcaption>
     </figure>
 
@@ -167,7 +167,7 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
     <p>The statistical favorability for the rotational model required a check against the sampling artifacts of the OGLE cadence. I modeled the spectral window using exact timestamps and unit weights. The result was definitive: the candidate splitting $\Delta f \approx 0.0074$ c/d aligned almost perfectly with a harmonic of the $1/yr$ ($\approx 0.0027$ c/d) sampling alias.</p>
 
     <figure>
-      <picture><source srcset="images/CEP-1347_alias_zoomed.webp" type="image/webp"><img src="images/CEP-1347_alias_zoomed.png" alt="Spectral window overlay on residual periodogram."></picture>
+      <picture><source srcset="assets/figs/CEP-1347_alias_zoomed.webp" type="image/webp"><img src="assets/figs/CEP-1347_alias_zoomed.png" alt="Spectral window overlay on residual periodogram."></picture>
       <figcaption>Figure 4: Direct comparison of the residual periodogram and the spectral window. The alignment with the 1/yr aliases confirms that the candidate signal was an observational artifact.</figcaption>
     </figure>
 
