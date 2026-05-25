@@ -63,7 +63,7 @@ const featured_objects = [
     type: "Jupiter Trojan, L5 Trailing Camp  |  Indicative sky position",
     writeup: "4715 Medesicaste is the asteroid that started a question I couldn\u2019t let go of. Lam et al. (2023) showed that non-uniform sampling suppressed aliased Fourier period solutions for this L5 trojan more effectively than the quasi-uniform WISE cadence, but no framework existed to empirically optimize that cadence for the single-night ground-based case. I built one. It runs in two phases: window function minimization, then a multi-stage CMA-ES search trained and validated on ALCDEF light curves with injected Gaussian noise. The largest gains show up consistently in the 8\u201316 hr period bin, the regime that contains Medesicaste\u2019s 8.8 hr rotation period and the most densely populated period range among asteroids. Paper in preparation. Marker position is from MPC/RECON astrometry (2026 Sep 7) magnitude is indicative."
   },
-  {
+ /* {
     name: "HD 344787 | v = 9.32",
     ra_deg: 295.872,
     dec_deg: 23.178,
@@ -72,7 +72,7 @@ const featured_objects = [
     pipeline: true,
     type: "Active Investigation  |  Northern Sky",
     writeup: "At the 247th AAS meeting, I watched Dupree et al. present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris (<a href=\"https://doi.org/10.1051/0004-6361/202040123\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">Ripepi et al. 2021</a>)? Is it alone, or is something else there, invisible and waiting to be found?"
-  }
+  }*/
 ];
 
 // single source of truth for featured object colors, indexed parallel to featured_objects.
