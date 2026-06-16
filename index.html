@@ -1698,7 +1698,7 @@
     "name": "Henry Zimmerman",
     "url": "https://www.henryzimmerman.net/",
     "image": "https://www.henryzimmerman.net/assets/pfps/HSZ_Headshot_BW.webp",
-    "description": "Astrophysics researcher and writer at Phillips Academy Andover. Leading a VLT/ESPRESSO observing proposal for OGLE-LMC-CEP-1347 and coordinating multi-site asteroid observations.",
+    "description": "Astrophysics researcher and writer at Phillips Academy Andover. Leading a VLT/ESPRESSO observing proposal for OGLE-LMC-CEP-1347 and optimizing time-domain  observation design.",
     "sameAs": ["https://github.com/HenryZimme", "https://orcid.org/0009-0009-5524-1593", "https://www.linkedin.com/in/henryszimmerman/"],
     "alumniOf": {
       "@type": "EducationalOrganization",
@@ -1813,7 +1813,7 @@
       <div class="about-grid">
         <div class="about-text">
           <p class="about-lead">Hello! I'm Henry. I'm a very confident person who is generally wary of confidence and <span class="trail-word" data-word="false certainty">false certainty</span> (especially my own). I thrive most when I'm surrounded by people just as happy to talk through new ideas as they are to push back on my assumptions.</p>
-          <p>Most of my time goes into time-domain astronomy: I'm currently the primary author of a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki as PI to probe the merger history of a binary Cepheid in the Large Magellanic Cloud, and coordinating a multi-continent photometric campaign to determine the rotation period of main-belt asteroid 7605 Cindygraber. The rest of this site documents where that same instinct started: the epistemology of Descartes, the 1755 Lisbon earthquake, contemplating the AfD's rise, a visual poem responding to a Kay Walkingstick diptych.</p>
+          <p>Most of my time goes into time-domain astronomy: I'm currently the primary author of a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki as PI to probe the merger history of a binary Cepheid in the Large Magellanic Cloud,  and developing an information-theoretic cadence-optimization framework to prevent aliasing  (presented at AAS 248). The rest of this site documents where that same instinct started: the epistemology of Descartes, the 1755 Lisbon earthquake, contemplating the AfD's rise, a visual poem responding to a Kay Walkingstick diptych.</p>
           <p>Outside of all that, I'm a cross country captain, jazz guitarist, board games enthusiast, and someone who has spent an unreasonable number of hours in the Writing Center (first as a client, now as a tutor). I find that my most enduring questions don't disappear as my interests evolve: namely, what do I think about the world, and <span class="trail-word" data-word="why am I likely wrong">why am I likely wrong</span>?</p>
         </div>
 
@@ -1942,6 +1942,39 @@
       <h2 class="section-heading" data-label="Research"><span class="sr-only">Research</span></h2>
       <p class="research-intro">My research follows a single question I've been pursuing: how much can a ground-based observation actually tell us, and how do we understand, reach, and surpass those limits?</p>
       <div class="research-cards">
+
+        <div class="research-card" id="card-astcadence">
+          <div class="card-id">Sole author, in prep</div>
+          <h3 class="card-title">Entropy-Guided Cadence Optimization for Asteroid Photometry</h3>
+          <p class="card-summary">We were observing 19243 Bunting and 7605 Cindygraber on Slooh, and our observation design plan was just: "observe whatever we need more data for tonight." After the aliasing got pretty bad even with more data, I started thinking about how to maximize the information we get from a given number of observations. The framework I worked out generalizes beyond asteroids to other periodic-signal domains.</p>
+          <div style="margin-bottom: 16px;"><a class="card-link" href="/astcadence" target="_blank" rel="noopener">Interactive Demonstration: How Cadence Shapes the Period Posterior &rarr;</a></div>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-4" aria-label="Read more about entropy-guided cadence optimization">Read more &#8595;</button>
+          <div class="card-expand" id="card-expand-4">
+            <p class="card-body">
+              I formulated the problem as Bayesian experimental design (Lindley 1956): pick the intra-night sampling that maximizes the expected information gain about the rotation frequency under a fixed exposure budget of N &isin; {8, 9, 10, 11, 12} observations across an 8-hour observing block. The objective is the Shannon entropy of a Boltzmann posterior p(f) &prop; exp(&minus;RSS(f)/T*) under a 2nd-order Fourier (FALC; Harris 1989) fit at each trial frequency, with T* = 2&sigma;&sup2; fixed analytically so the posterior coincides with the profile likelihood used by the recovery itself. Entropy correlates with the empirical Monte Carlo alias rate at raw Spearman &rho; = 0.80&ndash;0.85 (binned &rho; &asymp; 0.99, p &lt; 10<sup>&minus;4</sup>) across the N sweep, making it a cheap, differentiable surrogate. A JAX-vmapped CMA-ES drove the optimization; candidate cadences plus nine baseline families were screened by 5-fold cross-validation on a 248-asteroid training set, with the train/holdout split chosen by a Rizzo &amp; Sz&eacute;kely (2010) DISCO multivariate energy test.
+            </p>
+            <p class="card-body">
+              On the 133-asteroid holdout set, optimized cadences reduce the alias rate from 51&ndash;69% to 45&ndash;59% on the short-period bin (P &isin; [2.2, 8] h), a relative reduction of up to 13% across the sweep &mdash; a well-cadenced N = 9 schedule matches or beats a uniform N = 11. Fewer than 0.4% of randomly drawn cadences match or exceed the CMA-ES optima. The medium- and long-period bins (P &ge; 8 h) sit near 0.91 and 0.97 regardless of sampling, because the 8-hour observing block can't constrain rotation periods that don't complete a cycle. The interactive demonstration linked above uses asteroid (5745) as its hero case &mdash; a 4.09-hour rotator with a strongly bimodal lightcurve (A<sub>2</sub>/A<sub>1</sub> &asymp; 13) for which uniform N = 8 lands on a frequency alias in every cross-validation seed while the optimized cadence lands on the true period in every seed.
+            </p>
+            <!-- repo link goes here once the cadence pipeline is published
+            <div class="card-links">
+              <a class="card-link" href="https://github.com/HenryZimme/cadence-optimization" target="_blank" rel="noopener">Cadence Optimization Repository</a>
+            </div>
+            -->
+            <a href="https://aas248-aas.ipostersessions.com/Default.aspx?s=E7-98-ED-CB-43-2D-58-D8-C9-FE-B6-29-15-77-85-68" target="_blank" rel="noopener" class="card-cta">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <img src="/assets/icons/aas_logo.jpg" width="14" height="14" alt="AAS" style="flex-shrink:0; opacity:0.9;" />
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">Presented at AAS 248 &#8599;</div>
+              </div>
+              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">The full interactive poster on the AAS iPoster platform &mdash; additional figures, the complete validation suite, and the methodology in full detail.</div>
+            </a>
+          </div>
+          <div class="card-tags">
+            <span class="tag">Minor Planets</span>
+            <span class="tag">Cadence Optimization</span>
+            <span class="tag">Evolutionary Algorithms</span>
+          </div>
+        </div>
 
         <div class="research-card" id="card-cep1347">
           <div class="card-id">Co-Investigator &amp; Primary Author, with Bogumił Pilecki</div>
@@ -2210,7 +2243,7 @@
           <div class="highlights-year">2025 &ndash;</div>
           <div class="highlights-item">
             <h3>Writing Center Tutor, Phillips Academy</h3>
-            <p>Before joining the tutoring staff, I booked 50 appointments as a student. Instead of asking for grammatical revisions, I went to discuss my ideas with other thinkers who care about rigorous peer review and dialogue. Now, as a tutor, I try to create that same Socratic, collaborative environment for others.</p>
+            <p>Before joining the tutoring staff, I booked 63 appointments as a student. Instead of asking for grammatical revisions, I went to discuss my ideas with other thinkers who care about rigorous peer review and dialogue. Now, as a tutor, I try to create that same Socratic, collaborative environment for others.</p>
           </div>
         </div>
 

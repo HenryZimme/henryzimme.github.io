@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entropy-Guided Cadence Optimization | Henry Zimmerman</title>
+  <meta name="description" content="Interactive demonstration of intra-night cadence optimization for asteroid rotation-period recovery. Built from a 381-object ALCDEF corpus and CMA-ES-derived schedules.">
+  <meta name="theme-color" content="#07091a">
+  <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #07091a;
+      --gold:         #c4a258;
+      --gold-dim:     rgba(196,162,88,0.25);
+      --text:         #e2ddd4;
+      --text-dim:     rgba(226,221,212,0.72);
+      --panel-border: rgba(196,162,88,0.2);
+      --blue:         #78a5d2;
+      --bad:          #d98a86;   /* uniform schedule */
+      --good:         #86c79a;   /* optimized schedule */
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'EB Garamond', serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── nav ── */
+    nav {
+      position: fixed;
+      top: 0; width: 100%;
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+      background: linear-gradient(to bottom, var(--bg) 70%, transparent 100%);
+    }
+    .nav-name {
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
+
+    .skip-link {
+      position: absolute; left: -9999px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    }
+    .skip-link:focus { left: 20px; top: 20px; color: var(--gold); z-index: 300; }
+
+    /* ── sim viewport ── */
+    #sim-section {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      padding: 110px 24px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      overflow: hidden;
+      background:
+        var(--bg)
+        radial-gradient(ellipse 70% 45% at 50% 0%, rgba(120,165,210,0.06), transparent 70%);
+    }
+
+    .sim-stage {
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* control row */
+    .ctl-row {
+      display: flex; flex-wrap: wrap; gap: 18px 32px;
+      align-items: flex-end;
+    }
+    .ctl-group { display: flex; flex-direction: column; gap: 6px; }
+    .ctl-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.45);
+    }
+    .btn-mode {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-mode:hover { color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.35); }
+    .btn-mode + .btn-mode { margin-left: 4px; }
+    .btn-mode[aria-pressed="true"] {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+      background: rgba(196,162,88,0.08);
+    }
+    .ctl-replay { margin-left: auto; }
+
+    /* hero canvas wrapper with HUD overlay */
+    .hero-wrap {
+      position: relative;
+      border: 1px solid var(--panel-border);
+      border-radius: 2px;
+      background: rgba(7,9,26,0.4);
+    }
+    #pg { display: block; width: 100%; }
+    .hud-stats {
+      position: absolute;
+      top: 14px; left: 16px;
+      display: flex; flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+    }
+    .hud-row { display: flex; align-items: center; gap: 8px; }
+    .hud-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.50);
+      width: 64px;
+    }
+    .hud-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      transition: color 0.3s ease;
+    }
+    .pg-hint {
+      position: absolute;
+      bottom: 6px; right: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.22);
+      pointer-events: none;
+    }
+
+    /* tile row */
+    .tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+    .tile {
+      border: 1px solid var(--panel-border);
+      border-radius: 2px;
+      background: rgba(7,9,26,0.4);
+      padding: 10px 12px 6px;
+      display: flex; flex-direction: column;
+    }
+    .tile-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .tile canvas { display: block; width: 100%; }
+    .tile-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      color: rgba(255,255,255,0.30);
+      margin-top: 2px;
+      min-height: 1.4em;
+    }
+
+    /* scroll indicator */
+    #scroll-hint {
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.22);
+      align-self: center;
+      animation: pulse-hint 3s ease-in-out infinite;
+    }
+    @keyframes pulse-hint {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* ── explanation section ── */
+    #explanation {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 80px 24px 100px;
+    }
+    .exp-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-bottom: 12px;
+    }
+    .exp-title {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 400;
+      line-height: 1.1;
+      margin: 0 0 32px;
+      color: var(--text);
+    }
+    .article-divider {
+      border: 0;
+      border-top: 1px solid var(--panel-border);
+      margin: 40px 0;
+    }
+    .exp-body p {
+      font-size: 20px;
+      margin-bottom: 28px;
+      color: var(--text-dim);
+    }
+    .exp-body p:first-child { color: var(--text); }
+
+    /* parameter table */
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 40px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+    .param-table th {
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--panel-border);
+      font-weight: 400;
+    }
+    .param-table td {
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.08);
+      color: var(--text-dim);
+      vertical-align: top;
+    }
+    .param-table td:first-child { color: rgba(255,255,255,0.45); width: 55%; }
+    .param-table td:last-child { text-align: right; color: var(--text); }
+
+    /* mode guide */
+    .mode-guide { margin: 40px 0; }
+    .mode-item {
+      display: flex;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.08);
+    }
+    .mode-item:first-child { border-top: 1px solid rgba(196,162,88,0.08); }
+    .mode-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      width: 90px;
+      flex-shrink: 0;
+      padding-top: 3px;
+    }
+    .mode-desc { font-size: 17px; color: var(--text-dim); }
+    .mode-desc code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78em;
+      color: var(--blue);
+      background: rgba(120,165,210,0.08);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* references */
+    .ref-list { margin-top: 40px; list-style: none; }
+    .ref-list li {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,0.30);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.05);
+      line-height: 1.5;
+    }
+    .ref-list a { color: rgba(196,162,88,0.55); text-decoration: none; }
+    .ref-list a:hover { color: var(--gold); }
+
+    /* footer nav */
+    .footer-nav {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* back to top */
+    #back-to-top {
+      position: fixed;
+      bottom: 40px; right: 40px;
+      background: var(--bg);
+      border: 1px solid var(--panel-border);
+      color: var(--gold);
+      width: 44px; height: 44px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 100;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+    #back-to-top:hover { border-color: var(--gold); }
+
+    /* mobile */
+    @media (max-width: 740px) {
+      nav { padding: 18px 20px; }
+      #sim-section { padding: 96px 16px 40px; min-height: auto; }
+      .tiles { grid-template-columns: 1fr; }
+      .ctl-row { gap: 14px; }
+      .ctl-replay { margin-left: 0; }
+      #explanation { padding: 60px 20px 80px; }
+      .exp-body p { font-size: 18px; }
+      .footer-nav { flex-direction: column; }
+      #back-to-top { bottom: 20px; right: 20px; }
+      .hud-stats { top: 10px; left: 12px; }
+      .hud-label { width: 52px; font-size: 8.5px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <nav aria-label="Primary">
+    <a href="index.html" class="nav-name">Henry Zimmerman</a>
+    <a href="index.html#research" class="nav-back">← Back to Portfolio</a>
+  </nav>
+
+  <main id="main">
+
+    <!-- interactive -->
+    <section id="sim-section" aria-label="Interactive demonstration of intra-night cadence optimization">
+
+      <div class="sim-stage">
+
+        <div class="ctl-row">
+          <div class="ctl-group">
+            <span class="ctl-label">Schedule</span>
+            <div id="seg">
+              <button class="btn-mode" data-mode="uniform" aria-pressed="false">Uniform</button>
+              <button class="btn-mode" data-mode="optimized" aria-pressed="true">Optimized (CMA-ES)</button>
+            </div>
+          </div>
+          <div class="ctl-group">
+            <span class="ctl-label">Obs / night</span>
+            <div id="nobs">
+              <button class="btn-mode" data-n="8" aria-pressed="true">8</button>
+              <button class="btn-mode" data-n="9" aria-pressed="false">9</button>
+              <button class="btn-mode" data-n="10" aria-pressed="false">10</button>
+            </div>
+          </div>
+          <button class="btn-mode ctl-replay" id="replay">Replay morph</button>
+        </div>
+
+        <div class="hero-wrap">
+          <canvas id="pg" height="320" aria-label="Matched-template periodogram for the current schedule"></canvas>
+          <div class="hud-stats" aria-live="polite" aria-atomic="false">
+            <div class="hud-row">
+              <span class="hud-label">e<sup>H</sup></span>
+              <span class="hud-val" id="hud-eh">--</span>
+            </div>
+            <div class="hud-row">
+              <span class="hud-label">n<sub>peaks</sub></span>
+              <span class="hud-val" id="hud-npk">--</span>
+            </div>
+            <div class="hud-row">
+              <span class="hud-label">argmax P</span>
+              <span class="hud-val" id="hud-arg">-- h</span>
+            </div>
+            <div class="hud-row">
+              <span class="hud-label">A<sub>R</sub> corpus</span>
+              <span class="hud-val" id="hud-ar">--</span>
+            </div>
+          </div>
+          <div class="pg-hint">Click a peak to fold</div>
+        </div>
+
+        <div class="tiles">
+          <div class="tile">
+            <span class="tile-label">Night sampling</span>
+            <canvas id="night" height="78"></canvas>
+            <span class="tile-sub" id="nightsub"></span>
+          </div>
+          <div class="tile">
+            <span class="tile-label">Spectral window |W(f)|²</span>
+            <canvas id="win" height="120"></canvas>
+            <span class="tile-sub" id="winsub">0 to 0.6 cyc / hr</span>
+          </div>
+          <div class="tile">
+            <span class="tile-label">Folded lightcurve</span>
+            <canvas id="fold" height="120"></canvas>
+            <span class="tile-sub" id="foldsub"></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="scroll-hint">scroll for methods ↓</div>
+
+    </section>
+
+    <!-- explanation -->
+    <section id="explanation">
+
+      <div class="exp-meta">Asteroid Photometry · Cadence Optimization</div>
+      <h1 class="exp-title">Entropy-Guided Intra-Night Cadence</h1>
+
+      <hr class="article-divider">
+
+      <div class="exp-body">
+
+        <p>The page above is built on asteroid (5745), a 4.09-hour rotator drawn from a 381-object corpus of ALCDEF lightcurves and selected as the demonstration target because it exhibits the maximum possible separation between uniform and optimized sampling in the cross-validation: uniform N = 8 fails to recover the rotation period in 100% of seeds, while the optimized cadence succeeds in 100% of seeds. Its phase-folded V-band photometry is summarized by a 4-term Fourier model with a strongly bimodal shape (A<sub>2</sub>/A<sub>1</sub> ≈ 13); the demonstration samples that model at eight, nine, or ten times within an 8-hour night and adds photometric noise of σ = 0.034 mag. Two schedules are compared: a naïve uniform spacing, and the cadence selected by CMA-ES optimization for the same number of points in the short-period bin.</p>
+
+        <p>For a single ground-based night, the structure of the recovered period depends as much on when the observations land within the window as on how many there are. Uniform spacing maximizes the sidelobe power of the spectral window |W(f)|² = |Σⱼ exp(2πi f tⱼ)|² / N², which propagates into the period posterior as a forest of competing peaks near specific aliases. The optimized cadence is constructed to suppress that structure under a fixed budget of exposures.</p>
+
+        <p>For (5745) the two schedules differ visibly in <em>which peak the periodogram favors</em>, not just in the residual structure around the winning peak. Under uniform sampling the recovered argmax frequently lands at a 1-day frequency alias of the true rotation (P &asymp; 3.49 h or 4.91 h, depending on noise realization) or at an unclassified competing peak; under the optimized cadence the true peak at 4.087 h dominates the periodogram in every seed. On the 57-asteroid short-period holdout set (P &isin; [2.2, 8] h, never seen during training), the same procedure reduces the alias rate from A<sub>R</sub> = 0.69 to 0.59 at N = 8, 0.63 to 0.52 at N = 9, and 0.57 to 0.51 at N = 10. The N = 8 and N = 9 gains are the largest in the sweep (Δ &asymp; 0.10); by N = 10 the spectral window already has less alias structure to suppress and the marginal improvement narrows toward Δ &asymp; 0.06. (5745) sits at the most extreme end of what the optimizer can recover &mdash; the corpus-level numbers above are averages across asteroids whose individual gains range from negligible to total.</p>
+
+      </div>
+
+      <hr class="article-divider">
+      <div class="exp-meta" style="margin-bottom:20px">Demonstration Parameters</div>
+      <table class="param-table">
+        <thead>
+          <tr><th>Parameter</th><th style="text-align:right">Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Target</td><td>Asteroid (5745)</td></tr>
+          <tr><td>Rotation period P</td><td>4.087 h</td></tr>
+          <tr><td>Lightcurve amplitude</td><td>0.425 mag</td></tr>
+          <tr><td>Lightcurve model</td><td>4-term Fourier, A₂ / A₁ ≈ 5.6</td></tr>
+          <tr><td>RMS of fit</td><td>0.021 mag</td></tr>
+          <tr><td>Photometric noise σ</td><td>0.020 mag</td></tr>
+          <tr><td>Night length</td><td>8.0 h</td></tr>
+          <tr><td>Observations per night N</td><td>8 / 9 / 10</td></tr>
+          <tr><td>Optimizer</td><td>CMA-ES, 8 generations, K-fold CV</td></tr>
+          <tr><td>Period bin</td><td>Short (P &isin; [2.2, 8] h)</td></tr>
+          <tr><td>Holdout A<sub>R</sub> (N = 8) &middot; uniform &rarr; optimized</td><td>0.693 &rarr; 0.590</td></tr>
+          <tr><td>Holdout A<sub>R</sub> (N = 9) &middot; uniform &rarr; optimized</td><td>0.631 &rarr; 0.524</td></tr>
+          <tr><td>Holdout A<sub>R</sub> (N = 10) &middot; uniform &rarr; optimized</td><td>0.574 &rarr; 0.508</td></tr>
+        </tbody>
+      </table>
+
+      <hr class="article-divider">
+      <div class="exp-meta" style="margin-bottom:20px">Schedules</div>
+      <div class="mode-guide">
+        <div class="mode-item">
+          <div class="mode-label">Uniform</div>
+          <div class="mode-desc">Even spacing across the 8-hour night, one observation every 8 / (N − 1) hours. The reference baseline. For N = 8 this produces a strong sidelobe at <code>P ≈ 1.64 h</code> and a secondary forest around <code>5.7 h</code>, both visible in the periodogram.</div>
+        </div>
+        <div class="mode-item">
+          <div class="mode-label">Optimized</div>
+          <div class="mode-desc">Intra-night positions selected by Covariance Matrix Adaptation Evolution Strategy (Hansen &amp; Ostermeier 2001), with the Shannon entropy of the period posterior as the loss and held-out asteroids for cross-validation. The N = 8 short-period winner: <code>0, 0.62, 1.39, 2.71, 3.83, 6.01, 6.85, 8.00 h</code>.</div>
+        </div>
+      </div>
+
+      <hr class="article-divider">
+      <div class="exp-meta" style="margin-bottom:16px">Methods Notes</div>
+      <div class="exp-body">
+        <p style="font-size:17px;font-style:italic;color:var(--text-dim);margin-bottom:16px;">The notes below describe the demonstration's implementation choices and how they relate to the full pipeline. The interactive above stands on its own.</p>
+        <p style="font-size:17px">The period axis shown in the demonstration is the same blind 2nd-order Fourier (FALC) periodogram used by the production pipeline: at each trial period the data is least-squares fit by m(t) = c<sub>0</sub> + c<sub>1</sub>cos(2π t/P) + c<sub>2</sub>sin(2π t/P) + c<sub>3</sub>cos(4π t/P) + c<sub>4</sub>sin(4π t/P), and the displayed quantity is variance explained on [0, 1]. The trial-period grid runs from 2.2 h (the asteroid spin barrier; faster rotators are tidally disrupted) to 6.4 h, matching the production f<sub>max</sub> = 24/2.2 cyc/d cutoff that excludes sub-spin-barrier half-period aliases. The displayed e<sup>H</sup> is the effective number of competing peaks, computed from the Shannon entropy of the local maxima of the periodogram above a power floor of 0.30, weighted by exp(power / T<sub>p</sub>) with T<sub>p</sub> = 0.085. The full pipeline's optimization loss is the entropy of the Boltzmann posterior p(f) ∝ exp(−RSS(f) / T*) under the same Fourier fit, with T* = 2σ² fixed analytically &mdash; at this value the pseudo-posterior coincides with the exact Gaussian posterior for the assumed noise σ, and a separate τ sweep validates that ρ(H, A<sub>R</sub>) is flat across a broad band containing T*. The CMA-ES schedules embedded above are the actual winners selected by 5-fold cross-validation on a 248-asteroid training set, screened against nine baseline cadence families; the noise realization is fixed at σ = 0.034 mag (the truth-model Fourier-fit RMS for asteroid (5745)), and the morph between two schedules at fixed N is an index-matched linear interpolation purely for animation.</p>
+      </div>
+
+      <hr class="article-divider">
+      <div class="exp-meta" style="margin-bottom:16px">Data &amp; References</div>
+      <ul class="ref-list">
+        <li>Lam, Margot, Whittaker &amp; Myhrvold 2023, <i>Non-uniform sampling for asteroid period recovery</i>, Planet. Sci. J. 4, 61</li>
+        <li>Harris, Young, Bowell et al. 1989, <i>Photoelectric observations of asteroids (FALC)</i>, Icarus 77, 171</li>
+        <li>Lindley 1956, <i>On a measure of the information provided by an experiment</i>, Ann. Math. Statist. 27, 986</li>
+        <li>Jaynes 1957, <i>Information theory and statistical mechanics</i>, Phys. Rev. 106, 620</li>
+        <li>Hansen 2023, <i>The CMA Evolution Strategy: A Tutorial</i>, arXiv:1604.00772</li>
+        <li>Rizzo &amp; Sz&eacute;kely 2010, <i>DISCO analysis: a nonparametric extension of ANOVA</i>, Ann. Appl. Stat. 4, 1034</li>
+        <li>Asteroid lightcurve photometry: ALCDEF (Warner 2021, NASA PDS) &middot; LCDB (Warner, Harris &amp; Pravec 2021, NASA PDS)</li>
+        <li>VanderPlas 2018, <i>Understanding the Lomb-Scargle Periodogram</i>, ApJS 236, 16 &middot; <a href="https://doi.org/10.3847/1538-4365/aab766" target="_blank" rel="noopener">doi:10.3847/1538-4365/aab766<span style="position:absolute;left:-9999px"> (opens in new tab)</span></a></li>
+        <li>Zimmerman et al., <i>Entropy-guided cadence optimization for asteroid rotation-period recovery</i>, in preparation</li>
+      </ul>
+
+      <footer class="footer-nav">
+        <a href="index.html#research" class="nav-back">← Back to Portfolio</a>
+        <a href="index.html#card-astcadence" class="nav-back">Research Card →</a>
+      </footer>
+
+    </section>
+
+  </main>
+
+  <button id="back-to-top" aria-label="Back to top">↑</button>
+
+<script>
+/* ── real data ─────────────────────────────────────────────────────────── */
+// asteroid (5745): coeffs = [m0, a1,b1, a2,b2, a3,b3, a4,b4]  (4-term Fourier)
+// strongly bimodal lightcurve (A2/A1 = 13.0, amp = 0.82 mag, RMS = 0.034); P = 4.087 h
+// in the cross-validation, uniform N=8 fails on 100% of seeds; optimized succeeds on 100%
+const COEFFS=[16.281164,0.028503766,0.0082109707,-0.045571083,-0.38347533,
+              -0.0034659032,-0.0019526051,-0.073798858,0.0037193281];
+const P_TRUE=4.087;                  // hours
+const NIGHT=8.0, SIGMA=0.034;
+// real CMA-ES optimized cadences (hours within night), short-period bin
+const OPT={
+  8 :{t:[0,0.6178,1.3936,2.7067,3.8330,6.0118,6.8462,8.0000], ar:0.643},
+  9 :{t:[0,0.6518,1.1289,3.3735,4.1571,5.9142,6.2759,7.5443,8.0000], ar:0.526},
+  10:{t:[0,1.1051,1.5405,2.6623,3.4383,5.9040,6.5359,6.9400,7.4344,8.0000], ar:0.555},
+};
+const uniform=n=>Array.from({length:n},(_,i)=>i*NIGHT/(n-1));
+// uniform-baseline corpus A_R (short period bin) for the HUD readout
+const AR_UNIFORM = {8:0.681, 9:0.659, 10:0.585};
+
+/* ── math ──────────────────────────────────────────────────────────────── */
+const TAU=2*Math.PI;
+function truthMag(ph){let m=COEFFS[0];for(let k=1;k<=4;k++)
+  m+=COEFFS[2*k-1]*Math.cos(TAU*k*ph)+COEFFS[2*k]*Math.sin(TAU*k*ph);return m;}
+// zero-mean light-curve template (the known shape) for matched-template periodogram
+let TMEAN=0;{let s=0,M=2000;for(let i=0;i<M;i++)s+=truthMag(i/M);TMEAN=s/M;}
+const shape=ph=>truthMag(ph)-TMEAN;
+// deterministic noise
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(TAU*v);}
+function observe(times){const r=mulberry32(20260616);return times.map(t=>{
+  const ph=((t)/P_TRUE)%1; return{t,ph,mag:truthMag(ph)+SIGMA*gauss(r)};});}
+
+// solve symmetric KxK normal equations (Gaussian elimination)
+function solveSym(A,b){const n=b.length,M=A.map((r,i)=>r.concat(b[i]));
+  for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;
+    [M[c],M[p]]=[M[p],M[c]];const d=M[c][c]||1e-12;
+    for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c]/d;for(let k=c;k<=n;k++)M[r][k]-=f*M[c][k];}}
+  return M.map((r,i)=>r[n]/(r[i][i]||1e-12)).map((_,i)=>M[i][n]/(M[i][i]||1e-12));}
+// blind 2nd-order Fourier periodogram (matches production recover_period_falc):
+// at each trial P, fit m(t) = c0 + c1·cos(2π t/P) + c2·sin(2π t/P) + c3·cos(4π t/P) + c4·sin(4π t/P)
+// 5 free parameters, N=8 obs → 3 dof; alias structure now visible because the fit is BLIND to the truth shape
+function powAt(obs,P){const n=obs.length;let mm=0;for(const o of obs)mm+=o.mag;mm/=n;
+  const omg=TAU/P;
+  const AtA=[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]],Atb=[0,0,0,0,0];
+  for(const o of obs){
+    const row=[1,Math.cos(omg*o.t),Math.sin(omg*o.t),Math.cos(2*omg*o.t),Math.sin(2*omg*o.t)];
+    for(let r=0;r<5;r++){Atb[r]+=row[r]*o.mag;for(let c=0;c<5;c++)AtA[r][c]+=row[r]*row[c];}
+  }
+  const x=solveSym(AtA,Atb);if(!x)return 0;
+  let rss=0,tss=0;
+  for(const o of obs){const yp=x[0]+x[1]*Math.cos(omg*o.t)+x[2]*Math.sin(omg*o.t)+x[3]*Math.cos(2*omg*o.t)+x[4]*Math.sin(2*omg*o.t);
+    rss+=(o.mag-yp)**2;tss+=(o.mag-mm)**2;}
+  if(tss<1e-12)return 0;return Math.max(0,1-rss/tss);}
+// spectral window |W(f)|^2 = |Σ e^{2πi f t}|^2 / N^2
+function winPow(times,f){let re=0,im=0;for(const t of times){const p=TAU*f*t;re+=Math.cos(p);im+=Math.sin(p);}
+  return(re*re+im*im)/(times.length*times.length);}
+
+// Period grid: PMIN=2.2h matches the asteroid spin-barrier cutoff used in production (alias_rate_model);
+// PMAX=6.4 covers the short-period bin. The 2.2h floor naturally excludes spurious sub-spin-barrier
+// half-period aliases (e.g. 2.04h for the 4.087h rotator (5745)) that no physical asteroid could exhibit.
+const PMIN=2.2,PMAX=6.4,NGRID=520;
+const periods=Array.from({length:NGRID},(_,i)=>PMIN+(PMAX-PMIN)*i/(NGRID-1));
+const TP=0.085, PK_FLOOR=0.30;   // peak-posterior temperature; min power to count as a contender
+
+function pipeline(times){
+  const obs=observe(times);
+  const power=periods.map(P=>powAt(obs,P));
+  // detect competing peaks: local maxima above floor, merged within 0.18 h
+  let idx=[];for(let i=1;i<power.length-1;i++)
+    if(power[i]>=power[i-1]&&power[i]>power[i+1]&&power[i]>PK_FLOOR)idx.push(i);
+  idx.sort((a,b)=>power[b]-power[a]);
+  const keep=[];for(const i of idx){if(keep.some(j=>Math.abs(periods[j]-periods[i])<0.18))continue;keep.push(i);}
+  // entropy over the contending peaks → effective number of candidate periods
+  const w=keep.map(i=>Math.exp(power[i]/TP)),Z=w.reduce((a,b)=>a+b,0)||1;
+  const p=w.map(v=>v/Z);let H=0;for(const pi of p)if(pi>1e-12)H-=pi*Math.log(pi);
+  const eH=keep.length?Math.exp(H):1;
+  let ai=0;for(let i=1;i<power.length;i++)if(power[i]>power[ai])ai=i;
+  const peaks=keep.map(i=>({P:periods[i],pw:power[i]}));
+  return{obs,power,eH,argP:periods[ai],peaks};
+}
+
+/* ── canvas helpers ────────────────────────────────────────────────────── */
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function fit(c){const dpr=Math.min(devicePixelRatio||1,2);
+  c._h=c._h||c.height;
+  const w=c.getBoundingClientRect().width;
+  c.style.height=c._h+'px';
+  c.width=w*dpr; c.height=c._h*dpr;
+  const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);
+  return{x,w,h:c._h};}
+
+const C={pg:document.getElementById('pg'),night:document.getElementById('night'),
+  win:document.getElementById('win'),fold:document.getElementById('fold')};
+
+function drawPeriodogram(power,peaks,foldP,argP,col){
+  const{x,w,h}=fit(C.pg);x.clearRect(0,0,w,h);
+  const padL=44,padR=10,padT=14,padB=40,gw=w-padL-padR,gh=h-padT-padB;
+  const X=i=>padL+gw*(periods[i]-PMIN)/(PMAX-PMIN);
+  const Xp=P=>padL+gw*(P-PMIN)/(PMAX-PMIN);
+  const Y=v=>padT+gh*(1-v);
+  // baseline
+  x.strokeStyle='rgba(226,221,212,.14)';x.lineWidth=1;
+  x.beginPath();x.moveTo(padL,Y(0));x.lineTo(w-padR,Y(0));x.stroke();
+  // true period marker
+  x.strokeStyle=css('--gold');x.globalAlpha=.55;x.setLineDash([3,4]);x.lineWidth=1;
+  x.beginPath();x.moveTo(Xp(P_TRUE),padT-4);x.lineTo(Xp(P_TRUE),Y(0));x.stroke();
+  x.setLineDash([]);x.globalAlpha=1;
+  x.fillStyle=css('--gold');x.font="500 10px 'JetBrains Mono',monospace";x.textAlign='center';
+  x.fillText('true P',Xp(P_TRUE),padT-6);
+  // fill under curve
+  const grad=x.createLinearGradient(0,padT,0,Y(0));
+  grad.addColorStop(0,col+'55');grad.addColorStop(1,col+'04');
+  x.beginPath();x.moveTo(X(0),Y(0));
+  for(let i=0;i<power.length;i++)x.lineTo(X(i),Y(power[i]));
+  x.lineTo(X(power.length-1),Y(0));x.closePath();x.fillStyle=grad;x.fill();
+  // curve
+  x.beginPath();for(let i=0;i<power.length;i++){const px=X(i),py=Y(power[i]);i?x.lineTo(px,py):x.moveTo(px,py);}
+  x.strokeStyle=col;x.lineWidth=1.8;x.stroke();
+  // contender peak markers
+  if(peaks)for(const pk of peaks){const px=Xp(pk.P),py=Y(pk.pw);
+    x.fillStyle=col;x.globalAlpha=.9;x.beginPath();x.arc(px,py,2.6,0,TAU);x.fill();x.globalAlpha=1;}
+  // fold marker (selected period)
+  x.strokeStyle=css('--blue');x.lineWidth=1.4;
+  x.beginPath();x.moveTo(Xp(foldP),padT);x.lineTo(Xp(foldP),Y(0));x.stroke();
+  x.fillStyle=css('--blue');x.beginPath();x.arc(Xp(foldP),padT+3,3,0,TAU);x.fill();
+  // axis ticks + labels
+  x.fillStyle='rgba(226,221,212,.5)';x.font="10px 'JetBrains Mono',monospace";
+  x.textAlign='center';
+  for(let P=3;P<=6;P++)x.fillText(P+'h',Xp(P),h-12);
+  x.fillText('trial period (hours)',w/2,h-1);
+  x.textAlign='right';
+  for(const v of [0,0.5,1.0])x.fillText(v.toFixed(1),padL-2,Y(v)+3);
+  x.save();x.translate(padL-30,padT+gh/2);x.rotate(-Math.PI/2);
+  x.textAlign='center';x.fillText('variance explained',0,0);x.restore();
+  C.pg._Xp=Xp;C.pg._padT=padT;C.pg._Yb=Y(0);
+}
+
+function drawNight(times,col){
+  const{x,w,h}=fit(C.night);x.clearRect(0,0,w,h);
+  const padX=14,bw=w-2*padX,cy=h/2-6;
+  x.strokeStyle='rgba(226,221,212,.18)';x.lineWidth=1;
+  x.beginPath();x.moveTo(padX,cy);x.lineTo(w-padX,cy);x.stroke();
+  for(const t of times){const px=padX+bw*t/NIGHT;
+    x.strokeStyle=col;x.lineWidth=2;x.beginPath();x.moveTo(px,cy-13);x.lineTo(px,cy+13);x.stroke();
+    x.fillStyle=col;x.beginPath();x.arc(px,cy-13,2.4,0,TAU);x.fill();}
+  // tick marks + labels at 0, 4, 8 h
+  x.fillStyle='rgba(226,221,212,.45)';x.font="9.5px 'JetBrains Mono',monospace";
+  x.textAlign='center';
+  for(const t of [0,4,8]){const px=padX+bw*t/NIGHT;
+    x.strokeStyle='rgba(226,221,212,.3)';x.beginPath();x.moveTo(px,cy+15);x.lineTo(px,cy+18);x.stroke();
+    x.fillText(t+'h',px,cy+28);}
+}
+
+function drawWindow(times){
+  const{x,w,h}=fit(C.win);x.clearRect(0,0,w,h);
+  const padL=8,padR=8,padB=24,padT=8,gw=w-padL-padR,gh=h-padT-padB;
+  const FW=0.62; // cph
+  x.strokeStyle='rgba(226,221,212,.12)';x.beginPath();x.moveTo(padL,padT+gh);x.lineTo(w-padR,padT+gh);x.stroke();
+  const N=240,vals=[];for(let i=0;i<N;i++){const f=FW*i/(N-1);vals.push(winPow(times,f));}
+  x.beginPath();for(let i=0;i<N;i++){const px=padL+gw*i/(N-1),py=padT+gh*(1-vals[i]);i?x.lineTo(px,py):x.moveTo(px,py);}
+  x.strokeStyle=css('--blue');x.lineWidth=1.6;x.stroke();
+  x.lineTo(padL+gw,padT+gh);x.lineTo(padL,padT+gh);x.closePath();
+  x.fillStyle='rgba(120,165,210,.10)';x.fill();
+  // x-axis ticks + label
+  x.fillStyle='rgba(226,221,212,.45)';x.font="9.5px 'JetBrains Mono',monospace";x.textAlign='center';
+  for(const f of [0,0.3,0.6]){const px=padL+gw*(f/FW);x.fillText(f.toFixed(1),px,padT+gh+10);}
+  x.fillText('frequency (cyc / hr)',w/2,h-3);
+}
+
+function drawFold(obs,P,col){
+  const{x,w,h}=fit(C.fold);x.clearRect(0,0,w,h);
+  const padL=38,padR=8,padT=8,padB=22,gw=w-padL-padR,gh=h-padT-padB;
+  let lo=Infinity,hi=-Infinity;for(let i=0;i<=80;i++){const m=truthMag(i/80);if(m<lo)lo=m;if(m>hi)hi=m;}
+  const pad=(hi-lo)*0.18;lo-=pad;hi+=pad;
+  const X=ph=>padL+gw*ph, Y=m=>padT+gh*(m-lo)/(hi-lo);
+  x.beginPath();for(let i=0;i<=120;i++){const ph=i/120,m=truthMag(ph);i?x.lineTo(X(ph),Y(m)):x.moveTo(X(ph),Y(m));}
+  x.strokeStyle='rgba(226,221,212,.5)';x.lineWidth=1.3;x.stroke();
+  for(const o of obs){const ph=((o.t)/P)%1;
+    x.fillStyle=css('--blue');x.beginPath();x.arc(X(ph),Y(o.mag),3,0,TAU);x.fill();
+    x.strokeStyle='rgba(7,9,26,.8)';x.lineWidth=1;x.stroke();}
+  const cols=5,A=[],b=[];for(const o of obs){const ph=((o.t)/P)%1,row=[1];
+    for(let k=1;k<=2;k++){row.push(Math.cos(TAU*k*ph));row.push(Math.sin(TAU*k*ph));}A.push(row);b.push(o.mag);}
+  const AtA=Array.from({length:cols},()=>Array(cols).fill(0)),Atb=Array(cols).fill(0);
+  for(let i=0;i<obs.length;i++)for(let r=0;r<cols;r++){Atb[r]+=A[i][r]*b[i];for(let c=0;c<cols;c++)AtA[r][c]+=A[i][r]*A[i][c];}
+  const xx=solveSym(AtA,Atb);
+  x.beginPath();for(let i=0;i<=120;i++){const ph=i/120;let m=xx[0];
+    for(let k=1;k<=2;k++)m+=xx[2*k-1]*Math.cos(TAU*k*ph)+xx[2*k]*Math.sin(TAU*k*ph);
+    i?x.lineTo(X(ph),Y(m)):x.moveTo(X(ph),Y(m));}
+  x.strokeStyle=css('--gold');x.lineWidth=1.6;x.globalAlpha=.95;x.stroke();x.globalAlpha=1;
+  // axis labels
+  x.fillStyle='rgba(226,221,212,.45)';x.font="9.5px 'JetBrains Mono',monospace";
+  // y ticks: brighter on top → smaller mag at top. show 2 ticks
+  x.textAlign='right';
+  const lo_disp=lo+pad, hi_disp=hi-pad;       // back out to model mag range
+  x.fillText(lo_disp.toFixed(2),padL-3,Y(lo_disp)+3);
+  x.fillText(hi_disp.toFixed(2),padL-3,Y(hi_disp)+3);
+  x.save();x.translate(padL-30,padT+gh/2);x.rotate(-Math.PI/2);
+  x.textAlign='center';x.fillText('V mag',0,0);x.restore();
+  // x ticks
+  x.textAlign='center';
+  for(const ph of [0,0.5,1]){x.fillText(ph.toFixed(1),X(ph),padT+gh+11);}
+  x.fillText('rotation phase',padL+gw/2,h-3);
+}
+
+/* ── state & render ────────────────────────────────────────────────────── */
+let N=8, mode='optimized', foldP=P_TRUE, anim=null;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hudEh=document.getElementById('hud-eh'),
+      hudNpk=document.getElementById('hud-npk'),
+      hudArg=document.getElementById('hud-arg'),
+      hudAr=document.getElementById('hud-ar'),
+      nightSub=document.getElementById('nightsub'),
+      foldSub=document.getElementById('foldsub');
+
+function timesFor(m,n){return m==='uniform'?uniform(n):OPT[n].t.slice();}
+function lerpTimes(a,b,t){return a.map((v,i)=>v+(b[i]-v)*t);}
+
+function renderTimes(times,m){
+  const col = m==='uniform'?css('--bad'):css('--good');
+  const P=pipeline(times);
+  drawPeriodogram(P.power,P.peaks,foldP,P.argP,col);
+  drawNight(times,col);
+  drawWindow(times);
+  drawFold(P.obs,foldP,col);
+  hudEh.textContent=P.eH.toFixed(1);
+  hudEh.style.color=col;
+  hudNpk.textContent=P.peaks.length;
+  hudArg.textContent=P.argP.toFixed(2)+' h';
+  hudAr.textContent = m==='uniform' ? AR_UNIFORM[times.length].toFixed(2) : OPT[times.length].ar.toFixed(2);
+  nightSub.textContent = m==='uniform'
+    ? `${times.length} pts · even ${(NIGHT/(times.length-1)).toFixed(2)} h spacing`
+    : `${times.length} pts · CMA-ES`;
+  foldSub.textContent = `folded at ${foldP.toFixed(2)} h`;
+  return P;
+}
+
+function snap(m){foldP=P_TRUE;renderTimes(timesFor(m,N),m);}
+
+function morphTo(m){
+  if(anim)cancelAnimationFrame(anim);
+  const from=mode, a=timesFor(from,N), b=timesFor(m,N);
+  mode=m; foldP=P_TRUE;
+  if(reduce){snap(m);return;}
+  const dur=1500,t0=performance.now();
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  (function step(now){const k=Math.min(1,(now-t0)/dur),e=ease(k);
+    renderTimes(lerpTimes(a,b,e),m);
+    if(k>=1){anim=null;}else anim=requestAnimationFrame(step);})(t0);
+}
+
+/* controls */
+document.querySelectorAll('#seg button').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b===btn));
+  morphTo(btn.dataset.mode);});
+document.querySelectorAll('#nobs button').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('#nobs button').forEach(b=>b.setAttribute('aria-pressed',b===btn));
+  N=+btn.dataset.n; snap(mode);});
+document.getElementById('replay').onclick=()=>{
+  const target=mode; mode = target==='optimized'?'uniform':'optimized';
+  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===target));
+  snap(mode); setTimeout(()=>morphTo(target),420);};
+
+/* click periodogram to fold */
+C.pg.addEventListener('click',ev=>{
+  const r=C.pg.getBoundingClientRect(),px=ev.clientX-r.left;
+  const Xp=C.pg._Xp;if(!Xp)return;
+  let best=P_TRUE,bd=1e9;for(const P of periods){const d=Math.abs(Xp(P)-px);if(d<bd){bd=d;best=P;}}
+  foldP=best; renderTimes(timesFor(mode,N),mode);});
+
+/* boot: open on uniform, morph to optimized */
+addEventListener('resize',()=>renderTimes(timesFor(mode,N),mode));
+window.addEventListener('load',()=>{
+  if(reduce){
+    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode==='optimized'));
+    snap('optimized'); return;
+  }
+  mode='uniform';
+  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode==='uniform'));
+  snap('uniform');
+  setTimeout(()=>{
+    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode==='optimized'));
+    morphTo('optimized');
+  },900);
+});
+
+/* back-to-top */
+(function(){
+  const btn=document.getElementById('back-to-top');
+  addEventListener('scroll',()=>{btn.classList.toggle('visible',scrollY>600);});
+  btn.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+})();
+</script>
+</body>
+</html>

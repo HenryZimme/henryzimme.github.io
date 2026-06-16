@@ -54,16 +54,15 @@ const featured_objects = [
     writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
   },
   {
-    name: "4715 Medesicaste | v = 15.5",
-    ra_deg: 88.05,
-    dec_deg: 41.03,
-    catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=4715&view=VOP",
-    image_url: "/assets/pops/4715_shape_model.png",
-    // card_url: "#card-astcadence", // uncomment when research card is live
-    type: "Jupiter Trojan, L5 Trailing Camp  |  Indicative sky position",
-    writeup: "4715 Medesicaste is the asteroid that started a question I couldn\u2019t let go of. Lam et al. (2023) showed that non-uniform sampling suppressed aliased Fourier period solutions for this L5 trojan more effectively than the quasi-uniform WISE cadence, but no framework existed to empirically optimize that cadence for the single-night ground-based case. I built one. It runs in two phases: window function minimization, then a multi-stage CMA-ES search trained and validated on ALCDEF light curves with injected Gaussian noise. The largest gains show up consistently in the 8\u201316 hr period bin, the regime that contains Medesicaste\u2019s 8.8 hr rotation period and the most densely populated period range among asteroids. Paper in preparation. Marker position is from MPC/RECON astrometry (2026 Sep 7) magnitude is indicative."
+    name: "(5745) 1991 AN | V \u2248 17.9, near conjunction",
+    ra_deg: 78.85,
+    dec_deg: 25.62,
+    catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=5745&view=VOP",
+    card_url: "#card-astcadence",
+    type: "Main-Belt Asteroid  |  Demonstration target",
+    writeup: "(5745) \u2014 provisional designation 1991 AN, currently unnamed \u2014 is the demonstration target of my entropy-guided cadence-optimization framework. A 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it exhibits the maximum possible separation between uniform and optimized sampling in the cross-validation: uniform N = 8 lands on a frequency alias in 100% of seeds while the optimized cadence lands on the true period in 100% of seeds. Marker position is computed by 2-body Keplerian propagation from Vizier/B/astorb orbital elements (epoch 2021-03-27 TDT) to 2026-06-16; the asteroid is near solar conjunction at this epoch (heliocentric 1.87 AU, geocentric 2.88 AU) and not currently observable."
   },
- /* {
+  {
     name: "HD 344787 | v = 9.32",
     ra_deg: 295.872,
     dec_deg: 23.178,
@@ -72,7 +71,7 @@ const featured_objects = [
     pipeline: true,
     type: "Active Investigation  |  Northern Sky",
     writeup: "At the 247th AAS meeting, I watched Dupree et al. present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris (<a href=\"https://doi.org/10.1051/0004-6361/202040123\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">Ripepi et al. 2021</a>)? Is it alone, or is something else there, invisible and waiting to be found?"
-  }*/
+  }
 ];
 
 // single source of truth for featured object colors, indexed parallel to featured_objects.
