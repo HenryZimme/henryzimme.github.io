@@ -1698,7 +1698,7 @@
     "name": "Henry Zimmerman",
     "url": "https://www.henryzimmerman.net/",
     "image": "https://www.henryzimmerman.net/assets/pfps/HSZ_Headshot_BW.webp",
-    "description": "Astrophysics researcher and writer at Phillips Academy Andover. Leading a VLT/ESPRESSO observing proposal for OGLE-LMC-CEP-1347 and optimizing time-domain  observation design.",
+    "description": "Astrophysics researcher and writer at Phillips Academy Andover. Leading a VLT/ESPRESSO observing proposal for OGLE-LMC-CEP-1347 and coordinating multi-site asteroid observations.",
     "sameAs": ["https://github.com/HenryZimme", "https://orcid.org/0009-0009-5524-1593", "https://www.linkedin.com/in/henryszimmerman/"],
     "alumniOf": {
       "@type": "EducationalOrganization",
@@ -1813,7 +1813,7 @@
       <div class="about-grid">
         <div class="about-text">
           <p class="about-lead">Hello! I'm Henry. I'm a very confident person who is generally wary of confidence and <span class="trail-word" data-word="false certainty">false certainty</span> (especially my own). I thrive most when I'm surrounded by people just as happy to talk through new ideas as they are to push back on my assumptions.</p>
-          <p>Most of my time goes into time-domain astronomy: I'm currently the primary author of a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki as PI to probe the merger history of a binary Cepheid in the Large Magellanic Cloud,  and developing an information-theoretic cadence-optimization framework to prevent aliasing  (presented at AAS 248). The rest of this site documents where that same instinct started: the epistemology of Descartes, the 1755 Lisbon earthquake, contemplating the AfD's rise, a visual poem responding to a Kay Walkingstick diptych.</p>
+          <p>Most of my time goes into time-domain astronomy: I'm currently the primary author of a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki as PI to probe the merger history of a binary Cepheid in the Large Magellanic Cloud, coordinating a multi-continent photometric campaign to determine the rotation period of main-belt asteroid 7605 Cindygraber, and developing the cadence-optimization framework that came out of it (presented at AAS 248). The rest of this site documents where that same instinct started: the epistemology of Descartes, the 1755 Lisbon earthquake, contemplating the AfD's rise, a visual poem responding to a Kay Walkingstick diptych.</p>
           <p>Outside of all that, I'm a cross country captain, jazz guitarist, board games enthusiast, and someone who has spent an unreasonable number of hours in the Writing Center (first as a client, now as a tutor). I find that my most enduring questions don't disappear as my interests evolve: namely, what do I think about the world, and <span class="trail-word" data-word="why am I likely wrong">why am I likely wrong</span>?</p>
         </div>
 
@@ -1951,12 +1951,25 @@
           <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-4" aria-label="Read more about entropy-guided cadence optimization">Read more &#8595;</button>
           <div class="card-expand" id="card-expand-4">
             <p class="card-body">
-              I formulated the problem as Bayesian experimental design (Lindley 1956): pick the intra-night sampling that maximizes the expected information gain about the rotation frequency under a fixed exposure budget of N &isin; {8, 9, 10, 11, 12} observations across an 8-hour observing block. The objective is the Shannon entropy of a Boltzmann posterior p(f) &prop; exp(&minus;RSS(f)/T*) under a 2nd-order Fourier (FALC; Harris 1989) fit at each trial frequency, with T* = 2&sigma;&sup2; fixed analytically so the posterior coincides with the profile likelihood used by the recovery itself. Entropy correlates with the empirical Monte Carlo alias rate at raw Spearman &rho; = 0.80&ndash;0.85 (binned &rho; &asymp; 0.99, p &lt; 10<sup>&minus;4</sup>) across the N sweep, making it a cheap, differentiable surrogate. A JAX-vmapped CMA-ES drove the optimization; candidate cadences plus nine baseline families were screened by 5-fold cross-validation on a 248-asteroid training set, with the train/holdout split chosen by a Rizzo &amp; Sz&eacute;kely (2010) DISCO multivariate energy test.
+              Period recovery from one night of asteroid photometry is an inverse problem: a handful of brightness measurements, many possible spin periods that could have produced them. Which periods become confusable depends entirely on when during the night you observed. I built a framework that picks the cadence which minimizes this ambiguity on average.
             </p>
             <p class="card-body">
-              On the 133-asteroid holdout set, optimized cadences reduce the alias rate from 51&ndash;69% to 45&ndash;59% on the short-period bin (P &isin; [2.2, 8] h), a relative reduction of up to 13% across the sweep &mdash; a well-cadenced N = 9 schedule matches or beats a uniform N = 11. Fewer than 0.4% of randomly drawn cadences match or exceed the CMA-ES optima. The medium- and long-period bins (P &ge; 8 h) sit near 0.91 and 0.97 regardless of sampling, because the 8-hour observing block can't constrain rotation periods that don't complete a cycle. The interactive demonstration linked above uses asteroid (5745) as its hero case &mdash; a 4.09-hour rotator with a strongly bimodal lightcurve (A<sub>2</sub>/A<sub>1</sub> &asymp; 13) for which uniform N = 8 lands on a frequency alias in every cross-validation seed while the optimized cadence lands on the true period in every seed.
+              I quantify ambiguity using the Shannon entropy of the period posterior. The posterior is a Boltzmann distribution over the fit residuals,
+              $$p(f) = \frac{\exp\left[-\frac{\mathrm{RSS}(f)}{T}\right]}{\sum_i^{N_\mathrm{grid}} \exp\left[-\frac{\mathrm{RSS}(f_i)}{T}\right]}$$
+              and the framework minimizes its Shannon entropy,
+              $$H = -\sum_i^{N_\mathrm{grid}} p(f_i) \log p(f_i).$$
+              Lower H means a sharper posterior. A sharper posterior means fewer candidate periods can plausibly fit the data.
             </p>
-            <!-- repo link goes here once the cadence pipeline is published
+            <p class="card-body">
+              The Boltzmann form is the maximum-entropy distribution consistent with the fit residuals (Jaynes 1957). At T = 2&sigma;&sup2;, the same posterior coincides with the profile likelihood of a Gaussian-noise &chi;&sup2; fit, so the surrogate matches what the recovery actually computes.
+            </p>
+            <p class="card-body">
+              Nothing here is supervised. Each asteroid's truth model is just a Fourier fit to its archival photometry, so I can simulate observations at any cadence and compute H directly on the light curve. The training corpus supplies plausible lightcurves, not labels. A JAX-vmapped CMA-ES does the optimization across a 248-asteroid training set from the merged ALCDEF-LCDB corpus I built.
+            </p>
+            <p class="card-body">
+              On a 133-asteroid holdout the optimized schedules cut the alias rate by up to 17% on short-period asteroids (P &lt; 8 h). A well-cadenced 9-observation night matches an 11-observation uniform one. The medium- and long-period bins (P &ge; 8 h) barely change (although they are still better than random). An 8-hour observing block can't constrain rotation periods that don't complete a cycle, and no scheduling choice will fix that.
+            </p>
+            <!-- repo link here when  cadence pipeline is published
             <div class="card-links">
               <a class="card-link" href="https://github.com/HenryZimme/cadence-optimization" target="_blank" rel="noopener">Cadence Optimization Repository</a>
             </div>
@@ -1966,7 +1979,7 @@
                 <img src="/assets/icons/aas_logo.jpg" width="14" height="14" alt="AAS" style="flex-shrink:0; opacity:0.9;" />
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">Presented at AAS 248 &#8599;</div>
               </div>
-              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">The full interactive poster on the AAS iPoster platform &mdash; additional figures, the complete validation suite, and the methodology in full detail.</div>
+              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">The  poster I presented at AAS 248. It walks through information theory and probability, validation on the holdout set, and future applications of the framework.</div>
             </a>
           </div>
           <div class="card-tags">
@@ -2000,7 +2013,7 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated</div>
               </div>
-              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.40&ndash;0.60, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where &Delta;RV&nbsp;&#8819;&nbsp;40&nbsp;km&thinsp;s<sup>&minus;1</sup> to cleanly separate the Cepheid and companion spectra. The simulation makes both constraints visible at once.</div>
+              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.40&ndash;0.60, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where the Cepheid's Li I line and the companion's Fe I lines are separated. The simulation makes both constraints visible at once.</div>
             </a>
           </div>
           <div class="card-tags">

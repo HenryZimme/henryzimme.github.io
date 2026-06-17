@@ -54,13 +54,13 @@ const featured_objects = [
     writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
   },
   {
-    name: "(5745) 1991 AN | V \u2248 17.9, near conjunction",
+    name: "5745 1991 AN | V \u2248 17.9, near conjunction",
     ra_deg: 78.85,
     dec_deg: 25.62,
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=5745&view=VOP",
     card_url: "#card-astcadence",
     type: "Main-Belt Asteroid  |  Demonstration target",
-    writeup: "(5745) \u2014 provisional designation 1991 AN, currently unnamed \u2014 is the demonstration target of my entropy-guided cadence-optimization framework. A 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it exhibits the maximum possible separation between uniform and optimized sampling in the cross-validation: uniform N = 8 lands on a frequency alias in 100% of seeds while the optimized cadence lands on the true period in 100% of seeds. Marker position is computed by 2-body Keplerian propagation from Vizier/B/astorb orbital elements (epoch 2021-03-27 TDT) to 2026-06-16; the asteroid is near solar conjunction at this epoch (heliocentric 1.87 AU, geocentric 2.88 AU) and not currently observable."
+    writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate the cadence-optimization framework. A 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the gap between uniform and optimized sampling is largest: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds; the optimized cadence succeeds in 100%. The marker above sits where 2-body Keplerian propagation of its Vizier B/astorb orbital elements places it on 2026-06-16. It's near solar conjunction at this epoch (heliocentric 1.87 AU, geocentric 2.88 AU) and not currently observable."
   },
   {
     name: "HD 344787 | v = 9.32",
