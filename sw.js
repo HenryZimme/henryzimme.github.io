@@ -1,11 +1,11 @@
-// sw.js — henryzimmerman.net
+// sw.js | henryzimmerman.net
 // strat:
 //   - static assets (JS, CSS, JSON, fonts, images): cache-first, background-update
 //   - HTML pages: network-first, fall back to cache
 //   - 3rd-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
 //
 // bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v37';
+const CACHE_VERSION = 'v38';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
