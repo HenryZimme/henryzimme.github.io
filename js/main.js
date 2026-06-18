@@ -35,32 +35,29 @@ const featured_objects = [
   },
   {
     name: "7605 Cindygraber | v = 16.0",
-    ra_deg: 163.5,
-    dec_deg: 14.2,
+    elements: { a: 3.15282762, e: 0.07401538, i: 25.868948, Om: 311.681380, w: 271.311393, M: 332.940660 }, // astorb osculating, epoch _EL_EPOCH_JD
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605&view=VOP",
     image_url: "/assets/pops/cindygraber_sub.jpeg",
     card_url: "#card-cindygraber",
-    type: "Main-Belt Asteroid  |  Indicative sky position",
-    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler mattered as much as the telescope time. Marker position and magnitude are indicative."
+    type: "Main-Belt Asteroid  |  Propagated sky position",
+    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler mattered as much as the telescope time. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
   },
   {
     name: "19243 Bunting | v = 15.9",
-    ra_deg: 210.0,
-    dec_deg: 8.5,
+    elements: { a: 2.33160189, e: 0.24297852, i: 23.731834, Om: 5.997668, w: 59.550527, M: 266.834658 }, // astorb osculating, epoch _EL_EPOCH_JD
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243&view=VOP",
     image_url: "/assets/pops/bunting_sub.jpeg",
     card_url: "#card-cindygraber",
-    type: "Main-Belt Asteroid  |  Indicative sky position",
-    writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. Marker position and magnitude are indicative."
+    type: "Main-Belt Asteroid  |  Propagated sky position",
+    writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
   },
   {
     name: "5745 1991 AN | V \u2248 17.9, near conjunction",
-    ra_deg: 78.85,
-    dec_deg: 25.62,
+    elements: { a: 2.19058518, e: 0.15971583, i: 4.882955, Om: 23.189503, w: 28.442397, M: 159.002585 }, // astorb osculating, epoch _EL_EPOCH_JD
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=5745&view=VOP",
     card_url: "#card-astcadence",
     type: "Main-Belt Asteroid  |  Demonstration target",
-    writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate the cadence-optimization framework. A 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the gap between uniform and optimized sampling is largest: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds; the optimized cadence succeeds in 100%. The marker above sits where 2-body Keplerian propagation of its Vizier B/astorb orbital elements places it on 2026-06-16. It's near solar conjunction at this epoch (heliocentric 1.87 AU, geocentric 2.88 AU) and not currently observable."
+    writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate the cadence-optimization framework. A 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the gap between uniform and optimized sampling is largest: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds; the optimized cadence succeeds in 100%. The marker above is 2-body propagated from its astorb orbital elements to today's date."
   },
   {
     name: "HD 344787 | v = 9.32",
@@ -132,7 +129,77 @@ function reproject() {
 }
 
 // ---
-// called immediately at init() so the canvas is never blank while stars.json loads.
+// minor-planet ephemeris: 2-body propagation of osculating elements to a date.
+// elements carry { a (AU), e, i, Om, w, M } with angles in degrees at _EL_EPOCH_JD.
+const _EL_EPOCH_JD = 2459300.5;            // osculating epoch of stored elements
+const _GAUSS_K = 0.01720209895;            // gaussian gravitational constant, rad/day
+const _DEG = Math.PI / 180;
+const _OBLIQ = 23.43928 * _DEG;
+
+function _jd_today() {
+  return Date.now() / 86400000 + 2440587.5;
+}
+
+function _solve_kepler(M, e) {
+  let E = M;
+  for (let n = 0; n < 60; n++) {
+    const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    E -= dE;
+    if (Math.abs(dE) < 1e-12) break;
+  }
+  return E;
+}
+
+// heliocentric position of Earth (ecliptic, AU); low-precision sun series
+function _earth_helio(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L = ((280.46646 + 36000.76983 * T) % 360) * _DEG;
+  const M = (357.52911 + 35999.05029 * T) * _DEG;
+  const C = ((1.914602 - 0.004817 * T) * Math.sin(M)
+           + 0.019993 * Math.sin(2 * M) + 0.000289 * Math.sin(3 * M)) * _DEG;
+  const tl = L + C;
+  const R = 1.000001018 * (1 - 0.0167 * 0.0167) / (1 + 0.0167 * Math.cos(M + C));
+  return [-R * Math.cos(tl), -R * Math.sin(tl)];
+}
+
+// geocentric ra/dec (deg) of a body from its elements at jd
+function elements_to_radec(el, jd) {
+  const n = _GAUSS_K / Math.pow(el.a, 1.5) * (180 / Math.PI); // deg/day
+  const M = ((((el.M + n * (jd - _EL_EPOCH_JD)) % 360) + 360) % 360) * _DEG;
+  const E = _solve_kepler(M, el.e);
+  const xv = el.a * (Math.cos(E) - el.e);
+  const yv = el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E);
+  const Om = el.Om * _DEG, w = el.w * _DEG, inc = el.i * _DEG;
+  const co = Math.cos(Om), so = Math.sin(Om);
+  const cw = Math.cos(w),  sw = Math.sin(w);
+  const ci = Math.cos(inc), si = Math.sin(inc);
+  const xh = (co * cw - so * sw * ci) * xv + (-co * sw - so * cw * ci) * yv;
+  const yh = (so * cw + co * sw * ci) * xv + (-so * sw + co * cw * ci) * yv;
+  const zh = (sw * si) * xv + (cw * si) * yv;
+  const [xe, ye] = _earth_helio(jd);
+  const xg = xh - xe, yg = yh - ye, zg = zh;
+  const yq = yg * Math.cos(_OBLIQ) - zg * Math.sin(_OBLIQ);
+  const zq = yg * Math.sin(_OBLIQ) + zg * Math.cos(_OBLIQ);
+  let ra = Math.atan2(yq, xg) * (180 / Math.PI);
+  if (ra < 0) ra += 360;
+  const dec = Math.atan2(zq, Math.sqrt(xg * xg + yq * yq)) * (180 / Math.PI);
+  return { ra, dec };
+}
+
+// overwrite ra_deg/dec_deg on any featured object carrying orbital elements.
+// runs once at init() before build_featured_only() so every downstream
+// consumer (projection, hint, modal cutout) sees the resolved coordinates.
+function apply_live_positions() {
+  const jd = _jd_today();
+  for (const obj of featured_objects) {
+    if (!obj.elements) continue;
+    const p = elements_to_radec(obj.elements, jd);
+    obj.ra_deg = p.ra;
+    obj.dec_deg = p.dec;
+  }
+}
+
+// ---
 // featured_objects is hardcoded in JS; nothing here touches the catalog.
 function build_featured_only() {
   star_data = [];
@@ -514,6 +581,33 @@ function draw_hover_ring(s) {
   ctx.stroke();
 }
 
+// apparent geocentric track over the trailing window, drawn on hover of an
+// element-driven marker. alpha ramps from faint (oldest) to full (now); a
+// large x-jump between samples marks the ra=0 seam and breaks the polyline.
+const _TAIL_DAYS = 150;
+const _TAIL_STEPS = 38;
+function draw_orbit_tail(s) {
+  const el = s.obj_data && s.obj_data.elements;
+  if (!el) return;
+  const jd = _jd_today();
+  const seam = canvas.width * 0.5;
+  ctx.lineWidth = 1.4;
+  let prev = null;
+  for (let k = 0; k <= _TAIL_STEPS; k++) {
+    const f = k / _TAIL_STEPS;
+    const p = elements_to_radec(el, jd - _TAIL_DAYS * (1 - f));
+    const pt = project(p.ra, p.dec);
+    if (prev && Math.abs(pt.x - prev.x) < seam) {
+      ctx.strokeStyle = hex_to_rgba(s.color, 0.04 + 0.5 * f);
+      ctx.beginPath();
+      ctx.moveTo(prev.x, prev.y);
+      ctx.lineTo(pt.x, pt.y);
+      ctx.stroke();
+    }
+    prev = pt;
+  }
+}
+
 // pre-computed legend items, built once, not every frame
 const legend_items = featured_objects.map((obj, i) => ({
   label: obj.name,
@@ -673,6 +767,7 @@ function draw_frame() {
   let min_d = 14;
 
   draw_background_stars_batched();
+  draw_meteors();
 
   for (const s of star_data) {
     if (s.featured) {
@@ -693,6 +788,7 @@ function draw_frame() {
   }
 
   if (hover_star) {
+    if (hover_star.obj_data && hover_star.obj_data.elements) draw_orbit_tail(hover_star);
     draw_hover_ring(hover_star);
     if (!cursor_is_pointer) { canvas.style.cursor = 'pointer'; cursor_is_pointer = true; }
   } else {
@@ -730,6 +826,17 @@ function draw(ts) {
   }
 
   update_twinkle_lut(); // 64 sin/cos calls instead of ~9000
+
+  // poisson-timed meteor bursts; dt clamped to absorb tab-throttle gaps
+  const m_dt = _meteor_prev_s ? Math.min(0.1, time_s - _meteor_prev_s) : 0;
+  _meteor_prev_s = time_s;
+  if (_meteor_next_s === 0) _meteor_next_s = time_s + _next_meteor_interval();
+  if (time_s >= _meteor_next_s) {
+    spawn_meteor_burst();
+    _meteor_next_s = time_s + _next_meteor_interval();
+  }
+  update_meteors(m_dt);
+
   draw_frame();
   if (hero_visible) {
     raf_id = requestAnimationFrame(draw);
@@ -1088,6 +1195,102 @@ function on_resize() {
 }
 
 // ---
+// ---
+// meteor shower: poisson-timed streaks radiating from a shared point.
+// inter-arrival is exponential (mean 0.7s, clamped). entry speed follows a
+// truncated gaussian over the sporadic-meteor range, scaled to canvas px/s.
+// only advanced from the animated draw loop, so it pauses with the hero.
+const meteors = [];
+let _meteor_next_s = 0;
+let _meteor_prev_s = 0;
+
+function _next_meteor_interval() {
+  const u = Math.random();
+  return Math.min(2.5, Math.max(0.15, -0.7 * Math.log(1 - u)));
+}
+
+// truncated standard-gaussian sample via box-muller with rejection.
+function _gauss_trunc(mu, sigma, lo, hi) {
+  for (let n = 0; n < 8; n++) {
+    const u1 = Math.random() || 1e-9, u2 = Math.random();
+    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    const v = mu + sigma * z;
+    if (v >= lo && v <= hi) return v;
+  }
+  return mu;
+}
+
+function spawn_meteor_burst() {
+  const rx = canvas.width  * (0.15 + Math.random() * 0.70);
+  const ry = canvas.height * (0.05 + Math.random() * 0.25);
+  const base_ang = Math.PI * (0.16 + Math.random() * 0.20); // toward lower-right
+  // ~80% single streak, ~20% pair
+  const count = Math.random() < 0.8 ? 1 : 2;
+  const tints = ['#e2ddd4', '#c4a258', '#78a5d2'];
+  for (let i = 0; i < count; i++) {
+    const ang = base_ang + (Math.random() - 0.5) * 0.18;
+    // entry velocity in km/s, sporadic-meteor range [11, 72], peak ~24
+    const v_kms = _gauss_trunc(24, 12, 11, 72);
+    const speed = v_kms * 5.5; // px/s; ~60-400, peak ~130
+    const stag  = Math.random() * canvas.width * 0.08;
+    meteors.push({
+      x: rx + Math.cos(ang) * stag,
+      y: ry + Math.sin(ang) * stag,
+      vx: Math.cos(ang) * speed,
+      vy: Math.sin(ang) * speed,
+      // trail length scales with speed (faster = longer visible ionization)
+      len: 20 + speed * 0.18,
+      // brightness floor + small speed-driven boost; ceiling kept low for ambient feel
+      peak: 0.08 + Math.min(0.10, speed / 4000),
+      life: 0,
+      ttl: 0.9 + Math.random() * 0.6,
+      tint: tints[Math.floor(Math.random() * tints.length)]
+    });
+  }
+}
+
+function update_meteors(dt) {
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    const m = meteors[i];
+    m.x += m.vx * dt;
+    m.y += m.vy * dt;
+    m.life += dt;
+    if (m.life > m.ttl || m.x > canvas.width + 140 || m.y > canvas.height + 140) {
+      meteors.splice(i, 1);
+    }
+  }
+}
+
+function draw_meteors() {
+  if (!meteors.length) return;
+  for (const m of meteors) {
+    // triangular fade-in/out, smoothstepped so the streak eases on and off
+    const f = m.life / m.ttl;
+    let env = f < 0.5 ? f / 0.5 : 1 - (f - 0.5) / 0.5;
+    env = Math.max(0, env);
+    env = env * env * (3 - 2 * env);
+    const alpha = env * m.peak;
+    const inv = 1 / Math.hypot(m.vx, m.vy);
+    const tx = m.x - m.vx * inv * m.len;
+    const ty = m.y - m.vy * inv * m.len;
+    const g = ctx.createLinearGradient(m.x, m.y, tx, ty);
+    g.addColorStop(0, hex_to_rgba(m.tint, alpha));
+    g.addColorStop(1, hex_to_rgba(m.tint, 0));
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(m.x, m.y);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+    ctx.fillStyle = `rgba(255,255,255,${(alpha * 0.45).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, 0.9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ---
+
 function init() {
   const iw = window.innerWidth;
   const ih = window.innerHeight;
@@ -1116,6 +1319,7 @@ function init() {
 
   // phase 0: featured objects are hardcoded in JS — render them immediately,
   // no network dependency. sets catalog_loaded = true so draw() starts painting.
+  apply_live_positions(); // resolve element-driven markers to today before first paint
   build_featured_only();
   catalog_loaded = true;
   pick_hint_target();
