@@ -1718,8 +1718,8 @@
 <canvas id="star-canvas" role="presentation" aria-hidden="true"></canvas>
 
 <script>
-// Micro-renderer: draws featured objects immediately, zero network dependency.
-// main.js init() will take over and re-render with twinkle + full catalog.
+// Micro-renderer: paints fixed featured stellar objects immediately, zero network dependency.
+// Asteroid markers carry live positions computed from orbital elements and are deferred to main.js.
 (function () {
   const canvas = document.getElementById('star-canvas');
   const ctx = canvas.getContext('2d');
@@ -1729,9 +1729,6 @@
   const objs = [
     { ra: 83.625,  dec: -69.27,  color: '#c4a258' },
     { ra: 277.972, dec: -19.125, color: '#8ab8ff' },
-    { ra: 163.5,   dec:  14.2,   color: '#5ecfbf' },
-    { ra: 210.0,   dec:   8.5,   color: '#b07ecf' },
-    { ra: 88.05,   dec:  41.03,  color: '#d4693a' },
     { ra: 295.872, dec:  23.178, color: '#e8c97a' },
   ];
 
@@ -1866,7 +1863,7 @@
 
           <div class="footnote-wrap">
             <button class="footnote-toggle" aria-expanded="false">About the star field ↓</button>
-            <p class="about-footnote" id="about-footnote-body">The star field is drawn from the <a href="http://tdc-www.harvard.edu/catalogs/bsc5.html" target="_blank" rel="noopener">Yale Bright Star Catalog</a>, in case you were wondering. Tap or hover to see names; click to open in <a href="https://simbad.cds.unistra.fr/simbad/" target="_blank" rel="noopener">SIMBAD</a>. Sky images from <a href="https://alasky.u-strasbg.fr/hips-image-services/hips2fits" target="_blank" rel="noopener">CDS hips2fits</a> (DSS2) for stars, and <a href="https://atlas.fallingstar.com/" target="_blank" rel="noopener">ATLAS</a> (via <a href="https://catch.astro.umd.edu/" target="_blank" rel="noopener">CATCH</a>) for asteroids. Shape models are from <a href="https://damit.cuni.cz/projects/damit/" target="_blank" rel="noopener">DAMIT</a>.</p>
+            <p class="about-footnote" id="about-footnote-body">The star field is drawn from the <a href="http://tdc-www.harvard.edu/catalogs/bsc5.html" target="_blank" rel="noopener">Yale Bright Star Catalog</a>, in case you were wondering. Tap or hover to see names; click to open in <a href="https://simbad.cds.unistra.fr/simbad/" target="_blank" rel="noopener">SIMBAD</a>. Sky images from <a href="https://alasky.u-strasbg.fr/hips-image-services/hips2fits" target="_blank" rel="noopener">CDS hips2fits</a> (DSS2) for stars, and <a href="https://atlas.fallingstar.com/" target="_blank" rel="noopener">ATLAS</a> (via <a href="https://catch.astro.umd.edu/" target="_blank" rel="noopener">CATCH</a>) for asteroids. Shape models are from <a href="https://damit.cuni.cz/projects/damit/" target="_blank" rel="noopener">DAMIT</a>. Asteroid markers are 2-body propagated from <a href="https://vizier.cds.unistra.fr/viz-bin/cat/B/astorb" target="_blank" rel="noopener">astorb</a> orbital elements to the current date, so they drift across the sky as the page is revisited.</p>
           </div>
         </div>
 
