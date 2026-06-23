@@ -52,7 +52,7 @@ const featured_objects = [
     writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
   },
   {
-    name: "5745 1991 AN | V \u2248 17.9, near conjunction",
+    name: "5745 1991 AN | V \u2248 17.9",
     elements: { a: 2.19058518, e: 0.15971583, i: 4.882955, Om: 23.189503, w: 28.442397, M: 159.002585 }, // astorb osculating, epoch _EL_EPOCH_JD
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=5745&view=VOP",
     card_url: "#card-astcadence",
