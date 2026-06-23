@@ -231,6 +231,13 @@
   var rv_abs_min = 0, rv_abs_max = 0;
   var v_puls_cycle = [];
   var lastTime = null; // wall-clock timestamp for frame-rate-independent animation
+  // Playback state (drives #1 reduced-motion, #2 user controls, #3 off-screen pause).
+  // honor prefers-reduced-motion: start paused, let the user opt into motion via Play.
+  var REDUCE_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var paused      = REDUCE_MOTION; // user/play-pause + reduced-motion default
+  var offscreen   = false;          // set by IntersectionObserver when canvas leaves viewport
+  var speed       = 1;              // playback speed multiplier (0.5 / 1 / 2)
+  var loopRunning = false;          // guards against scheduling two rAF loops at once
   var filmFadeStartTime = null; // for film-mode fade-in and end card timing
   var filmStartTime = null;
   var filmCurrentMode = null;
@@ -1206,6 +1213,11 @@
     if (lastTime === null) lastTime = now;
     var dt_ms = Math.min(now - lastTime, 100);
     lastTime = now;
+    // freeze time when paused or scrolled off-screen; otherwise scale by speed.
+    // realtime mode is force-locked to 1x: speeding the 4.3 Hz flash would push it
+    // into the photosensitive-seizure danger band.
+    if (paused || offscreen) dt_ms = 0;
+    else if (currentMode !== 'realtime') dt_ms *= speed;
 
     // advance orbital phase: 0→1 in ORBIT_DURATION_S wall seconds
     orbitPhase = (orbitPhase + (dt_ms / 1000) / ORBIT_DURATION_S) % 1;
@@ -1822,6 +1834,16 @@
     // film-mode vignette: drawn last so it sits over everything including plots and captions
     if (isFilm) drawVignette(cw, ch);
 
+    if (!paused && !offscreen) { requestAnimationFrame(animate); }
+    else { loopRunning = false; } // self-stop: resumes via kick() on play / re-entry
+  }
+
+  // resume the loop after it has self-stopped (play, or canvas scrolled back in view).
+  // lastTime is reset so there is no phase jump from the paused interval.
+  function kick() {
+    if (loopRunning) return;
+    loopRunning = true;
+    lastTime = null;
     requestAnimationFrame(animate);
   }
 
@@ -1847,6 +1869,41 @@
       btn.style.boxShadow = 'inset 0 0 0 1px rgba(196,162,88,0.45)';
       btn.setAttribute('aria-pressed', 'true');
     }
+    syncPlaybackUI(); // speed is locked in realtime mode — reflect that on the controls
+    if (!loopRunning) requestAnimationFrame(animate); // reflect new mode on a paused frame
+  };
+
+  // ── playback controls (#2): play/pause + speed, exposed to the page buttons ──
+
+  function syncPlaybackUI() {
+    var pb = document.getElementById('btn-play');
+    if (pb) {
+      pb.textContent = paused ? '\u25B6 Play' : '\u23F8 Pause';
+      pb.setAttribute('aria-pressed', paused ? 'false' : 'true');
+    }
+    var realtime = (currentMode === 'realtime');
+    [['btn-speed-half', 0.5], ['btn-speed-1', 1], ['btn-speed-2', 2]].forEach(function(pair) {
+      var el = document.getElementById(pair[0]);
+      if (!el) return;
+      var active = !realtime && speed === pair[1];
+      el.style.background = active ? 'rgba(196,162,88,0.18)' : 'transparent';
+      el.style.color = realtime ? 'rgba(255,255,255,0.28)' : (active ? '#c4a258' : 'rgba(255,255,255,0.52)');
+      el.style.boxShadow = active ? 'inset 0 0 0 1px rgba(196,162,88,0.45)' : 'none';
+      el.setAttribute('aria-pressed', active ? 'true' : 'false');
+      el.disabled = realtime; // speed has no effect in realtime (flash rate is locked)
+    });
+  }
+
+  window.cepTogglePlay = function() {
+    paused = !paused;
+    syncPlaybackUI();
+    if (!paused) kick();
+  };
+
+  window.cepSetSpeed = function(v) {
+    if (currentMode === 'realtime') return; // locked for photosensitivity safety
+    speed = v;
+    syncPlaybackUI();
   };
 
   // ── resize ─────────────────────────────────────────────────────────────────
@@ -1858,6 +1915,7 @@
     simCanvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     trail_fade_start = Date.now(); bgStars = null;
+    if (!loopRunning) requestAnimationFrame(animate); // repaint frozen frame at new size
   }
 
   // ── init ───────────────────────────────────────────────────────────────────
@@ -1933,12 +1991,26 @@
       window.addEventListener('resize', resize);
       resize();
       if (document.documentElement.classList.contains('film-mode')) {
+        // film mode is an explicit cinematic experience — always plays, ignores reduced-motion default
+        paused = false;
         setMode('pulsation');
         filmCurrentMode = 'pulsation';
       } else {
         setMode('orbital');
       }
-      requestAnimationFrame(animate);
+
+      // #3 off-screen pause: stop the physics loop while the canvas is out of view
+      // (e.g. reading the parameter tables / references below it), resume on return.
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function(entries) {
+          offscreen = !entries[0].isIntersecting;
+          if (!offscreen && !paused) kick();
+        }, { threshold: 0.01 });
+        io.observe(simCanvas);
+      }
+
+      syncPlaybackUI();
+      kick();
 
 
       // stage 2: fetch full JSON in background, swap seamlessly
