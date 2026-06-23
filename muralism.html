@@ -18,7 +18,8 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
 .article-wrap {
@@ -68,7 +69,7 @@
 
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
   </nav>
 
   <main id="main">
@@ -89,7 +90,7 @@
       <p>Siqueiros was one of three prominent Mexican muralists who approached the subjects of national history, conflict, and class struggle to create a unified post-revolutionary national identity. Upon viewing the long and narrow room, Siqueiros envisioned a mural bending perspective, with an unbroken canvas allowing images to cross the room through the ceiling, transcending the walls. He applied rounded shapes to the corners and aesthetically heightened the ceiling, which allowed compositional forms to interact with each other from across the room, producing a cinematographic effect as the spectator’s perspective shifts.</p>
 
       <figure>
-        <img src="assets/figs/siqueiros-death-to-invader-south-wall.jpg" alt="South Wall of Muerte al Invasor">
+        <img loading="lazy" src="assets/figs/siqueiros-death-to-invader-south-wall.jpg" alt="South Wall of Muerte al Invasor">
         <figcaption>The south wall of Siqueiros’s mural Death to the Invader.</figcaption>
       </figure>
 
@@ -98,7 +99,7 @@
       
 
       <figure>
-        <img src="assets/figs/siqueiros-death-to-invader-north-wall.jpg" alt="North Wall of Muerte al Invasor">
+        <img loading="lazy" src="assets/figs/siqueiros-death-to-invader-north-wall.jpg" alt="North Wall of Muerte al Invasor">
         <figcaption>The north wall of Siqueiros’s mural Death to the Invader.</figcaption>
       </figure>
 
@@ -115,9 +116,9 @@
           <li>Philip Stein, Siqueiros: His Life and Works (New York: International Publishers, 1994).</li>
         </ol>
       </section>
-
-      <footer class="footer-nav"></footer>
     </div>
+
+    <footer class="footer-nav"></footer>
   </article>
 </main>
 
