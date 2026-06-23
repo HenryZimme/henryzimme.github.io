@@ -19,7 +19,8 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
   <style>
     :root {
       --bg:           #07091a;
@@ -397,6 +398,28 @@
     html.film-mode #back-to-top { display: none !important; }
     html.film-mode #scroll-hint { display: none !important; }
     html.film-mode #mode-bar   { display: none !important; }
+
+    /* playback controls (play/pause + speed), stacked just above the mode bar */
+    #playback-bar {
+      position: absolute;
+      bottom: calc(28vh + 56px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 10;
+    }
+    html.film-mode #playback-bar { display: none !important; }
+    #playback-bar .pb-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.32);
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+    .btn-mode:disabled { cursor: default; opacity: 0.55; }
     html.film-mode #epilepsy-modal { display: none !important; }
 
     /* fix sim section to full viewport, no overflow */
@@ -454,6 +477,10 @@
         bottom: calc(32vh + 14px);
         gap: 4px;
       }
+      #playback-bar {
+        bottom: calc(32vh + 48px);
+        gap: 4px;
+      }
       .btn-mode { font-size: 9px; padding: 5px 10px; }
 
       #orb-params { display: none; }
@@ -476,7 +503,7 @@
   <!-- nav -->
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#research" class="nav-back">← Back to Portfolio</a>
+    <a href="index.html#research" class="nav-back">← Back to Research</a>
   </nav>
 
   <div id="film-watermark">henryzimmerman.net &nbsp;&middot;&nbsp; OGLE-LMC-CEP-1347 &nbsp;&middot;&nbsp; 2026</div>
@@ -537,6 +564,15 @@
       <button class="btn-mode" id="btn-orbital"    onclick="setMode('orbital')">Orbital</button>
       <button class="btn-mode" id="btn-pulsation"  onclick="setMode('pulsation')">Pulsation</button>
       <button class="btn-mode" id="btn-realtime"   onclick="document.getElementById('epilepsy-modal').style.display='flex'">Real-Time &#9888;</button>
+    </div>
+
+    <!-- playback controls (play/pause + speed) -->
+    <div id="playback-bar">
+      <button class="btn-mode" id="btn-play" onclick="cepTogglePlay()" aria-pressed="true" aria-label="Pause or play the simulation">&#9208; Pause</button>
+      <span class="pb-label">Speed</span>
+      <button class="btn-mode" id="btn-speed-half" onclick="cepSetSpeed(0.5)" aria-pressed="false">0.5&times;</button>
+      <button class="btn-mode" id="btn-speed-1"    onclick="cepSetSpeed(1)"   aria-pressed="true">1&times;</button>
+      <button class="btn-mode" id="btn-speed-2"    onclick="cepSetSpeed(2)"   aria-pressed="false">2&times;</button>
     </div>
 
     <!-- orbital param strip -->
@@ -635,7 +671,7 @@
     </ul>
 
     <footer class="footer-nav">
-      <a href="index.html#research" class="nav-back">← Back to Portfolio</a>
+      <a href="index.html#research" class="nav-back">← Back to Research</a>
       <a href="1347_methods.html" class="nav-back">Methods &amp; Diagnostic Analysis →</a>
     </footer>
   </section>
