@@ -11,6 +11,8 @@ const nav_pages = [
   { slug: 'lisbon',          title: 'The Lisbon Catalyst',           section: 'writing'  },
   { slug: 'calls',           title: 'Calls',                        section: 'writing'  },
   { slug: 'afonso',          title: 'King Afonso I',                 section: 'writing'  },
+  { slug: 'japan',           title: "Japan's Labor Policy",          section: 'writing'  },
+  { slug: 'muralism',        title: 'Muerte al Invasor',             section: 'writing'  },
   { slug: 'ccd_calibration', title: 'CCD Characterization',         section: 'research' },
 ];
 
