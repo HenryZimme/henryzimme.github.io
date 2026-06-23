@@ -18,7 +18,8 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
 a { color: var(--gold); text-decoration: none; }
@@ -84,8 +85,6 @@ a { color: var(--gold); text-decoration: none; }
       line-height: 0;
       vertical-align: super;
     }
-
-    .footnotes a
   </style>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
@@ -97,7 +96,7 @@ a { color: var(--gold); text-decoration: none; }
 
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
   </nav>
 
   <main id="main">
@@ -116,7 +115,7 @@ a { color: var(--gold); text-decoration: none; }
       
 
       <figure class="article-figure">
-        <picture><source srcset="assets/figs/baghdad-ancient-map.webp" type="image/webp"><img src="assets/figs/baghdad-ancient-map.jpg" alt="Map of ancient Baghdad"></picture>
+        <picture><source srcset="assets/figs/baghdad-ancient-map.webp" type="image/webp"><img loading="lazy" src="assets/figs/baghdad-ancient-map.jpg" alt="Map of ancient Baghdad"></picture>
         <figcaption><em>A map of ancient Baghdad</em><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></figcaption>
       </figure>
 
