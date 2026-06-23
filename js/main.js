@@ -95,6 +95,10 @@ let catalog_loaded = false;
 let raf_id = null;
 let hero_visible = true;
 let twinkle_active = false; // false until profile image fully loads; loop deferred to keep TBT low
+// Honor prefers-reduced-motion: when set, the canvas stays in static mode (stars at
+// fixed brightness, no twinkle/drift/meteors). Hover rings + DOM popovers still work,
+// since draw_frame() runs on each one-shot repaint regardless of twinkle_active.
+const REDUCE_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 let cursor_is_pointer = false; // track to avoid per-frame style writes
 let tooltip_tw = 160, tooltip_th = 28; // cached tooltip dims (avoids forced reflow on mousemove)
 let tooltip_last_content = '';
@@ -1733,7 +1737,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   if (!img) return;
 
   function on_profile_load() {
-    twinkle_active = true;
+    if (!REDUCE_MOTION) twinkle_active = true;
     if (hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
     // fade out shimmer and placeholder text
     const frame = img.closest('.profile-frame');
