@@ -18,7 +18,8 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
 a { color: var(--gold); text-decoration: none; }
@@ -84,7 +85,7 @@ a { color: var(--gold); text-decoration: none; }
 
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#writing" class="nav-back">← Back to Portfolio</a>
+    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
   </nav>
 
   <main id="main">
@@ -108,7 +109,7 @@ a { color: var(--gold); text-decoration: none; }
       <figure class="article-figure">
         <picture>
           <source srcset="assets/figs/japan_airport.webp" type="image/webp">
-          <picture><source srcset="assets/figs/japan_airport.webp" type="image/webp"><img src="assets/figs/japan_airport.png" alt="Japan airport arrivals"></picture>
+          <picture><source srcset="assets/figs/japan_airport.webp" type="image/webp"><img loading="lazy" src="assets/figs/japan_airport.png" alt="Japan airport arrivals"></picture>
         </picture>
         <figcaption>Foreign arrivals at a Japanese airport</figcaption>
       </figure>
@@ -118,7 +119,7 @@ a { color: var(--gold); text-decoration: none; }
       <p>Japan's demographic issues aren't as simple as opening the borders and granting visas at will. Japan has a fraught relationship with foreigners, so while importing workers is economically beneficial, it is also unpopular due to nationalistic sentiments and negative views of immigrants (Trostel-Shaw et al., 2021). The latter has prevailed in the past, buoyed by a lack of urgency supported by increases in worker productivity (Masai et al., 2024). However, Japan has reached a point where worker productivity alone can no longer keep pace with depopulation (Lang, 2024).</p>
 
       <figure class="article-figure">
-        <picture><source srcset="assets/figs/labor_shortage_timeseries.webp" type="image/webp"><img src="assets/figs/labor_shortage_timeseries.png" alt="Japan labor shortage over time"></picture>
+        <picture><source srcset="assets/figs/labor_shortage_timeseries.webp" type="image/webp"><img loading="lazy" src="assets/figs/labor_shortage_timeseries.png" alt="Japan labor shortage over time"></picture>
         <figcaption>Japan's labor shortage by sector, 2022–2040</figcaption>
       </figure>
 
@@ -129,7 +130,7 @@ a { color: var(--gold); text-decoration: none; }
       <p>One measure that has proven to be effective on a large scale is coordinated initiatives to increase labor force participation. Many of these efforts are based on 'Womenomics', the idea put forward by Shinzo Abe, the former prime minister of Japan, that more women in the workplace are essential for the economy (Groysberg et al., 2017). These endeavors have been largely successful, as the labor force participation rate for women has risen from a low of 48% in 2012 to a high of 55% in 2023, an increase of 4.5 million workers (<em>Labor Force Participation Rate, Female — Japan</em>, n.d.). Much of this has been achieved by improving daycare access, delegitimizing traditional gender roles, and setting targets for women in the workplace.</p>
 
       <figure class="article-figure">
-        <picture><source srcset="assets/figs/women_participation.webp" type="image/webp"><img src="assets/figs/women_participation.png" alt="Female labor force participation rate in Japan"></picture>
+        <picture><source srcset="assets/figs/women_participation.webp" type="image/webp"><img loading="lazy" src="assets/figs/women_participation.png" alt="Female labor force participation rate in Japan"></picture>
         <figcaption>Female labor force participation rate in Japan, 1968–2016 (World Bank / ILO)</figcaption>
       </figure>
 
