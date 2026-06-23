@@ -293,7 +293,7 @@ sup a:hover { text-decoration: underline; }
 }
 
 /* responsive */
-@media (max-width: 600px) {
+@media (max-width: 740px) {
   nav { padding: 18px 20px; }
 
   /* more breathing room on narrow screens;
