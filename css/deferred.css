@@ -1081,20 +1081,25 @@
     /* hover and .active share identical expanded state */
     @media (hover: hover) and (pointer: fine) {
       .book-spine:hover,
+      .book-spine:focus-within,
       .book-spine.active {
         width: 172px;
         transform: translateY(-8px);
         z-index: 2;
       }
+      .book-spine:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
       .book-spine:hover::after,
+      .book-spine:focus-within::after,
       .book-spine.active::after {
         opacity: 1;
       }
       .book-spine:hover .spine-title,
+      .book-spine:focus-within .spine-title,
       .book-spine.active .spine-title {
         opacity: 0;
       }
       .book-spine:hover .spine-panel,
+      .book-spine:focus-within .spine-panel,
       .book-spine.active .spine-panel {
         opacity: 1;
       }
