@@ -1440,12 +1440,15 @@
 
     /* hover and .active share identical expanded state */
     .book-spine:hover,
+    .book-spine:focus-within,
     .book-spine.active {
       width: 172px;
       transform: translateY(-8px);
       z-index: 2;
     }
+    .book-spine:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
     .book-spine:hover::after,
+    .book-spine:focus-within::after,
     .book-spine.active::after {
       opacity: 1;
     }
@@ -1483,6 +1486,7 @@
 
     /* hide title on hover or active tap */
     .book-spine:hover .spine-title,
+    .book-spine:focus-within .spine-title,
     .book-spine.active .spine-title {
       opacity: 0;
     }
@@ -1502,6 +1506,7 @@
     }
 
     .book-spine:hover .spine-panel,
+    .book-spine:focus-within .spine-panel,
     .book-spine.active .spine-panel {
       opacity: 1;
     }
@@ -1535,6 +1540,7 @@
       #bookshelf { padding: 72px 24px; }
       .book-spine { width: 40px; }
       .book-spine:hover,
+      .book-spine:focus-within,
       .book-spine.active { width: 150px; }
     }
 
@@ -2299,7 +2305,7 @@
 
       <div id="bookshelf-pool">
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Misbehaving</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Misbehaving: The Making of Behavioral Economics</div>
@@ -2308,7 +2314,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>The Rain God</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Rain God</div>
@@ -2317,7 +2323,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Cry, the Beloved Country</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Cry, the Beloved Country</div>
@@ -2326,7 +2332,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Man's Search for Meaning</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Man's Search for Meaning</div>
@@ -2335,7 +2341,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Walking</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Walking</div>
@@ -2344,7 +2350,7 @@
           </div>
         </div>
         
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Encounters with the Archdruid</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Encounters with the Archdruid</div>
@@ -2353,7 +2359,7 @@
           </div>
         </div>
         
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
          <div class="spine-title"><span>20,000 Leagues</span></div>
          <div class="spine-panel">
            <div class="spine-book-title">20,000 Leagues Under the Sea</div>
@@ -2362,7 +2368,7 @@
          </div>
        </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>The Words That Made Us</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Words That Made Us</div>
@@ -2371,7 +2377,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Manufacturing Consent</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Manufacturing Consent</div>
@@ -2380,7 +2386,7 @@
           </div>
         </div>
 <!--
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>1984</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">1984</div>
@@ -2389,7 +2395,7 @@
           </div>
         </div>
 -->
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>For Whom the Bell Tolls</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">For Whom the Bell Tolls</div>
@@ -2398,7 +2404,7 @@
           </div>
         </div>
         
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Jane Eyre</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Jane Eyre</div>
@@ -2407,7 +2413,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Wide Sargasso Sea</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Wide Sargasso Sea</div>
@@ -2416,7 +2422,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>The Idiot</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Idiot</div>
@@ -2425,7 +2431,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>The Road to Character</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Road to Character</div>
@@ -2435,7 +2441,7 @@
         </div>
         
 <!--
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Meditations on First Philosophy</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Meditations on First Philosophy</div>
@@ -2445,7 +2451,7 @@
         </div>
 -->
 <!--
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>The Histories</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Histories</div>
@@ -2454,7 +2460,7 @@
           </div>
         </div>
 -->
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>The Hitchhiker's Guide</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Hitchhiker's Guide to the Galaxy (Series)</div>
@@ -2463,7 +2469,7 @@
           </div>
         </div>
         
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Ender's Game (Series)</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Ender Quintet</div>
@@ -2472,7 +2478,7 @@
           </div>
         </div>
 
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Kavalier &amp; Clay</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">The Amazing Adventures of Kavalier &amp; Clay</div>
@@ -2481,7 +2487,7 @@
           </div>
         </div>
 <!--
-        <div class="book-spine" role="listitem">
+        <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Cloud Cuckoo Land</span></div>
           <div class="spine-panel">
             <div class="spine-book-title">Cloud Cuckoo Land</div>
