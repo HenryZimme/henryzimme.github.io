@@ -18,7 +18,8 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
     
@@ -115,7 +116,7 @@
     
     
 
-    @media (max-width: 600px) {.poster-breakout { padding: 0 18px; }
+    @media (max-width: 740px) {.poster-breakout { padding: 0 18px; }
       .poster-iframe { aspect-ratio: auto; height: 400px; }}
 
     /*pulsation sim*/
@@ -184,7 +185,7 @@
     figure#usgr-sim figcaption {
       display: none; /* caption handled inside canvas */
     }
-    @media (max-width: 600px) {figure#usgr-sim { height: 460px; }
+    @media (max-width: 740px) {figure#usgr-sim { height: 460px; }
       #usgr-plot { height: 280px; }
       #usgr-hud { top: 10px; right: 10px; gap: 6px; }
       .usgr-hud-val { font-size: 11px; }}
@@ -243,6 +244,8 @@
             <span class="usgr-hud-val" id="usgr-hud-phase">—</span>
           </div>
         </div>
+        <button id="usgr-play" type="button" aria-pressed="true" aria-label="Pause or play the pulsation simulation"
+          style="position:absolute; top:12px; right:12px; z-index:5; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:5px 10px; background:rgba(7,9,26,0.7); border:1px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.7); cursor:pointer;">&#9208; Pause</button>
       </figure>
 
       <p>
@@ -270,7 +273,7 @@
       
       <div class="poster-breakout">
         <iframe 
-          src="USgrHSZPosterWeb.pdf" 
+          src="/assets/documents/USgrHSZPosterWeb.pdf" 
           class="poster-iframe"
           title="U Sagittarii Poster PDF"
         >
@@ -279,7 +282,7 @@
       </div>
 
       <div style="text-align: center;">
-        <a href="USgrHSZPosterWeb.pdf" download="USgrHSZPosterWeb.pdf" class="btn-download">
+        <a href="/assets/documents/USgrHSZPosterWeb.pdf" download="USgrHSZPosterWeb.pdf" class="btn-download">
           &darr; Download Poster PDF
         </a>
       </div>
@@ -287,7 +290,7 @@
       <br>
       
       <p style="text-align: center; margin-top: 1em;">
-        <a href="USgrHSZPosterWeb.pdf" target="_blank" rel="noopener"><strong>Open Poster in New Tab (PDF) &rarr;</strong></a>
+        <a href="/assets/documents/USgrHSZPosterWeb.pdf" target="_blank" rel="noopener"><strong>Open Poster in New Tab (PDF) &rarr;</strong></a>
       </p>
     </div>
   </article>
@@ -678,6 +681,9 @@
       // viz flags: set by IntersectionObserver and visibilitychange
       var in_viewport = false;
       var tab_visible = !document.hidden;
+      // honor prefers-reduced-motion: start paused; user opts into motion via Play
+      var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      var paused = reduce;
 
       function should_run() { return in_viewport && tab_visible; }
 
@@ -691,7 +697,7 @@
       // main loop : only runs while canvas is in the viewport and tab is visible
       function animate(now) {
         if (!should_run()) return;
-        requestAnimationFrame(animate);
+        if (!paused) requestAnimationFrame(animate); // paused: draw one frozen frame, don't loop
         if (now - last_frame < 1000 / FPS_CAP) return;
         last_frame = now;
         if (!ctx) return;
@@ -704,6 +710,7 @@
         if (last_t === null) last_t = now;
         var dt = Math.min(now - last_t, 100);
         last_t = now;
+        if (paused) dt = 0; // freeze pulsation phase while paused / reduced-motion
 
         puls_time = (puls_time + (dt / 1000) / PULS_SPEED_S * P_PULS_D) % P_PULS_D;
         var phi = puls_time / P_PULS_D;
@@ -769,6 +776,22 @@
           tab_visible = !document.hidden;
           maybe_start();
         });
+
+        // play/pause control (#2). reduced-motion users start paused and opt in here.
+        var playBtn = document.getElementById('usgr-play');
+        function sync_play_btn() {
+          if (!playBtn) return;
+          playBtn.textContent = paused ? '\u25B6 Play' : '\u23F8 Pause';
+          playBtn.setAttribute('aria-pressed', paused ? 'false' : 'true');
+        }
+        if (playBtn) {
+          playBtn.addEventListener('click', function() {
+            paused = !paused;
+            sync_play_btn();
+            if (!paused) maybe_start();
+          });
+        }
+        sync_play_btn();
       }
 
       init();
@@ -777,7 +800,7 @@
 
 
   <footer class="footer-nav">
-    <a href="index.html#research" class="nav-back">← Back to Portfolio</a>
+    <a href="index.html#research" class="nav-back">← Back to Research</a>
   </footer>
 </body>
 </html>
