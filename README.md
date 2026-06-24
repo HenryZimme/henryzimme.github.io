@@ -2,7 +2,7 @@
 
 Source for my personal research and writing portfolio, live at [henryzimmerman.net](https://henryzimmerman.net).
 
-I'm a student at Phillips Academy Andover working in time-domain astronomy. My research follows a single question: how much can a ground-based observation actually tell us, and how do we understand, reach, and surpass those limits? 
+I'm a student at Phillips Academy Andover working in time-domain astronomy. My research follows a single question: how much can an observation actually tell us, and how do we understand, reach, and surpass those limits? 
 
 At the moment, I'm working on two projects in different subfields (survey design and Cepheid evolution), but they both came out of the same analysis (detailed in the [methods appendix](https://henryzimmerman.net/1347_methods)). After asking about binary evolution in Cepheids at AAS 247, I analyzed six years of archival photometry for [OGLE-LMC-CEP-1347](https://henryzimmerman.net/cep1347), a binary Cepheid in the Large Magellanic Cloud that's hypothesized to be a merger remnant. I found a convincing 5-sigma signal that looked like a tidally-split non-radial pulsation mode, which would confirm the merger hypothesis, but I did a reanalysis and it turned out to be an alias, caused by the observation times themselves. I decided that spectroscopy would be the best way to circumvent the limits of time-series analysis and test the hypothesis. I'm now the primary author and Co-I on a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki (PI) to probe the system's merger history. 
 
