@@ -137,10 +137,55 @@
     .btn-mode + .btn-mode { margin-left: 4px; }
     .btn-mode[aria-pressed="true"] {
       color: var(--gold);
-      border-color: var(--gold-dim);
-      background: rgba(196,162,88,0.08);
+      border-color: var(--gold);
+      background: rgba(196,162,88,0.15);
+      box-shadow: inset 0 0 0 1px rgba(196,162,88,0.30);
     }
     .ctl-replay { margin-left: auto; }
+    /* object dropdown — fully custom (no native popup flash); matches resting .btn-mode */
+    .obj-dd { position: relative; }
+    .obj-select {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.12em; text-align: left;
+      padding: 6px 30px 6px 14px; line-height: 1.2; min-width: 206px;
+      background: transparent; border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.72); cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M1 1l3.5 3.5L8 1' fill='none' stroke='%23e2ddd4' stroke-opacity='.55' stroke-width='1.3'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      transition: border-color .2s ease, color .2s ease;
+    }
+    .obj-select:hover { border-color: rgba(255,255,255,0.35); color: rgba(255,255,255,0.92); }
+    .obj-select[aria-expanded="true"] { border-color: var(--gold-dim); color: var(--gold); }
+    .obj-select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .obj-menu {
+      position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+      min-width: 100%; margin: 0; padding: 4px; list-style: none;
+      background: #0b0e1f; border: 1px solid var(--gold-dim);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .obj-menu[hidden] { display: none; }
+    .obj-menu li {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+      padding: 6px 12px; color: rgba(255,255,255,0.7); cursor: pointer;
+    }
+    .obj-menu li:hover, .obj-menu li:focus { background: rgba(196,162,88,0.12); color: var(--gold); outline: none; }
+    .obj-menu li[aria-selected="true"] { color: var(--gold); }
+    /* Wilson CI shown as stacked upper/lower bounds beside the alias rate */
+    .hud-ar-wrap { display: inline-flex; align-items: center; justify-content: flex-end; }
+    .hud-ci { display: inline-flex; flex-direction: column; line-height: 1.08;
+      font-size: 7.5px; margin-left: 4px; color: rgba(255,255,255,0.45); text-align: left; }
+    .hud-ci span { display: block; }
+    #hud-ar { display: inline-block; }
+    #hud-ar.pending { color: rgba(255,255,255,0.35) !important; }
+    @keyframes ar-bump { 0%{transform:scale(1);} 35%{transform:scale(1.14);} 100%{transform:scale(1);} }
+    #hud-ar.bump { animation: ar-bump .34s ease; }
+    @media (prefers-reduced-motion: reduce){ #hud-ar.bump { animation: none; } }
+    /* drag affordance on the night panel */
+    #night { cursor: ew-resize; }
+    .drag-hint { color: rgba(196,162,88,0.75); text-transform: none; letter-spacing: 0.02em;
+      transition: opacity .5s ease; }
+    .drag-hint.dim { opacity: 0; }
 
     /* keyboard focus affordances (additive — mouse :hover unchanged) */
     .btn-mode:focus-visible,
@@ -436,10 +481,18 @@
 
         <div class="ctl-row">
           <div class="ctl-group">
+            <span class="ctl-label" id="lbl-object">Object</span>
+            <div class="obj-dd" id="objdd">
+              <button type="button" class="obj-select" id="objbtn" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="lbl-object"><span id="objbtn-label"></span></button>
+              <ul class="obj-menu" id="objmenu" role="listbox" aria-labelledby="lbl-object" hidden></ul>
+            </div>
+          </div>
+          <div class="ctl-group">
             <span class="ctl-label" id="lbl-schedule">Schedule</span>
             <div id="seg" role="group" aria-labelledby="lbl-schedule">
-              <button class="btn-mode" data-mode="uniform" aria-pressed="false">Uniform</button>
-              <button class="btn-mode" data-mode="optimized" aria-pressed="true">Optimized (CMA-ES)</button>
+              <button class="btn-mode" data-mode="uniform" aria-pressed="true">Uniform</button>
+              <button class="btn-mode" data-mode="optimized" aria-pressed="false">Optimized (CMA-ES)</button>
+              <button class="btn-mode" data-mode="custom" aria-pressed="false">Custom</button>
             </div>
           </div>
           <div class="ctl-group">
@@ -469,8 +522,8 @@
               <span class="hud-val" id="hud-arg">-- h</span>
             </div>
             <div class="hud-row">
-              <span class="hud-label">A<sub>R</sub> holdout</span>
-              <span class="hud-val" id="hud-ar">--</span>
+              <span class="hud-label">A<sub>R</sub></span>
+              <span class="hud-val hud-ar-wrap"><span id="hud-ar">--</span><span class="hud-ci"><span id="hud-ar-hi"></span><span id="hud-ar-lo"></span></span></span>
             </div>
           </div>
         </div>
@@ -480,7 +533,7 @@
 
         <div class="tiles">
           <div class="tile">
-            <span class="tile-label">Night sampling</span>
+            <span class="tile-label">Night sampling<span class="drag-hint" id="draghint"> · drag points to build a custom cadence</span></span>
             <canvas id="night" height="78" role="img" aria-label="Observation timing across one night for the current schedule"></canvas>
             <span class="tile-sub" id="nightsub"></span>
           </div>
@@ -592,10 +645,11 @@
 // asteroid 5745: coeffs = [m0, a1,b1, a2,b2, a3,b3, a4,b4]  (4-term Fourier)
 // strongly bimodal lightcurve (A2/A1 = 13.0, amp = 0.82 mag, RMS = 0.034); P = 4.087 h
 // in the cross-validation, uniform N=8 fails on 100% of seeds; optimized succeeds on 100%
-const COEFFS=[16.281164,0.028503766,0.0082109707,-0.045571083,-0.38347533,
+// note that data has strong Fourier fit/observability bais (see preprint)
+let COEFFS=[16.281164,0.028503766,0.0082109707,-0.045571083,-0.38347533,
               -0.0034659032,-0.0019526051,-0.073798858,0.0037193281];
-const P_TRUE=4.087;                  // hours
-const NIGHT=8.0, SIGMA=0.04;
+let P_TRUE=4.087;                  // hours (current object)
+const NIGHT=8.0; let SIGMA=0.04;
 // real CMA-ES optimized cadences (hours within night), short-period bin
 const OPT={
   8 :{t:[0,0.6178,1.3936,2.7067,3.8330,6.0118,6.8462,8.0000], ar:0.590},
@@ -611,13 +665,16 @@ const TAU=2*Math.PI;
 function truthMag(ph){let m=COEFFS[0];for(let k=1;k<=4;k++)
   m+=COEFFS[2*k-1]*Math.cos(TAU*k*ph)+COEFFS[2*k]*Math.sin(TAU*k*ph);return m;}
 // zero-mean light-curve template (the known shape) for matched-template periodogram
-let TMEAN=0;{let s=0,M=2000;for(let i=0;i<M;i++)s+=truthMag(i/M);TMEAN=s/M;}
+let TMEAN=0;
+function recomputeTMEAN(){let s=0,M=2000;for(let i=0;i<M;i++)s+=truthMag(i/M);TMEAN=s/M;}
+recomputeTMEAN();
 const shape=ph=>truthMag(ph)-TMEAN;
-// deterministic noise
+// deterministic noise for the single displayed realization (fixed seed)
+const SEED=20260616;
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
   t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function gauss(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(TAU*v);}
-function observe(times){const r=mulberry32(20260616);return times.map(t=>{
+function observe(times){const r=mulberry32(SEED);return times.map(t=>{
   const ph=((t)/P_TRUE)%1; return{t,ph,mag:truthMag(ph)+SIGMA*gauss(r)};});}
 
 // solve symmetric KxK normal equations (Gaussian elimination)
@@ -710,6 +767,26 @@ function drawPeriodogram(power,peaks,foldP,argP,col){
   // contender peak markers
   if(peaks)for(const pk of peaks){const px=Xp(pk.P),py=Y(pk.pw);
     x.fillStyle=col;x.globalAlpha=.9;x.beginPath();x.arc(px,py,2.6,0,TAU);x.fill();x.globalAlpha=1;}
+  // recovered peak (argmax): emphasized marker coloured by correctness — signals where THIS cadence points
+  {
+    const correct = Math.abs(argP-P_TRUE) < 0.12;
+    const recCol  = correct ? css('--good') : css('--bad');
+    const rx = Xp(argP);
+    let bi=0,bd=1e9; for(let i=0;i<periods.length;i++){const d=Math.abs(periods[i]-argP);if(d<bd){bd=d;bi=i;}}
+    const ry = Y(power[bi]);
+    if(!correct){                                   // dashed drop line for the wrong peak
+      x.strokeStyle=recCol;x.globalAlpha=.5;x.setLineDash([3,4]);x.lineWidth=1;
+      x.beginPath();x.moveTo(rx,padT-2);x.lineTo(rx,Y(0));x.stroke();
+      x.setLineDash([]);x.globalAlpha=1;
+    }
+    x.beginPath();x.arc(rx,ry,6.5,0,TAU);x.strokeStyle=recCol;x.globalAlpha=.4;x.lineWidth=1.5;x.stroke();x.globalAlpha=1;
+    x.beginPath();x.arc(rx,ry,4,0,TAU);x.fillStyle=recCol;x.fill();
+    if(!correct){                                   // label nudged below when it would collide with 'true P'
+      const near = Math.abs(rx - Xp(P_TRUE)) < 48;
+      x.fillStyle=recCol;x.font="600 10px 'JetBrains Mono',monospace";x.textAlign='center';
+      x.fillText('alias', rx, near ? padT+11 : padT-6);
+    }
+  }
   // fold marker (selected period)
   x.strokeStyle=css('--blue');x.lineWidth=1.4;
   x.beginPath();x.moveTo(Xp(foldP),padT);x.lineTo(Xp(foldP),Y(0));x.stroke();
@@ -794,21 +871,24 @@ function drawFold(obs,P,col){
 }
 
 /* ── state & render ────────────────────────────────────────────────────── */
-let N=8, mode='optimized', foldP=P_TRUE, anim=null, curPeaks=[];
+let N=8, mode='uniform', foldP=P_TRUE, anim=null, curPeaks=[];
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const pgLive=document.getElementById('pg-live');
 const hudEh=document.getElementById('hud-eh'),
       hudNpk=document.getElementById('hud-npk'),
       hudArg=document.getElementById('hud-arg'),
       hudAr=document.getElementById('hud-ar'),
+      hudArHi=document.getElementById('hud-ar-hi'),
+      hudArLo=document.getElementById('hud-ar-lo'),
       nightSub=document.getElementById('nightsub'),
       foldSub=document.getElementById('foldsub');
 
-function timesFor(m,n){return m==='uniform'?uniform(n):OPT[n].t.slice();}
+function timesFor(m,n){return m==='uniform'?uniform(n):m==='custom'?customTimes.slice():OPT[n].t.slice();}
+function modeColor(m){return m==='uniform'?css('--bad'):m==='custom'?'#a98cd0':css('--good');}
 function lerpTimes(a,b,t){return a.map((v,i)=>v+(b[i]-v)*t);}
 
 function renderTimes(times,m){
-  const col = m==='uniform'?css('--bad'):css('--good');
+  const col = modeColor(m);
   const P=pipeline(times);
   curPeaks=P.peaks;
   drawPeriodogram(P.power,P.peaks,foldP,P.argP,col);
@@ -819,10 +899,9 @@ function renderTimes(times,m){
   hudEh.style.color=col;
   hudNpk.textContent=P.peaks.length;
   hudArg.textContent=P.argP.toFixed(2)+' h';
-  hudAr.textContent = m==='uniform' ? AR_UNIFORM[times.length].toFixed(2) : OPT[times.length].ar.toFixed(2);
   nightSub.textContent = m==='uniform'
     ? `${times.length} pts · even ${(NIGHT/(times.length-1)).toFixed(2)} h spacing`
-    : `${times.length} pts · CMA-ES`;
+    : (m==='custom' ? `${times.length} pts · custom` : `${times.length} pts · CMA-ES`);
   foldSub.textContent = `folded at ${foldP.toFixed(2)} h`;
   return P;
 }
@@ -841,17 +920,154 @@ function morphTo(m){
     if(k>=1){anim=null;}else anim=requestAnimationFrame(step);})(t0);
 }
 
+/* ── corpus + object selector ───────────────────────────────────────────────── */
+const CORPUS_FALLBACK = {
+  "default":"5745",
+  "asteroids":[
+    {"id":"5745","name":"1991 AN","period":4.087,"sigma":0.04,"coeffs":[16.2811636,0.0285038,0.008211,-0.0455711,-0.3834753,-0.0034659,-0.0019526,-0.0737989,0.0037193]},
+    {"id":"2511","name":"Patterson","period":4.144,"sigma":0.04,"coeffs":[16.6567907,0.0299897,-0.0110949,0.1329018,0.357672,0.0013955,-0.0096949,-0.039707,0.0377514]},
+    {"id":"65733","name":"1993 PC","period":4.185,"sigma":0.04,"coeffs":[16.2239434,0.028787,-0.0072687,0.2829571,-0.2387903,-0.0112653,0.0110574,-0.0015641,-0.0483316]},
+    {"id":"852","name":"Wladilena","period":4.613,"sigma":0.04,"coeffs":[14.5422752,0.0417678,0.0348323,0.0006018,-0.0828188,0.0239833,-0.0134262,0.0144974,-0.0113255]},
+    {"id":"6870","name":"Pauldavies","period":4.487,"sigma":0.04,"coeffs":[16.8314645,-0.0458052,-0.0457754,0.1579157,0.1670717,0.0059002,-0.0113991,-0.0408813,-0.012837]}
+  ]
+};
+let curObjId='5745';
+function applyObject(o){
+  COEFFS=o.coeffs.slice(); P_TRUE=o.period; SIGMA=(o.sigma!=null)?o.sigma:0.04;
+  curObjId=o.id; recomputeTMEAN(); foldP=P_TRUE;
+}
+function buildObjSelector(corpus){
+  const btn=document.getElementById('objbtn'), lbl=document.getElementById('objbtn-label'),
+        menu=document.getElementById('objmenu'), dd=document.getElementById('objdd');
+  const byId=id=>corpus.asteroids.find(a=>a.id===id);
+  const fmt=o=>`${o.id} · ${o.name} · ${o.period.toFixed(2)} h`;
+  menu.innerHTML='';
+  corpus.asteroids.forEach(o=>{const li=document.createElement('li');
+    li.id='objopt-'+o.id; li.dataset.id=o.id; li.setAttribute('role','option'); li.tabIndex=-1;
+    li.textContent=fmt(o); menu.appendChild(li);});
+  const items=()=>[...menu.children];
+  function setOpen(open){ menu.hidden=!open; btn.setAttribute('aria-expanded',String(open));
+    if(open){ const cur=menu.querySelector('[aria-selected="true"]')||menu.firstChild; cur&&cur.focus(); } }
+  function choose(id,render){ const o=byId(id); if(!o)return;
+    lbl.textContent=fmt(o); items().forEach(li=>li.setAttribute('aria-selected',String(li.dataset.id===id)));
+    applyObject(o); if(render!==false){ snap(mode); updateAR(); } }
+  btn.onclick=()=>setOpen(menu.hidden);
+  btn.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'||e.key==='Enter'||e.key===' '){e.preventDefault(); setOpen(true);} });
+  menu.addEventListener('click',e=>{ const li=e.target.closest('li'); if(!li)return; choose(li.dataset.id); setOpen(false); btn.focus(); });
+  menu.addEventListener('keydown',e=>{ const it=items(); let i=it.indexOf(document.activeElement);
+    if(e.key==='ArrowDown'){e.preventDefault(); (it[Math.min(it.length-1,i+1)]||it[0]).focus();}
+    else if(e.key==='ArrowUp'){e.preventDefault(); (it[Math.max(0,i-1)]||it[0]).focus();}
+    else if(e.key==='Enter'||e.key===' '){e.preventDefault(); choose(document.activeElement.dataset.id); setOpen(false); btn.focus();}
+    else if(e.key==='Escape'){e.preventDefault(); setOpen(false); btn.focus();} });
+  document.addEventListener('click',e=>{ if(!dd.contains(e.target)) setOpen(false); });
+  choose(corpus.default||corpus.asteroids[0].id, false);
+}
+function initCorpus(corpus){ buildObjSelector(corpus); snap('uniform'); updateAR(); }
+
+/* ── live alias-rate engine: production 2nd-order FALC port, f ∈ [24/20, 24/2.2],
+   mirrors phase2_alias.alias_rate_model;  synthetic draws from the 4-term truth
+   model, FALC RSS recovery, success = |Δp|/p < 0.05. Reproduces the corpus
+   arU/arO within the Wilson CI; the displayed [2.2,8] h periodogram above is a
+   zoom of the same spectrum. */
+const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
+const AR_NGRID = MOBILE?1000:1500, AR_NTRIALS = MOBILE?64:128, AR_SEED=8675309;
+function inv5(A){const n=5,M=A.map((r,i)=>r.concat(Array.from({length:n},(_,j)=>i===j?1:0)));
+  for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;
+    [M[c],M[p]]=[M[p],M[c]];const d=M[c][c]||1e-12;for(let k=0;k<2*n;k++)M[c][k]/=d;
+    for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c];for(let k=0;k<2*n;k++)M[r][k]-=f*M[c][k];}}
+  return M.map(r=>r.slice(n));}
+function aliasFails(coeffs,period,obs,ntr,sigma,seed,ng){
+  const N=obs.length, jd=obs.map(t=>t/24), pd=period/24;
+  const clean=jd.map(t=>{const phi=(t%pd)/pd;let m=coeffs[0];
+    for(let k=1;k<=4;k++)m+=coeffs[2*k-1]*Math.cos(TAU*k*phi)+coeffs[2*k]*Math.sin(TAU*k*phi);return m;});
+  const fmin=24/20,fmax=24/2.2,freqs=new Float64Array(ng);
+  for(let i=0;i<ng;i++)freqs[i]=fmin+(fmax-fmin)*i/(ng-1);
+  const Dall=new Array(ng),Inv=new Array(ng);
+  for(let g=0;g<ng;g++){const f=freqs[g],D=new Array(N);
+    for(let n=0;n<N;n++){const a=TAU*f*jd[n];D[n]=[1,Math.cos(a),Math.sin(a),Math.cos(2*a),Math.sin(2*a)];}
+    Dall[g]=D;const M=[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
+    for(let n=0;n<N;n++)for(let i=0;i<5;i++)for(let j=0;j<5;j++)M[i][j]+=D[n][i]*D[n][j];
+    for(let i=0;i<5;i++)M[i][i]+=1e-10;Inv[g]=inv5(M);}
+  const r=mulberry32(seed>>>0);let fails=0;
+  for(let t=0;t<ntr;t++){const mag=new Float64Array(N);for(let n=0;n<N;n++)mag[n]=clean[n]+sigma*gauss(r);
+    let best=Infinity,bg=0;
+    for(let g=0;g<ng;g++){const D=Dall[g],IV=Inv[g],Dtm=[0,0,0,0,0];
+      for(let n=0;n<N;n++)for(let i=0;i<5;i++)Dtm[i]+=D[n][i]*mag[n];
+      const c=[0,0,0,0,0];for(let i=0;i<5;i++){let s=0;for(let j=0;j<5;j++)s+=IV[i][j]*Dtm[j];c[i]=s;}
+      let rss=0;for(let n=0;n<N;n++){let yp=0;for(let i=0;i<5;i++)yp+=D[n][i]*c[i];const e=mag[n]-yp;rss+=e*e;}
+      if(rss<best){best=rss;bg=g;}}
+    if(Math.abs(24/freqs[bg]-period)/period>=0.05)fails++;}
+  return fails;}
+function wilson(k,n){if(n<=0)return[NaN,NaN];const z=1.96,p=k/n,z2=z*z,den=1+z2/n,
+  ctr=(p+z2/(2*n))/den,rad=z*Math.sqrt(p*(1-p)/n+z2/(4*n*n))/den;return[Math.max(0,ctr-rad),Math.min(1,ctr+rad)];}
+const arCache=new Map(); let arReqId=0;
+function arKey(m,n){return m==='custom'
+  ? `${curObjId}|custom|${customTimes.map(t=>t.toFixed(3)).join(',')}`
+  : `${curObjId}|${m}|${n}`;}
+function arColor(p){const h=Math.round((1-p)*132); return `hsl(${h},60%,62%)`;}  // p→1 red (fails), p→0 green (works)
+function showAR(r){
+  hudAr.classList.remove('pending');
+  hudAr.textContent=r.p.toFixed(2);
+  hudAr.style.color=arColor(r.p);
+  hudArHi.textContent=r.hi.toFixed(2);
+  hudArLo.textContent=r.lo.toFixed(2);
+  if(!reduce){ hudAr.classList.remove('bump'); void hudAr.offsetWidth; hudAr.classList.add('bump'); }
+}
+function updateAR(){
+  const key=arKey(mode,N), times=timesFor(mode,N);
+  if(arCache.has(key)){showAR(arCache.get(key));return;}
+  hudAr.classList.add('pending');hudAr.textContent='···';hudArHi.textContent='';hudArLo.textContent='';
+  const id=++arReqId;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(id!==arReqId)return;                            // superseded by a newer request
+    const k=aliasFails(COEFFS,P_TRUE,times,AR_NTRIALS,SIGMA,AR_SEED,AR_NGRID);
+    const ci=wilson(k,AR_NTRIALS), r={p:k/AR_NTRIALS,lo:ci[0],hi:ci[1]};
+    arCache.set(key,r); if(id===arReqId) showAR(r);
+  }));
+}
+
+/* ── drag night points → custom cadence ─────────────────────────────────────── */
+let customTimes=uniform(8), dragIdx=-1;
+function nightGeom(){const rect=C.night.getBoundingClientRect();return {rect,padX:14,bw:rect.width-28};}
+function nightXToT(clientX){const {rect,padX,bw}=nightGeom();
+  return Math.max(0,Math.min(NIGHT,(clientX-rect.left-padX)/bw*NIGHT));}
+function nearestPoint(clientX){const {rect,padX,bw}=nightGeom(),x=clientX-rect.left,t=timesFor(mode,N);
+  let bi=-1,bd=14;for(let i=0;i<t.length;i++){const d=Math.abs(padX+bw*t[i]/NIGHT-x);if(d<bd){bd=d;bi=i;}}return bi;}
+C.night.addEventListener('pointerdown',ev=>{
+  const i=nearestPoint(ev.clientX); if(i<0)return;
+  if(mode!=='custom'){customTimes=timesFor(mode,N).slice(); mode='custom';
+    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='custom')));}
+  dragIdx=i; try{C.night.setPointerCapture(ev.pointerId);}catch(e){}
+  const dh=document.getElementById('draghint'); if(dh)dh.classList.add('dim');
+  ev.preventDefault();});
+C.night.addEventListener('pointermove',ev=>{
+  if(dragIdx<0)return;
+  customTimes[dragIdx]=nightXToT(ev.clientX);
+  foldP=P_TRUE; renderTimes(customTimes,'custom');      // visual only, no MC during drag
+  ev.preventDefault();});
+function endDrag(ev){if(dragIdx<0)return; dragIdx=-1;
+  try{C.night.releasePointerCapture(ev.pointerId);}catch(e){}
+  updateAR();}                                           // recompute alias rate on release
+C.night.addEventListener('pointerup',endDrag);
+C.night.addEventListener('pointercancel',endDrag);
+
 /* controls */
 document.querySelectorAll('#seg button').forEach(btn=>btn.onclick=()=>{
   document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
-  morphTo(btn.dataset.mode);});
+  const m=btn.dataset.mode;
+  if(m==='custom'){mode='custom';snap('custom');}
+  else morphTo(m);
+  updateAR();});
 document.querySelectorAll('#nobs button').forEach(btn=>btn.onclick=()=>{
   document.querySelectorAll('#nobs button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
-  N=+btn.dataset.n; snap(mode);});
+  N=+btn.dataset.n; customTimes=uniform(N); snap(mode); updateAR();});
 document.getElementById('replay').onclick=()=>{
-  const target=mode; mode = target==='optimized'?'uniform':'optimized';
-  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===target)));
-  snap(mode); setTimeout(()=>morphTo(target),420);};
+  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='uniform')));
+  mode='uniform'; snap('uniform');
+  setTimeout(()=>{
+    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='optimized')));
+    morphTo('optimized'); updateAR();
+  },420);};
 
 /* click periodogram to fold */
 C.pg.addEventListener('click',ev=>{
@@ -887,20 +1103,11 @@ C.pg.addEventListener('keydown',ev=>{
   }
 });
 
-/* boot: open on uniform, morph to optimized */
+/* boot: load corpus → open on uniform (the ambiguous case); advancing is the reader's move */
 addEventListener('resize',()=>renderTimes(timesFor(mode,N),mode));
 window.addEventListener('load',()=>{
-  if(reduce){
-    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='optimized')));
-    snap('optimized'); return;
-  }
-  mode='uniform';
-  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='uniform')));
-  snap('uniform');
-  setTimeout(()=>{
-    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='optimized')));
-    morphTo('optimized');
-  },900);
+  fetch('data/astcadence_corpus.json').then(r=>r.ok?r.json():Promise.reject())
+    .then(initCorpus).catch(()=>initCorpus(CORPUS_FALLBACK));
 });
 
 /* back-to-top */

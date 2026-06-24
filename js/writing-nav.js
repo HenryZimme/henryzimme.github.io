@@ -21,7 +21,7 @@ const nav_pages = [
   const slug = window.location.pathname.replace(/^\//, '').replace(/\.html$/, '') || 'index';
   const idx = nav_pages.findIndex(p => p.slug === slug);
 
-  // page not in sequence (e.g. index, special pages) — do nothing
+  // page not in sequence (e.g. index, special pages), so  do nothing
   if (idx === -1) return;
 
   const current = nav_pages[idx];
