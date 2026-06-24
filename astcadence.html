@@ -469,7 +469,7 @@
               <span class="hud-val" id="hud-arg">-- h</span>
             </div>
             <div class="hud-row">
-              <span class="hud-label">A<sub>R</sub> corpus</span>
+              <span class="hud-label">A<sub>R</sub> holdout</span>
               <span class="hud-val" id="hud-ar">--</span>
             </div>
           </div>
@@ -512,7 +512,7 @@
 
       <div class="exp-body">
 
-        <p>The demonstration uses asteroid 5745, a 4.09-hour rotator from the filtered ALCDEF-LCDB corpus I built. I picked it because the gap between uniform and optimized sampling is largest on this one: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds, while the optimized 8-observation cadence succeeds in 100%. The phase-folded V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (A<sub>2</sub>/A<sub>1</sub> &asymp; 13). The demo samples that model at eight, nine, or ten times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares naïve uniform spacing with the cadence selected by CMA-ES optimization on the short-period bin.</p>
+        <p>The demonstration uses asteroid 5745, a 4.09-hour rotator from the filtered ALCDEF-LCDB corpus I built. I picked it because the gap between uniform and optimized sampling is maximal on this one: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds, while the optimized 8-observation cadence succeeds in 100%. The phase-folded V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (A<sub>2</sub>/A<sub>1</sub> &asymp; 13). The demo samples that model at eight, nine, or ten times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares naïve uniform spacing with the cadence selected by CMA-ES optimization on the short-period bin.</p>
 
         <p>For 5745, the two schedules differ visibly in <em>which peak the periodogram favors</em>, not just in the residual structure around the winning peak. Under uniform sampling the highest peak frequently lands at an alias of the true rotation (P &asymp; 3.49 h or 4.91 h, depending on noise realization) or at another competing peak; under the optimized cadence the true peak at 4.087 h dominates the periodogram in every seed. On the 57-asteroid short-period holdout set (P &isin; [2.2, 8] h, never seen during training), the same procedure reduces the alias rate from A<sub>R</sub> = 0.69 to 0.59 at N = 8, 0.63 to 0.52 at N = 9, and 0.57 to 0.51 at N = 10. The N = 8 and N = 9 gains are the largest in the sweep (Δ &asymp; 0.10); by N = 10 the marginal improvement narrows toward Δ &asymp; 0.06. The corpus-level numbers above are averages: for asteroids like 5745, the optimized cadence's gain is total; for already easy or prohibitively difficult targets, it is negligible.</p>
 
@@ -527,9 +527,9 @@
         <tbody>
           <tr><td>Target</td><td>Asteroid 5745</td></tr>
           <tr><td>Rotation period P</td><td>4.087 h</td></tr>
-          <tr><td>Lightcurve amplitude</td><td>0.425 mag</td></tr>
+          <tr><td>Lightcurve amplitude</td><td>0.82 mag</td></tr>
           <tr><td>Lightcurve model</td><td>4-term Fourier, A₂ / A₁ ≈ 13.0</td></tr>
-          <tr><td>RMS of fit</td><td>0.021 mag</td></tr>
+          <tr><td>RMS of fit</td><td>0.034 mag</td></tr>
           <tr><td>Photometric noise σ</td><td>0.04 mag</td></tr>
           <tr><td>Night length</td><td>8.0 h</td></tr>
           <tr><td>Observations per night N</td><td>8 / 9 / 10</td></tr>
@@ -546,7 +546,7 @@
       <div class="mode-guide">
         <div class="mode-item">
           <div class="mode-label">Uniform</div>
-          <div class="mode-desc">Even spacing across the 8-hour night, one observation every 8 / (N − 1) hours. The reference baseline. For N = 8 this produces a strong sidelobe at <code>P ≈ 1.64 h</code> and a secondary forest around <code>5.7 h</code>, both visible in the periodogram.</div>
+          <div class="mode-desc">Even spacing across the 8-hour night, one observation every 8 / (N − 1) hours. The reference baseline. For N = 8 this produces a strong sidelobe at <code>P ≈ 1.64 h</code> (below the 2.2 h spin-barrier floor, so off-axis here) and a secondary forest around <code>5.7 h</code> that is visible in the periodogram.</div>
         </div>
         <div class="mode-item">
           <div class="mode-label">Optimized</div>
@@ -598,13 +598,13 @@ const P_TRUE=4.087;                  // hours
 const NIGHT=8.0, SIGMA=0.04;
 // real CMA-ES optimized cadences (hours within night), short-period bin
 const OPT={
-  8 :{t:[0,0.6178,1.3936,2.7067,3.8330,6.0118,6.8462,8.0000], ar:0.643},
-  9 :{t:[0,0.6518,1.1289,3.3735,4.1571,5.9142,6.2759,7.5443,8.0000], ar:0.526},
-  10:{t:[0,1.1051,1.5405,2.6623,3.4383,5.9040,6.5359,6.9400,7.4344,8.0000], ar:0.555},
+  8 :{t:[0,0.6178,1.3936,2.7067,3.8330,6.0118,6.8462,8.0000], ar:0.590},
+  9 :{t:[0,0.6518,1.1289,3.3735,4.1571,5.9142,6.2759,7.5443,8.0000], ar:0.524},
+  10:{t:[0,1.1051,1.5405,2.6623,3.4383,5.9040,6.5359,6.9400,7.4344,8.0000], ar:0.508},
 };
 const uniform=n=>Array.from({length:n},(_,i)=>i*NIGHT/(n-1));
-// uniform-baseline corpus A_R (short period bin) for the HUD readout
-const AR_UNIFORM = {8:0.681, 9:0.659, 10:0.585};
+// uniform-baseline holdout A_R (short bin) for the HUD readout — matches the headline table
+const AR_UNIFORM = {8:0.693, 9:0.631, 10:0.574};
 
 /* ── math ──────────────────────────────────────────────────────────────── */
 const TAU=2*Math.PI;
@@ -646,9 +646,10 @@ function winPow(times,f){let re=0,im=0;for(const t of times){const p=TAU*f*t;re+
   return(re*re+im*im)/(times.length*times.length);}
 
 // Period grid: PMIN=2.2h matches the asteroid spin-barrier cutoff used in production (alias_rate_model);
-// PMAX=6.4 covers the short-period bin. The 2.2h floor naturally excludes spurious sub-spin-barrier
+// PMAX=8.0h spans the full short-period bin [2.2, 8] h used in production (alias_rate_model).
+// The 2.2h floor naturally excludes spurious sub-spin-barrier
 // half-period aliases (e.g. 2.04h for the 4.087h rotator 5745) that no physical asteroid could exhibit.
-const PMIN=2.2,PMAX=6.4,NGRID=520;
+const PMIN=2.2,PMAX=8.0,NGRID=520;
 const periods=Array.from({length:NGRID},(_,i)=>PMIN+(PMAX-PMIN)*i/(NGRID-1));
 const TP=0.085, PK_FLOOR=0.30;   // peak-posterior temperature; min power to count as a contender
 
@@ -716,7 +717,7 @@ function drawPeriodogram(power,peaks,foldP,argP,col){
   // axis ticks + labels
   x.fillStyle='rgba(226,221,212,.5)';x.font="10px 'JetBrains Mono',monospace";
   x.textAlign='center';
-  for(let P=3;P<=6;P++)x.fillText(P+'h',Xp(P),h-12);
+  for(let P=3;P<=7;P++)x.fillText(P+'h',Xp(P),h-12);
   x.fillText('trial period (hours)',w/2,h-1);
   x.textAlign='right';
   for(const v of [0,0.5,1.0])x.fillText(v.toFixed(1),padL-2,Y(v)+3);
