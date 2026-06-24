@@ -182,7 +182,7 @@
     #hud-ar.bump { animation: ar-bump .34s ease; }
     @media (prefers-reduced-motion: reduce){ #hud-ar.bump { animation: none; } }
     /* drag affordance on the night panel */
-    #night { cursor: ew-resize; }
+    #night { cursor: ew-resize; touch-action: none; }
     .drag-hint { color: rgba(196,162,88,0.75); text-transform: none; letter-spacing: 0.02em;
       transition: opacity .5s ease; }
     .drag-hint.dim { opacity: 0; }
@@ -265,9 +265,30 @@
     /* tile row */
     .tiles {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
+    /* corpus result (dumbbell): uniform -> optimized A_R across objects */
+    .pop-view {
+      margin-top: 22px; border: 1px solid var(--panel-border); border-radius: 2px;
+      background: rgba(7,9,26,0.4); padding: 12px 14px;
+    }
+    .pop-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .pop-title { font-family:'JetBrains Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:.12em; color: var(--gold); }
+    .pop-legend { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.06em; color: rgba(255,255,255,.45); }
+    .pdot { display:inline-block; width:7px; height:7px; border-radius:50%; vertical-align:middle; margin-right:3px; }
+    .pdot.pu { background: var(--bad); }
+    .pdot.po { background: var(--good); }
+    .pdot.pc { background: #a98cd0; }
+    .pop-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .pop-btn {
+      font-family:'JetBrains Mono',monospace; font-size:8.5px; text-transform:uppercase; letter-spacing:.1em;
+      padding:4px 9px; background:transparent; border:1px solid rgba(255,255,255,0.18);
+      color:rgba(255,255,255,0.6); cursor:pointer; white-space:nowrap; transition:all .2s ease;
+    }
+    .pop-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+    .pop-btn[aria-busy="true"] { opacity:.6; cursor:progress; }
+    #popsvg { width: 100%; }
     .tile {
       border: 1px solid var(--panel-border);
       border-radius: 2px;
@@ -446,11 +467,7 @@
       nav { padding: 18px 20px; }
       #sim-section { padding: 96px 16px 40px; min-height: auto; }
       .tiles { grid-template-columns: 1fr; }
-      /* mobile stacking order by interactive priority:
-         fold (result of tapping a peak) first, then schedule view, then window */
-      .tiles .tile:nth-child(3) { order: 1; }  /* Folded lightcurve */
-      .tiles .tile:nth-child(1) { order: 2; }  /* Night sampling */
-      .tiles .tile:nth-child(2) { order: 3; }  /* Spectral window */
+      /* mobile: night sampling (draggable) first, then folded lightcurve */
       .ctl-row { gap: 14px; }
       .ctl-replay { margin-left: 0; }
       #explanation { padding: 60px 20px 80px; }
@@ -538,15 +555,21 @@
             <span class="tile-sub" id="nightsub"></span>
           </div>
           <div class="tile">
-            <span class="tile-label">Spectral window |W(f)|²</span>
-            <canvas id="win" height="120" role="img" aria-label="Spectral window function of the current schedule, from 0 to 0.6 cycles per hour"></canvas>
-            <span class="tile-sub" id="winsub">0 to 0.6 cyc / hr</span>
-          </div>
-          <div class="tile">
             <span class="tile-label">Folded lightcurve</span>
             <canvas id="fold" height="120" role="img" aria-label="Lightcurve folded at the currently selected period"></canvas>
             <span class="tile-sub" id="foldsub"></span>
           </div>
+        </div>
+
+        <div class="pop-view">
+          <div class="pop-head">
+            <span class="pop-title">Alias rate by object</span>
+            <span class="pop-right">
+              <span class="pop-legend"><span class="pdot pu"></span>uniform&nbsp;&nbsp;<span class="pdot po"></span>optimized<span id="pop-leg-custom" hidden>&nbsp;&nbsp;<span class="pdot pc"></span>custom</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span id="pop-n">N = 8</span></span>
+              <button id="pop-all" class="pop-btn" type="button">compute all five</button>
+            </span>
+          </div>
+          <div id="popsvg"></div>
         </div>
 
       </div>
@@ -568,6 +591,9 @@
         <p>The demonstration uses asteroid 5745, a 4.09-hour rotator from the filtered ALCDEF-LCDB corpus I built. I picked it because the gap between uniform and optimized sampling is maximal on this one: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds, while the optimized 8-observation cadence succeeds in 100%. The phase-folded V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (A<sub>2</sub>/A<sub>1</sub> &asymp; 13). The demo samples that model at eight, nine, or ten times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares naïve uniform spacing with the cadence selected by CMA-ES optimization on the short-period bin.</p>
 
         <p>For 5745, the two schedules differ visibly in <em>which peak the periodogram favors</em>, not just in the residual structure around the winning peak. Under uniform sampling the highest peak frequently lands at an alias of the true rotation (P &asymp; 3.49 h or 4.91 h, depending on noise realization) or at another competing peak; under the optimized cadence the true peak at 4.087 h dominates the periodogram in every seed. On the 57-asteroid short-period holdout set (P &isin; [2.2, 8] h, never seen during training), the same procedure reduces the alias rate from A<sub>R</sub> = 0.69 to 0.59 at N = 8, 0.63 to 0.52 at N = 9, and 0.57 to 0.51 at N = 10. The N = 8 and N = 9 gains are the largest in the sweep (Δ &asymp; 0.10); by N = 10 the marginal improvement narrows toward Δ &asymp; 0.06. The corpus-level numbers above are averages: for asteroids like 5745, the optimized cadence's gain is total; for already easy or prohibitively difficult targets, it is negligible.</p>
+
+        <p>Why optimize the empirical alias rate directly instead of a cheaper spectral proxy? The obvious first move is to suppress the sampling window's sidelobes. The spectral window |W(f)|² = |Σ<sub>j</sub> e<sup>2πi f t<sub>j</sub></sup>|² / N² depends only on the observing times, and for a pure sinusoid those sidelobes are exactly where the aliases land, so I built a metric that minimizes a period-weighted window RMS on a GPU grid and refines it with CMA-ES. It only works for a sinusoidal signal. A least-squares periodogram fits a single sinusoid at each trial frequency (VanderPlas 2018), and when the lightcurve is not sinusoidal, with power spread across harmonics, the tallest peak routinely lands on a harmonic or an alias of the true period rather than on the period itself; recovering it then takes a multi-term Fourier model. The rotators that dominate this corpus are strongly non-sinusoidal (5745 and the vast majority of asteroids cary  most of their power in the second harmonic), so a window metric blind to lightcurve shape mispredicts which periods actually alias. I therefore rank cadences by the FALC alias rate measured on the real corpus, and use CMA-ES with a differentiable stand-in for optimizing that discrete rate: the Shannon entropy of the RSS pseudo-posterior p(f) &prop; exp(&minus;RSS(f) / T*), with T* = 2σ² fixing the pseudo-posterior to the exact Gaussian posterior. The entropy tracks the alias rate closely (ρ(H, A<sub>R</sub>) &gt; 0.8, 0.99 N = 10 binned) and stays smooth enough to optimize. The window function is the discarded heuristic.</p>
+
 
       </div>
 
@@ -645,7 +671,8 @@
 // asteroid 5745: coeffs = [m0, a1,b1, a2,b2, a3,b3, a4,b4]  (4-term Fourier)
 // strongly bimodal lightcurve (A2/A1 = 13.0, amp = 0.82 mag, RMS = 0.034); P = 4.087 h
 // in the cross-validation, uniform N=8 fails on 100% of seeds; optimized succeeds on 100%
-// note that data has strong Fourier fit/observability bais (see preprint)
+// note that there is a strong observational bias in this corpus, for a debiased sample use
+// the Masiero+ (2009) TALCS data (email him, it's not available online) to debias
 let COEFFS=[16.281164,0.028503766,0.0082109707,-0.045571083,-0.38347533,
               -0.0034659032,-0.0019526051,-0.073798858,0.0037193281];
 let P_TRUE=4.087;                  // hours (current object)
@@ -893,7 +920,6 @@ function renderTimes(times,m){
   curPeaks=P.peaks;
   drawPeriodogram(P.power,P.peaks,foldP,P.argP,col);
   drawNight(times,col);
-  drawWindow(times);
   drawFold(P.obs,foldP,col);
   hudEh.textContent=P.H.toFixed(2);
   hudEh.style.color=col;
@@ -924,11 +950,11 @@ function morphTo(m){
 const CORPUS_FALLBACK = {
   "default":"5745",
   "asteroids":[
-    {"id":"5745","name":"1991 AN","period":4.087,"sigma":0.04,"coeffs":[16.2811636,0.0285038,0.008211,-0.0455711,-0.3834753,-0.0034659,-0.0019526,-0.0737989,0.0037193]},
-    {"id":"2511","name":"Patterson","period":4.144,"sigma":0.04,"coeffs":[16.6567907,0.0299897,-0.0110949,0.1329018,0.357672,0.0013955,-0.0096949,-0.039707,0.0377514]},
-    {"id":"65733","name":"1993 PC","period":4.185,"sigma":0.04,"coeffs":[16.2239434,0.028787,-0.0072687,0.2829571,-0.2387903,-0.0112653,0.0110574,-0.0015641,-0.0483316]},
-    {"id":"852","name":"Wladilena","period":4.613,"sigma":0.04,"coeffs":[14.5422752,0.0417678,0.0348323,0.0006018,-0.0828188,0.0239833,-0.0134262,0.0144974,-0.0113255]},
-    {"id":"6870","name":"Pauldavies","period":4.487,"sigma":0.04,"coeffs":[16.8314645,-0.0458052,-0.0457754,0.1579157,0.1670717,0.0059002,-0.0113991,-0.0408813,-0.012837]}
+    {"id":"5745","name":"1991 AN","period":4.087,"sigma":0.04,"coeffs":[16.2811636,0.0285038,0.008211,-0.0455711,-0.3834753,-0.0034659,-0.0019526,-0.0737989,0.0037193],"arU":{"8":1.0,"9":0.53,"10":0.3},"arO":{"8":0.0,"9":0.0,"10":0.02}},
+    {"id":"2511","name":"Patterson","period":4.144,"sigma":0.04,"coeffs":[16.6567907,0.0299897,-0.0110949,0.1329018,0.357672,0.0013955,-0.0096949,-0.039707,0.0377514],"arU":{"8":0.92,"9":0.86,"10":0.07},"arO":{"8":0.02,"9":0.0,"10":0.21}},
+    {"id":"65733","name":"1993 PC","period":4.185,"sigma":0.04,"coeffs":[16.2239434,0.028787,-0.0072687,0.2829571,-0.2387903,-0.0112653,0.0110574,-0.0015641,-0.0483316],"arU":{"8":0.73,"9":0.34,"10":0.71},"arO":{"8":0.03,"9":0.0,"10":0.0}},
+    {"id":"852","name":"Wladilena","period":4.613,"sigma":0.04,"coeffs":[14.5422752,0.0417678,0.0348323,0.0006018,-0.0828188,0.0239833,-0.0134262,0.0144974,-0.0113255],"arU":{"8":0.83,"9":0.38,"10":0.44},"arO":{"8":0.68,"9":0.48,"10":0.33}},
+    {"id":"6870","name":"Pauldavies","period":4.487,"sigma":0.04,"coeffs":[16.8314645,-0.0458052,-0.0457754,0.1579157,0.1670717,0.0059002,-0.0113991,-0.0408813,-0.012837],"arU":{"8":0.29,"9":0.32,"10":0.47},"arO":{"8":0.65,"9":0.71,"10":0.27}}
   ]
 };
 let curObjId='5745';
@@ -950,7 +976,7 @@ function buildObjSelector(corpus){
     if(open){ const cur=menu.querySelector('[aria-selected="true"]')||menu.firstChild; cur&&cur.focus(); } }
   function choose(id,render){ const o=byId(id); if(!o)return;
     lbl.textContent=fmt(o); items().forEach(li=>li.setAttribute('aria-selected',String(li.dataset.id===id)));
-    applyObject(o); if(render!==false){ snap(mode); updateAR(); } }
+    applyObject(o); if(render!==false){ snap(mode); updateAR(); updatePopView(); } }
   btn.onclick=()=>setOpen(menu.hidden);
   btn.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'||e.key==='Enter'||e.key===' '){e.preventDefault(); setOpen(true);} });
   menu.addEventListener('click',e=>{ const li=e.target.closest('li'); if(!li)return; choose(li.dataset.id); setOpen(false); btn.focus(); });
@@ -962,10 +988,70 @@ function buildObjSelector(corpus){
   document.addEventListener('click',e=>{ if(!dd.contains(e.target)) setOpen(false); });
   choose(corpus.default||corpus.asteroids[0].id, false);
 }
-function initCorpus(corpus){ buildObjSelector(corpus); snap('uniform'); updateAR(); }
+function initCorpus(corpus){ buildObjSelector(corpus); buildPopView(corpus); snap('uniform'); updateAR(); updatePopView(); }
 
-/* ── live alias-rate engine: production 2nd-order FALC port, f ∈ [24/20, 24/2.2],
-   mirrors phase2_alias.alias_rate_model;  synthetic draws from the 4-term truth
+// corpus dumbbell: stored uniform/optimized (authoritative) plus the live custom cadence.
+// one object is shown by default; the button computes the custom cadence across all five.
+let POPCORPUS=null, popMode='single', hasCustom=false;
+const customARCache=new Map();
+function buildPopView(corpus){ POPCORPUS=corpus; }
+function customARFor(obj){
+  const sig=`${obj.id}|${N}|${customTimes.map(t=>t.toFixed(3)).join(',')}`;
+  if(customARCache.has(sig)) return customARCache.get(sig);
+  const k=aliasFails(obj.coeffs,obj.period,customTimes,AR_NTRIALS,obj.sigma,AR_SEED,AR_NGRID);
+  const p=k/AR_NTRIALS; customARCache.set(sig,p); return p;
+}
+function customValueFor(obj){                              // reuse the HUD's value for the selected object
+  if(obj.id===curObjId){ const c=arCache.get(arKey('custom',N)); if(c) return c.p; }
+  return customARFor(obj);
+}
+function popObjs(){ const a=POPCORPUS.asteroids; return popMode==='all'?a:a.filter(o=>o.id===curObjId); }
+function updatePopView(){
+  const host=document.getElementById('popsvg'); if(!host||!POPCORPUS) return;
+  const all=POPCORPUS.asteroids; if(!all.length || !all[0].arU){ host.innerHTML=''; return; }
+  const objs=popObjs(), key=String(N);
+  const cust={}; if(hasCustom) objs.forEach(o=>{ cust[o.id]=customValueFor(o); });
+  const W=560, top=12, rowH=30, axisH=30, L=58, R=W-18, span=R-L;
+  const baseY=top+objs.length*rowH, H=baseY+axisH;
+  const xf=a=>L+Math.max(0,Math.min(1,a))*span;
+  const bad=css('--bad'), good=css('--good'), vio='#a98cd0';
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" font-family="'JetBrains Mono',monospace">`;
+  [0,0.25,0.5,0.75,1].forEach(t=>{const x=xf(t);
+    s+=`<line x1="${x}" y1="${top-2}" x2="${x}" y2="${baseY}" stroke="rgba(226,221,212,0.06)"/>`;
+    s+=`<line x1="${x}" y1="${baseY}" x2="${x}" y2="${baseY+4}" stroke="rgba(226,221,212,0.28)"/>`;
+    s+=`<text x="${x}" y="${baseY+15}" fill="rgba(226,221,212,0.45)" font-size="9" text-anchor="middle">${t}</text>`;});
+  s+=`<text x="${(L+R)/2}" y="${H-1}" fill="rgba(226,221,212,0.4)" font-size="9" text-anchor="middle">alias rate A_R  ·  lower is better</text>`;
+  objs.forEach((o,i)=>{
+    const u=o.arU[key], v=o.arO[key]; if(u==null||v==null) return;
+    const y=top+i*rowH+rowH/2, sel=o.id===curObjId;
+    if(sel && popMode==='all') s+=`<rect x="0" y="${y-rowH/2}" width="${W}" height="${rowH}" fill="rgba(196,162,88,0.08)"/>`;
+    s+=`<text x="${L-10}" y="${y+3}" text-anchor="end" font-size="10" fill="${sel?'#c4a258':'rgba(226,221,212,0.6)'}">${o.id}</text>`;
+    s+=`<line x1="${L}" y1="${y}" x2="${R}" y2="${y}" stroke="rgba(226,221,212,0.06)"/>`;
+    s+=`<line x1="${xf(u)}" y1="${y}" x2="${xf(v)}" y2="${y}" stroke="rgba(226,221,212,0.32)" stroke-width="1.6"/>`;
+    s+=`<circle cx="${xf(u)}" cy="${y}" r="4" fill="${bad}"/>`;
+    s+=`<circle cx="${xf(v)}" cy="${y}" r="4.5" fill="${good}"/>`;
+    if(hasCustom && cust[o.id]!=null) s+=`<circle cx="${xf(cust[o.id])}" cy="${y}" r="3.4" fill="${vio}" stroke="#0b0e1f" stroke-width="0.8"/>`;
+  });
+  s+=`</svg>`;
+  host.innerHTML=s;
+  const lc=document.getElementById('pop-leg-custom'); if(lc) lc.hidden=!hasCustom;
+  const pn=document.getElementById('pop-n'); if(pn) pn.textContent='N = '+N;
+  const btn=document.getElementById('pop-all'); if(btn) btn.textContent = popMode==='all'?'show selected only':'compute all five';
+}
+function setPopAll(on){
+  const btn=document.getElementById('pop-all');
+  if(on && hasCustom){                                     // heavy path: custom cadence across all five
+    if(btn){ btn.setAttribute('aria-busy','true'); btn.textContent='computing…'; }
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      popMode='all'; POPCORPUS.asteroids.forEach(customValueFor);   // warm the cache
+      if(btn) btn.removeAttribute('aria-busy');
+      updatePopView();
+    }));
+  } else { popMode = on?'all':'single'; updatePopView(); }
+}
+
+/* ── live alias-rate engine: production 2nd-order FALC port, f ∈ [24/20, 24/2.2] ─
+   mirrors phase2_alias.alias_rate_model — synthetic draws from the 4-term truth
    model, FALC RSS recovery, success = |Δp|/p < 0.05. Reproduces the corpus
    arU/arO within the Wilson CI; the displayed [2.2,8] h periodogram above is a
    zoom of the same spectrum. */
@@ -1022,7 +1108,7 @@ function updateAR(){
     if(id!==arReqId)return;                            // superseded by a newer request
     const k=aliasFails(COEFFS,P_TRUE,times,AR_NTRIALS,SIGMA,AR_SEED,AR_NGRID);
     const ci=wilson(k,AR_NTRIALS), r={p:k/AR_NTRIALS,lo:ci[0],hi:ci[1]};
-    arCache.set(key,r); if(id===arReqId) showAR(r);
+    arCache.set(key,r); if(id===arReqId){ showAR(r); if(POPCORPUS) updatePopView(); }
   }));
 }
 
@@ -1043,10 +1129,11 @@ C.night.addEventListener('pointerdown',ev=>{
 C.night.addEventListener('pointermove',ev=>{
   if(dragIdx<0)return;
   customTimes[dragIdx]=nightXToT(ev.clientX);
-  foldP=P_TRUE; renderTimes(customTimes,'custom');      // visual only, no MC during drag
+  foldP=P_TRUE; renderTimes(customTimes,'custom');      // visual only — no MC during drag
   ev.preventDefault();});
 function endDrag(ev){if(dragIdx<0)return; dragIdx=-1;
   try{C.night.releasePointerCapture(ev.pointerId);}catch(e){}
+  hasCustom=true; customARCache.clear(); popMode='single';
   updateAR();}                                           // recompute alias rate on release
 C.night.addEventListener('pointerup',endDrag);
 C.night.addEventListener('pointercancel',endDrag);
@@ -1060,7 +1147,7 @@ document.querySelectorAll('#seg button').forEach(btn=>btn.onclick=()=>{
   updateAR();});
 document.querySelectorAll('#nobs button').forEach(btn=>btn.onclick=()=>{
   document.querySelectorAll('#nobs button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
-  N=+btn.dataset.n; customTimes=uniform(N); snap(mode); updateAR();});
+  N=+btn.dataset.n; customTimes=uniform(N); hasCustom=false; customARCache.clear(); popMode='single'; snap(mode); updateAR(); updatePopView();});
 document.getElementById('replay').onclick=()=>{
   document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='uniform')));
   mode='uniform'; snap('uniform');
@@ -1068,6 +1155,8 @@ document.getElementById('replay').onclick=()=>{
     document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='optimized')));
     morphTo('optimized'); updateAR();
   },420);};
+const popAllBtn=document.getElementById('pop-all');
+if(popAllBtn) popAllBtn.onclick=()=>setPopAll(popMode!=='all');
 
 /* click periodogram to fold */
 C.pg.addEventListener('click',ev=>{
