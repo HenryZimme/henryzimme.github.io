@@ -36,6 +36,8 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    [id^="sec-"] { scroll-margin-top: 80px; }
+    #sim-section { scroll-margin-top: 0; }
 
     body {
       background-color: var(--bg);
@@ -75,6 +77,27 @@
       transition: all 0.2s ease;
     }
     .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
+
+    #section-nav {
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, calc(-50% - 6px));
+      display: flex; gap: 22px; width: max-content; max-width: 60%;
+      opacity: 0;
+      transition: opacity 0.32s ease, transform 0.32s ease;
+      pointer-events: none;
+    }
+    #section-nav[data-visible="true"] { opacity: 1; transform: translate(-50%, -50%); pointer-events: auto; }
+    #section-nav a {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.28); text-decoration: none;
+      padding: 4px 0; border-bottom: 1px solid transparent;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    #section-nav a:hover { color: rgba(255,255,255,0.7); }
+    #section-nav a[aria-current="true"] { color: var(--gold); border-bottom-color: var(--gold-dim); }
+    /* primary nav already position:fixed; needed positioning context for #section-nav */
+    nav[aria-label="Primary"] { position: fixed; }
 
     .skip-link {
       position: absolute; left: -9999px;
@@ -141,7 +164,6 @@
       background: rgba(196,162,88,0.15);
       box-shadow: inset 0 0 0 1px rgba(196,162,88,0.30);
     }
-    .ctl-replay { margin-left: auto; }
     /* object dropdown — fully custom (no native popup flash); matches resting .btn-mode */
     .obj-dd { position: relative; }
     .obj-select {
@@ -171,11 +193,9 @@
     }
     .obj-menu li:hover, .obj-menu li:focus { background: rgba(196,162,88,0.12); color: var(--gold); outline: none; }
     .obj-menu li[aria-selected="true"] { color: var(--gold); }
-    /* Wilson CI shown as stacked upper/lower bounds beside the alias rate */
-    .hud-ar-wrap { display: inline-flex; align-items: center; justify-content: flex-end; }
-    .hud-ci { display: inline-flex; flex-direction: column; line-height: 1.08;
-      font-size: 7.5px; margin-left: 4px; color: rgba(255,255,255,0.45); text-align: left; }
-    .hud-ci span { display: block; }
+    /* Wilson CI shown beside A_R as a compact interval */
+    .hud-ar-wrap { display: inline-flex; align-items: baseline; justify-content: flex-end; gap: 5px; }
+    .hud-ci { font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 0; font-family: 'JetBrains Mono', monospace; }
     #hud-ar { display: inline-block; }
     #hud-ar.pending { color: rgba(255,255,255,0.35) !important; }
     @keyframes ar-bump { 0%{transform:scale(1);} 35%{transform:scale(1.14);} 100%{transform:scale(1);} }
@@ -268,9 +288,16 @@
       letter-spacing: 0.03em;
       margin: 8px 0 0;
     }
+    .pg-legend > span.pg-leg-item { display: block; margin-top: 3px; }
+    .pg-legend > span.pg-leg-item:first-child { margin-top: 0; }
+    .pg-legend > span.pg-leg-hint { color: rgba(196,162,88,0.7); margin-top: 6px; font-style: italic; letter-spacing: 0.01em; }
     .pg-leg-post {
       display: inline-block; width: 16px; height: 0; vertical-align: middle;
       border-bottom: 2px dotted #6fd9d4; margin: 0 5px 3px 0;
+    }
+    .pg-leg-curve {
+      display: inline-block; width: 16px; height: 0; vertical-align: middle;
+      border-bottom: 2px solid var(--leg-curve, var(--bad)); margin: 0 5px 3px 0;
     }
     .pg-callout {
       font-family: 'JetBrains Mono', monospace;
@@ -315,7 +342,14 @@
       background: rgba(7,9,26,0.4);
       padding: 10px 12px 6px;
       display: flex; flex-direction: column;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
+    @keyframes fold-pulse {
+      0%   { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold-dim), 0 0 18px rgba(196,162,88,0.18); }
+      100% { border-color: var(--panel-border); box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent; }
+    }
+    #fold-tile.pulse { animation: fold-pulse 0.6s ease-out; }
+    @media (prefers-reduced-motion: reduce) { #fold-tile.pulse { animation: none; } }
     .tile-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
@@ -332,22 +366,15 @@
       margin-top: 2px;
       min-height: 1.4em;
     }
-
-    /* scroll indicator */
-    #scroll-hint {
-      margin-top: 8px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: rgba(255,255,255,0.22);
-      align-self: center;
-      animation: pulse-hint 3s ease-in-out infinite;
+    .tile-legend {
+      display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      color: rgba(226,221,212,0.5); letter-spacing: 0.02em;
     }
-    @keyframes pulse-hint {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
-    }
+    .tile-legend > span { display: inline-flex; align-items: center; gap: 5px; }
+    .fl-truth { display:inline-block; width:14px; height:0; border-bottom:1.4px solid rgba(226,221,212,.6); }
+    .fl-fit   { display:inline-block; width:14px; height:0; border-bottom:1.8px solid var(--gold); }
+    .fl-obs   { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--blue); }
 
     /* ── explanation section ── */
     #explanation {
@@ -381,6 +408,8 @@
       color: var(--text-dim);
     }
     .exp-body p:first-child { color: var(--text); }
+    .exp-lead { font-size: 17px; color: var(--text-dim); margin: 0 0 18px; line-height: 1.55; }
+    .exp-lead strong { color: var(--gold); font-weight: 400; }
 
     /* parameter table */
     .param-table {
@@ -493,22 +522,36 @@
 
     /* mobile */
     @media (max-width: 740px) {
-      nav { padding: 18px 20px; }
-      #sim-section { padding: 96px 16px 40px; min-height: auto; }
+      nav { padding: 14px 16px; }
+      #sim-section { padding: 60px 14px 28px; min-height: auto; gap: 12px; }
+      .sim-stage { gap: 10px; }
       .tiles { grid-template-columns: 1fr; }
       .object-table { font-size:8.5px; }
       .object-table th, .object-table td { padding-left:7px; }
-      /* mobile: night sampling (draggable) first, then folded lightcurve */
-      .ctl-row { gap: 14px; }
-      .ctl-replay { margin-left: 0; }
+      .ctl-row { gap: 10px 14px; }
+      /* full-width segmented buttons on mobile so they fill the row */
+      .ctl-group { flex: 1 1 100%; min-width: 0; }
+      #seg, #nobs { display: flex; flex-wrap: wrap; gap: 0; }
+      #seg .btn-mode, #nobs .btn-mode { flex: 1 1 0; margin-left: 0; border-left-width: 0; }
+      #seg .btn-mode:first-child, #nobs .btn-mode:first-child { border-left-width: 1px; }
+      .pg-callout { font-size: 12px; padding-left: 8px; margin: 4px 0 8px; }
       #explanation { padding: 60px 20px 80px; }
       .exp-body p { font-size: 18px; }
       .footer-nav { flex-direction: column; }
       #back-to-top { bottom: 20px; right: 20px; }
-      .hud-stats { top: auto; bottom: 40px; right: 8px; left: auto; padding: 6px 9px; gap: 3px; background: rgba(7,9,26,0.97); }
-      .hud-label { width: 68px; font-size: 8px; letter-spacing: 0.08em; }
-      .hud-val { font-size: 10px; }
+      /* HUD: turn the overlay into a strip below the chart on mobile */
+      .hero-wrap { display: flex; flex-direction: column; gap: 0; }
+      .hud-stats {
+        position: static; flex-direction: row; flex-wrap: wrap; align-items: center;
+        justify-content: space-between; gap: 4px 14px;
+        background: transparent; border: 0; padding: 6px 4px 0;
+        pointer-events: auto;
+      }
+      .hud-row { gap: 6px; }
+      .hud-label { width: auto; font-size: 8.5px; letter-spacing: 0.1em; }
+      .hud-val { font-size: 11px; }
       .pg-hint { text-align: left; }
+      #section-nav { display: none !important; }
     }
   </style>
 </head>
@@ -517,33 +560,39 @@
 
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
+    <nav aria-label="Page sections" id="section-nav" hidden>
+      <a href="#sec-sandbox" data-section="sec-sandbox">Sandbox</a>
+      <a href="#sec-corpus" data-section="sec-corpus">Corpus</a>
+      <a href="#sec-methods" data-section="sec-methods">Methods</a>
+      <a href="#sec-references" data-section="sec-references">References</a>
+    </nav>
     <a href="index.html#research" class="nav-back">← Back to Research</a>
   </nav>
 
   <main id="main">
 
     <!-- interactive -->
-    <section id="sim-section" aria-label="Interactive demonstration of intra-night cadence optimization">
+    <section id="sim-section" data-anchor="sec-sandbox" aria-label="Interactive demonstration of intra-night cadence optimization">
 
       <div class="sim-stage">
 
         <div class="ctl-row">
-          <div class="ctl-group">
+          <div class="ctl-group ctl-group-object">
             <span class="ctl-label" id="lbl-object">Object</span>
             <div class="obj-dd" id="objdd">
               <button type="button" class="obj-select" id="objbtn" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="lbl-object"><span id="objbtn-label"></span></button>
               <ul class="obj-menu" id="objmenu" role="listbox" aria-labelledby="lbl-object" hidden></ul>
             </div>
           </div>
-          <div class="ctl-group">
+          <div class="ctl-group ctl-group-schedule">
             <span class="ctl-label" id="lbl-schedule">Schedule</span>
             <div id="seg" role="group" aria-labelledby="lbl-schedule">
               <button class="btn-mode" data-mode="uniform" aria-pressed="true">Uniform</button>
-              <button class="btn-mode" data-mode="optimized" aria-pressed="false">Optimized (CMA-ES)</button>
+              <button class="btn-mode" data-mode="optimized" aria-pressed="false">Optimized</button>
               <button class="btn-mode" data-mode="custom" aria-pressed="false">Custom</button>
             </div>
           </div>
-          <div class="ctl-group">
+          <div class="ctl-group ctl-group-nobs">
             <span class="ctl-label" id="lbl-nobs">Obs / night</span>
             <div id="nobs" role="group" aria-labelledby="lbl-nobs">
               <button class="btn-mode" data-n="8" aria-pressed="true">8</button>
@@ -551,10 +600,9 @@
               <button class="btn-mode" data-n="10" aria-pressed="false">10</button>
             </div>
           </div>
-          <button class="btn-mode ctl-replay" id="replay">Replay morph</button>
         </div>
 
-        <p class="pg-callout">Toggle the schedule and watch the dotted posterior jump from the alias onto the true period.</p>
+        <p class="pg-callout">The dotted posterior shows where probability mass actually sits. Switching schedule moves it from the alias onto the true period.</p>
 
         <div class="hero-wrap">
           <canvas id="pg" height="320" tabindex="0" role="application" aria-label="Matched-template periodogram for the current schedule. Use Left and Right arrow keys to move between detected peaks, then press Enter to fold the lightcurve at the selected peak."></canvas>
@@ -564,17 +612,16 @@
               <span class="hud-val" id="hud-eh">--</span>
             </div>
             <div class="hud-row">
-              <span class="hud-label">argmax P</span>
+              <span class="hud-label">recovered P</span>
               <span class="hud-val" id="hud-arg">-- h</span>
             </div>
             <div class="hud-row">
               <span class="hud-label">A<sub>R</sub></span>
-              <span class="hud-val hud-ar-wrap"><span id="hud-ar">--</span><span class="hud-ci"><span id="hud-ar-hi"></span><span id="hud-ar-lo"></span></span></span>
+              <span class="hud-val hud-ar-wrap"><span id="hud-ar">--</span><span class="hud-ci" id="hud-ar-ci"></span></span>
             </div>
           </div>
         </div>
-        <p class="pg-legend">Curve: variance explained (left axis) &middot; <span class="pg-leg-post"></span>dotted line: posterior p(P) &prop; e<sup>&minus;RSS / 2σ²</sup>, peak-normalised</p>
-        <p class="pg-hint">Click a peak to fold &middot; &larr; &rarr; Enter when focused</p>
+        <p class="pg-legend"><span class="pg-leg-item"><span class="pg-leg-curve"></span>solid curve: variance explained (left axis)</span><span class="pg-leg-item"><span class="pg-leg-post"></span>dotted line: posterior p(P) &prop; e<sup>&minus;RSS / 2σ²</sup>, peak-normalised</span><span class="pg-leg-item pg-leg-hint">Click any peak (or use ← → Enter) to fold the lightcurve below at that period.</span></p>
 
         <p class="sr-only" id="pg-live" aria-live="polite" aria-atomic="true"></p>
 
@@ -584,9 +631,14 @@
             <canvas id="night" height="78" role="img" aria-label="Observation timing across one night for the current schedule"></canvas>
             <span class="tile-sub" id="nightsub"></span>
           </div>
-          <div class="tile">
+          <div class="tile" id="fold-tile">
             <span class="tile-label">Folded lightcurve</span>
             <canvas id="fold" height="120" role="img" aria-label="Lightcurve folded at the currently selected period"></canvas>
+            <span class="tile-legend">
+              <span><span class="fl-truth"></span>true shape</span>
+              <span><span class="fl-fit"></span>fit to folded data</span>
+              <span><span class="fl-obs"></span>noisy observations</span>
+            </span>
             <span class="tile-sub" id="foldsub"></span>
           </div>
         </div>
@@ -604,32 +656,18 @@
 
       </div>
 
-      <div id="scroll-hint">scroll for methods ↓</div>
-
     </section>
 
     <!-- explanation -->
     <section id="explanation">
 
       <div class="exp-meta">Asteroid Photometry · Cadence Optimization</div>
-      <h1 class="exp-title">Entropy-Guided Intra-Night Cadence</h1>
+      <h1 class="exp-title" id="sec-methods">Entropy-Guided Intra-Night Cadence</h1>
 
       <hr class="article-divider">
 
-      <div class="exp-body">
-
-        <p>The sandbox opens on asteroid 5745, a 4.09-hour rotator from the filtered ALCDEF-LCDB corpus I built, but the object selector steps through five short-period rotators (tabulated below). I made 5745 the default because the gap between uniform and optimized sampling is maximal on it: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds, while the optimized 8-observation cadence succeeds in 100%. Its phase-folded V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (A<sub>2</sub>/A<sub>1</sub> &asymp; 13). The demo samples that model at eight, nine, or ten times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares naïve uniform spacing against a single short-period-bin cadence selected by CMA-ES; selecting a different object applies that same optimized cadence to it, which is why the gain varies from object to object.</p>
-
-        <p>For 5745, the two schedules differ visibly in <em>which peak the periodogram favors</em>, not just in the residual structure around the winning peak. Under uniform sampling the highest peak frequently lands at an alias of the true rotation (P &asymp; 3.49 h or 4.91 h, depending on noise realization) or at another competing peak; under the optimized cadence the true peak at 4.087 h dominates the periodogram in every seed. On the 57-asteroid short-period holdout set (P &isin; [2.2, 8] h, never seen during training), the same procedure reduces the alias rate from A<sub>R</sub> = 0.69 to 0.59 at N = 8, 0.63 to 0.52 at N = 9, and 0.57 to 0.51 at N = 10. The N = 8 and N = 9 gains are the largest in the sweep (Δ &asymp; 0.10); by N = 10 the marginal improvement narrows toward Δ &asymp; 0.06. The corpus-level numbers above are averages, and the per-object rates tabulated below show the spread behind them: the strongly bimodal rotators (5745, 2511, 65733) are recovered almost perfectly, while the more sinusoidal 852 and 6870 gain little or regress under the same cadence.</p>
-
-        <p>Why optimize the empirical alias rate directly instead of a cheaper spectral proxy? The obvious first move is to suppress the sampling window's sidelobes. The spectral window |W(f)|² = |Σ<sub>j</sub> e<sup>2πi f t<sub>j</sub></sup>|² / N² depends only on the observing times, and for a pure sinusoid those sidelobes are exactly where the aliases land, so I built a metric that minimizes a period-weighted window RMS on a GPU grid and refines it with CMA-ES. It only works for a sinusoidal signal. A least-squares periodogram fits a single sinusoid at each trial frequency (VanderPlas 2018), and when the lightcurve is not sinusoidal, with power spread across harmonics, the tallest peak routinely lands on a harmonic or an alias of the true period rather than on the period itself; recovering it then takes a multi-term Fourier model. The rotators that dominate this corpus are strongly non-sinusoidal (5745 and the vast majority of asteroids carry most of their power in the second harmonic), so a window metric blind to lightcurve shape mispredicts which periods actually alias. I therefore rank cadences by the FALC alias rate measured on the real corpus, and use CMA-ES with a differentiable stand-in for optimizing that discrete rate: the Shannon entropy of the RSS pseudo-posterior p(f) &prop; exp(&minus;RSS(f) / T*), with T* = 2σ² fixing the pseudo-posterior to the exact Gaussian posterior. The entropy tracks the alias rate closely (ρ(H, A<sub>R</sub>) &gt; 0.8, 0.99 N = 10 binned) and stays smooth enough to optimize. The window function is the discarded heuristic.</p>
-
-
-      </div>
-
-      <hr class="article-divider">
-      <div class="exp-meta" style="margin-bottom:20px">Corpus objects</div>
-      <p class="exp-body" style="margin:0 0 8px">Five short-period rotators are selectable; 5745 is the default. The three with second-harmonic-dominated lightcurves (high A<sub>2</sub>/A<sub>1</sub>) are the ones the optimized cadence rescues outright, while the more sinusoidal pair gains little or regresses. The final column is the alias rate at N = 8, uniform &rarr; optimized (production CV values).</p>
+      <div class="exp-meta" id="sec-corpus" style="margin-bottom:14px">Corpus objects</div>
+      <p class="exp-lead">Five short-period rotators are selectable; <strong>5745 is the default</strong>. The optimized cadence was selected by CMA-ES against the alias rate averaged across the 248-asteroid training set, where 96% of objects have A<sub>2</sub>/A<sub>1</sub> &gt; 1 (median 5.7). The loss is therefore dominated by harmonic-rich rotators, and the three high-A<sub>2</sub>/A<sub>1</sub> objects in the table are recovered in every CV seed. The sinusoidal pair (852, 6870) gains little, or at some N regresses, because their lightcurve geometry isn't what the loss was averaging over. The final column is alias rate at N = 8, uniform &rarr; optimized (production CV).</p>
       <div class="table-scroll">
       <table class="object-table">
         <thead>
@@ -645,6 +683,21 @@
       </table>
       </div>
 
+      <hr class="article-divider">
+
+      <div class="exp-body">
+
+        <p>5745 is the default because uniform 8-observation sampling fails to recover the true period in 100% of CV seeds, while the optimized 8-observation cadence succeeds in 100%. Its V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (A<sub>2</sub>/A<sub>1</sub> &asymp; 13). The demo samples that model at 8, 9, or 10 times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares uniform spacing against a single short-period-bin cadence selected by CMA-ES on the 248-asteroid training set, cross-validated 5-fold. Selecting a different object applies that same optimized cadence to it, which is why the gain varies object to object.</p>
+
+        <p>For 5745, the schedules differ in <em>which peak the periodogram favors</em>. Under uniform sampling the highest peak frequently lands at an alias (P &asymp; 3.49 h or 4.91 h, the 1-day aliases of 4.087 h) or another competing peak; under the optimized cadence the true 4.087 h peak dominates in every seed. The periodogram, argmax, and posterior shown above are computed for one fixed noise draw, while the A<sub>R</sub> readout in the HUD is a 128-trial Monte Carlo (64 on mobile) over independent noise draws; the production CV reports A<sub>R</sub> = 1.00 for 5745 at N = 8 uniform, but the sandbox's smaller MC will read 0.97–0.99 depending on how many of its 128 draws happen to recover the true period. On the 57-asteroid short-period holdout (P &isin; [2.2, 8] h, never seen in training), the same procedure reduces A<sub>R</sub> from 0.693 to 0.590 at N = 8, 0.631 to 0.524 at N = 9, 0.574 to 0.508 at N = 10. The N = 8 and N = 9 gains are the largest in the sweep (Δ &asymp; 0.10); by N = 10 the marginal improvement narrows to Δ &asymp; 0.07.</p>
+
+        <p>Why optimize the empirical alias rate directly instead of a cheaper spectral proxy? The obvious first move is to suppress the sampling window's sidelobes. The spectral window |W(f)|² = |Σ<sub>j</sub> e<sup>2πi f t<sub>j</sub></sup>|² / N² depends only on the observing times, and for a pure sinusoid those sidelobes are exactly where the aliases land, so I built a metric that minimizes a period-weighted window RMS on a GPU grid and refines with CMA-ES. It works only for a sinusoidal signal. A least-squares periodogram fits a single sinusoid at each trial frequency (VanderPlas 2018), and when the lightcurve has power spread across harmonics, the tallest peak routinely lands on a harmonic or alias of the true period rather than the period itself; recovery then takes a multi-term Fourier model. 96% of the 248-asteroid training corpus has A<sub>2</sub>/A<sub>1</sub> &gt; 1, 58% has A<sub>2</sub>/A<sub>1</sub> &gt; 5, and the median is 5.7, so window RMS, which is blind to harmonic content, mispredicts where most of these aliases land. I rank cadences by the FALC alias rate measured on the real corpus and drive CMA-ES with a differentiable stand-in for that discrete rate: the Shannon entropy of the RSS pseudo-posterior p(f) &prop; exp(&minus;RSS(f) / T*), with T* = 2σ² fixing the pseudo-posterior to the exact Gaussian posterior. The entropy tracks the alias rate closely (ρ(H, A<sub>R</sub>) = 0.86 raw, 0.99 binned at N = 10) and is smooth enough to optimize, so the window-RMS metric was discarded.</p>
+
+        <p>A<sub>2</sub>/A<sub>1</sub> only weakly predicts the per-object gain. In the short bin at N = 10, the per-object delta Δ = A<sub>R</sub><sup>uniform</sup> − A<sub>R</sub><sup>optimized</sup> (positive = optimization helps) is correlated with A<sub>2</sub>/A<sub>1</sub> at Spearman ρ = +0.18 (p = 0.06; Pearson r = +0.14 against log A<sub>2</sub>/A<sub>1</sub>, p = 0.15); per-object noise from the CMA-ES seed, CV folds, and individual lightcurve geometry swamps the signal. Binning collapses the noise: across five A<sub>2</sub>/A<sub>1</sub> quintiles at N = 10, the quintile-mean Δ runs −0.034, −0.011, +0.040, +0.097, +0.064 (median A<sub>2</sub>/A<sub>1</sub> in each: 1.85, 5.10, 7.46, 13.80, 36.03), with a binned Spearman of ρ = +0.90 (p = 0.04). The same monotonicity is visible at N = 9 (quartile means 0.057, 0.142, 0.243, 0.093) and N = 8 (−0.011, −0.020, +0.127, +0.059), though four bins is not enough for either to reach significance. At N = 10, splitting into four quartiles, the optimized cadence regresses on 67% of the low-A<sub>2</sub>/A<sub>1</sub> quartile (median A<sub>2</sub>/A<sub>1</sub> = 2.5) and on 51% of the short-period corpus overall; the improvements concentrate in the upper two quartiles. That is the trade a single corpus-averaged cadence makes: it wins on the harmonic-rich majority that drives the loss and gives back a small amount on the sinusoidal minority. Stratifying the cadence selection by A<sub>2</sub>/A<sub>1</sub> (or running a per-object optimization) would be the path to closing that gap.</p>
+
+      </div>
+
+      <hr class="article-divider">
       <div class="exp-meta" style="margin-bottom:20px">Shared parameters</div>
       <table class="param-table">
         <tbody>
@@ -661,27 +714,7 @@
       </table>
 
       <hr class="article-divider">
-      <div class="exp-meta" style="margin-bottom:20px">Schedules</div>
-      <div class="mode-guide">
-        <div class="mode-item">
-          <div class="mode-label">Uniform</div>
-          <div class="mode-desc">Even spacing across the 8-hour night, one observation every 8 / (N − 1) hours. The reference baseline. For N = 8 this produces a strong sidelobe at <code>P ≈ 1.64 h</code> (below the 2.2 h spin-barrier floor, so off-axis here) and a secondary forest around <code>5.7 h</code> that is visible in the periodogram.</div>
-        </div>
-        <div class="mode-item">
-          <div class="mode-label">Optimized</div>
-          <div class="mode-desc">Intra-night positions selected by Covariance Matrix Adaptation Evolution Strategy (Hansen &amp; Ostermeier 2001), with the Shannon entropy of the period posterior as the loss and held-out asteroids for cross-validation. The N = 8 short-period winner: <code>0, 0.62, 1.39, 2.71, 3.83, 6.01, 6.85, 8.00 h</code>.</div>
-        </div>
-      </div>
-
-      <hr class="article-divider">
-      <div class="exp-meta" style="margin-bottom:16px">Methods Notes</div>
-      <div class="exp-body">
-        <p style="font-size:17px;font-style:italic;color:var(--text-dim);margin-bottom:16px;">The notes below describe the demonstration's implementation choices and how they relate to the full pipeline.</p>
-        <p style="font-size:17px">The period axis shown in the demonstration is the same blind 2nd-order Fourier (FALC) periodogram used by the production pipeline: at each trial period the data is least-squares fit by m(t) = m<sub>0</sub> + a<sub>1</sub>cos(2π t/P) + b<sub>1</sub>sin(2π t/P) + a<sub>2</sub>cos(4π t/P) + b<sub>2</sub>sin(4π t/P), and the displayed quantity is variance explained on [0, 1]. The trial-period grid runs from 2.2 h (the asteroid spin barrier; faster rotators are tidally disrupted) to 8 h, matching the production f<sub>max</sub> = 24/2.2 cyc/d cutoff that excludes sub-spin-barrier half-period aliases. The displayed H is the Shannon entropy of that Boltzmann posterior p(P) &prop; exp(&minus;RSS(P) / T*) evaluated over the competing periodogram peaks, with T* = 2σ² fixed analytically so the pseudo-posterior coincides with the exact Gaussian posterior for the assumed noise σ. It is the quantity the full pipeline minimizes (here measured on the displayed realization's contending peaks). H = 0 means the posterior collapses onto one period; higher values mean probability mass splits across the true and alias periods, which is what drives a high alias rate, and a separate τ sweep confirms ρ(H, A<sub>R</sub>) is flat across a broad band containing T*. The dotted cyan line tracing the panel is this posterior, normalised to its peak: under uniform sampling its mass falls on the alias, under the optimized cadence it collapses onto the true period. The CMA-ES schedules embedded above are the actual winners selected by 5-fold cross-validation on a 248-asteroid training set, screened against nine baseline cadence families; the noise realization is fixed at σ = 0.04 mag (the same level used by the production cross-validation pipeline). The periodogram, its argmax, and the posterior above are computed for this one fixed draw, whereas the A<sub>R</sub> readout is averaged over cross-validation folds; that is why uniform sampling, whose posterior here lands squarely on the alias, still shows A<sub>R</sub> = 0.98 rather than 1.00 for 5745, since it recovers the true period on the minority of draws where the noise happens to favour it. The morph between two schedules at fixed N is an index-matched linear interpolation purely for animation.</p>
-      </div>
-
-      <hr class="article-divider">
-      <div class="exp-meta" style="margin-bottom:16px">Data &amp; References</div>
+      <div class="exp-meta" id="sec-references" style="margin-bottom:16px">Data &amp; References</div>
       <ul class="ref-list">
         <li>Lam, Margot, Whittaker &amp; Myhrvold 2023, <i>Determination of 1929 asteroid rotation periods from WISE data</i>, Planet. Sci. J. 4, 61 &middot; <a href="https://doi.org/10.3847/PSJ/acc5e4" target="_blank" rel="noopener">doi:10.3847/PSJ/acc5e4</a></li>
         <li>Harris, Young, Bowell et al. 1989, <i>Photoelectric observations of asteroids (FALC)</i>, Icarus 77, 171 &middot; <a href="https://doi.org/10.1016/0019-1035(89)90015-8" target="_blank" rel="noopener">doi:10.1016/0019-1035(89)90015-8</a></li>
@@ -961,8 +994,7 @@ const pgLive=document.getElementById('pg-live');
 const hudEh=document.getElementById('hud-eh'),
       hudArg=document.getElementById('hud-arg'),
       hudAr=document.getElementById('hud-ar'),
-      hudArHi=document.getElementById('hud-ar-hi'),
-      hudArLo=document.getElementById('hud-ar-lo'),
+      hudArCi=document.getElementById('hud-ar-ci'),
       nightSub=document.getElementById('nightsub'),
       foldSub=document.getElementById('foldsub');
 
@@ -972,6 +1004,7 @@ function lerpTimes(a,b,t){return a.map((v,i)=>v+(b[i]-v)*t);}
 
 function renderTimes(times,m){
   const col = modeColor(m);
+  document.documentElement.style.setProperty('--leg-curve', col);
   const P=pipeline(times);
   curPeaks=P.peaks;
   drawPeriodogram(P.power,P.peaks,foldP,P.argP,col,P.post);
@@ -983,7 +1016,10 @@ function renderTimes(times,m){
   nightSub.textContent = m==='uniform'
     ? `${times.length} pts · even ${(NIGHT/(times.length-1)).toFixed(2)} h spacing`
     : (m==='custom' ? `${times.length} pts · custom` : `${times.length} pts · CMA-ES`);
-  foldSub.textContent = `folded at ${foldP.toFixed(2)} h`;
+  const atTrue = Math.abs(foldP-P_TRUE)<0.06;
+  foldSub.innerHTML = atTrue
+    ? `folded at <span style="color:var(--gold)">${foldP.toFixed(2)} h</span>, the true period. Points lock to the lightcurve shape.`
+    : `folded at <span style="color:var(--bad)">${foldP.toFixed(2)} h</span>, an alias of ${P_TRUE.toFixed(2)} h. Points scatter; no coherent shape recovered.`;
   return P;
 }
 
@@ -1150,14 +1186,13 @@ function showAR(r){
   hudAr.classList.remove('pending');
   hudAr.textContent=r.p.toFixed(2);
   hudAr.style.color=arColor(r.p);
-  hudArHi.textContent=r.hi.toFixed(2);
-  hudArLo.textContent=r.lo.toFixed(2);
+  hudArCi.textContent=`[${r.lo.toFixed(2)}, ${r.hi.toFixed(2)}]`;
   if(!reduce){ hudAr.classList.remove('bump'); void hudAr.offsetWidth; hudAr.classList.add('bump'); }
 }
 function updateAR(){
   const key=arKey(mode,N), times=timesFor(mode,N);
   if(arCache.has(key)){showAR(arCache.get(key));return;}
-  hudAr.classList.add('pending');hudAr.textContent='···';hudArHi.textContent='';hudArLo.textContent='';
+  hudAr.classList.add('pending');hudAr.textContent='···';hudArCi.textContent='';
   const id=++arReqId;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     if(id!==arReqId)return;                            // superseded by a newer request
@@ -1203,13 +1238,6 @@ document.querySelectorAll('#seg button').forEach(btn=>btn.onclick=()=>{
 document.querySelectorAll('#nobs button').forEach(btn=>btn.onclick=()=>{
   document.querySelectorAll('#nobs button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
   N=+btn.dataset.n; customTimes=uniform(N); hasCustom=false; customARCache.clear(); popMode='single'; snap(mode); updateAR(); updatePopView();});
-document.getElementById('replay').onclick=()=>{
-  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='uniform')));
-  mode='uniform'; snap('uniform');
-  setTimeout(()=>{
-    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode==='optimized')));
-    morphTo('optimized'); updateAR();
-  },420);};
 const popAllBtn=document.getElementById('pop-all');
 if(popAllBtn) popAllBtn.onclick=()=>setPopAll(popMode!=='all');
 
@@ -1223,9 +1251,13 @@ C.pg.addEventListener('click',ev=>{
 
 /* keyboard: arrow keys move between detected peaks, Enter/Space folds there */
 function announceFold(){
-  if(!pgLive)return;
-  const atTrue = Math.abs(foldP-P_TRUE)<0.06;
-  pgLive.textContent = `Folded at ${foldP.toFixed(2)} hours${atTrue?' (the true period)':''}.`;
+  if(pgLive){
+    const atTrue = Math.abs(foldP-P_TRUE)<0.06;
+    pgLive.textContent = `Folded at ${foldP.toFixed(2)} hours${atTrue?' (the true period)':''}.`;
+  }
+  // pulse the fold tile so it's clear the click below the chart drove the panel below
+  const ft=document.getElementById('fold-tile');
+  if(ft){ ft.classList.remove('pulse'); void ft.offsetWidth; ft.classList.add('pulse'); }
 }
 C.pg.addEventListener('keydown',ev=>{
   const k=ev.key;
@@ -1240,6 +1272,9 @@ C.pg.addEventListener('keydown',ev=>{
   else if(k==='ArrowRight') ci=Math.min(sel.length-1,ci+1);
   foldP=sel[ci];
   renderTimes(timesFor(mode,N),mode);
+  // pulse the fold tile
+  const ft=document.getElementById('fold-tile');
+  if(ft){ ft.classList.remove('pulse'); void ft.offsetWidth; ft.classList.add('pulse'); }
   // announce position among peaks
   if(pgLive){
     const atTrue = Math.abs(foldP-P_TRUE)<0.06;
@@ -1259,6 +1294,40 @@ window.addEventListener('load',()=>{
   const btn=document.getElementById('back-to-top');
   addEventListener('scroll',()=>{btn.classList.toggle('visible',scrollY>600);});
   btn.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+})();
+
+/* sticky section nav: appears once you scroll past the hero, highlights active section */
+(function(){
+  const nav=document.getElementById('section-nav'); if(!nav) return;
+  nav.hidden=false;
+  const links=[...nav.querySelectorAll('a[data-section]')];
+  const ids=links.map(a=>a.dataset.section);
+  const targets=ids.map(id=>document.getElementById(id)).filter(Boolean);
+  // appear when the sandbox section has scrolled off the bottom (past the population view)
+  const sandboxEl=document.getElementById('sim-section');
+  const setVisible=()=>{
+    const bottom = sandboxEl ? sandboxEl.getBoundingClientRect().bottom : 800;
+    nav.dataset.visible = bottom < 80 ? 'true' : 'false';
+  };
+  setVisible(); addEventListener('scroll', setVisible, {passive:true});
+  // active highlight: section closest to top of viewport (allowing for nav height)
+  const setActive=()=>{
+    let active=null, bestDist=Infinity;
+    const probe=120;
+    for(const t of targets){
+      const r=t.getBoundingClientRect();
+      if(r.top<=probe){
+        const d=probe-r.top;
+        if(d<bestDist){bestDist=d; active=t.id;}
+      }
+    }
+    if(!active && targets[0]) active=targets[0].id;
+    links.forEach(a=>{
+      if(a.dataset.section===active) a.setAttribute('aria-current','true');
+      else a.removeAttribute('aria-current');
+    });
+  };
+  setActive(); addEventListener('scroll', setActive, {passive:true});
 })();
 </script>
 </body>
