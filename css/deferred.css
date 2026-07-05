@@ -1310,16 +1310,15 @@
     }
 
 
-    /* desktop: restore sim after research via css order */
-    @media (min-width: 741px) {
-      #sim-research-wrapper {
-        display: flex;
-        flex-direction: column;
-      }
-      #research    { order: 1; }
-      #cepheid-sim { order: 2; }
-      /* epilepsy modal is position:fixed so order doesn't affect it visually */
+    /* research before the simulator on all viewports (the sim contextualizes
+       CEP-1347, so research must come first on mobile too, not just desktop).
+       epilepsy modal is position:fixed, so order doesn't affect it visually. */
+    #sim-research-wrapper {
+      display: flex;
+      flex-direction: column;
     }
+    #research    { order: 1; }
+    #cepheid-sim { order: 2; }
 
     @media (max-width: 740px) {
       /* ── sections ─────────────────────────────────────────────────────────── */
