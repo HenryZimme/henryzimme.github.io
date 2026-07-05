@@ -161,7 +161,7 @@
     }
     .modal-close:hover { color: var(--text); }
 
-    /* modal object image — DSS sky cutout or provided photo */
+    /* modal object image, DSS sky cutout or provided photo */
     #modal-img-wrap {
       width: 100%;
       aspect-ratio: 480 / 280;
@@ -1054,7 +1054,7 @@
       border-radius: 1px;
     }
     
-    /* individual book spine — base height; JS overrides per content length */
+    /* individual book spine, base height; JS overrides per content length */
     .book-spine {
       position: relative;
       flex-shrink: 0;
@@ -1121,7 +1121,7 @@
     .book-spine:nth-child(even) { background: rgba(120,165,210,0.04); }
     .book-spine:nth-child(3n)   { background: rgba(94,207,191,0.03); }
 
-    /* rotated spine title — visible when collapsed */
+    /* rotated spine title, visible when collapsed */
     .spine-title {
       position: absolute;
       inset: 0;
@@ -1149,7 +1149,7 @@
 
     /* hide title on active tap */
 
-    /* expanded info panel — fades in on tap */
+    /* expanded info panel, fades in on tap */
     .spine-panel {
       position: absolute;
       inset: 0;
@@ -1230,7 +1230,7 @@
       transition: opacity 0.5s ease;
     }
 
-    /* easter egg placeholder text — monospace, centered, gently dim */
+    /* easter egg placeholder text, monospace, centered, gently dim */
     .profile-frame::after {
       content: "don't worry,\A I'll be there\A in a second";
       white-space: pre;
@@ -1261,7 +1261,7 @@
       100% { background-position: -200% 0; }
     }
 
-    /* respect reduced motion — keep text, kill the sweep */
+    /* respect reduced motion, keep text, kill the sweep */
     @media (prefers-reduced-motion: reduce) {
       .profile-frame::before { animation: none; }
     }
@@ -1269,7 +1269,7 @@
     .profile-frame img {
       width: 100%;
       height: auto;
-      aspect-ratio: 869 / 938; /* reserves space before image loads — eliminates CLS */
+      aspect-ratio: 869 / 938; /* reserves space before image loads, eliminates CLS */
       display: block;
       opacity: 0.95;
       transition: opacity 0.4s ease;
@@ -1303,7 +1303,7 @@
   text-decoration: none;
   transition: border-color 0.2s, background 0.2s;
 }
-/* card call-to-action block hover — replaces inline onmouseover/onmouseout */
+/* card call-to-action block hover, replaces inline onmouseover/onmouseout */
     .card-cta:hover {
       border-color: rgba(120, 165, 210, 0.45) !important;
       background: rgba(120, 165, 210, 0.09) !important;
@@ -1390,7 +1390,7 @@
       /* reduce card chrome so text has more room */
       .research-card { padding: 22px 20px; }
 
-      /* bump body text slightly — 15px is hard to scan at arm's length */
+      /* bump body text slightly, 15px is hard to scan at arm's length */
       .card-title    { font-size: 21px; }
       .card-summary  { font-size: 15.5px; line-height: 1.8; }
       .card-body     { font-size: 15.5px; line-height: 1.8; }
@@ -1398,7 +1398,7 @@
       /* ── writing ──────────────────────────────────────────────────────────── */
       /* on mobile the grid collapses to a single column; DOM order puts
          writing-meta (venue, date) before writing-content (title, blurb).
-         that's backwards for scanning — promote the title to the top. */
+         that's backwards for scanning, promote the title to the top. */
       .writing-item {
         display: flex;
         flex-direction: column;
@@ -1498,7 +1498,7 @@
       border-bottom-color: var(--gold);
     }
 
-    /* toggle — left side, clear of back-to-top */
+    /* toggle, left side, clear of back-to-top */
     #trail-toggle {
       position: fixed;
       bottom: 32px;
@@ -1719,7 +1719,7 @@
     }
 
     /* floating arrow callout */
-    /* first-word hint — pulses the underline of the first unclicked word when trail opens */
+    /* first-word hint, pulses the underline of the first unclicked word when trail opens */
     @keyframes first-word-hint {
       0%   { border-bottom-color: rgba(196,162,88,0.6); }
       30%  { border-bottom-color: rgba(196,162,88,1);   }

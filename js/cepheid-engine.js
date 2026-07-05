@@ -1,7 +1,7 @@
 (function() {
   // ── film-mode auto-trigger ─────────────────────────────────────────────────
   // ?film in the URL activates film mode without needing devtools.
-  // runs first — before any classList.contains('film-mode') read in this file.
+  // runs first, before any classList.contains('film-mode') read in this file.
   if (/[?&]film\b/.test(window.location.search)) {
     document.documentElement.classList.add('film-mode');
   }
@@ -60,7 +60,7 @@
     };
     var rand = rng(0xdeadbeef);
     bgStars = [];
-    var n = Math.round(cw * ch / 900); // ~2300 stars at 1920×1080 — denser LMC field
+    var n = Math.round(cw * ch / 900); // ~2300 stars at 1920×1080, denser LMC field
     for (var i = 0; i < n; i++) {
       var isBright = rand() < 0.10;
       // LMC tint: bias slightly toward blue-white for cluster character
@@ -108,7 +108,7 @@
       // each arm is a sub-pixel-wide filled rectangle with a gradient approximating
       // the sinc² falloff from Fraunhofer diffraction by a thin rectangular obstruction:
       // I(r) ∝ sinc²(r/r0), approximated by a steep-initial then long-tail gradient.
-      // no diagonal arms — a 4-vane spider produces exactly 4 perpendicular spikes.
+      // no diagonal arms, a 4-vane spider produces exactly 4 perpendicular spikes.
       if (s.spike_len > 0) {
         var sl   = s.spike_len;
         var sa   = eff_a * 0.68; // spike peak alpha: slightly below star disc alpha
@@ -126,7 +126,7 @@
           grad.addColorStop(0.50, hexToRgba(s.c || '#ffffff', sa * 0.06));
           grad.addColorStop(1.00, 'rgba(0,0,0,0)');
           ctx.fillStyle = grad;
-          // 0.55px height — sub-pixel thin, as a real diffraction spike would be
+          // 0.55px height, sub-pixel thin, as a real diffraction spike would be
           ctx.fillRect(0, -0.275, sl, 0.55);
           ctx.restore();
         }
@@ -275,13 +275,13 @@
     { t:  8.0, zoom: 1.00, tx: 32, ty: -8 }, // drift following Cepheid arc
     { t: 12.0, zoom: 0.88, tx:  0, ty:  0 }, // settle before cut
 
-    // pulsation (13–17s): hardest push — intimate, maximum drama
+    // pulsation (13–17s): hardest push, intimate, maximum drama
     { t: 13.5, zoom: 1.55, tx:  0, ty:  0 }, // deep push
     { t: 16.5, zoom: 1.10, tx:  0, ty:  0 }, // begin pull-out
 
     // orbital zoom-out (17–25s): brief wide, then rapid pull to dot, end card hold
     { t: 17.5, zoom: 0.85, tx:  0, ty:  0 }, // settle wide
-    { t: 19.5, zoom: 0.018, tx: 0, ty:  0 }, // rapid pull — system becomes two dots
+    { t: 19.5, zoom: 0.018, tx: 0, ty:  0 }, // rapid pull, system becomes two dots
     { t: 25.0, zoom: 0.018, tx: 0, ty:  0 }, // hold through end card
   ];
 
@@ -375,7 +375,7 @@
     var isMob = window.innerWidth <= 740;
     var plot = getPlotRect();
     // Always constrain star area height to the top of the plot whenever the
-    // plot sits inside the canvas bounds — prevents orbital ellipses and
+    // plot sits inside the canvas bounds, prevents orbital ellipses and
     // trails from bleeding over the RV/LC panel on any viewport width.
     var gap = isMob ? 30 : 4;
     var star_h = (plot && plot.py > 0 && plot.py < h) ? plot.py - gap : h;
@@ -651,7 +651,7 @@
     // phi_cur in orbital mode is also anchored at T0_ORB.  Both must share the same epoch
     // for scatter to align with the model curve.
     // NOTE: T0_PULS (the Pilecki RV epoch) is a SEPARATE convention used only for the
-    // pulsation correction applied to the spectroscopic RVs above — do not mix them.
+    // pulsation correction applied to the spectroscopic RVs above, do not mix them.
     var weights = [];
     var max_w = 0;
     for (var oi = 0; oi < OGLE_V_RAW.length; oi++) {
@@ -1082,7 +1082,7 @@
     ctx.fillStyle = 'rgba(134,239,172,0.85)';
     ctx.fillText(cur_r1.toFixed(2) + ' R\u2609', px + pw - inset - 2, rY + 3);
 
-    // radius axis ticks (desktop only — strip is too narrow on mobile)
+    // radius axis ticks (desktop only, strip is too narrow on mobile)
     if (!getStarArea().mobile) {
       ctx.font = '10px \'JetBrains Mono\', monospace';
       ctx.fillStyle = 'rgba(255,255,255,0.50)';
@@ -1318,20 +1318,20 @@
 
     drawBgStars(sw, star.h, film_cam.tx, film_cam.ty, now / 1000);
 
-    // ── LMC haze: two-pass elongated bar — asymmetric, offset nucleus ──
+    // ── LMC haze: two-pass elongated bar, asymmetric, offset nucleus ──
     // pass 1: main bar body, wide, horizontal-ish elongation across upper-right quadrant
-    // pass 2: offset nucleus, smaller, slightly brighter — the LMC bar center
+    // pass 2: offset nucleus, smaller, slightly brighter, the LMC bar center
     // in film mode: visible in pulsation segments too (star IS in the LMC), opacity boosted
     if (currentMode !== 'pulsation' || isFilm) {
       var haze_scale = isFilm ? 1.0 : 0.38; // non-film: much fainter, so as not to distract
 
       ctx.save();
-      // pass 1: bar body — wide, tilted ellipse
+      // pass 1: bar body, wide, tilted ellipse
       var b1x = sw * 0.60, b1y = star.h * 0.25;
       var b1rx = sw * 0.44, b1ry = star.h * 0.18;
       ctx.save();
       ctx.translate(b1x, b1y);
-      ctx.rotate(0.38); // ~22° tilt — LMC bar position angle
+      ctx.rotate(0.38); // ~22° tilt, LMC bar position angle
       ctx.scale(1, b1ry / b1rx);
       var haze1 = ctx.createRadialGradient(0, 0, 0, 0, 0, b1rx);
       haze1.addColorStop(0,   'rgba(155,172,248,' + (0.10 * haze_scale) + ')');
@@ -1343,7 +1343,7 @@
       ctx.fill();
       ctx.restore();
 
-      // pass 2: bar nucleus — smaller, offset, slightly brighter
+      // pass 2: bar nucleus, smaller, offset, slightly brighter
       var b2x = sw * 0.68, b2y = star.h * 0.31;
       var b2rx = sw * 0.14, b2ry = star.h * 0.10;
       ctx.save();
@@ -1526,7 +1526,7 @@
       // zone: sw*0.44 → sw*0.68 (24% of canvas width vs previous 18%).
       // starting earlier (0.44 vs 0.50) gives more orbital distance before the edge.
       // smoothstep curve compresses dwell time at t=0.5 (both labels visible),
-      // spending more frames in the "decided" state at each end — consistent with
+      // spending more frames in the "decided" state at each end, consistent with
       // weber-fechner: the high-contrast midpoint state is the most visually salient.
       var drawLabel = function(sx, sy, pr, text, fgCol) {
         var pad = 5, tw = ctx.measureText(text).width;
@@ -1759,12 +1759,12 @@
         ctx.restore();
       }
 
-      // end card: fades in at 17s — zoom-out is underway, system shrinking to dots
+      // end card: fades in at 17s, zoom-out is underway, system shrinking to dots
       // overlay is semi-transparent so the live starfield shows through behind the credits
       var EC_START = 17000, EC_FADE = 1400, EC_TEXT_DELAY = 600;
       var ecAge = filmElapsed - EC_START;
       if (ecAge > 0) {
-        // subtle dark scrim — legibility without blacking out the cosmos
+        // subtle dark scrim, legibility without blacking out the cosmos
         var ecBgA = Math.min(1, ecAge / EC_FADE) * 0.42;
         ctx.save();
         ctx.globalAlpha = ecBgA;
@@ -1792,7 +1792,7 @@
           ctx.stroke();
           ctx.shadowBlur = 24;
 
-          // object name — EB Garamond, large
+          // object name, EB Garamond, large
           ctx.font = '500 42px \'EB Garamond\', serif';
           ctx.fillStyle = 'rgba(196,162,88,0.97)';
           ctx.textBaseline = 'middle';
@@ -1869,7 +1869,7 @@
       btn.style.boxShadow = 'inset 0 0 0 1px rgba(196,162,88,0.45)';
       btn.setAttribute('aria-pressed', 'true');
     }
-    syncPlaybackUI(); // speed is locked in realtime mode — reflect that on the controls
+    syncPlaybackUI(); // speed is locked in realtime mode, reflect that on the controls
     if (!loopRunning) requestAnimationFrame(animate); // reflect new mode on a paused frame
   };
 
@@ -1991,7 +1991,7 @@
       window.addEventListener('resize', resize);
       resize();
       if (document.documentElement.classList.contains('film-mode')) {
-        // film mode is an explicit cinematic experience — always plays, ignores reduced-motion default
+        // film mode is an explicit cinematic experience, always plays, ignores reduced-motion default
         paused = false;
         setMode('pulsation');
         filmCurrentMode = 'pulsation';

@@ -49,7 +49,7 @@
       line-gap-override: 0%;
     }
 
-    /* EB Garamond 400 inlined — eliminates the googleapis CSS round-trip for LCP.
+    /* EB Garamond 400 inlined, eliminates the googleapis CSS round-trip for LCP.
        woff2 files are already preloaded above; these rules make them immediately
        usable without waiting for the async Google Fonts stylesheet to arrive. */
     @font-face {
@@ -72,7 +72,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
-    /* skip link — hidden until focused */
+    /* skip link, hidden until focused */
     .skip-link {
       position: absolute;
       left: -9999px;
@@ -89,7 +89,7 @@
     }
     .skip-link:focus { left: 0; }
 
-    /* global focus-visible ring — gold outline on all interactive elements */
+    /* global focus-visible ring, gold outline on all interactive elements */
     :focus-visible {
       outline: 2px solid var(--gold);
       outline-offset: 3px;
@@ -283,7 +283,7 @@
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
     }
-    /* reduced motion — collapse all CSS animations and transitions for users who prefer it */
+    /* reduced motion, collapse all CSS animations and transitions for users who prefer it */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -1414,7 +1414,7 @@
       border-radius: 1px;
     }
     
-    /* individual book spine — base height; JS overrides per content length */
+    /* individual book spine, base height; JS overrides per content length */
     .book-spine {
       position: relative;
       flex-shrink: 0;
@@ -1458,7 +1458,7 @@
     .book-spine:nth-child(even) { background: rgba(120,165,210,0.04); }
     .book-spine:nth-child(3n)   { background: rgba(94,207,191,0.03); }
 
-    /* rotated spine title — visible when collapsed */
+    /* rotated spine title, visible when collapsed */
     .spine-title {
       position: absolute;
       inset: 0;
@@ -1491,7 +1491,7 @@
       opacity: 0;
     }
 
-    /* expanded info panel — fades in on hover or tap */
+    /* expanded info panel, fades in on hover or tap */
     .spine-panel {
       position: absolute;
       inset: 0;
@@ -1634,7 +1634,7 @@
     }
     .modal-card-link:hover { opacity: 1; }
 
-    /* card call-to-action block hover — replaces inline onmouseover/onmouseout */
+    /* card call-to-action block hover, replaces inline onmouseover/onmouseout */
     .card-cta:hover {
       border-color: rgba(120, 165, 210, 0.45) !important;
       background: rgba(120, 165, 210, 0.09) !important;
@@ -1694,7 +1694,7 @@
       color: var(--text-dim);
       margin-top: 4px;
     }
-    /* when JS has run, pool is empty — :empty collapses it */
+    /* when JS has run, pool is empty, :empty collapses it */
 
   </style>
   <script type="application/ld+json">
@@ -1716,12 +1716,70 @@
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#07091a">
+  <style id="legend-linkage">
+    /* HTML legend pills (replacing the canvas legend), research-card color
+       dots, and the shared sky<->card hover ring. */
+    #sky-legend {
+      position: fixed; right: 52px; bottom: 22px; z-index: 40;
+      display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+      max-width: calc(100vw - 104px); transition: opacity 0.3s;
+    }
+    #sky-legend.hidden { opacity: 0; pointer-events: none; }
+    .legend-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: 999px;
+      background: rgba(7, 9, 26, 0.55);
+      border: 1px solid rgba(226, 221, 212, 0.14);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-dim); text-decoration: none; cursor: pointer;
+      transition: border-color 0.18s, color 0.18s, transform 0.18s;
+    }
+    .legend-pill:hover, .legend-pill:focus-visible {
+      color: var(--text); border-color: var(--c);
+      transform: translateY(-2px); outline: none;
+    }
+    .legend-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--c);
+      box-shadow: 0 0 8px 1px var(--c); flex-shrink: 0;
+    }
+    .legend-live {
+      font-size: 8.5px; padding: 1px 5px; border: 1px solid #5ecfa0;
+      border-radius: 3px; color: #5ecfa0; letter-spacing: 0.12em;
+    }
+    .legend-sim {
+      font-size: 8.5px; padding: 1px 5px; border: 1px solid #b48be0;
+      border-radius: 3px; color: #b48be0; letter-spacing: 0.12em;
+    }
+    /* color dot on each research card, matched to its star */
+    .research-card .card-id { display: flex; align-items: center; gap: 9px; }
+    .card-dot {
+      width: 9px; height: 9px; border-radius: 50%; background: var(--c);
+      box-shadow: 0 0 7px 1px var(--c); flex-shrink: 0;
+    }
+    /* transient ring drawn over the star a hovered pill/card refers to */
+    /* card hover: highlight the card's own dot, pure CSS, hooked to the card,
+       so it tracks the card's -6px lift and can never desync. */
+    .card-dot { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .research-card:hover .card-dot {
+      transform: scale(1.9);
+      box-shadow: 0 0 12px 3px var(--c), 0 0 4px 1px var(--c);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .research-card:hover .card-dot { transform: none; }
+    }
+    @media (max-width: 740px) {
+      #sky-legend { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+    }
+  </style>
 </head>
 
 <body>
 
 <a href="#about" class="skip-link">Skip to main content</a>
 <canvas id="star-canvas" role="presentation" aria-hidden="true"></canvas>
+<div id="sky-legend" aria-label="Research objects on the sky above, hover to locate one, click to open its research card"></div>
 
 <script>
 // Micro-renderer: paints fixed featured stellar objects immediately, zero network dependency.
@@ -1823,7 +1881,7 @@
         <div class="about-meta">
           <div class="profile-frame">
             <!-- picture element: browser preload scanner resolves the correct
-                 source at parse time — no JS swap, no LCP delay.
+                 source at parse time, no JS swap, no LCP delay.
                  sizes: 120px on mobile (profile-frame in 120px grid column),
                         367px on desktop (0.9fr of 880px section-inner minus 64px gap).
                  at 2x mobile the browser picks 435w; at 2x desktop it picks 869w. -->
@@ -1947,7 +2005,7 @@
       <div class="research-cards">
 
         <div class="research-card" id="card-astcadence">
-          <div class="card-id">Sole author, in prep</div>
+          <div class="card-id"><span class="card-dot" style="--c:#d4693a"></span>Sole author, in prep</div>
           <h3 class="card-title">Entropy-Guided Cadence Optimization for Asteroid Photometry</h3>
           <p class="card-summary">We were observing 19243 Bunting and 7605 Cindygraber on Slooh, and our observation design plan was just: "observe whatever we need more data for tonight." After the aliasing got pretty bad even with more data, I started thinking about how to maximize the information we get from a given number of observations. The framework I worked out generalizes beyond asteroids to other periodic-signal domains.</p>
           <div style="margin-bottom: 16px;"><a class="card-link" href="/astcadence" target="_blank" rel="noopener">Interactive Demonstration: How Cadence Shapes the Period Posterior &rarr;</a></div>
@@ -1993,7 +2051,7 @@
         </div>
 
         <div class="research-card" id="card-cep1347">
-          <div class="card-id">Co-Investigator &amp; Primary Author, with Bogumił Pilecki</div>
+          <div class="card-id"><span class="card-dot" style="--c:#c4a258"></span>Co-Investigator &amp; Primary Author, with Bogumił Pilecki</div>
           <h3 class="card-title">CEP-1347: Merger-origin Investigation & VLT Follow-up</h3>
           <p class="card-summary">After six years of OGLE-LMC-CEP-1347 photometry revealed a candidate rotational signal suggesting <span class="trail-word" data-word="merger spindown">merger spindown</span>, my window function analysis identified it as a 1-year sampling <span class="trail-word" data-word="alias">alias</span>, prompting my pivot to a VLT/ESPRESSO spectroscopic proposal with Dr. Bogumił Pilecki. With these chemical abundances, we will attempt to validate a dynamical template for identifying merger-origin Cepheids.</p>
           <div style="margin-bottom: 16px;"><a class="card-link" href="/1347_methods" target="_blank" rel="noopener">Alias Diagnostic: The Analysis That Invalidated My Own Result &rarr;</a></div>
@@ -2008,9 +2066,6 @@
             <p class="card-body">
               For readers interested in the full analysis pipeline, including the alias diagnostic that invalidated the candidate rotational signal, see the Methodological Appendix.
             </p>
-            <div class="card-links">
-              <a class="card-link" href="/1347_methods" target="_blank" rel="noopener">View Methods and Diagnostic Analysis &rarr;</a>
-            </div>
             <a href="#cepheid-sim" class="card-cta">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -2027,9 +2082,10 @@
         </div>
 
         <div class="research-card" id="card-cindygraber">
-          <div class="card-id">In Prep, with Dr. José Zorrilla and Caroline Odden</div>
+          <div class="card-id"><span class="card-dot" style="--c:#5ecfbf"></span>In Prep, with Dr. José Zorrilla and Caroline Odden</div>
           <h3 class="card-title">Rotation Period of 7605 Cindygraber</h3>
           <p class="card-summary">I coordinated a multi-site Slooh campaign with citizen scientists remotely operating telescopes across three continents to determine the rotation period of main-belt asteroid 7605 Cindygraber, using a custom open-source scheduler to optimize observing cadence under variable site conditions.</p>
+          <div style="margin-bottom: 16px;"><a class="card-link" href="/asteroid_observer" target="_blank" rel="noopener">Interactive Orbital Model: Scheduling Under Aliasing &rarr;</a></div>
           <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-2" aria-label="Read more about rotation period of 7605 Cindygraber">Read more &#8595;</button>
           <div class="card-expand" id="card-expand-2">
             <p class="card-body">
@@ -2051,13 +2107,6 @@
               <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics on GitHub</a> |
               <a class="card-link" href="/ccd_calibration">Instrumentation Report &rarr;</a>
             </div>
-            <a href="/asteroid_observer" target="_blank" rel="noopener" class="card-cta">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="9" ry="5" stroke="#78a5d2" stroke-width="1.8"/><circle cx="20" cy="11.5" r="2.5" fill="#78a5d2"/></svg>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">View Interactive Orbital Model &#8599;</div>
-              </div>
-              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">To determine an asteroid&rsquo;s rotation period, you need full phase coverage of its light curve. But aliasing between the asteroid&rsquo;s spin period and the 24-hour observing cadence at a single site often leaves gaps. I built this visualization to see how observations can be scheduled to maximize information gain.</div>
-            </a>
           </div>
           <div class="card-tags">
             <span class="tag">Minor Planets</span>
@@ -2066,17 +2115,15 @@
         </div>
 
         <div class="research-card" id="card-usgr">
-          <div class="card-id">Completed, with Dr. José Zorrilla</div>
+          <div class="card-id"><span class="card-dot" style="--c:#8ab8ff"></span>Completed, with Dr. José Zorrilla</div>
           <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
           <p class="card-summary">Multi-band photometry of classical Cepheid U Sagittarii confirmed its 6.74-day period and produced a 40.8% vs. 1.9% V-to-I distance error gap, a direct demonstration of how interstellar dust corrupts Cepheid distance measurements.</p>
+          <div style="margin-bottom: 16px;"><a class="card-link" href="/U_Sgr_abs" target="_blank" rel="noopener">Interactive Pulsation Simulation &amp; Full Abstract &rarr;</a></div>
           <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-3" aria-label="Read more about U Sagittarii distance scale calibration">Read more &#8595;</button>
           <div class="card-expand" id="card-expand-3">
             <p class="card-body">
               My first independent research target. I remotely operated the Slooh Chile 432mm telescope for two months, performing multi-band (V&minus;I) differential photometry of the classical Cepheid U Sgr in open cluster M25. Sinusoidal light curve fits confirmed the 6.74-day period (R&sup2; = 0.93 V-band, 0.70 I-band). V-band distance calculations yielded 40.8% error versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths and why accurate extinction corrections are critical for Cepheid distance work. Strong color index correlation (r = 0.85) provided independent evidence for pulsation, consistent with the kappa-mechanism. The project expanded into an investigation of metallicity-dependent corrections to the period-luminosity relation.
             </p>
-            <div class="card-links">
-              <a class="card-link" href="/U_Sgr_abs" target="_blank" rel="noopener">View Abstract &amp; Poster &rarr;</a>
-            </div>
           </div>
           <div class="card-tags">
             <span class="tag">Cepheid Variables</span>

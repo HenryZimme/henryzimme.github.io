@@ -7,6 +7,14 @@ const popover = document.getElementById('star-popover');
 const popover_name = document.getElementById('star-popover-name');
 const popover_btn = document.getElementById('star-popover-btn');
 
+// A focused legend pill drives the canvas hover state (trail + ring) for its
+// star. The render loop reads pill_focus_star; kick_render restarts the loop
+// since it idles when the pointer isn't moving over the canvas.
+let pill_focus_star = null;
+function kick_render() {
+  if (!raf_id && catalog_loaded) raf_id = requestAnimationFrame(draw);
+}
+
 document.getElementById('modal-close-btn').addEventListener('click', close_modal);
 modal.addEventListener('click', e => { if (e.target === modal) close_modal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { close_modal(); close_popover(); } });
@@ -20,6 +28,7 @@ const featured_objects = [
     fov_deg: 3.0, // LMC field, wide enough to show context
     simbad_id: "OGLE+LMC+CEP+1347",
     card_url: "#card-cep1347",
+    has_sim: true, // interactive simulation lives in the homepage cepheid-sim section
     type: "Binary Cepheid Variable  |  Large Magellanic Cloud",
     writeup: "My primary research target. I analyzed six years of OGLE photometry for this double-overtone binary Cepheid in the LMC, built a pipeline to isolate residual signals, and found that a candidate rotational signature consistent with merger spindown was a 1/yr sampling alias of the ground-based cadence. I am now Co-Investigator and primary author of the Science Justification for a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki to test the merger scenario through chemical abundances."
   },
@@ -30,6 +39,7 @@ const featured_objects = [
     fov_deg: 0.5, // tight on M25 cluster
     simbad_id: "U+Sgr",
     card_url: "#card-usgr",
+    has_sim: true, // interactive simulation lives on the U_Sgr_abs.html subpage
     type: "Classical Cepheid Variable  |  Open Cluster M25",
     writeup: "My first independent research target. U Sgr sits inside M25, a loose open cluster you can just resolve in binoculars, which made it a good starting point: bright enough to work with a modest telescope, with enough nearby cluster stars to build a reliable differential photometry reference frame. What I didn't expect was how cleanly dust extinction would separate the V-band error from the I-band."
   },
@@ -39,6 +49,7 @@ const featured_objects = [
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605&view=VOP",
     image_url: "/assets/pops/cindygraber_sub.jpeg",
     card_url: "#card-cindygraber",
+    has_sim: true, // interactive simulation lives on the asteroid_observer.html subpage
     type: "Main-Belt Asteroid  |  Propagated sky position",
     writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler mattered as much as the telescope time. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
   },
@@ -56,6 +67,7 @@ const featured_objects = [
     elements: { a: 2.19058518, e: 0.15971583, i: 4.882955, Om: 23.189503, w: 28.442397, M: 159.002585 }, // astorb osculating, epoch _EL_EPOCH_JD
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=5745&view=VOP",
     card_url: "#card-astcadence",
+    has_sim: true, // interactive simulation is the astcadence.html demo itself
     type: "Main-Belt Asteroid  |  Demonstration target",
     writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate the cadence-optimization framework. A 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the gap between uniform and optimized sampling is largest: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds; the optimized cadence succeeds in 100%. The marker above is 2-body propagated from its astorb orbital elements to today's date."
   },
@@ -317,7 +329,7 @@ function build_named(named) {
   // named is already sorted brightest-first by the split script
   _add_entries(named);
   rebuild_indexes();
-  // static phase: new stars arrived — paint one frame
+  // static phase: new stars arrived, paint one frame
   if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
 }
 
@@ -326,7 +338,7 @@ function build_bg(bg) {
   _add_entries(bg);
   rebuild_indexes();
   pick_hint_target(); // revalidate now that full star field is present
-  // static phase: full catalog now loaded — paint one frame
+  // static phase: full catalog now loaded, paint one frame
   if (!twinkle_active && hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
 }
 
@@ -337,7 +349,7 @@ function build_bg(bg) {
 //   [5-8]  num_stars u32 LE
 //   [9]    num_colors u8
 //   [10..] color table: num_colors × 7 ASCII bytes (e.g. '#adc4ff')
-//   then:  num_stars × 13 bytes — ra f32LE, dec f32LE, vmag f32LE, color_idx u8
+//   then:  num_stars × 13 bytes, ra f32LE, dec f32LE, vmag f32LE, color_idx u8
 //
 // Stars arrive sorted brightest-first (same order as the old JSON).
 // Each chunk of CHUNK_SIZE stars is added and painted immediately so the sky
@@ -524,7 +536,7 @@ function draw_background_stars_batched() {
 
 function draw_named_star(s) {
   const twinkle = star_twinkle(s);
-  // look up pre-built gradient for this twinkle level — no allocation per frame
+  // look up pre-built gradient for this twinkle level, no allocation per frame
   const bucket = Math.min(GRAD_BUCKETS - 1, Math.floor((twinkle - 0.56) / 0.44 * GRAD_BUCKETS));
   const grd = s._grads ? s._grads[bucket] : (() => {
     // fallback: build inline if cache is missing (e.g. during resize race)
@@ -625,55 +637,10 @@ function draw_canvas_legend() {
   ctx.font = '600 10px "JetBrains Mono", monospace';
   ctx.textBaseline = 'middle';
 
-  const dot_r = 4;
-  const row_h = 18;
-  const pad_x = 14;
-  const pad_y = 12;
-  const gap = 8;
-
-  // measure col_w once (font must be set first)
-  if (!legend_col_w) {
-    const widths = items.map(it => ctx.measureText(it.label).width);
-    legend_col_w = dot_r * 2 + gap + Math.max(...widths) + 20;
-  }
-
-  const total_legend_w = items.length * legend_col_w;
-  const two_rows = legend_col_w > 0 && total_legend_w > canvas.width - pad_x * 2;
-  const items_per_row = two_rows ? Math.ceil(items.length / 2) : items.length;
-  let x = pad_x;
-  const y_bottom = canvas.height - pad_y - row_h / 2;
-  const y_top    = two_rows ? y_bottom - row_h - 4 : y_bottom;
-
-  for (let i = 0; i < items.length; i++) {
-    const it = items[i];
-    if (two_rows && i === items_per_row) x = pad_x;
-    const row_y = (two_rows && i >= items_per_row) ? y_bottom : y_top;
-    const cx = x + dot_r;
-
-    // pulsing dot, use bucket 0..4 mapped across LUT for variety
-    const lut_i = legend_items.length > 1 ? Math.round(i * (TWINKLE_BUCKETS - 1) / (legend_items.length - 1)) : 0;
-    const pulse = 0.5 + 0.5 * twinkle_sin_lut[lut_i];
-    const glow = ctx.createRadialGradient(cx, row_y, 0, cx, row_y, dot_r * 3);
-    glow.addColorStop(0, hex_to_rgba(it.color, 0.35 * pulse));
-    glow.addColorStop(1, hex_to_rgba(it.color, 0));
-    ctx.beginPath();
-    ctx.arc(cx, row_y, dot_r * 3, 0, Math.PI * 2);
-    ctx.fillStyle = glow;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(cx, row_y, dot_r, 0, Math.PI * 2);
-    ctx.fillStyle = it.color;
-    ctx.globalAlpha = 0.8 + 0.2 * pulse;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // label
-    ctx.fillStyle = 'rgba(200,215,245,0.52)';
-    ctx.fillText(it.label, cx + dot_r + gap, row_y);
-
-    x += legend_col_w;
-  }
+  // Legend pills are rendered as HTML elements now (see #sky-legend and the
+  // "HTML legend pills" block at the end of this file). The canvas legend
+  // retains only the hint arrow below, which teaches that the stars themselves
+  // are interactive, something the DOM pills don't convey.
 
   // arrow hint pointing at a randomly chosen safe featured star
   if (hint_alpha > 0 && hint_target) {
@@ -791,6 +758,10 @@ function draw_frame() {
     if (d < 20) { hover_star = s; }
   }
 
+  // a focused legend pill acts as a hover on its star: same orbit trail + ring
+  // as pointing at the star directly (canvas hit-test above is overridden).
+  if (pill_focus_star) hover_star = pill_focus_star;
+
   if (hover_star) {
     if (hover_star.obj_data && hover_star.obj_data.elements) draw_orbit_tail(hover_star);
     draw_hover_ring(hover_star);
@@ -804,7 +775,7 @@ function draw_frame() {
 
 function draw(ts) {
   // Static phase: twinkle loop deferred until profile image fully loads.
-  // Each trigger (catalog build, resize, mousemove) fires exactly one frame —
+  // Each trigger (catalog build, resize, mousemove) fires exactly one frame ,
   // no rescheduling. Keeps every frame well under the 50ms long-task threshold
   // during FCP→TTI, eliminating TBT accumulation.
   if (!twinkle_active) {
@@ -886,9 +857,13 @@ function on_mouse_move(e) {
   }
 
   if (hover_star && canvas_exposed_at(e.clientX, e.clientY)) {
-    const mag_str = hover_star.featured
-      ? ''
-      : `  | v = ${hover_star.mag.toFixed(2)}`;
+    if (hover_star.featured) {
+      // featured stars show the canvas ring + orbit trail (drawn in the render
+      // loop), not the text tooltip.
+      tooltip.classList.remove('visible');
+      return;
+    }
+    const mag_str = `  | v = ${hover_star.mag.toFixed(2)}`;
     const content = `${hover_star.name}${mag_str}`;
     tooltip.textContent = content;
     tooltip.classList.add('visible');
@@ -1191,7 +1166,7 @@ function on_resize() {
   canvas.height = ih;
   legend_col_w = 0; // remeasure legend on next draw
   reproject();
-  build_named_grad_cache(); // star positions changed — rebuild gradient cache
+  build_named_grad_cache(); // star positions changed, rebuild gradient cache
   refresh_hero_cache(); // re-measure after layout change
   if (catalog_loaded) pick_hint_target(); // revalidate hint target after viewport change
   // In static phase the loop isn't running; trigger one repaint after resize
@@ -1321,7 +1296,7 @@ function init() {
   }, { threshold: 0 });
   hero_observer.observe(document.getElementById('hero'));
 
-  // phase 0: featured objects are hardcoded in JS — render them immediately,
+  // phase 0: featured objects are hardcoded in JS, render them immediately,
   // no network dependency. sets catalog_loaded = true so draw() starts painting.
   apply_live_positions(); // resolve element-driven markers to today before first paint
   build_featured_only();
@@ -1333,7 +1308,7 @@ function init() {
   catalog_rng = make_rng(31415);
 
   // fetch named and bg in parallel; process named first (RNG order), then bg.
-  // stars_named.json is preloaded — arrives near-instantly.
+  // stars_named.json is preloaded, arrives near-instantly.
   // stars_bg.bin is binary (66% smaller than JSON) and streams in chunked.
   const named_p = fetch('/data/stars_named.json')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
@@ -1506,8 +1481,14 @@ const observer = new IntersectionObserver((entries) => {
         link.classList.toggle('active', link.getAttribute('href') === '#' + id);
       });
       
-      // 2. Silently update the browser's URL bar without jumping the page
-      history.replaceState(null, null, id === 'hero' ? '/' : '#' + id);
+      // 2. Silently update the browser's URL bar without jumping the page.
+      // Wrapped: sandboxed contexts (e.g. an about:srcdoc preview iframe) throw a
+      // SecurityError on any history mutation, since no URL can be constructed that
+      // matches that document's origin. Harmless to skip there; unaffected on the
+      // real, top-level deployment.
+      try {
+        history.replaceState(null, null, id === 'hero' ? '/' : '#' + id);
+      } catch (_) {}
     }
   });
 }, observer_options);
@@ -1692,7 +1673,7 @@ const footnote_toggle = document.querySelector('.footnote-toggle');
 const footnote_body   = document.getElementById('about-footnote-body');
 if (footnote_toggle && footnote_body) {
   footnote_toggle.addEventListener('click', () => {
-    // use getComputedStyle — initial hide is via stylesheet, not inline style
+    // use getComputedStyle, initial hide is via stylesheet, not inline style
     const open = window.getComputedStyle(footnote_body).display !== 'none';
     if (open) {
       footnote_body.style.display = 'none';
@@ -1731,7 +1712,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
 // ---
 // profile image: <picture> with srcset handles source selection at parse time.
 // the only JS responsibility here is activating the twinkle loop once the
-// image is done — keeps TBT near zero until the image settles.
+// image is done, keeps TBT near zero until the image settles.
 (function() {
   const img = document.getElementById('profile-img');
   if (!img) return;
@@ -1757,7 +1738,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
 (function () {
   const LS_FOUND = 'trailFound';
 
-  // derive word list from DOM — single source of truth
+  // derive word list from DOM, single source of truth
   const WORDS = Array.from(document.querySelectorAll('.trail-word'))
     .map(function (s) { return s.dataset.word; })
     .filter(function (w, i, a) { return a.indexOf(w) === i; });
@@ -1784,7 +1765,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   // set total count from DOM
   if (totalEl) totalEl.textContent = TOTAL;
 
-  // build dots — one per word, progress indicator only
+  // build dots, one per word, progress indicator only
   WORDS.forEach(function () {
     const dot = document.createElement('div');
     dot.className = 'trail-dot';
@@ -1803,7 +1784,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
       dot.classList.toggle('trail-dot-lit', i < found.length);
     });
 
-    // word list: discovery order — rebuild from found[]
+    // word list: discovery order, rebuild from found[]
     listEl.innerHTML = '';
     found.forEach(function (w) {
       const el = document.createElement('div');
@@ -1939,3 +1920,61 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
 })();
 
 init();
+
+// -- HTML legend pills + sky <-> research hover link --
+// Featured objects appear as focusable, screen-readable pills (replacing the
+// old canvas legend). Hovering a pill or a research card lights up that
+// object's star on the sky; pills link to their research card and fade out
+// once scrolled past the hero. Runs on defer, so the DOM is ready.
+(function () {
+  const legend = document.getElementById('sky-legend');
+  if (!legend) return;
+
+  function starByName(name) {
+    for (let i = 0; i < featured_stars.length; i++)
+      if (featured_stars[i].name === name) return featured_stars[i];
+    return null;
+  }
+
+  // build pills from the featured_objects list (single source of truth)
+  featured_objects.forEach((o, i) => {
+    const color = FEATURED_COLORS[i] || FEATURED_COLORS[0];
+    const short = (o.name || '').split(' | ')[0].trim();
+    const pill  = document.createElement(o.card_url ? 'a' : 'span');
+    pill.className = 'legend-pill';
+    pill.style.setProperty('--c', color);
+    if (o.card_url) pill.href = o.card_url;
+    pill.innerHTML = '<span class="legend-dot"></span><span>' + short + '</span>' +
+      (o.elements ? '<span class="legend-live">Live</span>' : '') +
+      (o.has_sim ? '<span class="legend-sim">Sim</span>' : '');
+    const focus_on = () => {
+      pill_focus_star = starByName(o.name);
+      kick_render();
+    };
+    const focus_off = () => {
+      if (pill_focus_star && pill_focus_star.name === o.name) {
+        pill_focus_star = null;
+        kick_render();
+      }
+    };
+    pill.addEventListener('mouseenter', focus_on);
+    pill.addEventListener('mouseleave', focus_off);
+    pill.addEventListener('focus', focus_on);
+    pill.addEventListener('blur', focus_off);
+    legend.appendChild(pill);
+  });
+
+  // research card hover -> pure CSS highlight on the card itself (no canvas
+  // ring: anchoring a fixed-position element to a card that lifts on hover was
+  // the source of the glitch). See .research-card:hover .card-dot in the CSS.
+
+  // the pills belong to the sky: fade them out past the hero
+  const hero = document.getElementById('hero');
+  function onScroll() {
+    const past = window.scrollY > (hero ? hero.offsetHeight * 0.6 : 400);
+    legend.classList.toggle('hidden', past);
+    if (past && pill_focus_star) { pill_focus_star = null; kick_render(); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
