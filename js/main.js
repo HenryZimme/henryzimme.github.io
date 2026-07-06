@@ -977,7 +977,7 @@ function on_click(e) {
   // suppress the synthetic click the browser fires ~300ms after touchend
   if (performance.now() - last_touch_action_ts < 600) return;
   // ignore clicks that originated on UI elements layered above the canvas
-  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card') || e.target.closest('#sky-legend')) return;
+  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card') || e.target.closest('#sky-legend') || e.target.closest('.trail-word')) return;
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
 
   // fresh inline scan for featured stars, hover_star may be stale from previous
@@ -1039,7 +1039,7 @@ function on_touch_end(e) {
 
   // don't intercept taps on UI elements layered above the canvas, popover is fixed-position over the hero and would otherwise trigger star detection
   const el = document.elementFromPoint(tx, ty);
-  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card') || el.closest('#sky-legend'))) return;
+  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card') || el.closest('#sky-legend') || el.closest('.trail-word'))) return;
 
   if (!canvas_exposed_at(tx, ty)) return;
 
@@ -1743,7 +1743,7 @@ document.querySelectorAll('.writing-item').forEach(item => {
   if (!link) return;
   item.addEventListener('click', (e) => {
     // don't intercept taps that land on or near the toggle buttons
-    if (e.target.closest('.writing-more-toggle') || e.target.closest('.card-toggle')) return;
+    if (e.target.closest('.writing-more-toggle') || e.target.closest('.card-toggle') || e.target.closest('.trail-word')) return;
     if (!e.target.closest('a')) link.click();
   });
 });
@@ -1857,6 +1857,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   }
 
   function render() {
+    if (active) { card.classList.remove('trail-collapsed'); scheduleCollapse(); }
     nEl.textContent = found.length;
 
     // dots: fill left-to-right by count
@@ -1910,6 +1911,8 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   }
 
   function onWordClick(e) {
+    e.preventDefault();
+    e.stopPropagation(); // don't let the click reach parent handlers (e.g. writing-row navigation)
     if (!active) showCard();
     const word = e.currentTarget.dataset.word;
     if (found.indexOf(word) !== -1) return;
@@ -1936,13 +1939,26 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     if (observer) { observer.disconnect(); observer = null; }
   }
 
+  function scheduleCollapse() {
+    clearTimeout(card._ct);
+    card._ct = setTimeout(function () { if (active) card.classList.add('trail-collapsed'); }, 4000);
+  }
+
   function showCard() {
     active = true;
     document.body.classList.add('trail-active');
     toggle.classList.add('trail-on');
     card.classList.add('trail-card-visible');
+    if (!card._collapseWired) {
+      card._collapseWired = true;
+      card.addEventListener('mouseenter', function () { clearTimeout(card._ct); card.classList.remove('trail-collapsed'); });
+      card.addEventListener('mouseleave', scheduleCollapse);
+      card.addEventListener('click', function (e) {
+        if (card.classList.contains('trail-collapsed')) { e.stopPropagation(); card.classList.remove('trail-collapsed'); scheduleCollapse(); }
+      });
+    }
+    scheduleCollapse();
     markSpans();
-    // pulse the first unclicked word as a hint
     var firstUnfound = document.querySelector('.trail-word:not(.found)');
     if (firstUnfound) {
       firstUnfound.classList.remove('trail-first');
@@ -1971,6 +1987,13 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     toggle.classList.remove('trail-ready');
     toggle.style.opacity = '0';
     toggle.style.pointerEvents = 'none';
+  });
+
+  var collapseBtn = document.getElementById('trail-collapse');
+  if (collapseBtn) collapseBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    clearTimeout(card._ct);
+    card.classList.add('trail-collapsed');
   });
 
   activateListeners();
