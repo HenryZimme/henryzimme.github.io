@@ -1,5 +1,88 @@
 const canvas = document.getElementById('star-canvas');
 const ctx = canvas.getContext('2d');
+
+// One-time capability calibration from every device signal available. Each
+// signal nudges a score; unknown ones (e.g. deviceMemory on Safari) stay
+// neutral rather than penalizing. A runtime FPS guard (below) is the safety
+// net for when static specs lie, which they do most on the devices we care
+// about (iOS/Safari expose neither memory nor a useful GPU string).
+const PERF = (() => {
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const cores = navigator.hardwareConcurrency || 4;
+  const mem = navigator.deviceMemory || 0;            // GB; 0 == unknown
+  const conn = navigator.connection || {};
+  const saveData = !!conn.saveData;
+  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const coarse = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+
+  // GPU class from the WebGL renderer string. The GPU, not the CPU, composites
+  // the blurred panels over the animating canvas, so it matters most here.
+  let gpuWeak = false, gpuStrong = false;
+  try {
+    const gl = document.createElement('canvas').getContext('webgl') ||
+               document.createElement('canvas').getContext('experimental-webgl');
+    const ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
+    const r = ((ext && gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) || '').toString();
+    gpuWeak   = /swiftshader|llvmpipe|mali-4|mali-t|adreno [1-4]\d\d|powervr/i.test(r);
+    gpuStrong = /apple (m\d|a1[4-9]|a2\d)|rtx|radeon rx|adreno (6[5-9]\d|7\d\d)|mali-g7\d/i.test(r);
+  } catch (e) {}
+
+  let s = 0;
+  s += cores >= 8 ? 2 : cores >= 6 ? 1 : cores <= 2 ? -2 : cores <= 4 ? -1 : 0;
+  if (mem) s += mem >= 8 ? 2 : mem >= 6 ? 1 : mem <= 2 ? -2 : mem <= 4 ? -1 : 0;
+  if (gpuStrong) s += 2;
+  if (gpuWeak) s -= 3;
+  if (coarse) s -= 1;                 // phones/tablets: bias conservative
+  if (reduce || saveData) s -= 3;
+
+  const tier = s <= -2 ? 0 : s >= 3 ? 2 : 1;   // 0 lite, 1 balanced, 2 full
+  return {
+    tier, reduce, dpr,
+    renderScale: reduce ? Math.min(dpr, 1.5)
+      : tier === 0 ? Math.min(dpr, 1.5)
+      : tier === 1 ? Math.min(dpr, 2) : dpr,
+    meteors: !reduce && tier >= 1,
+    backdrop: tier >= 1,
+    fps: tier >= 2 ? 30 : tier === 1 ? 26 : 22,
+    _dbg: { cores, mem, gpuWeak, gpuStrong, coarse, saveData, score: s },
+  };
+})();
+if (!PERF.backdrop) document.body.classList.add('perf-lite');
+
+// Runtime safety net: sample real frame intervals for ~1.5s; if we are clearly
+// below the tier's target, drop one tier once (downgrade-only, no oscillation).
+let _fps_samples = [], _fps_checked = false;
+function perf_fps_guard(dt_ms) {
+  if (_fps_checked || PERF.tier === 0) return;
+  if (dt_ms > 4 && dt_ms < 400) _fps_samples.push(dt_ms); // ignore throttled gaps
+  if (_fps_samples.length < 45) return;
+  _fps_checked = true;
+  _fps_samples.sort((a, b) => a - b);
+  const fps = 1000 / _fps_samples[_fps_samples.length >> 1];
+  if (fps < PERF.fps - 6) {
+    PERF.tier = Math.max(0, PERF.tier - 1);
+    PERF.renderScale = PERF.tier === 0 ? Math.min(PERF.renderScale, 1.5) : Math.min(PERF.renderScale, 2);
+    PERF.meteors = false;
+    PERF.backdrop = PERF.tier >= 1;
+    if (!PERF.backdrop) document.body.classList.add('perf-lite');
+    size_canvas();
+  }
+}
+
+// CSS-pixel dimensions are the coordinate space for all drawing/hit-testing.
+// The backing store is renderScale larger, with a matching ctx transform, so
+// stars stay circular (backing aspect == display aspect) and crisp on retina.
+let cssW = 0, cssH = 0;
+function size_canvas() {
+  cssW = document.documentElement.clientWidth;   // excludes scrollbar -> matches CSS width:100%
+  cssH = document.documentElement.clientHeight;
+  const s = PERF.renderScale;
+  canvas.width = Math.round(cssW * s);
+  canvas.height = Math.round(cssH * s);
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  ctx.setTransform(s, 0, 0, s, 0, 0);
+}
 const tooltip = document.getElementById('star-tooltip');
 const modal = document.getElementById('object-modal');
 let _modal_trigger = null; // stores the element that opened the modal for focus restoration
@@ -116,7 +199,7 @@ let tooltip_tw = 160, tooltip_th = 28; // cached tooltip dims (avoids forced ref
 let tooltip_last_content = '';
 let popover_pw = 0, popover_ph = 0; // cached popover dims (measure once, reuse)
 let last_frame_ts = 0;
-const FRAME_INTERVAL = 1000 / 30; // target 30fps, star field needs no more
+const FRAME_INTERVAL = 1000 / PERF.fps; // per-device cap from capability calibration
 
 // deterministic rng, used only for per-star twinkle phase assignment
 function make_rng(seed) {
@@ -130,8 +213,8 @@ function make_rng(seed) {
 // equirectangular projection: ra [0, 360) degrees -> x, dec [-90, 90] -> y
 function project(ra_deg, dec_deg) {
   return {
-    x: (ra_deg / 360) * canvas.width,
-    y: (1 - (dec_deg + 90) / 180) * canvas.height
+    x: (ra_deg / 360) * cssW,
+    y: (1 - (dec_deg + 90) / 180) * cssH
   };
 }
 
@@ -606,7 +689,7 @@ function draw_orbit_tail(s) {
   const el = s.obj_data && s.obj_data.elements;
   if (!el) return;
   const jd = _jd_today();
-  const seam = canvas.width * 0.5;
+  const seam = cssW * 0.5;
   ctx.lineWidth = 1.4;
   let prev = null;
   for (let k = 0; k <= _TAIL_STEPS; k++) {
@@ -646,7 +729,7 @@ function draw_canvas_legend() {
   if (hint_alpha > 0 && hint_target) {
     const s = hint_target;
     const sx = s.x, sy = s.y;
-    const is_mobile = canvas.width <= 740;
+    const is_mobile = cssW <= 740;
 
     // scale everything for mobile vs desktop
     const font_name  = is_mobile ? '500 13px "JetBrains Mono", monospace' : '500 12px "JetBrains Mono", monospace';
@@ -660,10 +743,10 @@ function draw_canvas_legend() {
     const head_w     = is_mobile ? 2.0 : 1.5;
 
     // place label left of star if on right half of canvas, otherwise right
-    const label_left = sx > canvas.width * 0.55;
+    const label_left = sx > cssW * 0.55;
     const lx = label_left
       ? Math.max(label_w / 2 + 8, sx - offset)
-      : Math.min(canvas.width - label_w / 2 - 8, sx + offset);
+      : Math.min(cssW - label_w / 2 - 8, sx + offset);
     const ly = sy - 42;
     const short_name = (s.obj_data.name || '').split(' | ')[0].trim();
 
@@ -731,7 +814,7 @@ function draw_canvas_legend() {
 // Twinkle LUT should be updated before calling this in animated mode;
 // in static mode the LUT stays at zero → stars render at fixed brightness (0.78).
 function draw_frame() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, cssW, cssH);
   if (!catalog_loaded) return;
 
   hover_star = null;
@@ -790,6 +873,7 @@ function draw(ts) {
     else raf_id = null;
     return;
   }
+  if (last_frame_ts) perf_fps_guard(ts - last_frame_ts);
   last_frame_ts = ts;
 
   time_s = ts * 0.001;
@@ -806,7 +890,7 @@ function draw(ts) {
   const m_dt = _meteor_prev_s ? Math.min(0.1, time_s - _meteor_prev_s) : 0;
   _meteor_prev_s = time_s;
   if (_meteor_next_s === 0) _meteor_next_s = time_s + _next_meteor_interval();
-  if (time_s >= _meteor_next_s) {
+  if (PERF.meteors && time_s >= _meteor_next_s) {
     spawn_meteor_burst();
     _meteor_next_s = time_s + _next_meteor_interval();
   }
@@ -893,7 +977,7 @@ function on_click(e) {
   // suppress the synthetic click the browser fires ~300ms after touchend
   if (performance.now() - last_touch_action_ts < 600) return;
   // ignore clicks that originated on UI elements layered above the canvas
-  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card')) return;
+  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card') || e.target.closest('#sky-legend')) return;
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
 
   // fresh inline scan for featured stars, hover_star may be stale from previous
@@ -955,7 +1039,7 @@ function on_touch_end(e) {
 
   // don't intercept taps on UI elements layered above the canvas, popover is fixed-position over the hero and would otherwise trigger star detection
   const el = document.elementFromPoint(tx, ty);
-  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card'))) return;
+  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card') || el.closest('#sky-legend'))) return;
 
   if (!canvas_exposed_at(tx, ty)) return;
 
@@ -1036,6 +1120,7 @@ let modal_img_wrap = null;
 const modal_img_cache = new Map();
 
 function open_modal(obj) {
+  document.body.style.overflow = 'hidden'; // lock background scroll (fixes touch scroll-bleed behind modal)
   document.getElementById('modal-type').textContent = obj.type;
   document.getElementById('modal-name').textContent = obj.name;
   document.getElementById('modal-body').innerHTML = obj.writeup;
@@ -1115,6 +1200,7 @@ function open_modal(obj) {
 
 function close_modal() {
   modal.classList.remove('visible');
+  document.body.style.overflow = ''; // restore background scroll
   // restore focus to the element that triggered the modal open
   if (_modal_trigger && typeof _modal_trigger.focus === 'function') {
     _modal_trigger.focus();
@@ -1160,10 +1246,7 @@ document.addEventListener('click', (e) => {
 // ---
 
 function on_resize() {
-  const iw = window.innerWidth;
-  const ih = window.innerHeight;
-  canvas.width  = iw;
-  canvas.height = ih;
+  size_canvas();
   legend_col_w = 0; // remeasure legend on next draw
   reproject();
   build_named_grad_cache(); // star positions changed, rebuild gradient cache
@@ -1200,8 +1283,8 @@ function _gauss_trunc(mu, sigma, lo, hi) {
 }
 
 function spawn_meteor_burst() {
-  const rx = canvas.width  * (0.15 + Math.random() * 0.70);
-  const ry = canvas.height * (0.05 + Math.random() * 0.25);
+  const rx = cssW  * (0.15 + Math.random() * 0.70);
+  const ry = cssH * (0.05 + Math.random() * 0.25);
   const base_ang = Math.PI * (0.16 + Math.random() * 0.20); // toward lower-right
   // ~80% single streak, ~20% pair
   const count = Math.random() < 0.8 ? 1 : 2;
@@ -1211,7 +1294,7 @@ function spawn_meteor_burst() {
     // entry velocity in km/s, sporadic-meteor range [11, 72], peak ~24
     const v_kms = _gauss_trunc(24, 12, 11, 72);
     const speed = v_kms * 5.5; // px/s; ~60-400, peak ~130
-    const stag  = Math.random() * canvas.width * 0.08;
+    const stag  = Math.random() * cssW * 0.08;
     meteors.push({
       x: rx + Math.cos(ang) * stag,
       y: ry + Math.sin(ang) * stag,
@@ -1234,7 +1317,7 @@ function update_meteors(dt) {
     m.x += m.vx * dt;
     m.y += m.vy * dt;
     m.life += dt;
-    if (m.life > m.ttl || m.x > canvas.width + 140 || m.y > canvas.height + 140) {
+    if (m.life > m.ttl || m.x > cssW + 140 || m.y > cssH + 140) {
       meteors.splice(i, 1);
     }
   }
@@ -1271,10 +1354,7 @@ function draw_meteors() {
 // ---
 
 function init() {
-  const iw = window.innerWidth;
-  const ih = window.innerHeight;
-  canvas.width  = iw;
-  canvas.height = ih;
+  size_canvas();
 
   refresh_hero_cache(); // seed cache before first mousemove or scroll
 
@@ -1541,11 +1621,11 @@ let hint_dismissed = false;
 let hint_target = null; // set once in pick_hint_target after catalog loads
 
 // pick a random featured star whose label zone won't overlap nav, hero text, or legend.
-// safe zone: y between 90 and canvas.height-90, label box clears hero text column
+// safe zone: y between 90 and cssH-90, label box clears hero text column
 // (left ~42% of canvas, bottom 55% of height).
 function pick_hint_target() {
   if (!featured_stars.length) { hint_target = null; return; }
-  const is_mobile = canvas.width <= 740;
+  const is_mobile = cssW <= 740;
   const label_w = is_mobile ? 138 : 124;
   const label_h = is_mobile ? 40  : 36;
   const offset  = is_mobile ? 100 : 92;
@@ -1553,17 +1633,17 @@ function pick_hint_target() {
     // exclude HD 344787 from hint callout
     if (s.name && s.name.startsWith('HD 344787')) return false;
     // vertical: clear nav (90px) and legend (90px from bottom)
-    if (s.y < 90 || s.y > canvas.height - 90) return false;
+    if (s.y < 90 || s.y > cssH - 90) return false;
     // compute label x based on which side has room
-    const label_left = s.x > canvas.width * 0.55;
+    const label_left = s.x > cssW * 0.55;
     const lx = label_left
       ? Math.max(label_w / 2 + 8, s.x - offset)
-      : Math.min(canvas.width - label_w / 2 - 8, s.x + offset);
+      : Math.min(cssW - label_w / 2 - 8, s.x + offset);
     const label_bot      = s.y - 42 + label_h / 2;
     const label_left_edge = lx - label_w / 2;
     // hero text occupies roughly left 42% of canvas, below 45% of height
-    const in_hero_col  = label_left_edge < canvas.width * 0.42;
-    const in_hero_vert = label_bot > canvas.height * 0.45;
+    const in_hero_col  = label_left_edge < cssW * 0.42;
+    const in_hero_vert = label_bot > cssH * 0.45;
     if (in_hero_col && in_hero_vert) return false;
     return true;
   });
@@ -1968,10 +2048,9 @@ init();
   // ring: anchoring a fixed-position element to a card that lifts on hover was
   // the source of the glitch). See .research-card:hover .card-dot in the CSS.
 
-  // the pills belong to the sky: fade them out past the hero
-  const hero = document.getElementById('hero');
+  // the pills belong to the hero: fade them the moment the user scrolls
   function onScroll() {
-    const past = window.scrollY > (hero ? hero.offsetHeight * 0.6 : 400);
+    const past = window.scrollY > 8;
     legend.classList.toggle('hidden', past);
     if (past && pill_focus_star) { pill_focus_star = null; kick_render(); }
   }

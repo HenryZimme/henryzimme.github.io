@@ -244,7 +244,9 @@
       background: none;
       border: none;
       cursor: pointer;
-      padding: 4px;
+      padding: 0;
+      min-width: 44px; min-height: 44px;
+      align-items: center; justify-content: center;
       flex-direction: column;
       gap: 5px;
       z-index: 51;
@@ -563,6 +565,12 @@
       padding: 100px 52px;
       scroll-margin-top: 72px;
     }
+    /* weak-device path: blur is the costliest thing to composite over the
+       animating canvas on scroll; drop it and lean on a more opaque panel. */
+    body.perf-lite .section {
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      background: rgba(7, 9, 26, 0.93);
+    }
 
     /* cepheid-sim is not a .section but is a nav target */
     #cepheid-sim { scroll-margin-top: 72px; }
@@ -591,10 +599,6 @@
       color: var(--text);
       margin-bottom: 52px;
       letter-spacing: -0.01em;
-      position: sticky;
-      top: 20px;
-      background: var(--panel);
-      z-index: 10;
       padding: 10px 0 0;
     }
     .section-heading::before {
@@ -1305,6 +1309,7 @@
       #cepheid-sim {
         height: auto;
         min-height: 100vh;
+        min-height: 100dvh;
         display: flex;
         flex-direction: column;
         overflow: visible;
@@ -1821,10 +1826,12 @@
       }
       /* enlarge close button touch target on mobile */
       .modal-close {
-        top: 12px;
-        right: 12px;
+        top: 8px;
+        right: 8px;
         font-size: 22px;
-        padding: 8px;
+        padding: 11px;
+        min-width: 44px; min-height: 44px;
+        display: flex; align-items: center; justify-content: center;
       }
       #modal-img-wrap {
         aspect-ratio: 4 / 3;
@@ -1846,6 +1853,11 @@
       border-bottom: 1px dotted rgba(196,162,88,0.35);
       cursor: pointer;
       transition: color 0.15s, border-bottom-color 0.15s;
+    }
+    /* touch devices have no hover to reveal these, so the cue must stand on its
+       own; a solid, brighter underline invites a tap without shouting. */
+    @media (hover: none) {
+      .trail-word { border-bottom: 1px solid rgba(196,162,88,0.6); }
     }
     .trail-active .trail-word {
       border-bottom-style: solid;
@@ -2221,16 +2233,15 @@
       .research-card:hover .card-dot { transform: none; }
     }
     @media (max-width: 740px) {
-      #sky-legend {
-        position: static; left: auto; right: auto; bottom: auto;
-        max-width: none; margin-top: 18px;
-        flex-wrap: wrap; overflow: visible; justify-content: flex-start; gap: 6px;
-        -webkit-mask-image: none; mask-image: none;
-      }
-      #sky-legend .legend-pill {
-        flex-shrink: 1; font-size: 9px; padding: 4px 9px; gap: 6px;
-      }
-      #sky-legend .legend-live, #sky-legend .legend-sim { font-size: 7.5px; padding: 1px 4px; }
+      /* pills removed on mobile: unlabeled markers stay tappable, but the hero
+         reads cleaner without a chip cluster. Desktop keeps the fixed legend. */
+      #sky-legend { display: none; }
+
+      /* lift sub-16px prose to the mobile reading baseline */
+      .about-text p, .card-summary, .card-body { font-size: 16px; }
+      .highlights-item p, .writing-desc { font-size: 15px; }
+      /* project tags eat vertical space on mobile for little value */
+      .card-tags { display: none; }
     }
   </style>
 </head>
@@ -2246,8 +2257,14 @@
 (function () {
   const canvas = document.getElementById('star-canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const s = Math.min(window.devicePixelRatio || 1, 2);
+  const cw = document.documentElement.clientWidth;   // excludes scrollbar; matches CSS width:100%
+  const ch = document.documentElement.clientHeight;
+  canvas.width = Math.round(cw * s);
+  canvas.height = Math.round(ch * s);
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  ctx.setTransform(s, 0, 0, s, 0, 0); // draw in CSS px, crisp on retina
 
   const objs = [
     { ra: 83.625,  dec: -69.27,  color: '#c4a258' },
@@ -2256,8 +2273,8 @@
   ];
 
   for (const o of objs) {
-    const x = (o.ra / 360) * canvas.width;
-    const y = (1 - (o.dec + 90) / 180) * canvas.height;
+    const x = (o.ra / 360) * cw;
+    const y = (1 - (o.dec + 90) / 180) * ch;
     // glow
     const grd = ctx.createRadialGradient(x, y, 0, x, y, 14);
     grd.addColorStop(0, o.color + 'aa');
