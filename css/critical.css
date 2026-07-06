@@ -12,7 +12,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
-    /* skip link — hidden until focused */
+    /* skip link, hidden until focused */
     .skip-link {
       position: absolute;
       left: -9999px;
@@ -29,7 +29,7 @@
     }
     .skip-link:focus { left: 0; }
 
-    /* global focus-visible ring — gold outline on all interactive elements */
+    /* global focus-visible ring, gold outline on all interactive elements */
     :focus-visible {
       outline: 2px solid var(--gold);
       outline-offset: 3px;
@@ -226,7 +226,7 @@
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
     }
-    /* reduced motion — collapse all CSS animations and transitions for users who prefer it */
+    /* reduced motion, collapse all CSS animations and transitions for users who prefer it */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -295,7 +295,7 @@
       border-radius: 1px;
     }
 
-    /* individual book spine — base height; JS overrides per content length */
+    /* individual book spine, base height; JS overrides per content length */
     .book-spine {
       position: relative;
       flex-shrink: 0;

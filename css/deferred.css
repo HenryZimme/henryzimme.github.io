@@ -718,7 +718,7 @@
     /* back to top */
     #back-to-top {
       position: fixed;
-      bottom: 32px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
       right: 32px;
       z-index: 300;
       width: 40px;
@@ -1500,7 +1500,7 @@
     /* toggle, left side, clear of back-to-top */
     #trail-toggle {
       position: fixed;
-      bottom: 32px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
       left: 32px;
       z-index: 300;
       width: 40px;
