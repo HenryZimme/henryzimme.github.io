@@ -267,12 +267,19 @@
       opacity: 0.6;
       line-height: 1.6;
     }
+    .about-footnote a {
+      color: var(--blue);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(120, 165, 210, 0.45);
+      transition: border-color 0.18s;
+    }
+    .about-footnote a:hover { border-bottom-color: var(--blue); }
     .footnote-wrap {
     }
     .footnote-toggle {
       background: none;
       border: none;
-      border-bottom: 1px solid rgba(226, 221, 212, 0.2);
+      border-bottom: 1px solid rgba(226, 221, 212, 0.4);
       padding: 0 0 1px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
@@ -339,8 +346,10 @@
     .meta-value a {
       color: var(--blue);
       text-decoration: none;
+      border-bottom: 1px solid rgba(120,165,210,0.45);
+      transition: border-color 0.18s;
     }
-    .meta-value a:hover { text-decoration: underline; }
+    .meta-value a:hover { border-bottom-color: var(--blue); }
 
     .meta-tags {
       display: flex;
@@ -437,9 +446,8 @@
       appearance: none;
       background: none;
       border: none;
-      border-bottom: 1px solid var(--gold);
       border-radius: 0;
-      padding: 0 0 1px 0;
+      padding: 0;
       margin-top: 6px;
       margin-bottom: 20px;
       position: relative;
@@ -454,6 +462,19 @@
       line-height: normal;
     }
     .card-toggle:hover { opacity: 1; }
+    .card-toggle::after {
+      content: '';
+      display: inline-block;
+      width: 5px; height: 5px;
+      margin-left: 8px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: translateY(-2px) rotate(45deg);
+      transition: transform 0.2s ease;
+    }
+    .research-card.card-open .card-toggle::after {
+      transform: translateY(1px) rotate(-135deg);
+    }
 
     /* suppress hover lift when card is expanded */
     .research-card.card-open {
@@ -479,6 +500,14 @@
       padding: 3px 10px;
       text-transform: uppercase;
     }
+
+    /* artifact line: scannable links surfaced above the fold (Variant B) */
+    .card-primary { margin: 0 0 10px; }
+    .card-artifacts { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; margin: 0 0 20px; }
+    .artifact-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(226, 221, 212, 0.4); padding-bottom: 1px; transition: color 0.18s, border-color 0.18s; white-space: nowrap; }
+    .artifact-link:hover { color: var(--gold); border-bottom-color: var(--gold); }
+    .artifact-link.ext:hover { color: var(--blue); border-bottom-color: var(--blue); }
+    .artifact-sep { color: var(--gold-dim); margin: 0 10px; font-size: 11px; }
 
     .card-link {
       display: inline-block;
@@ -525,7 +554,7 @@
 
     @media (hover: hover) and (pointer: fine) {
       .writing-item:hover { opacity: 1; }
-      .writing-item:hover h3 a { border-bottom-color: rgba(226, 221, 212, 0.45); }
+      .writing-item:hover h3 a { border-bottom-color: rgba(226, 221, 212, 0.65); }
     }
 
     /* writing overflow: animated reveal */
@@ -609,7 +638,7 @@
     .writing-content h3 a {
       color: var(--text);
       text-decoration: none;
-      border-bottom: 1px solid rgba(226, 221, 212, 0.18);
+      border-bottom: 1px solid rgba(226, 221, 212, 0.4);
       transition: opacity 0.18s;
     }
 
@@ -658,6 +687,13 @@
       margin-bottom: 5px;
       color: var(--text);
     }
+    .highlights-item h3 a {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(226, 221, 212, 0.4);
+      transition: border-color 0.18s;
+    }
+    .highlights-item h3 a:hover { border-bottom-color: rgba(226, 221, 212, 0.65); }
 
     .highlights-item p {
       font-size: 14.5px;
@@ -815,7 +851,7 @@
     .sim-cite {
       color: var(--blue);
       text-decoration: none;
-      border-bottom: 1px solid rgba(120,165,210,0.3);
+      border-bottom: 1px solid rgba(120,165,210,0.45);
       pointer-events: auto;
     }
     #hud-table {
@@ -1034,11 +1070,10 @@
     .bookshelf-intro a {
       color: var(--blue);
       text-decoration: none;
-      border-bottom: 1px solid var(--blue);
-      transition: opacity 0.18s;
-      opacity: 0.65;
+      border-bottom: 1px solid rgba(120, 165, 210, 0.45);
+      transition: border-color 0.18s;
     }
-    .bookshelf-intro a:hover { opacity: 1; }
+    .bookshelf-intro a:hover { border-bottom-color: var(--blue); }
 
     /* shelf row */
     .book-shelf {

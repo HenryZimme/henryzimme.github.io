@@ -632,12 +632,19 @@
       opacity: 0.6;
       line-height: 1.6;
     }
+    .about-footnote a {
+      color: var(--blue);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(120, 165, 210, 0.45);
+      transition: border-color 0.18s;
+    }
+    .about-footnote a:hover { border-bottom-color: var(--blue); }
     .footnote-wrap {
     }
     .footnote-toggle {
       background: none;
       border: none;
-      border-bottom: 1px solid rgba(226, 221, 212, 0.2);
+      border-bottom: 1px solid rgba(226, 221, 212, 0.4);
       padding: 0 0 1px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
@@ -704,8 +711,10 @@
     .meta-value a {
       color: var(--blue);
       text-decoration: none;
+      border-bottom: 1px solid rgba(120,165,210,0.45);
+      transition: border-color 0.18s;
     }
-    .meta-value a:hover { text-decoration: underline; }
+    .meta-value a:hover { border-bottom-color: var(--blue); }
 
     .meta-tags {
       display: flex;
@@ -802,9 +811,8 @@
       appearance: none;
       background: none;
       border: none;
-      border-bottom: 1px solid var(--gold);
       border-radius: 0;
-      padding: 0 0 1px 0;
+      padding: 0;
       margin-top: 6px;
       margin-bottom: 20px;
       position: relative;
@@ -819,6 +827,19 @@
       line-height: normal;
     }
     .card-toggle:hover { opacity: 1; }
+    .card-toggle::after {
+      content: '';
+      display: inline-block;
+      width: 5px; height: 5px;
+      margin-left: 8px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: translateY(-2px) rotate(45deg);
+      transition: transform 0.2s ease;
+    }
+    .research-card.card-open .card-toggle::after {
+      transform: translateY(1px) rotate(-135deg);
+    }
 
     /* suppress hover lift when card is expanded */
     .research-card.card-open {
@@ -844,6 +865,14 @@
       padding: 3px 10px;
       text-transform: uppercase;
     }
+
+    /* artifact line: scannable links surfaced above the fold (Variant B) */
+    .card-primary { margin: 0 0 10px; }
+    .card-artifacts { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; margin: 0 0 20px; }
+    .artifact-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(226, 221, 212, 0.4); padding-bottom: 1px; transition: color 0.18s, border-color 0.18s; white-space: nowrap; }
+    .artifact-link:hover { color: var(--gold); border-bottom-color: var(--gold); }
+    .artifact-link.ext:hover { color: var(--blue); border-bottom-color: var(--blue); }
+    .artifact-sep { color: var(--gold-dim); margin: 0 10px; font-size: 11px; }
 
     .card-link {
       display: inline-block;
@@ -890,7 +919,7 @@
 
     @media (hover: hover) and (pointer: fine) {
       .writing-item:hover { opacity: 1; }
-      .writing-item:hover h3 a { border-bottom-color: rgba(226, 221, 212, 0.45); }
+      .writing-item:hover h3 a { border-bottom-color: rgba(226, 221, 212, 0.65); }
     }
 
     /* writing overflow: animated reveal */
@@ -974,7 +1003,7 @@
     .writing-content h3 a {
       color: var(--text);
       text-decoration: none;
-      border-bottom: 1px solid rgba(226, 221, 212, 0.18);
+      border-bottom: 1px solid rgba(226, 221, 212, 0.4);
       transition: opacity 0.18s;
     }
 
@@ -1023,6 +1052,13 @@
       margin-bottom: 5px;
       color: var(--text);
     }
+    .highlights-item h3 a {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(226, 221, 212, 0.4);
+      transition: border-color 0.18s;
+    }
+    .highlights-item h3 a:hover { border-bottom-color: rgba(226, 221, 212, 0.65); }
 
     .highlights-item p {
       font-size: 14.5px;
@@ -1180,7 +1216,7 @@
     .sim-cite {
       color: var(--blue);
       text-decoration: none;
-      border-bottom: 1px solid rgba(120,165,210,0.3);
+      border-bottom: 1px solid rgba(120,165,210,0.45);
       pointer-events: auto;
     }
     #hud-table {
@@ -1399,11 +1435,10 @@
     .bookshelf-intro a {
       color: var(--blue);
       text-decoration: none;
-      border-bottom: 1px solid var(--blue);
-      transition: opacity 0.18s;
-      opacity: 0.65;
+      border-bottom: 1px solid rgba(120, 165, 210, 0.45);
+      transition: border-color 0.18s;
     }
-    .bookshelf-intro a:hover { opacity: 1; }
+    .bookshelf-intro a:hover { border-bottom-color: var(--blue); }
 
     /* shelf row */
     .book-shelf {
@@ -2528,8 +2563,8 @@
           <div class="card-id"><span class="card-dot" style="--c:#d4693a"></span>Sole author, in prep</div>
           <h3 class="card-title">Entropy-Guided Cadence Optimization for Asteroid Photometry</h3>
           <p class="card-summary">We were observing 19243 Bunting and 7605 Cindygraber on Slooh, and our observation design plan was just: "observe whatever we need more data for tonight." After the aliasing got pretty bad even with more data, I started thinking about how to maximize the information we get from a given number of observations. The framework I worked out generalizes beyond asteroids to other periodic-signal domains.</p>
-          <div style="margin-bottom: 16px;"><a class="card-link" href="/astcadence">Interactive Demonstration: How Cadence Shapes the Period Posterior &rarr;</a></div>
-          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-4" aria-label="Read more about entropy-guided cadence optimization">Read more &#8595;</button>
+          <div class="card-primary"><a class="card-link" href="/astcadence">Interactive Demonstration: How Cadence Shapes the Period Posterior &rarr;</a></div><div class="card-artifacts"><a class="artifact-link ext" href="https://aas248-aas.ipostersessions.com/Default.aspx?s=E7-98-ED-CB-43-2D-58-D8-C9-FE-B6-29-15-77-85-68" target="_blank" rel="noopener">Poster &middot; AAS 248 &#8599;</a></div>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-4" aria-label="Read more about entropy-guided cadence optimization">Read more</button>
           <div class="card-expand" id="card-expand-4">
             <p class="card-body">
               Period recovery from one night of asteroid photometry is an inverse problem: a handful of brightness measurements, many possible spin periods that could have produced them. Which periods become confusable depends entirely on when during the night you observed. I built a framework that picks the cadence which minimizes this ambiguity on average.
@@ -2555,18 +2590,7 @@
               <a class="card-link" href="https://github.com/HenryZimme/cadence-optimization" target="_blank" rel="noopener">Cadence Optimization Repository</a>
             </div>
             -->
-            <a href="https://aas248-aas.ipostersessions.com/Default.aspx?s=E7-98-ED-CB-43-2D-58-D8-C9-FE-B6-29-15-77-85-68" target="_blank" rel="noopener" class="card-cta">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <img src="/assets/icons/aas_logo.jpg" width="14" height="14" alt="AAS" style="flex-shrink:0; opacity:0.9;" />
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">Presented at AAS 248 &#8599;</div>
-              </div>
-              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">The poster I presented at AAS 248. It walks through information theory and probability, validation on the holdout set, and future applications of the framework.</div>
-            </a>
-          </div>
-          <div class="card-tags">
-            <span class="tag">Minor Planets</span>
-            <span class="tag">Cadence Optimization</span>
-            <span class="tag">Evolutionary Algorithms</span>
+            <p class="card-body">The poster I presented at AAS 248 walks through the information theory and probability behind the framework, validation on the holdout set, and future applications.</p>
           </div>
         </div>
 
@@ -2574,8 +2598,8 @@
           <div class="card-id"><span class="card-dot" style="--c:#c4a258"></span>Co-Investigator &amp; Primary Author, with Bogumił Pilecki</div>
           <h3 class="card-title">CEP-1347: Merger-origin Investigation & VLT Follow-up</h3>
           <p class="card-summary">After six years of OGLE-LMC-CEP-1347 photometry revealed a candidate rotational signal suggesting <span class="trail-word" data-word="merger spindown">merger spindown</span>, my window function analysis identified it as a 1-year sampling <span class="trail-word" data-word="alias">alias</span>, prompting my pivot to a VLT/ESPRESSO spectroscopic proposal with Dr. Bogumił Pilecki. With these chemical abundances, we will attempt to validate a dynamical template for identifying merger-origin Cepheids.</p>
-          <div style="margin-bottom: 16px;"><a class="card-link" href="/1347_methods">Alias Diagnostic: The Analysis That Invalidated My Own Result &rarr;</a></div>
-          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-1" aria-label="Read more about CEP-1347 merger-origin investigation">Read more &#8595;</button>
+          <div class="card-primary"><a class="card-link" href="/1347_methods">Alias Diagnostic: The Analysis That Invalidated My Own Result &rarr;</a></div><div class="card-artifacts"><a class="artifact-link" href="/cep1347">Live Sim &rarr;</a></div>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-1" aria-label="Read more about CEP-1347 merger-origin investigation">Read more</button>
           <div class="card-expand" id="card-expand-1">
             <p class="card-body">
               I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary in the Large Magellanic Cloud with the shortest known orbital period for a Cepheid (58.85 ± 0.08 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I isolated a frequency triplet consistent with a non-radial mode, with spacing $\Delta$f ≈ 0.0074 c/d. I validated this with dual-domain frequency and time-evolution $O-C$ Monte Carlo simulations, finding Prot ≈ 135 ± 15 days. This is over five σ longer than the 58.85 day orbit. Since tidal theory predicts synchronization precedes circularization by $>10$x, this asynchronous rotation in a circular orbit would suggest recent merger spindown.
@@ -2586,18 +2610,7 @@
             <p class="card-body">
               For readers interested in the full analysis pipeline, including the alias diagnostic that invalidated the candidate rotational signal, see the Methodological Appendix.
             </p>
-            <a href="#cepheid-sim" class="card-cta">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0; opacity:0.9;" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" fill="#78a5d2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#78a5d2" stroke-width="1.8" stroke-linecap="round"/></svg>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--blue); text-transform:uppercase;">See the System Simulated</div>
-              </div>
-              <div style="font-family:'Spectral',serif; font-size:14px; color:var(--text-dim); line-height:1.7;">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.40&ndash;0.60, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where the Cepheid's Li I 6707 &Aring; doublet and the companion's Fe I line (0.33 &Aring; away) are separated enough that the Fe I wing contamination stays under 12% of the noise floor. The simulation makes both constraints visible at once.</div>
-            </a>
-          </div>
-          <div class="card-tags">
-            <span class="tag">Binary Cepheids</span>
-            <span class="tag">Stellar Mergers</span>
-            <span class="tag">Asteroseismology</span>
+            <p class="card-body">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.40&ndash;0.60, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where the Cepheid's Li I 6707 &Aring; doublet and the companion's Fe I line (0.33 &Aring; away) are separated enough that the Fe I wing contamination stays under 12% of the noise floor. The interactive simulation makes both constraints visible at once.</p>
           </div>
         </div>
 
@@ -2605,8 +2618,8 @@
           <div class="card-id"><span class="card-dot" style="--c:#5ecfbf"></span>In Prep, with Dr. José Zorrilla and Caroline Odden</div>
           <h3 class="card-title">Rotation Period of 7605 Cindygraber</h3>
           <p class="card-summary">I coordinated a multi-site Slooh campaign with citizen scientists remotely operating telescopes across three continents to determine the rotation period of main-belt asteroid 7605 Cindygraber, using a custom open-source scheduler to optimize observing cadence under variable site conditions.</p>
-          <div style="margin-bottom: 16px;"><a class="card-link" href="/asteroid_observer">Interactive Orbital Model: Scheduling Under Aliasing &rarr;</a></div>
-          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-2" aria-label="Read more about rotation period of 7605 Cindygraber">Read more &#8595;</button>
+          <div class="card-primary"><a class="card-link" href="/asteroid_observer">Interactive Orbital Model: Scheduling Under Aliasing &rarr;</a></div><div class="card-artifacts"><a class="artifact-link ext" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Scheduler &#8599;</a><span class="artifact-sep">/</span><a class="artifact-link ext" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Stats &#8599;</a><span class="artifact-sep">/</span><a class="artifact-link" href="/ccd_calibration">Calibration &rarr;</a></div>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-2" aria-label="Read more about rotation period of 7605 Cindygraber">Read more</button>
           <div class="card-expand" id="card-expand-2">
             <p class="card-body">
               Using photometric measurements from the ALCDEF Light Curve Database, I developed statistical models to estimate period convergence requirements and used those results to design an observing strategy.
@@ -2622,15 +2635,7 @@
             <p class="card-body">
               A note on methods: I evaluated supervised learning approaches for period convergence prediction early in this project, but found statistical modeling better supported by the dataset characteristics. This work inspired me to separately apply CMA-ES evolutionary optimization to cadence scheduling.
             </p>
-            <div class="card-links">
-              <a class="card-link" href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Observing Scheduler on GitHub</a> |
-              <a class="card-link" href="https://github.com/HenryZimme/lcdb-observing-strategy" target="_blank" rel="noopener">Asteroid Statistics on GitHub</a> |
-              <a class="card-link" href="/ccd_calibration">Instrumentation Report &rarr;</a>
-            </div>
-          </div>
-          <div class="card-tags">
-            <span class="tag">Minor Planets</span>
-            <span class="tag">Photometry</span>
+            
           </div>
         </div>
 
@@ -2638,16 +2643,12 @@
           <div class="card-id"><span class="card-dot" style="--c:#8ab8ff"></span>Completed, with Dr. José Zorrilla</div>
           <h3 class="card-title">Distance Scale Calibration via U Sagittarii</h3>
           <p class="card-summary">Multi-band photometry of classical Cepheid U Sagittarii confirmed its 6.74-day period and produced a 40.8% vs. 1.9% V-to-I distance error gap, a direct demonstration of how interstellar dust corrupts Cepheid distance measurements.</p>
-          <div style="margin-bottom: 16px;"><a class="card-link" href="/U_Sgr_abs">Interactive Pulsation Simulation &amp; Full Abstract &rarr;</a></div>
-          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-3" aria-label="Read more about U Sagittarii distance scale calibration">Read more &#8595;</button>
+          <div class="card-primary"><a class="card-link" href="/U_Sgr_abs">Interactive Pulsation Simulation &amp; Full Abstract &rarr;</a></div>
+          <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-3" aria-label="Read more about U Sagittarii distance scale calibration">Read more</button>
           <div class="card-expand" id="card-expand-3">
             <p class="card-body">
               My first independent research target. I remotely operated the Slooh Chile 432mm telescope for two months, performing multi-band (V&minus;I) differential photometry of the classical Cepheid U Sgr in open cluster M25. Sinusoidal light curve fits confirmed the 6.74-day period (R&sup2; = 0.93 V-band, 0.70 I-band). V-band distance calculations yielded 40.8% error versus 1.9% in I-band, a direct demonstration of how interstellar dust preferentially scatters shorter wavelengths and why accurate extinction corrections are critical for Cepheid distance work. Strong color index correlation (r = 0.85) provided independent evidence for pulsation, consistent with the kappa-mechanism. The project expanded into an investigation of metallicity-dependent corrections to the period-luminosity relation.
             </p>
-          </div>
-          <div class="card-tags">
-            <span class="tag">Cepheid Variables</span>
-            <span class="tag">Distance Scale</span>
           </div>
         </div>
 
@@ -2681,7 +2682,7 @@
             <div class="writing-date">October 2025</div>
           </div>
           <div class="writing-content">
-            <h3><a href="https://phillipian.net/2025/10/03/why-im-not-all-in-on-the-in-class-onslaught/" target="_blank" rel="noopener">Why I'm Not "All In" On the In-Class Onslaught</a></h3>
+            <h3><a href="https://phillipian.net/2025/10/03/why-im-not-all-in-on-the-in-class-onslaught/" target="_blank" rel="noopener">Why I'm Not "All In" On the In-Class Onslaught &#8599;</a></h3>
             <p>Opinion piece arguing that mass in-class writing assessments <span class="trail-word" data-word="curtail the very iterative thinking">curtail the very iterative thinking</span> that great writing requires.</p>
           </div>
         </div>
@@ -2751,7 +2752,7 @@
               <div class="writing-date">February 2025</div>
             </div>
             <div class="writing-content">
-              <h3><a href="https://the-revere.com/2025/02/germanys-far-right-comeback-why-you-should-be-worried-about-the-afd/" target="_blank" rel="noopener">Germany's Far-Right Comeback: Why You Should Be Worried About the AfD</a></h3>
+              <h3><a href="https://the-revere.com/2025/02/germanys-far-right-comeback-why-you-should-be-worried-about-the-afd/" target="_blank" rel="noopener">Germany's Far-Right Comeback: Why You Should Be Worried About the AfD &#8599;</a></h3>
               <p>On the AfD's rise from eurosceptic fringe to Germany's second-largest party: its causes, its geopolitical alignment with Russia and China, and what it means for European cohesion.</p>
             </div>
           </div>
@@ -2762,7 +2763,7 @@
               <div class="writing-date">March 2025</div>
             </div>
             <div class="writing-content">
-              <h3><a href="https://thereverecom.wordpress.com/2025/03/24/whats-at-stake-in-greenland/" target="_blank" rel="noopener">What's at Stake in Greenland?</a></h3>
+              <h3><a href="https://thereverecom.wordpress.com/2025/03/24/whats-at-stake-in-greenland/" target="_blank" rel="noopener">What's at Stake in Greenland? &#8599;</a></h3>
               <p>Trump's Arctic ambitions, Greenland's 2008 Self-Government Act, and why coercive US posturing sets a sovereignty precedent that benefits Russia and China far more than it benefits the US.</p>
             </div>
           </div>
