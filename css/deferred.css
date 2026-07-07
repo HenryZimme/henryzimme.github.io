@@ -209,6 +209,9 @@
 
     /* cepheid-sim is not a .section but is a nav target */
     #cepheid-sim { scroll-margin-top: 72px; }
+    /* about + research both carry 100px padding = ~200px into research;
+       trim research's top to match the ~100px rhythm elsewhere */
+    #research { padding-top: 32px; }
 
     .section-inner {
       max-width: 880px;
@@ -256,6 +259,7 @@
 
     /* about */
     .about-footnote {
+      display: none; /* collapsed until the toggle opens it */
       margin-top: 12px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11.5px;
@@ -325,6 +329,8 @@
     }
 
     .meta-value {
+      overflow-wrap: anywhere;
+      word-break: break-word;
       font-size: 14.5px;
       color: var(--text-dim);
       line-height: 1.55;
@@ -434,7 +440,9 @@
       border-bottom: 1px solid var(--gold);
       border-radius: 0;
       padding: 0 0 1px 0;
+      margin-top: 6px;
       margin-bottom: 20px;
+      position: relative;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       letter-spacing: 0.12em;
@@ -1590,8 +1598,9 @@
       opacity: 0; pointer-events: none; transition: opacity 0.15s;
     }
     .trail-grip {
-      position: absolute; top: 0; right: 0; width: 30px; height: 100%;
-      display: none; align-items: center; justify-content: center; gap: 8px;
+      position: absolute; top: 50%; right: 0; transform: translateY(-50%);
+      width: 30px; height: 84px;
+      display: none; align-items: center; justify-content: center; gap: 6px;
       writing-mode: vertical-rl; text-orientation: mixed;
       font-family: 'JetBrains Mono', monospace; font-size: 9px;
       letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
@@ -1599,7 +1608,7 @@
     }
     #trail-card.trail-collapsed .trail-grip { display: flex; }
     #trail-collapse {
-      position: absolute; top: 6px; right: 30px;
+      position: absolute; top: 6px; right: 6px;
       width: 26px; height: 26px;
       display: flex; align-items: center; justify-content: center;
       background: none; border: none; color: var(--text);
@@ -1613,7 +1622,7 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 14px;
-      padding-right: 58px; /* clear the collapse/dismiss buttons */
+      padding-right: 34px; /* clear the collapse button */
     }
     .trail-card-logo { flex-shrink: 0; opacity: 0.9; }
     .trail-card-count { margin-left: auto; }

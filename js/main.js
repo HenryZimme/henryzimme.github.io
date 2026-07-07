@@ -977,7 +977,7 @@ function on_click(e) {
   // suppress the synthetic click the browser fires ~300ms after touchend
   if (performance.now() - last_touch_action_ts < 600) return;
   // ignore clicks that originated on UI elements layered above the canvas
-  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card') || e.target.closest('#sky-legend') || e.target.closest('.trail-word')) return;
+  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card') || e.target.closest('#sky-legend') || e.target.closest('.trail-word') || e.target.closest('#trail-card') || e.target.closest('#trail-toggle')) return;
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
 
   // fresh inline scan for featured stars, hover_star may be stale from previous
@@ -1039,7 +1039,7 @@ function on_touch_end(e) {
 
   // don't intercept taps on UI elements layered above the canvas, popover is fixed-position over the hero and would otherwise trigger star detection
   const el = document.elementFromPoint(tx, ty);
-  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card') || el.closest('#sky-legend') || el.closest('.trail-word'))) return;
+  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card') || el.closest('#sky-legend') || el.closest('.trail-word') || el.closest('#trail-card') || el.closest('#trail-toggle'))) return;
 
   if (!canvas_exposed_at(tx, ty)) return;
 
@@ -1741,6 +1741,9 @@ if (writing_more_btn && writing_overflow) {
 document.querySelectorAll('.writing-item').forEach(item => {
   const link = item.querySelector('h3 a');
   if (!link) return;
+  // rows containing trail-words keep only the title link clickable; a whole-row
+  // handler makes every stray click beside the phrase navigate away
+  if (item.querySelector('.trail-word')) return;
   item.addEventListener('click', (e) => {
     // don't intercept taps that land on or near the toggle buttons
     if (e.target.closest('.writing-more-toggle') || e.target.closest('.card-toggle') || e.target.closest('.trail-word')) return;
@@ -1827,12 +1830,10 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   // found stored in discovery order
   let found     = JSON.parse(sessionStorage.getItem(LS_FOUND) || '[]');
   let active    = false;
-  let dismissed = false;
   let observer  = null;
 
   const toggle     = document.getElementById('trail-toggle');
   const card       = document.getElementById('trail-card');
-  const dismiss    = document.getElementById('trail-dismiss');
   const hintText   = document.getElementById('trail-hint-text');
   const nEl        = document.getElementById('trail-n');
   const totalEl    = document.getElementById('trail-total');
@@ -1949,14 +1950,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     document.body.classList.add('trail-active');
     toggle.classList.add('trail-on');
     card.classList.add('trail-card-visible');
-    if (!card._collapseWired) {
-      card._collapseWired = true;
-      card.addEventListener('mouseenter', function () { clearTimeout(card._ct); card.classList.remove('trail-collapsed'); });
-      card.addEventListener('mouseleave', scheduleCollapse);
-      card.addEventListener('click', function (e) {
-        if (card.classList.contains('trail-collapsed')) { e.stopPropagation(); card.classList.remove('trail-collapsed'); scheduleCollapse(); }
-      });
-    }
+    card.classList.remove('trail-collapsed');
     scheduleCollapse();
     markSpans();
     var firstUnfound = document.querySelector('.trail-word:not(.found)');
@@ -1981,14 +1975,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     if (active) hideCard(); else showCard();
   });
 
-  dismiss.addEventListener('click', function () {
-    dismissed = true;
-    hideCard();
-    toggle.classList.remove('trail-ready');
-    toggle.style.opacity = '0';
-    toggle.style.pointerEvents = 'none';
-  });
-
   var collapseBtn = document.getElementById('trail-collapse');
   if (collapseBtn) collapseBtn.addEventListener('click', function (e) {
     e.stopPropagation();
@@ -2000,7 +1986,23 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
 
   function activateToggle() {
     toggle.classList.add('trail-ready');
+    // show the collapsed grip tab as the on-load entry point (the floating
+    // toggle is retired; the grip is now the trail's signifier)
+    if (!active) card.classList.add('trail-card-visible', 'trail-collapsed');
   }
+
+  // grip click: expand, activating the trail on first open
+  card.addEventListener('click', function () {
+    if (card.classList.contains('trail-collapsed')) {
+      card.classList.remove('trail-collapsed');
+      if (!active) showCard(); else scheduleCollapse();
+    }
+  });
+
+  // surface the grip on load (not just when About scrolls into view)
+  setTimeout(function () {
+    if (!active) card.classList.add('trail-card-visible', 'trail-collapsed');
+  }, 1500);
 
   var aboutEl = document.getElementById('about');
   if (aboutEl && 'IntersectionObserver' in window) {
