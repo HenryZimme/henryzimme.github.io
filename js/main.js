@@ -1945,6 +1945,19 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     card._ct = setTimeout(function () { if (active) card.classList.add('trail-collapsed'); }, 4000);
   }
 
+  // mobile: the fixed card overlaps content while reading, so fade it out during
+  // scroll and fade it back once scrolling stops (idle).
+  var _scrollHideTimer = null;
+  var _mobileMQ = window.matchMedia('(max-width: 740px)');
+  window.addEventListener('scroll', function () {
+    if (!_mobileMQ.matches || !card.classList.contains('trail-card-visible')) return;
+    card.classList.add('trail-scroll-hidden');
+    clearTimeout(_scrollHideTimer);
+    _scrollHideTimer = setTimeout(function () {
+      card.classList.remove('trail-scroll-hidden');
+    }, 260);
+  }, { passive: true });
+
   function showCard() {
     active = true;
     document.body.classList.add('trail-active');
