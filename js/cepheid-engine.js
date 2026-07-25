@@ -1900,6 +1900,18 @@
     if (!paused) kick();
   };
 
+  // click-to-toggle: clicking the sim (canvas or the plot overlay) plays/pauses,
+  // same as the play/pause button. Ignore clicks on real controls (links/buttons)
+  // so this doesn't fight the mode pills or future citation links inside the stage.
+  var simStage = document.getElementById('sim-stage');
+  if (simStage) {
+    simStage.style.cursor = 'pointer';
+    simStage.addEventListener('click', function(e) {
+      if (e.target.closest('a, button')) return;
+      window.cepTogglePlay();
+    });
+  }
+
   window.cepSetSpeed = function(v) {
     if (currentMode === 'realtime') return; // locked for photosensitivity safety
     speed = v;
