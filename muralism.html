@@ -22,33 +22,7 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
-.article-wrap {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 160px 24px 100px;
-    }
-
-    .article-title {
-      font-size: clamp(30px, 5vw, 42px);
-      font-weight: 400;
-      line-height: 1.1;
-      margin: 0 0 32px;
-      color: var(--text);
-    }
-
-    .article-body p {
-      font-size: 19px;
-    }
-
-    .article-body blockquote {
-      border-left: 2px solid var(--gold-dim);
-      margin: 40px 0;
-      padding: 8px 0 8px 28px;
-      font-style: italic;
-      color: var(--text-dim);
-    }
-
-    .article-body figure { margin: 3em 0; }
+.article-body figure { margin: 3em 0; }
     .article-body figure img { width: 100%; height: auto; border: 1px solid var(--panel-border); }
     .article-body figcaption { 
       font-family: 'JetBrains Mono', monospace; 
@@ -109,13 +83,13 @@
 
       <p>While the subject matter depicted concerns history, Siqueiros notes that the mural is a “condemnation of invaders of all times.” Thus, the mural can be seen as a Latin American history of the continuing revolutionary struggle against Spanish imperialism and its legacies. Siqueiros engaged in a covert reframing, channeling animosity towards past colonization against contemporary fascism and the bourgeoisie.</p>
 
-      <section class="footnotes">
+      <aside class="footnotes" role="doc-endnotes">
         <ol>
-          <li>Christopher Fulton, "Siqueiros against the Myth: Paeans to Cuauhtémoc," Oxford Art Journal.</li>
-          <li>Desmond Rochfort, Mexican Muralists: Orozco, Rivera, Siqueiros (New York: Universe, 1994).</li>
-          <li>Philip Stein, Siqueiros: His Life and Works (New York: International Publishers, 1994).</li>
+          <li id="fn1">Christopher Fulton, "Siqueiros against the Myth: Paeans to Cuauhtémoc," Oxford Art Journal.</li>
+          <li id="fn2">Desmond Rochfort, Mexican Muralists: Orozco, Rivera, Siqueiros (New York: Universe, 1994).</li>
+          <li id="fn3">Philip Stein, Siqueiros: His Life and Works (New York: International Publishers, 1994).</li>
         </ol>
-      </section>
+      </aside>
     </div>
 
     <footer class="footer-nav"></footer>
@@ -123,14 +97,6 @@
 </main>
 
   <button id="back-to-top" aria-label="Back to top">↑</button>
-
-  <script>
-  const btt = document.getElementById('back-to-top');
-  window.addEventListener('scroll', () => {
-    btt.classList.toggle('visible', window.scrollY > 400);
-  }, { passive: true });
-  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-</script>
   <script src="/js/writing-nav.js" defer></script>
 </body>
 </html>

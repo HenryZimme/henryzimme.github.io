@@ -104,8 +104,13 @@ nav {
 }
 
 /* article scaffold */
+/* wide layout variant for research pages with data tables or figures */
+.article-wrap--wide {
+  max-width: 800px;
+}
+
 .article-wrap {
-  max-width: 65ch;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 120px 28px 100px;
 }
@@ -141,7 +146,7 @@ nav {
 }
 
 .article-body p {
-  font-size: 17px;
+  font-size: 20px;
   margin-bottom: 1.4em;
 }
 
@@ -152,6 +157,63 @@ nav {
   color: var(--text);
   margin: 2.4em 0 0.9em;
   letter-spacing: 0.01em;
+}
+
+/* blockquote (shared across writing subpages) */
+.article-body blockquote {
+  border-left: 2px solid var(--gold);
+  margin: 40px 0;
+  padding-left: 24px;
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+/* references heading (shared across writing + research subpages) */
+.references-heading {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-top: 60px;
+  margin-bottom: 20px;
+  letter-spacing: 0.1em;
+}
+
+/* works-cited (short-form bibliography for humanities essays) */
+.works-cited p {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+/* article subtitle (optional, appears below title) */
+.article-subtitle {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+/* article context block (optional, appears below byline) */
+.article-context {
+  font-family: 'Spectral', serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--text-dim);
+  margin-bottom: 36px;
+}
+
+/* footnote reference links (standardized pattern) */
+a.footnote-ref {
+  color: var(--blue);
+  text-decoration: none;
+}
+a.footnote-ref:hover {
+  text-decoration: underline;
 }
 
 /* figs */
@@ -317,7 +379,7 @@ sup a:hover { text-decoration: underline; }
   /* article title: slightly tighter line-height for long titles that wrap */
   .article-title { line-height: 1.15; }
 
-  /* body paragraphs: keep 20px but increase line-height for narrow measure */
+  /* body paragraphs: increase line-height for narrow measure */
   .article-body p {
     line-height: 1.78;
     margin-bottom: 1.3em;

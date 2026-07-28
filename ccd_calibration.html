@@ -25,24 +25,7 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#07091a">
   <style>
-.article-wrap {
-      max-width: 65ch;
-      margin: 0 auto;
-      padding: 120px 28px 60px;
-    }
-    
-    .article-title {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(24px, 4.5vw, 36px);
-      font-weight: 400;
-      line-height: 1.25;
-      color: var(--text);
-      margin-bottom: 10px;
-    }
-    
-    
-    .article-body p { margin-bottom: 1.4em; font-size: 20px; }
-    /* results summary cards */
+/* results summary cards */
     .results-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -92,8 +75,7 @@
       background: #fff;
       display: block;
     }
-    
-    
+
     .footer-wrap {
       max-width: 65ch;
       margin: 0 auto;
@@ -103,7 +85,7 @@
       .pdf-frame { height: 70vh; min-height: 400px; }
       .results-grid { grid-template-columns: 1fr 1fr; }
       .footer-wrap { padding: 0 18px 72px; }}
-</style>
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -159,14 +141,6 @@
 <footer class="footer-nav"></footer>
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
-
-<script>
-  const btt = document.getElementById('back-to-top');
-  window.addEventListener('scroll', () => {
-    btt.classList.toggle('visible', window.scrollY > 400);
-  }, { passive: true });
-  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-</script>
 
   <script src="/js/writing-nav.js" defer></script>
 </body>

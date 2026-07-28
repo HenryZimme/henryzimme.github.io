@@ -21,42 +21,7 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
-  <style>
-.article-wrap {
-      max-width: 65ch;
-      margin: 0 auto;
-      padding: 120px 28px 100px;
-    }
-    
-    .article-title {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(26px, 5vw, 40px);
-      font-weight: 400;
-      line-height: 1.2;
-      color: var(--text);
-      margin-bottom: 10px;
-    }
-    .article-subtitle {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(16px, 2.5vw, 20px);
-      font-weight: 400;
-      font-style: italic;
-      color: var(--text-dim);
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-    
-    
-    .article-body p { margin-bottom: 1.4em; font-size: 20px; }
-    .article-body h2 {
-      font-family: 'EB Garamond', serif;
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--text);
-      margin: 2.6em 0 0.9em;
-      letter-spacing: 0.01em;
-    }
-  </style>
+  
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#07091a">
@@ -145,14 +110,6 @@
 </main>
 
 <button id="back-to-top" aria-label="Back to top">↑</button>
-
-<script>
-  const btt = document.getElementById('back-to-top');
-  window.addEventListener('scroll', () => {
-    btt.classList.toggle('visible', window.scrollY > 400);
-  }, { passive: true });
-  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-</script>
 
   <script src="/js/writing-nav.js" defer></script>
 </body>

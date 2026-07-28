@@ -22,55 +22,7 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
-.article-wrap {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 140px 24px 100px;
-    }
-
-    .article-title {
-      font-size: 42px;
-      font-weight: 400;
-      line-height: 1.1;
-      margin: 0 0 24px;
-      color: var(--text);
-    }
-
-    .article-body p {
-  font-size: 20px;
-}
-
-    .article-body em {
-      font-style: italic;
-      color: var(--text);
-    }
-
-    .article-body blockquote {
-      border-left: 2px solid var(--gold);
-      margin: 40px 0;
-      padding-left: 24px;
-      font-style: italic;
-      color: var(--text-dim);
-    }
-
-    .references-heading {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      color: var(--gold);
-      text-transform: uppercase;
-      margin-top: 60px;
-      margin-bottom: 20px;
-      letter-spacing: 0.1em;
-    }
-
-    .works-cited p {
-      font-size: 16px;
-      line-height: 1.5;
-      color: var(--text-dim);
-      margin-bottom: 12px;
-    }
-
-    @media (max-width: 740px) {.article-title { font-size: 32px; }}
+@media (max-width: 740px) {.article-title { font-size: 32px; }}
   </style>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
@@ -125,14 +77,6 @@
 </main>
 
   <button id="back-to-top" aria-label="Back to top">↑</button>
-
-  <script>
-  const btt = document.getElementById('back-to-top');
-  window.addEventListener('scroll', () => {
-    btt.classList.toggle('visible', window.scrollY > 400);
-  }, { passive: true });
-  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-</script>
   <script src="/js/writing-nav.js" defer></script>
 </body>
 </html>

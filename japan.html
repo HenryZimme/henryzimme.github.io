@@ -22,58 +22,13 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
-a { color: var(--gold); text-decoration: none; }
-    a:hover { text-decoration: underline; color: var(--text); }
-    .article-wrap {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 160px 24px 100px;
-    }
-    .article-title {
-      font-size: clamp(28px, 5vw, 42px);
-      font-weight: 400;
-      line-height: 1.15;
-      margin: 0 0 32px;
-      color: var(--text);
-    }
-
-    .article-body p {
-  font-size: 20px;
-}
-
-    .article-body h2 {
+.article-body h2 {
       font-family: 'EB Garamond', serif;
       font-size: 26px;
       font-weight: 400;
       color: var(--text);
       margin: 2.4em 0 0.9em;
       letter-spacing: 0.01em;
-    }
-
-    .article-body h2.references-heading {
-      font-size: 20px;
-      color: var(--gold);
-      margin-top: 3em;
-    }
-    .article-figure {
-      margin: 2em 0;
-      display: block;
-    }
-    .article-figure img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border: 1px solid var(--panel-border);
-    }
-    .article-figure figcaption {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      opacity: 0.8;
-      margin-top: 12px;
-      line-height: 1.5;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
     }
   </style>
   <link rel="manifest" href="/site.webmanifest">
@@ -174,14 +129,6 @@ a { color: var(--gold); text-decoration: none; }
 </main>
 
   <button id="back-to-top" aria-label="Back to top">↑</button>
-
-  <script>
-  const btt = document.getElementById('back-to-top');
-  window.addEventListener('scroll', () => {
-    btt.classList.toggle('visible', window.scrollY > 400);
-  }, { passive: true });
-  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-</script>
 
   <script src="/js/writing-nav.js" defer></script>
 </body>

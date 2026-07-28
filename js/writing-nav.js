@@ -41,3 +41,15 @@ const nav_pages = [
 
   nav_el.innerHTML = html;
 })();
+
+// back-to-top button (shared across all subpages)
+// replaces the inline <script> that was duplicated in every page.
+// threshold: 400px | variable: btt | arrow: ↑ (literal unicode)
+(function () {
+  const btt = document.getElementById('back-to-top');
+  if (!btt) return;
+  window.addEventListener('scroll', () => {
+    btt.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+})();
