@@ -19,8 +19,8 @@ orbital modeling.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap"></noscript>
   <script>
     MathJax = {
       tex: {
@@ -31,12 +31,7 @@ orbital modeling.">
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
-body { 
-      background: var(--bg); 
-      color: var(--text); 
-      font-family: 'Spectral', Georgia, serif; 
-      line-height: 1.72; 
-    }
+
 
     
     
@@ -60,7 +55,17 @@ body {
       font-weight: 400; line-height: 1.1; margin-bottom: 30px; 
     }
 
-    .article-content p { font-size: clamp(16px, 1.2vw + 12px, 18px); color: var(--text-dim); margin-bottom: 24px; line-height: 1.8; }
+    .article-content p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; }
+
+    .bibliography h2 {
+      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400;
+      color: var(--text); margin: 0 0 24px;
+      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;
+    }
+
+    .bibliography p {
+      font-size: 15px;
+    }
     
     .article-content h2 { 
       font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400; 
@@ -89,13 +94,16 @@ body {
       border-top: 1px solid var(--panel-border);
       padding-top: 20px;
     }
+
 @media (max-width: 740px) {.article-container { padding: 0 24px; margin-top: 100px; } 
+      .article-content h2 { font-size: 22px; margin: 40px 0 20px; }
       figure { padding: 10px; }}
 
   @media print {
     nav, #back-to-top, #trail-toggle, #trail-panel, .epilepsy-modal,
     .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
     body { background: #fff !important; color: #000 !important; font-size: 12pt; line-height: 1.6; }
+    
     h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
     p, blockquote { orphans: 3; widows: 3; }
     a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
@@ -177,6 +185,16 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
     <h2>5. Spectroscopic Follow-up and Future Work</h2>
     <p>This photometric aliasing problem is the primary driver for our transition to high-resolution spectroscopy. By obtaining phase-constrained spectra with ESPRESSO, we can test the merger hypothesis directly against these abundance signatures. The spectroscopic approach sidesteps the sampling limits that make ground-based photometric period searches unreliable for this system. As Co-Investigator and primary author of the Science Justification, I am currently preparing a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki.</p>
     
+  </div>
+
+  <div class="bibliography">
+    <h2>References</h2>
+    <p>Chandrasekhar, S. (1933). <em>The Equilibrium of Distorted Polytropes. II. The Tidal Distortion and the Periods of Small Free Oscillations.</em> MNRAS, 93, 462.</p>
+    <p>Neilson, H. R. et al. (2015). The occurrence of classical Cepheids in binary systems. <em>A&amp;A</em>, 580, A42. <a href="https://doi.org/10.1051/0004-6361/201424408" target="_blank" rel="noopener">doi:10.1051/0004-6361/201424408<span class="sr-only"> (opens in new tab)</span></a></p>
+<p>Espinoza-Arancibia, N. &amp; Pilecki, B. (2025). A Novel <i> q</i>-PED Method: Precise Physical Properties of a Merger-origin Binary Cepheid OGLE-LMC-CEP-1347.  <em>ApJ</em> 981 L35. <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener">doi:10.3847/2041-8213/adb96b<span class="sr-only"> (opens in new tab)</span></a></p>
+    <p>Pilecki, B. et al. (2022). Discovery of a Binary-origin Classical Cepheid in a Binary System with a 59 day Orbital Period.  <em>ApJ</em> 940 L48. <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener">doi:10.3847/2041-8213/ac9fcc<span class="sr-only"> (opens in new tab)</span></a></p>
+    <p>Martin, R. G. et al. (2024). Lithium-rich Cepheid V470 Cas.  <em>A&amp;A</em> 683 L6. <a href="https://doi.org/10.1051/0004-6361/202349022" target="_blank" rel="noopener">doi:10.1051/0004-6361/202349022<span class="sr-only"> (opens in new tab)</span></a></p>
+    <p>Udalski, A., Szymański, M. K., &amp; Szymański, G. (2015). OGLE-IV: Fourth Phase of the Optical Gravitational Lensing Experiment. <em>Acta Astronomica</em>, 65, 1. <a href="https://doi.org/10.48550/arXiv.1504.05966" target="_blank" rel="noopener">arXiv:1504.05966<span class="sr-only"> (opens in new tab)</span></a></p>
   </div>
 </main>
   

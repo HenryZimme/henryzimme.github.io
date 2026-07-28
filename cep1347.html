@@ -19,64 +19,17 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap"></noscript>
+  <link rel="stylesheet" href="/css/subpages.css">
   <style>
+    /* page-specific tokens (subpages.css provides the rest) */
     :root {
-      --bg:           #07091a;
-      --gold:         #c4a258;
-      --gold-dim:     rgba(196,162,88,0.25);
-      --text:         #e2ddd4;
-      --text-dim:     rgba(226,221,212,0.72);
-      --panel-border: rgba(196,162,88,0.2);
       --red:          #f87171;
       --green:        #86efac;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'EB Garamond', serif;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-
-    /* ── nav ── */
-    nav {
-      position: fixed;
-      top: 0; width: 100%;
-      padding: 24px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 200;
-      background: linear-gradient(to bottom, var(--bg) 70%, transparent 100%);
-    }
-
-    .nav-name {
-      font-family: 'JetBrains Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: 13px;
-      color: var(--gold);
-      text-decoration: none;
-    }
-
-    .nav-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
 
     /* ── sim viewport ── */
     #sim-section {
@@ -119,7 +72,7 @@
       transition: opacity 0.4s ease;
     }
 
-    /* HUD: stats top-left, inside star area */
+    /* HUD: stats top-left */
     #hud-stats {
       position: absolute;
       top: 72px; left: 20px;
@@ -158,14 +111,11 @@
       flex-shrink: 0;
     }
 
-    .hud-phase-row {
-      margin-top: 4px;
-    }
+    .hud-phase-row { margin-top: 4px; }
 
-    /* mode buttons: positioned above the plot panel */
+    /* mode buttons */
     #mode-bar {
       position: absolute;
-      /* sits just above the plot panel */
       bottom: calc(28vh + 18px);
       left: 50%;
       transform: translateX(-50%);
@@ -188,6 +138,7 @@
       white-space: nowrap;
     }
     .btn-mode:hover { color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.35); }
+    .btn-mode:disabled { cursor: default; opacity: 0.55; }
 
     /* orbital params strip */
     #orb-params {
@@ -204,13 +155,12 @@
       z-index: 10;
     }
 
-    /* plot panel: bottom 28% of viewport, drawn into by canvas */
+    /* plot panel */
     #hud-plot-container {
       position: absolute;
       left: 0; right: 0;
       bottom: 0;
       height: 28vh;
-      /* transparent — canvas draws into this region */
       pointer-events: none;
       z-index: 5;
     }
@@ -233,173 +183,7 @@
       50% { opacity: 1; }
     }
 
-    /* ── explanation section ── */
-    #explanation {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 100px 24px 100px;
-    }
-
-    .exp-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--gold);
-      letter-spacing: 0.2em;
-      margin-bottom: 12px;
-    }
-
-    .exp-title {
-      font-size: clamp(28px, 4vw, 40px);
-      font-weight: 400;
-      line-height: 1.1;
-      margin: 0 0 32px;
-      color: var(--text);
-    }
-
-    .article-divider {
-      border: 0;
-      border-top: 1px solid var(--panel-border);
-      margin: 40px 0;
-    }
-
-    .exp-body p {
-      font-size: 20px;
-      margin-bottom: 28px;
-      color: var(--text-dim);
-    }
-
-    .exp-body p:first-child { color: var(--text); }
-
-    /* parameter table */
-    .param-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 40px 0;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-    }
-
-    .param-table th {
-      text-align: left;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--gold);
-      padding: 10px 0;
-      border-bottom: 1px solid var(--panel-border);
-      font-weight: 400;
-    }
-
-    .param-table td {
-      padding: 9px 0;
-      border-bottom: 1px solid rgba(196,162,88,0.08);
-      color: var(--text-dim);
-      vertical-align: top;
-    }
-
-    .param-table td:first-child {
-      color: rgba(255,255,255,0.45);
-      width: 55%;
-    }
-
-    .param-table td:last-child {
-      text-align: right;
-      color: var(--text);
-    }
-
-    /* mode guide */
-    .mode-guide {
-      margin: 40px 0;
-    }
-
-    .mode-item {
-      display: flex;
-      gap: 20px;
-      padding: 16px 0;
-      border-bottom: 1px solid rgba(196,162,88,0.08);
-    }
-
-    .mode-item:first-child { border-top: 1px solid rgba(196,162,88,0.08); }
-
-    .mode-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--gold);
-      width: 90px;
-      flex-shrink: 0;
-      padding-top: 3px;
-    }
-
-    .mode-desc {
-      font-size: 17px;
-      color: var(--text-dim);
-    }
-
-    /* references */
-    .ref-list {
-      margin-top: 40px;
-      list-style: none;
-    }
-
-    .ref-list li {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      color: rgba(255,255,255,0.30);
-      padding: 5px 0;
-      border-bottom: 1px solid rgba(196,162,88,0.05);
-      line-height: 1.5;
-    }
-
-    .ref-list a {
-      color: rgba(196,162,88,0.55);
-      text-decoration: none;
-    }
-    .ref-list a:hover { color: var(--gold); }
-
-    /* footer nav */
-    .footer-nav {
-      margin-top: 80px;
-      padding-top: 40px;
-      border-top: 1px solid var(--panel-border);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    /* back to top */
-    #back-to-top {
-      position: fixed;
-      bottom: 40px; right: 40px;
-      background: none;
-      border: 1px solid var(--panel-border);
-      color: var(--gold);
-      width: 44px; height: 44px;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s, border-color 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 100;
-    }
-    #back-to-top.visible { opacity: 1; pointer-events: auto; }
-    #back-to-top:hover { border-color: var(--gold); }
-
-    /* mobile */
-    /* ── film mode (?film query param) ── */
-    /* hides all chrome, locks to full-viewport canvas, 1920x1080 capture ready */
-    html.film-mode body        { overflow: hidden; cursor: none; }
-    html.film-mode *           { cursor: none !important; }
-    html.film-mode nav         { display: none !important; }
-    html.film-mode #hud-stats  { top: 20px; }
-    html.film-mode #explanation { display: none !important; }
-    html.film-mode #back-to-top { display: none !important; }
-    html.film-mode #scroll-hint { display: none !important; }
-    html.film-mode #mode-bar   { display: none !important; }
-
-    /* playback controls (play/pause + speed), stacked just above the mode bar */
+    /* playback controls */
     #playback-bar {
       position: absolute;
       bottom: calc(28vh + 56px);
@@ -410,7 +194,6 @@
       gap: 6px;
       z-index: 10;
     }
-    html.film-mode #playback-bar { display: none !important; }
     #playback-bar .pb-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
@@ -419,79 +202,175 @@
       text-transform: uppercase;
       margin-left: 8px;
     }
-    .btn-mode:disabled { cursor: default; opacity: 0.55; }
-    html.film-mode #epilepsy-modal { display: none !important; }
 
-    /* fix sim section to full viewport, no overflow */
-    html.film-mode #sim-section {
-      height: 100vh;
-      width: 100vw;
-      position: fixed;
-      top: 0; left: 0;
+    
+
+    .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: 0.14em; transition: color 0.18s; }
+    .back-link:hover { color: var(--text); }
+
+    /* ── explanation section ── */
+    #explanation {
+      max-width: 800px;
+      margin: 120px auto 100px;
+      padding: 0 40px;
+    }
+    
+    .appendix-label { 
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; 
+      color: var(--gold); text-transform: uppercase; letter-spacing: 0.22em; 
+      margin-bottom: 20px; display: block; 
+    }
+    
+    .article-title { 
+      font-family: 'EB Garamond', serif; font-size: clamp(36px, 5vw, 48px); 
+      font-weight: 400; line-height: 1.1; margin-bottom: 30px; 
     }
 
-    /* plot panel: 40% of viewport in film mode (648px star area at 1080p) */
-    html.film-mode #hud-plot-container { height: 40vh; }
+    .article-content p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; }
 
-    html.film-mode #sim-preview { display: none !important; }
-    html.film-mode #orb-params  { display: none !important; }
+    .bibliography h2 {
+      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400;
+      color: var(--text); margin: 0 0 24px;
+      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;
+    }
 
-    /* film watermark: bottom-right, subtle, can be cropped */
-    #film-watermark {
-      display: none;
-      position: fixed;
-      bottom: 12px; right: 18px;
+    .bibliography p {
+      font-size: 15px;
+    }
+    
+    .article-content h2 { 
+      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400; 
+      color: var(--text); margin: 60px 0 24px; 
+      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; 
+    }
+
+    /* parameter table */
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 40px 0;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: rgba(255,255,255,0.18);
-      z-index: 50;
-      pointer-events: none;
-      user-select: none;
+      font-size: 11px;
     }
-    html.film-mode #film-watermark { display: block; }
+    .param-table th {
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--panel-border);
+      font-weight: 400;
+    }
+    .param-table td {
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.08);
+      color: var(--text-dim);
+      vertical-align: top;
+    }
+    .param-table td:first-child {
+      color: rgba(255,255,255,0.45);
+      width: 55%;
+    }
+    .param-table td:last-child {
+      text-align: right;
+      color: var(--text);
+    }
 
-    /* film diagnostics bar: top-right, shows canvas px for verification */
-    #film-diag {
-      display: none;
-      position: fixed;
-      top: 14px; right: 18px;
+    /* section headings (outside .article-content) */
+    #explanation h2 {
+      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400;
+      color: var(--text); margin: 60px 0 24px;
+      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;
+    }
+
+    /* mode guide */
+    .mode-item {
+      display: flex;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(196,162,88,0.08);
+    }
+    .mode-item:first-child { border-top: 1px solid rgba(196,162,88,0.08); }
+    .mode-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
+      color: var(--gold);
+      width: 90px;
+      flex-shrink: 0;
+      padding-top: 3px;
+    }
+    .mode-desc {
+      font-family: 'EB Garamond', serif;
+      font-size: 17px;
+      color: var(--text-dim);
+      line-height: 1.72;
+      margin-bottom: 24px;
+    }
+
+    /* ── film mode ── */
+    html.film-mode body        { overflow: hidden; cursor: none; }
+    html.film-mode *           { cursor: none !important; }
+    html.film-mode nav         { display: none !important; }
+    html.film-mode #hud-stats  { top: 20px; }
+    html.film-mode #explanation { display: none !important; }
+    html.film-mode #back-to-top { display: none !important; }
+    html.film-mode #scroll-hint { display: none !important; }
+    html.film-mode #mode-bar   { display: none !important; }
+    html.film-mode #playback-bar { display: none !important; }
+    html.film-mode #epilepsy-modal { display: none !important; }
+    html.film-mode #sim-section {
+      height: 100vh; width: 100vw;
+      position: fixed; top: 0; left: 0;
+    }
+    html.film-mode #hud-plot-container { height: 40vh; }
+    html.film-mode #sim-preview { display: none !important; }
+    html.film-mode #orb-params  { display: none !important; }
+
+    #film-watermark {
+      display: none; position: fixed;
+      bottom: 12px; right: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.18);
+      z-index: 50; pointer-events: none; user-select: none;
+    }
+    html.film-mode #film-watermark { display: block; }
+
+    #film-diag {
+      display: none; position: fixed;
+      top: 14px; right: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; text-transform: uppercase;
+      letter-spacing: 0.12em;
       color: rgba(196,162,88,0.40);
-      z-index: 300;
-      pointer-events: none;
+      z-index: 300; pointer-events: none;
     }
     html.film-mode #film-diag { display: none; }
 
+    /* ── mobile (page-specific only; subpages.css handles nav/footer/resp) ── */
     @media (max-width: 740px) {
-      nav { padding: 20px; }
-
       #hud-stats { top: 64px; left: 12px; }
       .hud-label { width: 56px; }
-
-      #mode-bar {
-        bottom: calc(32vh + 14px);
-        gap: 4px;
-      }
-      #playback-bar {
-        bottom: calc(32vh + 48px);
-        gap: 4px;
-      }
+      #mode-bar { bottom: calc(32vh + 14px); gap: 4px; }
+      #playback-bar { bottom: calc(32vh + 48px); gap: 4px; }
       .btn-mode { font-size: 9px; padding: 5px 10px; }
-
       #orb-params { display: none; }
-
       #hud-plot-container { height: 32vh; }
-
       #scroll-hint { display: none; }
+      #explanation { padding: 0 24px; margin-top: 100px; }
+      .mode-desc { font-size: 16px; line-height: 1.75; }
+      #explanation h2 { font-size: 22px; margin: 40px 0 20px; }
+      .article-content h2 { font-size: 22px; margin: 40px 0 20px; }
+    }
 
-      #explanation { padding: 60px 20px 80px; }
-      .exp-body p { font-size: 18px; }
-      .footer-nav { flex-direction: column; gap: 16px; }
+    /* ── print: hide sim chrome (subpages.css handles the rest) ── */
+    @media print {
+      #sim-section, #epilepsy-modal, .modal-overlay,
+      #film-watermark, #film-diag, #mode-bar, #playback-bar,
+      #scroll-hint, #orb-params, #hud-stats, #hud-plot-container { display: none !important; }
     }
   </style>
   <link rel="manifest" href="/site.webmanifest">
@@ -503,7 +382,7 @@
   <!-- nav -->
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#research" class="nav-back">← Back to Research</a>
+    <a href="index.html#research" class="back-link">← Back to Research</a>
   </nav>
 
   <div id="film-watermark">henryzimmerman.net &nbsp;&middot;&nbsp; OGLE-LMC-CEP-1347 &nbsp;&middot;&nbsp; 2026</div>
@@ -513,7 +392,7 @@
   <div id="epilepsy-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(7,9,26,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
     <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
       <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
-      <p style="font-size:13px;color:rgba(226,221,212,0.85);line-height:1.7;margin-bottom:1.5rem;">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
+      <p style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: rgba(226,221,212,0.85); line-height: 1.7; margin-bottom: 1.5rem;">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
       <div style="display:flex;gap:1rem;">
         <button onclick="document.getElementById('epilepsy-modal').style.display='none';" style="flex:1;padding:0.6rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">Cancel</button>
         <button onclick="document.getElementById('epilepsy-modal').style.display='none';window.setMode('realtime');" style="flex:1;padding:0.6rem;background:rgba(196,162,88,0.12);border:1px solid rgba(196,162,88,0.4);border-radius:6px;color:#c4a258;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">I understand, continue</button>
@@ -592,12 +471,12 @@
 
   <!-- explanation -->
   <section id="explanation">
-    <div class="exp-meta">Binary Cepheid &middot; Large Magellanic Cloud</div>
-    <h1 class="exp-title">OGLE-LMC-CEP-1347</h1>
+    <span class="appendix-label">Binary Cepheid &middot; Large Magellanic Cloud</span>
+    <h1 class="article-title">OGLE-LMC-CEP-1347</h1>
 
     <hr class="article-divider">
 
-    <div class="exp-body">
+    <div class="article-content">
 
       <p>OGLE-LMC-CEP-1347 is a Cepheid variable in the Large Magellanic Cloud, roughly 165,000 light-years away, that by standard stellar evolution theory should not exist. The simulation above, built from OGLE-IV photometry spanning 2010&ndash;2016 (187 epochs) and spectroscopic radial velocities from Pilecki et al. (2022), shows the Cepheid (amber) and its companion (red) orbiting in 58.85 days, the tightest orbit known for any Cepheid (Pilecki et al. 2022).</p>
 
@@ -608,8 +487,7 @@
     </div>
 
     <!-- parameter table -->
-    <hr class="article-divider">
-    <div class="exp-meta" style="margin-bottom:20px">System Parameters</div>
+    <h2>System Parameters</h2>
     <table class="param-table">
       <thead>
         <tr>
@@ -635,8 +513,7 @@
     </table>
 
     <!-- mode guide -->
-    <hr class="article-divider">
-    <div class="exp-meta" style="margin-bottom:20px">Simulation Modes</div>
+    <h2>Simulation Modes</h2>
     <div class="mode-guide">
       <div class="mode-item">
         <div class="mode-label">Orbital</div>
@@ -653,26 +530,23 @@
     </div>
 
     <!-- physics note -->
-    <hr class="article-divider">
-    <div class="exp-meta" style="margin-bottom:16px">Physics Notes</div>
-    <div class="exp-body">
-      <p style="font-size:17px;font-style:italic;color:var(--text-dim);margin-bottom:16px;">The notes below are for readers who want to see the methodology. The simulation and prose above stand on their own.</p>
-      <p style="font-size:17px">Orbital positions are interpolated from a precomputed skeleton derived from the Pilecki+ 2022 double-lined solution. The Cepheid radius is computed analytically via Baade-Wesselink integration of a 2nd-order Fourier fit to the pulsation radial velocity residuals (R&sup2; = 0.927), using projection factor p = 1.27 (calibrated on fundamental-mode Cepheids; ~5&ndash;10% systematic for this first-overtone/second-overtone pulsator). The light curve and temperature color are derived from phase-folded OGLE-IV photometry. All physical parameters are from Espinoza-Arancibia &amp; Pilecki (2025, ApJ 981 L35) and Pilecki et al. (2022, ApJ 940 L48).</p>
+    <h2>Methods Notes</h2>
+    <div class="article-content">
+      <p>Orbital positions are interpolated from a precomputed skeleton derived from the Pilecki+ 2022 double-lined solution. The Cepheid radius is computed analytically via Baade-Wesselink integration of a 2nd-order Fourier fit to the pulsation radial velocity residuals (R&sup2; = 0.927), using projection factor p = 1.27 (calibrated on fundamental-mode Cepheids; ~5&ndash;10% systematic for this first-overtone/second-overtone pulsator). The light curve and temperature color are derived from phase-folded OGLE-IV photometry. All physical parameters are from Espinoza-Arancibia &amp; Pilecki (2025) and Pilecki et al. (2022).</p>
     </div>
 
     <!-- references -->
-    <hr class="article-divider">
-    <div class="exp-meta" style="margin-bottom:16px">Data &amp; References</div>
-    <ul class="ref-list">
-      <li>Espinoza-Arancibia &amp; Pilecki 2025, ApJ 981 L35 &middot; <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener">doi:10.3847/2041-8213/adb96b<span class="sr-only"> (opens in new tab)</span></a></li>
-      <li>Pilecki et al. 2022, ApJ 940 L48 &middot; <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener">doi:10.3847/2041-8213/ac9fcc<span class="sr-only"> (opens in new tab)</span></a></li>
-      <li>Martin et al. 2024, A&amp;A 683 L6 &middot; <a href="https://doi.org/10.1051/0004-6361/202349022" target="_blank" rel="noopener">doi.org/10.1051/0004-6361/202349022<span class="sr-only"> (opens in new tab)</span></a> &middot; Li-rich double-mode Cepheid survey</li>
-      <li>OGLE-IV V-band photometry: 187 epochs, HJD 2455260&ndash;2459660</li>
-    </ul>
+    <div class="bibliography">
+      <h2>References</h2>
+      <p>Espinoza-Arancibia, N. &amp; Pilecki, B. (2025). A Novel <i> q</i>-PED Method: Precise Physical Properties of a Merger-origin Binary Cepheid OGLE-LMC-CEP-1347.  <em>ApJ</em> 981 L35. <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener">doi:10.3847/2041-8213/adb96b<span class="sr-only"> (opens in new tab)</span></a></p>
+      <p>Pilecki, B. et al. (2022). Discovery of a Binary-origin Classical Cepheid in a Binary System with a 59 day Orbital Period.  <em>ApJ</em> 940 L48. <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener">doi:10.3847/2041-8213/ac9fcc<span class="sr-only"> (opens in new tab)</span></a></p>
+      <p>Martin, R. G. et al. (2024). Lithium-rich Cepheid V470 Cas.  <em>A&amp;A</em> 683 L6. <a href="https://doi.org/10.1051/0004-6361/202349022" target="_blank" rel="noopener">doi:10.1051/0004-6361/202349022<span class="sr-only"> (opens in new tab)</span></a></p>
+      <p>Udalski, A., Szymański, M. K., &amp; Szymański, G. (2015). OGLE-IV: Fourth Phase of the Optical Gravitational Lensing Experiment. <em>Acta Astronomica</em>, 65, 1. <a href="https://doi.org/10.48550/arXiv.1504.05966" target="_blank" rel="noopener">arXiv:1504.05966<span class="sr-only"> (opens in new tab)</span></a></p>
+    </div>
 
     <footer class="footer-nav">
-      <a href="index.html#research" class="nav-back">← Back to Research</a>
-      <a href="1347_methods.html" class="nav-back">Methods &amp; Diagnostic Analysis →</a>
+      <a href="index.html#research" class="back-link">← Back to Research</a>
+      <a href="1347_methods.html" class="back-link">Methods &amp; Diagnostic Analysis →</a>
     </footer>
   </section>
 
@@ -737,12 +611,17 @@
 
   <!-- back to top -->
   <script>
-    let btt = document.getElementById('back-to-top');
-    window.addEventListener('scroll', function() {
-      if (window.pageYOffset > 300) btt.classList.add('visible');
-      else btt.classList.remove('visible');
-    });
-    btt.addEventListener('click', function() {
+    const backToTopBtn = document.getElementById('back-to-top');
+
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 500) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    backToTopBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   </script>

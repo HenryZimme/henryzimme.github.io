@@ -2,7 +2,7 @@
    subpages.css: shared chrome for all subpages
    covers: tokens, reset, nav, article scaffold, back-to-top, footer-nav,
            skip link, focus-visible, reduced-motion
-   each page's <style> block keeps only its page-specific overrides
+   each page's  block keeps only its page-specific overrides
 */
 
 /* tokens */
@@ -29,8 +29,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'EB Garamond', Georgia, serif;
-  font-size: 19px;
-  line-height: 1.65;
+  font-size: 17px;
+  line-height: 1.72;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -141,7 +141,7 @@ nav {
 }
 
 .article-body p {
-  font-size: 20px;
+  font-size: 17px;
   margin-bottom: 1.4em;
 }
 
@@ -213,7 +213,12 @@ sup a:hover { text-decoration: underline; }
 }
 .footnote-back:hover { text-decoration: underline; }
 
-/* bib */
+/* bibliography */
+.bibliography {
+  margin-top: 3em;
+  border-top: 1px solid var(--panel-border);
+  padding-top: 1.5em;
+}
 .bibliography p {
   font-size: 15px;
   color: var(--text-dim);
@@ -221,6 +226,14 @@ sup a:hover { text-decoration: underline; }
   line-height: 1.65;
   padding-left: 1.5em;
   text-indent: -1.5em;
+}
+.bibliography a {
+  color: rgba(196, 162, 88, 0.7);
+  text-decoration: none;
+}
+.bibliography a:hover {
+  color: var(--gold);
+  text-decoration: underline;
 }
 
 /* footer nav */
@@ -296,8 +309,6 @@ sup a:hover { text-decoration: underline; }
 @media (max-width: 740px) {
   nav { padding: 18px 20px; }
 
-  /* more breathing room on narrow screens;
-     18px was too tight for Garamond at body size */
   .article-wrap { padding: 88px 22px 68px; }
 
   /* long-form reading needs slightly more vertical breathing room on mobile */
@@ -322,6 +333,11 @@ sup a:hover { text-decoration: underline; }
   .footnotes li {
     font-size: 13px;
     line-height: 1.62;
+  }
+
+  /* bibliography: tighten on mobile */
+  .bibliography p {
+    font-size: 13px;
   }
 
   /* footer nav links: stack vertically so they don't
@@ -361,6 +377,9 @@ sup a:hover { text-decoration: underline; }
 
   img, figure, picture { max-width: 100% !important; page-break-inside: avoid; }
   pre, code { white-space: pre-wrap; border: 1px solid #ccc; padding: 4px; }
+
+  .bibliography { border-top-color: #ccc; }
+  .bibliography a { color: #7a5c10; }
 }
 /* utility: visually hidden but accessible to screen readers */
 .sr-only {
