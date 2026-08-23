@@ -22,198 +22,16 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
-.article-body h3 {
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      font-style: italic;
-      color: var(--text-dim);
-      margin: 2em 0 0.7em;
-    }
-
-    /* Extended styles for Believing Belief */
-    
-    .intro-graf {
-      font-size: 19px;
-      line-height: 1.65;
+    .article-body h2 a {
       color: var(--text);
-      margin-bottom: 1.6em;
-    }
-
-    .quote-callout {
-      font-family: 'EB Garamond', serif;
-      font-style: italic;
-      font-size: 20px;
-      line-height: 1.5;
-      color: var(--text-dim);
-      margin: 2.4em 0;
-      padding-left: 1.5em;
-      border-left: 2px solid var(--gold-dim);
-    }
-
-    .theme-grid {
-      margin: 2.4em 0;
-    }
-
-    .theme-card {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      padding: 1.8em;
-      margin-bottom: 1.4em;
-      transition: border-color 0.2s ease;
-    }
-
-    .theme-card:hover {
-      border-color: var(--gold-dim);
-    }
-
-    .theme-card h3 {
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 500;
-      font-style: normal;
-      color: var(--gold);
-      margin: 0 0 0.6em 0;
-    }
-
-    .theme-card p {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.65;
-      color: var(--text-dim);
-    }
-
-    .excerpt-container {
-      background: var(--panel);
-      border-left: 3px solid var(--gold);
-      padding: 1.8em;
-      margin: 2.4em 0;
-    }
-
-    .excerpt-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 1.2em;
-      gap: 1em;
-      flex-wrap: wrap;
-    }
-
-    .excerpt-title {
-      font-family: 'EB Garamond', serif;
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--gold);
-    }
-
-    .excerpt-timestamp {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.05em;
-    }
-
-    .excerpt-text {
-      font-size: 16px;
-      line-height: 1.7;
-      color: var(--text-dim);
-    }
-
-    .excerpt-text p {
-      margin-bottom: 1.2em;
-    }
-
-    .excerpt-text p:last-child {
-      margin-bottom: 0;
-    }
-
-    .speaker {
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .cta-box {
-      background: linear-gradient(135deg, 
-        rgba(196,162,88,0.08) 0%, 
-        rgba(120,165,210,0.06) 100%);
-      border: 1px solid var(--panel-border);
-      padding: 2.4em;
-      margin: 3em 0;
-      text-align: center;
-    }
-
-    .cta-box h2 {
-      font-family: 'EB Garamond', serif;
-      font-size: 24px;
-      font-weight: 400;
-      margin: 0 0 0.6em 0;
-      color: var(--text);
-    }
-
-    .cta-box p {
-      margin-bottom: 1.4em;
-      color: var(--text-dim);
-    }
-
-    .btn-primary {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      background: transparent;
-      color: var(--gold);
-      border: 1px solid var(--gold-dim);
-      padding: 12px 28px;
       text-decoration: none;
-      transition: all 0.2s ease;
-      margin: 6px;
+      border-bottom: 1px solid rgba(226, 221, 212, 0.4);
+      transition: border-color 0.15s, color 0.15s;
     }
-
-    .btn-primary:hover {
-      background: var(--gold-dim);
-      border-color: var(--gold);
-      text-decoration: none;
-    }
-
-    .btn-secondary {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      background: transparent;
-      color: var(--text-dim);
-      border: 1px solid var(--panel-border);
-      padding: 12px 28px;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      margin: 6px;
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--gold-dim);
+    .article-body h2 a:hover {
       color: var(--gold);
+      border-bottom-color: var(--gold-dim);
       text-decoration: none;
-    }
-
-    .topic-list {
-      margin: 1.4em 0;
-    }
-
-    .topic-list p {
-      margin-bottom: 1em;
-    }
-
-    footer {
-      margin-top: 4em;
-      padding-top: 2em;
-      border-top: 1px solid var(--panel-border);
-    }
-
-    @media (max-width: 740px) {
-      .excerpt-header { flex-direction: column; gap: 0.4em; }
-      .cta-box { padding: 1.8em 1.4em; }
     }
   </style>
   <link rel="manifest" href="/site.webmanifest">
@@ -223,76 +41,63 @@
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
 
-
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
-    <a href="index.html#writing" class="nav-back">← Back to Writing</a>
+    <a href="index.html#writing" class="nav-back">&larr; Back to Writing</a>
   </nav>
 
   <main id="main">
   <article class="article-wrap">
     <header>
-      <div class="article-meta">Philosophy &amp; Epistemology &middot; Collaborative Project</div>
+      <div class="article-meta">Philosophy &amp; Epistemology &middot; Winter 2025</div>
       <h1 class="article-title">Believing Belief</h1>
       <div class="article-byline">Henry Zimmerman and Genie Han</div>
       <div class="article-context">
         A philosophical podcast series examining theodicy, divine perfection, and the epistemology of religious faith.<br>
-        Developed in Winter 2025 for PHR380: Faith and Doubt at Phillips Academy Andover
+        Developed for PHR380: Faith and Doubt at Phillips Academy Andover<br>
+        <a href="https://sites.google.com/view/faith-and-doubt/home" target="_blank" rel="noopener">Full project site &#8599;</a>
       </div>
     </header>
-    
+
     <hr class="article-divider">
 
     <div class="article-body">
-      <p class="intro-graf">What are the fundamental beliefs by which we live? How do we form, inform, and reform these beliefs?</p>
-      
-      <p class="intro-graf">Alongside my classmate Genie Han, I co-created <em>Believing Belief</em>, a podcast series and philosophical website exploring the nature of belief itself. Our conversations tackle the questions that philosophy has grappled with for centuries: Can we prove God's existence? If not, what role does faith play? How do we reconcile suffering with divine perfection? And ultimately, what kind of knowledge can we truly possess?</p>
 
-      <div class="quote-callout">
-        "We hope this series leads you to re-examine your beliefs, and, ultimately what belief is and how it helps us address some of our most profound questions."
-      </div>
+      <p>What are the fundamental beliefs by which we live? How do we form, inform, and reform these beliefs?</p>
 
-      <h2>Themes Explored</h2>
-      
-      <div class="theme-grid">
-        <div class="theme-card">
-          <h3>Theodicy & The Evil Demon</h3>
-          <p>How do you know you're not being deceived? We examine Descartes' attempt to overcome radical skepticism through the "light of nature" and his proof of God's existence. Can subjective clarity ever establish objective truth? If God is perfect and omnipotent, can evil exist, or are we the unintended consequence of a creator who never thought about us at all?</p>
-        </div>
+      <p>Alongside my classmate Genie Han, I co-created <em>Believing Belief</em>, a podcast series and philosophical website exploring the nature of belief itself. Each episode tackles a question that philosophy has grappled with for centuries, building from Descartes&rsquo; attempt to defeat radical skepticism toward a reckoning with what knowledge we can actually possess. The full project includes episode recordings, edited transcripts, and source materials.</p>
 
-        <div class="theme-card">
-          <h3>Divine Perfection</h3>
-          <p>Descartes claims God possesses all perfections and that perfection implies existence. But we challenge this: perfection should not imply existence any more than lacking a social life implies good grades. Using the "triangle of life" (sleep, studying, socializing), we show that perfect equilibrium is impossible for finite beings, and if perfection requires absolute balance, then even God cannot simultaneously be perfect, infinite, and existent.</p>
-        </div>
+      <blockquote>&ldquo;We hope this series leads you to re-examine your beliefs, and, ultimately what belief is and how it helps us address some of our most profound questions.&rdquo;</blockquote>
 
-        <div class="theme-card">
-          <h3>Design & Intentionality</h3>
-          <p>Paley's watchmaker argument suggests the universe's complexity demands a creator. But Putnam's ant drawing Winston Churchill in the sand reveals a deeper problem: without intentionality, representation has no meaning. Were humans meant to exist? If we're an unintended consequence of creation, does that absolve God of responsibility for evil? Can there be design without a designer who knew what they were designing?</p>
-        </div>
+      <h2><a href="https://sites.google.com/view/faith-and-doubt/theodicy" target="_blank" rel="noopener">Theodicy &amp; The Evil Demon &#8599;</a></h2>
 
-        <div class="theme-card">
-          <h3>The Epistemology of Faith</h3>
-          <p>All knowledge rests on belief. Even Descartes' supposedly self-sufficient logic relies on assumptions: that he's thinking, that his logic is coherent, that he can be understood. Skepticism alone is immature: it's only useful for examining our convictions, not tearing down all reason. The real question isn't whether we can achieve objective truth, but what we've learned, what knowledge we can have, and how skepticism has strengthened belief.</p>
-        </div>
-      </div>
+      <p>How do you know you&rsquo;re not being deceived? Descartes invokes the &ldquo;light of nature&rdquo; to escape the Evil Demon problem, arguing that God would not allow him to be deceived in anything he clearly and distinctly perceives. We push back: if the light of nature delivers subjective truth, and God&rsquo;s existence is proved through that subjective mechanism, then the proof itself remains subjective &mdash; which means the Evil Demon doesn&rsquo;t need to be disproved at all.</p>
 
-      <div class="cta-box">
-        <h2>Explore the Full Project</h2>
-        <p>The complete <em>Believing Belief</em> project includes episode transcripts, source materials, and comprehensive explorations of each theme.</p>
-        <a href="https://sites.google.com/view/faith-and-doubt/home" class="btn-primary" target="_blank" rel="noopener noreferrer">Visit Believing Belief →<span class="sr-only"> (opens in new tab)</span></a>
-      </div>
+      <h2><a href="https://sites.google.com/view/faith-and-doubt/perfection" target="_blank" rel="noopener">Perfection, Existence, &amp; Infinity &#8599;</a></h2>
 
-      <div class="quote-callout" style="margin-top: 3em;">
-        "Emerging from the cave... as former prisoners... or still imprisoned?"
-      </div>
+      <p>Descartes claims God possesses all perfections and that perfection implies existence. But we challenge this: perfection should not imply existence any more than lacking a social life implies good grades. Using the &lpar;triangle of life&rpar; (sleep, studying, socializing), we show that perfect equilibrium is impossible for finite beings, and if perfection requires absolute balance, then even God cannot simultaneously be perfect, infinite, and existent.</p>
+
+      <h2><a href="https://sites.google.com/view/faith-and-doubt/design-intentionality" target="_blank" rel="noopener">Design &amp; Intentionality &#8599;</a></h2>
+
+      <p>Paley&rsquo;s watchmaker argument suggests that the universe&rsquo;s complexity demands a creator. But Putnam&rsquo;s ant drawing Winston Churchill in the sand gives us a deeper problem: without intentionality, representation has no meaning. If our creator set the universe in motion without intending to create us humans specifically, we can then question if we were even meant to exist. And if we weren&rsquo;t an intended consequence of creation,  does that absolve the creator of responsibility for evil?</p>
+
+      <h2><a href="https://sites.google.com/view/faith-and-doubt/gods-nature" target="_blank" rel="noopener">God&rsquo;s Nature &#8599;</a></h2>
+
+      <p>If you asked Descartes, Paley, and Aquinas each to define God, you wouldn't know from their answers that you asked them all the same question. Descartes characterizes God as something infinite, independent, and supremely intelligent, the source of all existence. Paley requires only that a creator existed at some point with enough power and intelligence to set creation in motion. And Aquinas argues that us humans cannot know God&rsquo;s essence at all. We then ask: can we even think about God, or have we created a God in our own image by the very act of giving one a definition?</p>
+
+      <h2><a href="https://sites.google.com/view/faith-and-doubt/finding-faith" target="_blank" rel="noopener">Finding Faith &#8599;</a></h2>
+
+      <p>All knowledge rests on belief. Even Descartes&rsquo; supposedly self-sufficient logic relies on assumptions: that he&rsquo;s thinking, that his logic is coherent, that he can be understood. Skepticism alone is immature: it&rsquo;s  only useful for examining our convictions, not for tearing down all reason. John Wisdom&rsquo;s invisible gardener parable asks us whether the difference between a believer and a non-believer is who they think is tending to the garden. The real question isn&rsquo;t whether we can achieve objective truth, but what kind of knowledge we can have, and how our skepticism has strengthened belief.</p>
+
+      <blockquote>&ldquo;Emerging from the cave&hellip; as former prisoners&hellip; or still imprisoned?&rdquo;</blockquote>
+
     </div>
 
     <footer class="footer-nav"></footer>
   </article>
 </main>
 
-  <button id="back-to-top" aria-label="Back to top">↑</button>
-
+  <button id="back-to-top" aria-label="Back to top">&uarr;</button>
   <script src="/js/writing-nav.js" defer></script>
 </body>
 </html>
