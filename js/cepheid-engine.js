@@ -1918,6 +1918,25 @@
     syncPlaybackUI();
   };
 
+  // ── page controls: bind the DOM buttons directly ────────────────────────────
+  // bind mode/speed/play buttons
+  (function bindPageControls() {
+    var modeBtns = { 'btn-orbital': 'orbital', 'btn-pulsation': 'pulsation' };
+    Object.keys(modeBtns).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', function () { window.setMode(modeBtns[id]); });
+    });
+    var play = document.getElementById('btn-play');
+    if (play) play.addEventListener('click', function () { window.cepTogglePlay(); });
+    var speedBtns = { 'btn-speed-half': 0.5, 'btn-speed-1': 1, 'btn-speed-2': 2 };
+    Object.keys(speedBtns).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', function () { window.cepSetSpeed(speedBtns[id]); });
+    });
+    // btn-realtime deliberately NOT bound here: it opens the photosensitivity
+    // warning modal, which the page scripts own (main.js / cep1347 inline).
+  })();
+
   // ── resize ─────────────────────────────────────────────────────────────────
 
   function resize() {

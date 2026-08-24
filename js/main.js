@@ -717,7 +717,7 @@ let legend_col_w = 0; // measured once after font loads
 function draw_canvas_legend() {
   const items = legend_items;
   ctx.save();
-  ctx.font = '600 10px "JetBrains Mono", monospace';
+  ctx.font = '500 10px "JetBrains Mono", monospace'; // 500: a weight every page actually loads (was 600 — synthesized)
   ctx.textBaseline = 'middle';
 
   // Legend pills are rendered as HTML elements now (see #sky-legend and the
@@ -977,7 +977,7 @@ function on_click(e) {
   // suppress the synthetic click the browser fires ~300ms after touchend
   if (performance.now() - last_touch_action_ts < 600) return;
   // ignore clicks that originated on UI elements layered above the canvas
-  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card') || e.target.closest('#sky-legend') || e.target.closest('.trail-word') || e.target.closest('#trail-card') || e.target.closest('#trail-toggle')) return;
+  if (e.target.closest('.book-spine') || e.target.closest('#star-popover') || e.target.closest('.project-card') || e.target.closest('#sky-legend') || e.target.closest('.trail-word') || e.target.closest('#trail-card')) return;
   if (!canvas_exposed_at(e.clientX, e.clientY)) return;
 
   // fresh inline scan for featured stars, hover_star may be stale from previous
@@ -1555,12 +1555,12 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       const id = entry.target.id;
-      
+
       // 1. Update the active class in the navigation
       nav_links_array.forEach(link => {
         link.classList.toggle('active', link.getAttribute('href') === '#' + id);
       });
-      
+
       // 2. Silently update the browser's URL bar without jumping the page.
       // Wrapped: sandboxed contexts (e.g. an about:srcdoc preview iframe) throw a
       // SecurityError on any history mutation, since no URL can be constructed that
@@ -1674,13 +1674,15 @@ setTimeout(() => {
   }, 2500);
 }, 1200);
 
+// shared contact address
+const CONTACT_EMAIL = ['henry.s.zimmer', 'man', '@gmail.com'].join(''); // 3mAiI 0bfusciati0n
+
 (function() {
-  const u = ['henry.s.zimmer', 'man', '@gmail.com'].join(''); // 3mAiI 0bfusciati0n
   const el = document.getElementById('contact-email');
   if (el) {
     const a = document.createElement('a');
-    a.href = 'mailto:' + u;
-    a.textContent = u;
+    a.href = 'mailto:' + CONTACT_EMAIL;
+    a.textContent = CONTACT_EMAIL;
     a.style.color = 'var(--blue)';
     a.style.textDecoration = 'none';
     a.addEventListener('mouseenter', () => a.style.textDecoration = 'underline');
@@ -1894,10 +1896,9 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
       const emailEl = document.getElementById('trail-connect-email');
       if (msgEl && !msgEl.textContent) {
         msgEl.textContent = "You made it this far, so I'd love to know what you thought.";
-        const u = ['henry.s.zimmer', 'man', '@gmail.com'].join('');
         const a = document.createElement('a');
-        a.href = 'mailto:' + u;
-        a.textContent = u;
+        a.href = 'mailto:' + CONTACT_EMAIL;
+        a.textContent = CONTACT_EMAIL;
         a.className = 'trail-connect-link';
         emailEl.appendChild(a);
         document.getElementById('trail-connect').classList.add('trail-connect-show');

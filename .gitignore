@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# logs & editors
+*.log
+.vscode/
+.idea/
+
+# local preview artifacts
+*.swp

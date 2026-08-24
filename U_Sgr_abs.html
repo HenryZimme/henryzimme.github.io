@@ -18,80 +18,19 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
-    
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Spectral', Georgia, serif;
-      font-size: 17px;
-      line-height: 1.75;
-    }
-    
-    .article-wrap {
-      max-width: 65ch;
-      margin: 0 auto;
-      padding: 120px 28px 100px;
-    }
-    
-    .article-title {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(26px, 5vw, 40px);
-      font-weight: 400;
-      line-height: 1.2;
-      color: var(--text);
-      margin-bottom: 10px;
-    }
+    /* Scaffold (body, article-wrap, title, body p/h2/h3, figures, captions) lives
+       in subpages.css. This block keeps ONLY page-specific pieces: the poster
+       full-bleed breakout, the white figure background for the GIF, and the
+       pulsation sim. */
 
-    .article-body p {
-      margin-bottom: 1.4em;
-      text-indent: 0;
-    }
-
-    .article-body h2 {
-      font-family: 'EB Garamond', serif;
-      font-size: 24px;
-      font-weight: 400;
-      color: var(--text);
-      margin: 2.4em 0 0.9em;
-      letter-spacing: 0.01em;
-    }
-
-    .article-body h3 {
-      font-family: 'EB Garamond', serif;
-      font-size: 20px;
-      font-weight: 400;
-      font-style: italic;
-      color: var(--text-dim);
-      margin: 2em 0 0.7em;
-    }
-
-    /* fig & img CSS */
-    .article-body figure {
-      margin: 2em 0;
-      display: block;
-    }
+    /* fig & img: white background so the GIF's transparency renders correctly */
     .article-body figure img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border: 1px solid var(--panel-border);
-      background-color: white; /* ensure GIF transparency displays correctly */
+      background-color: white;
     }
-    .article-body figcaption {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
-      color: var(--text-dim);
-      opacity: 0.7;
-      margin-top: 8px;
-      line-height: 1.5;
-      letter-spacing: 0.03em;
-    }
-
-    /* poster + button */
 
     .poster-breakout {
       width: 100vw;
@@ -105,16 +44,16 @@
 
     .poster-iframe {
       width: 100%;
-      aspect-ratio: 2.5 / 1; 
+      aspect-ratio: 2.5 / 1;
       border: 1px solid var(--panel-border);
       border-radius: 4px;
       background-color: #fff;
     }
 
     /* back to top */
-    
-    
-    
+
+
+
 
     @media (max-width: 740px) {.poster-breakout { padding: 0 18px; }
       .poster-iframe { aspect-ratio: auto; height: 400px; }}
@@ -182,9 +121,6 @@
       border-radius: 50%;
       flex-shrink: 0;
     }
-    figure#usgr-sim figcaption {
-      display: none; /* caption handled inside canvas */
-    }
     @media (max-width: 740px) {figure#usgr-sim { height: 460px; }
       #usgr-plot { height: 280px; }
       #usgr-hud { top: 10px; right: 10px; gap: 6px; }
@@ -207,13 +143,13 @@
       <h1 class="article-title">Characterizing Variability in Classical Cepheid U Sagittarii with Differential V<sub>c</sub> - I<sub>c</sub> Photometry</h1>
       <div class="article-byline">Henry Zimmerman</div>
     </header>
-    
+
     <hr class="article-divider">
 
     <div class="article-body">
       <h2>Abstract</h2>
       <p>
-        U Sagittarii is a Classical Cepheid variable star located in the Messier 25 cluster. 11 observations were made in Cousins V and I bands from 2025-10-14 to 2025-11-15 using the Slooh Chile 2 Telescope. Photometric comparison stars were selected based on angular separation, SNR, and SIMBAD magnitude. 
+        U Sagittarii is a Classical Cepheid variable star located in the Messier 25 cluster. 11 observations were made in Cousins V and I bands from 2025-10-14 to 2025-11-15 using the Slooh Chile 2 Telescope. Photometric comparison stars were selected based on angular separation, SNR, and SIMBAD magnitude.
       </p>
 
       <figure id="usgr-sim" aria-label="U Sagittarii pulsation simulation">
@@ -249,7 +185,7 @@
       </figure>
 
       <p>
-        Sinusoidal light curves with the established period of 6.74 days were fit for Cousins V and I band data, with <em>R<sup>2</sup></em> values of 0.9301 and 0.7034 respectively. A strong correlation (<em>r</em> = 0.8450) was found between V<sub>c</sub> - I<sub>c</sub> color index and V<sub>c</sub> magnitude, supporting the existence of the Kappa-mechanism. 
+        Sinusoidal light curves with the established period of 6.74 days were fit for Cousins V and I band data, with <em>R<sup>2</sup></em> values of 0.9301 and 0.7034 respectively. A strong correlation (<em>r</em> = 0.8450) was found between V<sub>c</sub> - I<sub>c</sub> color index and V<sub>c</sub> magnitude, supporting the existence of the Kappa-mechanism.
       </p>
 
       <p>
@@ -270,10 +206,10 @@
         The radius variation (green strip) is derived by integrating the pulsational component of the RV curve via the Baade-Wesselink method, using a projection factor p = 1.27 (Mérand et al. 2005, CHARA direct measurement of δ Cep; consistent with the Trahin et al. 2021 mean of p = 1.26 ± 0.07 across 63 Galactic Cepheids). The mean radius anchor uses the Trahin et al. (2021) P-R relation calibrated with Gaia EDR3 parallaxes: log R = 1.763 + 0.653(log P − 0.9), giving R<sub>mean</sub> = 52.1 R<sub>☉</sub>. This is consistent with interferometric measurements of comparable Cepheids (δ Cep at P = 5.37 d has R ≈ 43 R<sub>☉</sub> from interferometry; the Trahin relation gives 44.8 R<sub>☉</sub>). The BW integration yields a peak-to-peak radius variation of ΔR ≈ 5.4 R<sub>☉</sub> (range 48.7–54.1 R<sub>☉</sub>), with the shape being independent of the anchor.</p>
 
       <h2>View the Poster</h2>
-      
+
       <div class="poster-breakout">
-        <iframe 
-          src="/assets/documents/USgrHSZPosterWeb.pdf" 
+        <iframe
+          src="/assets/documents/USgrHSZPosterWeb.pdf"
           class="poster-iframe"
           title="U Sagittarii Poster PDF"
         >
@@ -286,9 +222,9 @@
           &darr; Download Poster PDF
         </a>
       </div>
-      
+
       <br>
-      
+
       <p style="text-align: center; margin-top: 1em;">
         <a href="/assets/documents/USgrHSZPosterWeb.pdf" target="_blank" rel="noopener"><strong>Open Poster in New Tab (PDF) &rarr;</strong></a>
       </p>
@@ -296,28 +232,12 @@
   </article>
 </main>
 
-  <button id="back-to-top" aria-label="Back to top">
-    &uarr;
-  </button>
+  <button id="back-to-top" aria-label="Back to top">↑</button>
+
+  <script src="/js/writing-nav.js" defer></script>
 
   <script>
-    const backToTopBtn = document.getElementById('back-to-top');
-    
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 500) {
-        backToTopBtn.classList.add('visible');
-      } else {
-        backToTopBtn.classList.remove('visible');
-      }
-    }, { passive: true });
-
-    backToTopBtn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  </script>
-
-  <script>
-    //  u sgr pulsation engine 
+    //  u sgr pulsation engine
     // RV curve reconstructed via Hocdé et al. (2026) – A&A arXiv:2603.11748
     // Fourier order 7; calibration from Table 1; phase lag delta phi_1 =−0.28 rad (Ogłoza+2000)
     // p-factor = 1.27 (Mérand+2005 CHARA; Groenewegen 2007; Trahin+2021 mean p=1.26±0.07)
@@ -340,7 +260,7 @@
       // radius in r_sun (stefan-boltzmann, normalized to mean 38 r_sun)
       var R1 = [36.80,36.84,36.84,36.83,36.80,36.76,36.79,36.76,36.72,36.78,36.77,36.77,36.81,36.84,36.87,36.87,36.96,36.99,37.04,37.19,37.28,37.32,37.47,37.52,37.66,37.74,37.89,37.97,38.06,38.18,38.25,38.37,38.43,38.50,38.60,38.67,38.73,38.74,38.80,38.83,38.85,38.94,38.92,38.93,38.99,39.01,38.99,39.03,39.00,39.00,39.04,39.02,39.03,39.04,39.01,39.03,39.10,39.08,39.12,39.10,39.12,39.20,39.22,39.24,39.24,39.27,39.35,39.37,39.37,39.41,39.49,39.49,39.53,39.56,39.62,39.62,39.62,39.70,39.72,39.68,39.70,39.70,39.72,39.71,39.73,39.69,39.67,39.65,39.68,39.68,39.64,39.62,39.60,39.59,39.56,39.52,39.50,39.48,39.47,39.47,39.38,39.38,39.34,39.30,39.30,39.21,39.21,39.15,39.10,39.02,39.00,38.93,38.89,38.82,38.78,38.77,38.68,38.68,38.59,38.58,38.54,38.50,38.46,38.48,38.49,38.47,38.41,38.39,38.39,38.30,38.26,38.27,38.20,38.18,38.08,38.00,37.96,37.88,37.77,37.67,37.57,37.46,37.39,37.26,37.18,37.07,36.94,36.86,36.77,36.69,36.66,36.57,36.51,36.50,36.45,36.44,36.39,36.40,36.38,36.37,36.42,36.39,36.42,36.41,36.40,36.42,36.38,36.39,36.42,36.39,36.38,36.37,36.32,36.33,36.28,36.27,36.24,36.28,36.24,36.25,36.24,36.28,36.27,36.26,36.32,36.37,36.41,36.44,36.44,36.52,36.58,36.61,36.66,36.73,36.73,36.78,36.77,36.81,36.84,36.84];
 
-      // Hocdé et al. 2026 (arXiv:2603.11748) 
+      // Hocdé et al. 2026 (arXiv:2603.11748)
       // RV pulsation curve (km/s, systemic velocity subtracted)
       // reconstructed from order-7 Fourier decomposition of Berdnikov LC
       // calibration: tbl 1 relations; R21(LC)=0.3631, R31(LC)=0.1340
@@ -351,7 +271,7 @@
       // p=1.27 (Mérand+2005 CHARA direct δ Cep; consistent with Trahin+2021 p=1.26±0.07)
       // P-R anchor: Trahin+2021 A&A 656 A102 (Gaia EDR3, 63 Cepheids):
       //   log R = 1.763 + 0.653*(logP − 0.9) → R_mean = 52.07 R_sun
-      //   cross-checked: δ Cep (P=5.37d) → 44.8 R_sun vs 42.7 R_sun interferometric 
+      //   cross-checked: δ Cep (P=5.37d) → 44.8 R_sun vs 42.7 R_sun interferometric
       //   range: 48.71–54.13 R_sun;  ΔR ≈ 5.4 R_sun
       var R_BW = [54.067,54.079,54.09,54.1,54.108,54.114,54.119,54.123,54.126,54.127,54.127,54.125,54.123,54.119,54.114,54.108,54.101,54.092,54.083,54.072,54.061,54.048,54.035,54.02,54.005,53.988,53.971,53.953,53.934,53.915,53.895,53.873,53.852,53.829,53.805,53.781,53.756,53.729,53.702,53.674,53.644,53.613,53.58,53.546,53.51,53.472,53.432,53.389,53.345,53.298,53.249,53.198,53.144,53.087,53.028,52.966,52.902,52.835,52.766,52.695,52.621,52.544,52.466,52.385,52.301,52.216,52.128,52.037,51.945,51.85,51.753,51.653,51.551,51.446,51.34,51.231,51.119,51.006,50.891,50.774,50.656,50.537,50.417,50.297,50.177,50.058,49.941,49.825,49.712,49.603,49.497,49.395,49.299,49.209,49.124,49.047,48.977,48.914,48.86,48.813,48.775,48.745,48.724,48.712,48.708,48.711,48.723,48.743,48.77,48.804,48.844,48.891,48.943,49.0,49.063,49.129,49.2,49.274,49.351,49.431,49.514,49.598,49.685,49.773,49.862,49.951,50.042,50.133,50.224,50.316,50.407,50.498,50.588,50.677,50.766,50.854,50.94,51.026,51.11,51.193,51.274,51.353,51.432,51.508,51.583,51.656,51.728,51.798,51.867,51.935,52.001,52.065,52.129,52.191,52.253,52.313,52.372,52.431,52.488,52.545,52.601,52.655,52.71,52.763,52.815,52.867,52.918,52.968,53.016,53.065,53.112,53.158,53.203,53.248,53.291,53.334,53.376,53.417,53.457,53.496,53.534,53.571,53.607,53.643,53.677,53.711,53.743,53.775,53.805,53.834,53.862,53.889,53.914,53.938,53.961,53.982,54.002,54.021,54.037,54.053];
 
@@ -451,7 +371,7 @@
         if (!box) return;
         var px = box.px, py = box.py, pw = box.pw, ph = box.ph;
 
-        //  layout: three stacked panels 
+        //  layout: three stacked panels
         var inset   = 20;
         var gap     = 2;       // gap between panels
         var lc_h    = Math.floor(ph * 0.42);  // LC panel height
@@ -468,7 +388,7 @@
         ctx.save();
 
         // PANEL 1: V-band LC
-        
+
         var pad_top_lc = 20, pad_bot_lc = 36;
         var draw_h_lc  = lc_h - pad_top_lc - pad_bot_lc;
         var mid_mag    = (v_min + v_max) / 2;
@@ -549,7 +469,7 @@
         ctx.stroke();
 
         // PANEL 2: RV curve (Hocdé 2026, arXiv:2603.11748)
-      
+
         var pad_top_rv = 18, pad_bot_rv = 12;
         var draw_h_rv  = rv_h - pad_top_rv - pad_bot_rv;
         var rv_rng = rv_max - rv_min;
@@ -633,7 +553,7 @@
         ctx.stroke();
 
         // PANEL 3: radius (Baade-Wesselink)
-        
+
         var r_rng = r_max - r_min;
         var ry = rad_py, rh = rad_h;
         var r_to_y = function(r) { return ry + rh - (r - r_min) / r_rng * rh; };
@@ -753,14 +673,14 @@
 
       function init() {
         if (!canvas || !ctx) return;
-        
+
         // wait for page to fully load before first resize to prevent layout shift
         if (document.readyState === 'complete') {
           resize();
         } else {
           window.addEventListener('load', resize);
         }
-        
+
         window.addEventListener('resize', function() {
           resize();
           last_t = null;

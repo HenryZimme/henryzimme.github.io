@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Entropy-Guided Cadence Optimization | Henry Zimmerman">
+  <meta name="twitter:title" content="Entropy-Guided Cadence Optimization">
   <meta name="twitter:description" content="Interactive demonstration of intra-night cadence optimization for asteroid rotation-period recovery.">
   <meta name="twitter:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
   <link rel="canonical" href="https://www.henryzimmerman.net/astcadence.html">
@@ -19,64 +19,23 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
+  <!-- shared chrome (tokens, nav, skip link, focus ring, back-to-top) comes from
+       subpages.css; the style block below keeps only app-specific layout -->
+  <link rel="stylesheet" href="/css/subpages.css">
   <style>
-    :root {
-      --bg:           #07091a;
-      --gold:         #c4a258;
-      --gold-dim:     rgba(196,162,88,0.25);
-      --text:         #e2ddd4;
-      --text-dim:     rgba(226,221,212,0.72);
-      --panel-border: rgba(196,162,88,0.2);
-      --blue:         #78a5d2;
-      --bad:          #d98a86;   /* uniform schedule */
-      --good:         #86c79a;   /* optimized schedule */
-    }
+    /* tokens: shared set lives in subpages.css. Status colors use the shared
+       --red / --green (UX-06); nothing app-specific needs redefining here. */
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     [id^="sec-"] { scroll-margin-top: 80px; }
     #sim-section { scroll-margin-top: 0; }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'EB Garamond', serif;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-
-    /* ── nav ── */
-    nav {
-      position: fixed;
-      top: 0; width: 100%;
-      padding: 24px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 200;
-      background: linear-gradient(to bottom, var(--bg) 70%, transparent 100%);
-    }
-    .nav-name {
-      font-family: 'JetBrains Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: 13px;
-      color: var(--gold);
-      text-decoration: none;
-    }
-    .nav-back {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .nav-back:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
 
     #section-nav {
       position: absolute; left: 50%; top: 50%;
@@ -96,14 +55,7 @@
     }
     #section-nav a:hover { color: rgba(255,255,255,0.7); }
     #section-nav a[aria-current="true"] { color: var(--gold); border-bottom-color: var(--gold-dim); }
-    /* primary nav already position:fixed; needed positioning context for #section-nav */
-    nav[aria-label="Primary"] { position: fixed; }
-
-    .skip-link {
-      position: absolute; left: -9999px;
-      font-family: 'JetBrains Mono', monospace; font-size: 11px;
-    }
-    .skip-link:focus { left: 20px; top: 20px; color: var(--gold); z-index: 300; }
+    /* skip link: provided by subpages.css */
 
     /* ── sim viewport ── */
     #sim-section {
@@ -208,8 +160,7 @@
     .drag-hint.dim { opacity: 0; }
 
     /* keyboard focus affordances (additive — mouse :hover unchanged) */
-    .btn-mode:focus-visible,
-    #back-to-top:focus-visible {
+    .btn-mode:focus-visible {
       outline: 2px solid var(--gold);
       outline-offset: 2px;
       color: var(--text);
@@ -220,19 +171,8 @@
     }
     /* remove default outline only where we provide our own focus-visible ring */
     .btn-mode:focus:not(:focus-visible),
-    #pg:focus:not(:focus-visible),
-    #back-to-top:focus:not(:focus-visible) { outline: none; }
+    #pg:focus:not(:focus-visible) { outline: none; }
 
-    /* visually hidden, screen-reader only */
-    .sr-only {
-      position: absolute;
-      width: 1px; height: 1px;
-      padding: 0; margin: -1px;
-      overflow: hidden;
-      clip: rect(0,0,0,0);
-      white-space: nowrap;
-      border: 0;
-    }
 
     /* hero canvas wrapper with HUD overlay */
     .hero-wrap {
@@ -297,7 +237,7 @@
     }
     .pg-leg-curve {
       display: inline-block; width: 16px; height: 0; vertical-align: middle;
-      border-bottom: 2px solid var(--leg-curve, var(--bad)); margin: 0 5px 3px 0;
+      border-bottom: 2px solid var(--leg-curve, var(--red)); margin: 0 5px 3px 0;
     }
     .pg-callout {
       font-family: 'JetBrains Mono', monospace;
@@ -324,8 +264,8 @@
     .pop-title { font-family:'JetBrains Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:.12em; color: var(--gold); }
     .pop-legend { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.06em; color: rgba(255,255,255,.45); }
     .pdot { display:inline-block; width:7px; height:7px; border-radius:50%; vertical-align:middle; margin-right:3px; }
-    .pdot.pu { background: var(--bad); }
-    .pdot.po { background: var(--good); }
+    .pdot.pu { background: var(--red); }
+    .pdot.po { background: var(--green); }
     .pdot.pc { background: #a98cd0; }
     .pop-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .pop-btn {
@@ -499,30 +439,10 @@
       flex-wrap: wrap;
     }
 
-    /* back to top */
-    #back-to-top {
-      position: fixed;
-      bottom: 40px; right: 40px;
-      background: var(--bg);
-      border: 1px solid var(--panel-border);
-      color: var(--gold);
-      width: 44px; height: 44px;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s, border-color 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 100;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    #back-to-top.visible { opacity: 1; pointer-events: auto; }
-    #back-to-top:hover { border-color: var(--gold); }
+    /* back-to-top: styled by subpages.css (44px, border hover) */
 
     /* mobile */
     @media (max-width: 740px) {
-      nav { padding: 14px 16px; }
       #sim-section { padding: 60px 14px 28px; min-height: auto; gap: 12px; }
       .sim-stage { gap: 10px; }
       .tiles { grid-template-columns: 1fr; }
@@ -537,8 +457,6 @@
       .pg-callout { font-size: 12px; padding-left: 8px; margin: 4px 0 8px; }
       #explanation { padding: 60px 20px 80px; }
       .exp-body p { font-size: 18px; }
-      .footer-nav { flex-direction: column; }
-      #back-to-top { bottom: 20px; right: 20px; }
       /* HUD: turn the overlay into a strip below the chart on mobile */
       .hero-wrap { display: flex; flex-direction: column; gap: 0; }
       .hud-stats {
@@ -887,7 +805,7 @@ function drawPeriodogram(power,peaks,foldP,argP,col,post){
   // recovered peak (argmax): emphasized marker coloured by correctness — signals where THIS cadence points
   {
     const correct = Math.abs(argP-P_TRUE) < 0.12;
-    const recCol  = correct ? css('--good') : css('--bad');
+    const recCol  = correct ? css('--green') : css('--red');
     const rx = Xp(argP);
     let bi=0,bd=1e9; for(let i=0;i<periods.length;i++){const d=Math.abs(periods[i]-argP);if(d<bd){bd=d;bi=i;}}
     const ry = Y(power[bi]);
@@ -999,7 +917,7 @@ const hudEh=document.getElementById('hud-eh'),
       foldSub=document.getElementById('foldsub');
 
 function timesFor(m,n){return m==='uniform'?uniform(n):m==='custom'?customTimes.slice():OPT[n].t.slice();}
-function modeColor(m){return m==='uniform'?css('--bad'):m==='custom'?'#a98cd0':css('--good');}
+function modeColor(m){return m==='uniform'?css('--red'):m==='custom'?'#a98cd0':css('--green');}
 function lerpTimes(a,b,t){return a.map((v,i)=>v+(b[i]-v)*t);}
 
 function renderTimes(times,m){
@@ -1019,7 +937,7 @@ function renderTimes(times,m){
   const atTrue = Math.abs(foldP-P_TRUE)<0.06;
   foldSub.innerHTML = atTrue
     ? `folded at <span style="color:var(--gold)">${foldP.toFixed(2)} h</span>, the true period. Points lock to the lightcurve shape.`
-    : `folded at <span style="color:var(--bad)">${foldP.toFixed(2)} h</span>, an alias of ${P_TRUE.toFixed(2)} h. Points scatter; no coherent shape recovered.`;
+    : `folded at <span style="color:var(--red)">${foldP.toFixed(2)} h</span>, an alias of ${P_TRUE.toFixed(2)} h. Points scatter; no coherent shape recovered.`;
   return P;
 }
 
@@ -1105,7 +1023,7 @@ function updatePopView(){
   const W=560, top=12, rowH=30, axisH=30, L=58, R=W-18, span=R-L;
   const baseY=top+objs.length*rowH, H=baseY+axisH;
   const xf=a=>L+Math.max(0,Math.min(1,a))*span;
-  const bad=css('--bad'), good=css('--good'), vio='#a98cd0';
+  const bad=css('--red'), good=css('--green'), vio='#a98cd0';
   let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" font-family="'JetBrains Mono',monospace">`;
   [0,0.25,0.5,0.75,1].forEach(t=>{const x=xf(t);
     s+=`<line x1="${x}" y1="${top-2}" x2="${x}" y2="${baseY}" stroke="rgba(226,221,212,0.06)"/>`;
@@ -1289,12 +1207,7 @@ window.addEventListener('load',()=>{
     .then(initCorpus).catch(()=>initCorpus(CORPUS_FALLBACK));
 });
 
-/* back-to-top */
-(function(){
-  const btn=document.getElementById('back-to-top');
-  addEventListener('scroll',()=>{btn.classList.toggle('visible',scrollY>600);});
-  btn.onclick=()=>scrollTo({top:0,behavior:'smooth'});
-})();
+/* back-to-top: handled by writing-nav.js (shared, 400px threshold) */
 
 /* sticky section nav: appears once you scroll past the hero, highlights active section */
 (function(){
@@ -1330,5 +1243,6 @@ window.addEventListener('load',()=>{
   setActive(); addEventListener('scroll', setActive, {passive:true});
 })();
 </script>
+  <script src="/js/writing-nav.js" defer></script>
 </body>
 </html>

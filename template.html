@@ -31,8 +31,8 @@
   <!-- fonts: always load all three families -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
 
   <!-- shared styles -->
   <link rel="stylesheet" href="/css/subpages.css">
@@ -71,9 +71,13 @@
 
   <!--
     article-wrap: do not override max-width or padding in the page <style> block.
-    subpages.css defines: max-width 65ch, padding 120px 28px 100px.
-    if this page genuinely needs a wider layout (e.g. a research page with data tables),
-    add class="article-wrap article-wrap--wide" and define .article-wrap--wide in subpages.css.
+    subpages.css defines a three-tier reading measure:
+      class="article-wrap"                            → max-width 65ch   (essays, ~65 chars/line)
+      class="article-wrap article-wrap--wide"         → max-width 800px  (research pages with data tables / figures)
+      class="article-wrap article-wrap--full"         → max-width 1200px (rare: poster-embed pages, e.g. ccd_calibration)
+    pick the tier by adding the modifier class; never redeclare the widths locally —
+    the modifiers use compound specificity (.article-wrap.article-wrap--wide) so a
+    page-local redefinition cannot silently beat them.
   -->
   <main id="main">
   <article class="article-wrap">

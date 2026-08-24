@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- Root -->
@@ -18,6 +18,12 @@
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/1347_methods.html</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.henryzimmerman.net/astcadence.html</loc>
     <lastmod>2026-04-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -86,14 +92,16 @@
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
- <!-- <url>
-    <loc>https://www.henryzimmerman.net/baghdad.html</loc>
+  <!-- muralism: linked from the homepage Writing list, live and indexable, so it belongs in the sitemap -->
+  <url>
+    <loc>https://www.henryzimmerman.net/muralism.html</loc>
     <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
-  </url> -->
-  <!-- <url>
-    <loc>https://www.henryzimmerman.net/muralism.html</loc>
+  </url>
+  <!-- baghdad deliberately unpublished: live but unlisted; keep out of the sitemap -->
+ <!-- <url>
+    <loc>https://www.henryzimmerman.net/baghdad.html</loc>
     <lastmod>2025-06-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>

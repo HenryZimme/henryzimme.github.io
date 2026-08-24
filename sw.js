@@ -5,7 +5,7 @@
 //   - 3rd-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
 //
 // bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v43';
+const CACHE_VERSION = 'v44';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
@@ -17,6 +17,8 @@ const PRECACHE = [
   '/',
   '/js/main.js',
   '/css/deferred.css',
+  '/css/subpages.css',
+  '/js/writing-nav.js',
   '/data/stars_named.json',
   '/favicon.svg',
   // EB Garamond woff2: bump CACHE_VERSION if Google updates these URLs
@@ -79,8 +81,9 @@ self.addEventListener('fetch', e => {
 // cache-first with stale-while-revalidate.
 // background refresh ONLY fires on a cache hit — not unconditionally.
 // this prevents re-downloading the full PRECACHE on every page visit.
-// pair with Cache-Control: max-age=3600 on origin responses so background
-// refetches return 304 Not Modified when nothing has changed.
+// pair with Cache-Control: max-age=86400 on origin responses (matching the
+// Cloudflare edge rule above) so background refetches return 304 Not Modified
+// when nothing has changed.
 async function cacheFirst(request, cacheName) {
   const cache  = await caches.open(cacheName);
   const cached = await cache.match(request);

@@ -75,9 +75,9 @@
     }
 
     .form-group { margin-bottom: 25px; position: relative; }
-    
+
     label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 14px; transition: transform 0.3s ease; }
-    
+
     .radio-group { display: flex; gap: 15px; align-items: center; font-size: 14px; }
     .ec-list { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
 
@@ -154,7 +154,7 @@
 
     #submitWrapper { position: relative; height: 150px; margin-top: 30px; border-top: 2px solid var(--accent); padding-top: 20px; transition: border-color 0.5s ease;}
     #movingSubmit { position: absolute; padding: 15px 30px; background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; font-family: inherit; transition: all 0.1s; font-size: 16px; top: 40px; left: 35%;}
-    
+
     /* --- SANCTUARY (THE RESULT) --- */
     #resultContainer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0d1117; justify-content: center; align-items: center; flex-direction: column; z-index: 2000; overflow: hidden; }
     #resultContainer::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(29,158,117,0.15) 0%, transparent 70%); pointer-events: none; }
@@ -374,7 +374,7 @@
     <p class="subtitle">Sensory Annihilation & Holistic Gaslighting<br>Your authentic truth will be optimized.</p>
 
     <form id="casapForm" novalidate="novalidate">
-        
+
       <div class="section-title">I. Academic & Biological Paranoia</div>
       <div class="form-group">
         <label>Number of times you refreshed your email inbox today:</label>
@@ -698,7 +698,7 @@
     let blurTimer = null;
     let shakeInterval = null;
     let hellPhase = 0;
-    
+
     // Game/Essay States (Used in Step 3)
     let gameRunning = false;
     let gameInterval = null;
@@ -712,7 +712,7 @@
 
     // --- UTILITY FUNCTIONS ---
     const getRandomColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-    
+
     const setTheme = (opts) => {
       for (const key in opts) {
         document.documentElement.style.setProperty(key, opts[key]);
@@ -747,9 +747,9 @@
       if (phase === 1 && !reduceMotion) {
         let lastActive = Date.now();
         let shakeIntensity = 0;
-        
+
         blurTimer = setTimeout(() => { formEl.style.filter = 'blur(8px)'; }, 1500);
-        
+
         const resetHell = () => {
           lastActive = Date.now();
           formEl.style.filter = 'blur(0px)';
@@ -791,14 +791,14 @@
             }
           });
         };
-        
+
         setInterval(() => {
           if (injected < 2) {
             const idx = Math.floor(Math.random() * extraFieldsHtml.length);
             const frag = document.createElement('div');
             frag.style.marginTop = '15px';
             frag.innerHTML = extraFieldsHtml[idx];
-            
+
             const firstSection = document.querySelector('.section-title');
             firstSection.parentNode.insertBefore(frag, firstSection.nextSibling);
             injected++;
@@ -1370,7 +1370,7 @@
         // Reset visual distortions
         document.body.style.transform = 'none';
         formEl.style.filter = 'none';
-        
+
         // Lock the progress bar at 100%
         document.getElementById('progressBar').style.width = '100%';
 
@@ -1384,7 +1384,7 @@
         panicTimer.style.display = 'none';
         notifBox.style.display = 'none';
         formEl.style.display = 'none';
-        
+
         // Scroll to top and reveal the final result
         window.scrollTo(0, 0);
         const resultEl = document.getElementById('resultContainer');

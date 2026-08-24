@@ -26,8 +26,8 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2">
   <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
   <style>:root {
       --bg: #07091a;
       --gold: #c4a258;
@@ -37,6 +37,12 @@
       --panel: rgba(7, 9, 26, 0.84);
       --panel-border: rgba(196, 162, 88, 0.18);
       --blue: #78a5d2;
+      /* synced with subpages.css */
+      --red: #fca5a5;
+      --green: #86efac;
+      --radius-0: 0;
+      --radius-soft: 6px;
+      --radius-pill: 999px;
     }
 
     /* Metric-matched Georgia fallback reduces layout shift while EB Garamond loads.
@@ -304,7 +310,7 @@
     #star-tooltip   { position: fixed; opacity: 0; pointer-events: none; }
     #star-popover   { position: fixed; opacity: 0; pointer-events: none; }
     #object-modal   { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 200; display: flex; align-items: center; justify-content: center; }
-    #epilepsy-modal { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 900; display: flex; align-items: center; justify-content: center; }
+    #epilepsy-modal { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 1000; display: flex; align-items: center; justify-content: center; }
     #back-to-top    { position: fixed; opacity: 0; pointer-events: none; }
 
     /* ── print ── */
@@ -323,7 +329,7 @@
 
       /* hide everything that isn't content */
       #star-canvas, nav, #star-tooltip, #star-popover, #object-modal,
-      #epilepsy-modal, #back-to-top, #trail-toggle, #trail-card,
+      #epilepsy-modal, #back-to-top, #trail-card,
       #cepheid-sim, footer, .hero-arrow,
       .card-toggle, .card-expand { display: none !important; }
 
@@ -363,6 +369,12 @@
   <link rel="stylesheet" href="/css/deferred.css" media="print" onload="this.media='all';this.onload=null" onerror="document.getElementById('deferred-fallback').disabled=false">
   <noscript><link rel="stylesheet" href="/css/deferred.css"></noscript>
   <style id="deferred-fallback" disabled>
+/* deferred.css — homepage deferred styles.
+   ⚠ KEEP IN SYNC ⚠ A byte-identical copy of this file is inlined in index.html as
+   <style id="deferred-fallback" disabled> (the async-CSS onerror fallback).
+   ANY edit here MUST be mirrored into that block — or regenerate it by copying
+   this file's content between the <style id="deferred-fallback" disabled> tags. */
+
 /* tooltip */
     #star-tooltip {
       position: fixed;
@@ -391,22 +403,22 @@
       z-index: 150;
       min-width: 180px;
       max-width: 260px;
-      
+
       /* 1. When hidden, it shouldn't block clicks */
       opacity: 0;
-      pointer-events: none; 
-      
+      pointer-events: none;
+
       /* 2. Wait 0.4 seconds before fading out and disabling clicks */
       transition: opacity 0.2s ease 0.4s, pointer-events 0s linear 0.4s;
     }
 
-    #star-popover.visible { 
+    #star-popover.visible {
       /* 3. Appear instantly with NO delay when the class is added */
-      opacity: 1; 
+      opacity: 1;
       pointer-events: all;
       transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s;
     }
-    
+
     /* 4. The Magic Trick: Keep it visible if the mouse makes it to the popover! */
     #star-popover:hover {
       opacity: 1;
@@ -639,8 +651,6 @@
       transition: border-color 0.18s;
     }
     .about-footnote a:hover { border-bottom-color: var(--blue); }
-    .footnote-wrap {
-    }
     .footnote-toggle {
       background: none;
       border: none;
@@ -1126,14 +1136,15 @@
       opacity: 0.7;
     }
 
-    /* back to top */
+    /* back to top — geometry matches subpages.css (44px, border hover) so the
+       button looks identical on the homepage and every subpage */
     #back-to-top {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
       right: 32px;
       z-index: 300;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       background: var(--panel);
       border: 1px solid var(--panel-border);
       color: var(--gold);
@@ -1141,17 +1152,19 @@
       cursor: pointer;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease, filter 0.2s ease;
+      transition: opacity 0.25s ease, border-color 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: var(--radius-0, 0);
+      padding: 0;
     }
     #back-to-top.visible {
       opacity: 1;
       pointer-events: auto;
     }
     #back-to-top:hover {
-      filter: brightness(1.4);
+      border-color: var(--gold);
     }
 
     /* cepheid simulation */
@@ -1230,7 +1243,7 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--panel-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-soft, 6px);
       padding: 1.25rem 1.5rem;
       width: 250px;
     }
@@ -1248,8 +1261,8 @@
     .hud-row:last-child { border-bottom: none; }
     .hud-label { color: rgba(255,255,255,0.58); }
     .hud-val--text   { color: var(--text); }
-    .hud-val--red    { color: #fca5a5; }
-    .hud-val--green  { color: #86efac; }
+    .hud-val--red    { color: var(--red, #fca5a5); }
+    .hud-val--green  { color: var(--green, #86efac); }
     .hud-val--purple { color: #c4b5fd; }
     #hud-plot-container {
       position: absolute;
@@ -1261,7 +1274,7 @@
       height: 185px;
       background: rgba(7,9,26,0.55);
       border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 3px;
+      border-radius: var(--radius-soft, 6px);
       overflow: hidden;
       opacity: 0;
       transition: opacity 0.5s;
@@ -1298,7 +1311,7 @@
       pointer-events: auto;
       background: rgba(7,9,26,0.85);
       border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 999px;
+      border-radius: var(--radius-pill, 999px);
       padding: 0.2rem;
       display: flex;
       gap: 2px;
@@ -1308,7 +1321,7 @@
       color: rgba(255,255,255,0.52);
       border: none;
       padding: 0.45rem 1.4rem;
-      border-radius: 999px;
+      border-radius: var(--radius-pill, 999px);
       font-size: 11px;
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
@@ -1345,7 +1358,7 @@
     .sim-load-line:first-child {
       font-size: 13px;
       letter-spacing: 0.22em;
-      color: #c4a258;
+      color: var(--gold);
     }
 
     /* sim responsive layout */
@@ -1372,7 +1385,7 @@
         top: auto; right: auto;
         width: auto;
         margin: 0 1.5rem 1rem;
-        border-radius: 0.5rem;
+        border-radius: var(--radius-soft, 6px);
         padding: 1rem 1.25rem;
       }
       #sim-stage {
@@ -1464,7 +1477,7 @@
       margin-bottom: 20px;
       border-radius: 1px;
     }
-    
+
     /* individual book spine, base height; JS overrides per content length */
     .book-spine {
       position: relative;
@@ -1703,7 +1716,7 @@
     }
     .modal-card-link:hover { opacity: 1; }
 
-    
+
 /* card call-to-action base layout */
 .card-cta {
   display: block;
@@ -1915,59 +1928,7 @@
       border-bottom-color: var(--gold);
     }
 
-    /* toggle, left side, clear of back-to-top */
-    #trail-toggle { display: none !important; }
-    #trail-toggle-retired {
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
-      left: 32px;
-      z-index: 300;
-      width: 40px;
-      height: 40px;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, border-color 0.18s, width 0.25s ease, padding 0.25s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    #trail-toggle img {
-      width: 26px;
-      height: 26px;
-      display: block;
-      flex-shrink: 0;
-      opacity: 0.85;
-      transition: opacity 0.18s;
-    }
-    /* label shown once on first visit, before any word is found */
-    #trail-toggle .trail-toggle-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0;
-      transition: opacity 0.25s ease 0.1s;
-      pointer-events: none;
-    }
-    #trail-toggle.trail-ready {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #trail-toggle.trail-on {
-      border-color: var(--gold);
-    }
-    #trail-toggle.trail-on img { opacity: 1; }
-    #trail-toggle:hover {
-      border-color: var(--gold);
-    }
-    #trail-toggle:hover img { opacity: 1; }
+    /* trail toggle retired */
 
     /* floating card */
     #trail-card {
@@ -2184,6 +2145,26 @@
     }
 
 /* epilepsy warning modal */
+.epilepsy-card {
+  max-width: 400px;
+  margin: 2rem;
+  background: rgba(7,9,26,0.95);
+  border: 1px solid rgba(196,162,88,0.3);
+  border-radius: var(--radius-soft, 6px);
+  padding: 2rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+.epilepsy-heading {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.epilepsy-actions {
+  display: flex;
+  gap: 1rem;
+}
 .epilepsy-body {
   font-size: 13px;
   color: rgba(226,221,212,0.85);
@@ -2213,7 +2194,7 @@
 .epilepsy-btn {
   flex: 1;
   padding: 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--radius-soft, 6px);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   cursor: pointer;
@@ -2231,7 +2212,7 @@
 .epilepsy-btn--confirm {
   background: rgba(196,162,88,0.12);
   border: 1px solid rgba(196,162,88,0.4);
-  color: #c4a258;
+  color: var(--gold);
 }
 .epilepsy-btn--confirm:hover {
   background: rgba(196,162,88,0.22);
@@ -2428,7 +2409,7 @@
       <h2 class="section-heading" data-label="About"><span class="sr-only">About</span></h2>
       <div class="about-grid">
         <div class="about-text">
-          <p class="about-lead">Hello! I'm Henry. Most of my time goes into time-domain astronomy: I'm currently the primary author of a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki as PI to probe the merger history of a binary Cepheid in the Large Magellanic Cloud<!-- (under review, ESO Period 118) -->, coordinating a multi-continent photometric campaign to determine the rotation period of main-belt asteroid 7605 Cindygraber, and developing the cadence-optimization framework that came out of it (presented at AAS 248).</p> 
+          <p class="about-lead">Hello! I'm Henry. Most of my time goes into time-domain astronomy: I'm currently the primary author of a VLT/ESPRESSO proposal with Dr. Bogumił Pilecki as PI to probe the merger history of a binary Cepheid in the Large Magellanic Cloud<!-- (under review, ESO Period 118) -->, coordinating a multi-continent photometric campaign to determine the rotation period of main-belt asteroid 7605 Cindygraber, and developing the cadence-optimization framework that came out of it (presented at AAS 248).</p>
           <p> The rest of this site documents where that same instinct started: the epistemology of Descartes, the 1755 Lisbon earthquake, contemplating the AfD's rise, a visual poem responding to a Kay Walkingstick diptych.</p>
           <p>Outside of all that, I'm a cross country captain, jazz guitarist, board games enthusiast, and someone who has spent an unreasonable number of hours in the Writing Center (first as a client, now as a tutor). I'm a very confident person who is generally wary of confidence and <span class="trail-word" data-word="false certainty">false certainty</span> (especially my own). I find that my most enduring questions don't disappear as my interests evolve: namely, what do I think about the world, and <span class="trail-word" data-word="why am I likely wrong">why am I likely wrong</span>?</p>
         </div>
@@ -2500,7 +2481,7 @@
     <h2 class="sim-title">OGLE-LMC-CEP-1347</h2>
     <div class="sim-rule"></div>
     <p class="sim-body">
-      The binary Cepheid I spent the past few months studying. This is built from real Fourier fits to six years of OGLE photometry; the same light curve I used to search for non-radial modes. Use the mode buttons below to isolate the orbital motion, the pulsation cycle, or see both running simultaneously at their true physical frequency ratio. 
+      The binary Cepheid I spent the past few months studying. This is built from real Fourier fits to six years of OGLE photometry; the same light curve I used to search for non-radial modes. Use the mode buttons below to isolate the orbital motion, the pulsation cycle, or see both running simultaneously at their true physical frequency ratio.
     </p>
   </div>
 
@@ -2531,8 +2512,8 @@
   <!-- controls -->
   <div id="sim-controls">
     <div class="mode-pill">
-      <button id="btn-orbital" onclick="window.setMode('orbital')" class="btn-mode">ORBITAL</button>
-      <button id="btn-pulsation" onclick="window.setMode('pulsation')" class="btn-mode">PULSATION</button>
+      <button id="btn-orbital" class="btn-mode">ORBITAL</button>
+      <button id="btn-pulsation" class="btn-mode">PULSATION</button>
       <button id="btn-realtime" class="btn-mode" title="Physically accurate pulsation rate &#215;85">REAL-TIME &#9888;</button>
     </div>
   </div>
@@ -2542,10 +2523,10 @@
 
   <!-- epilepsy warning modal; must live outside #cepheid-sim (isolation:isolate breaks position:fixed) -->
   <div id="epilepsy-modal" role="alertdialog" aria-modal="true" aria-labelledby="epilepsy-heading" aria-describedby="epilepsy-body">
-    <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
-      <div id="epilepsy-heading" style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
+    <div class="epilepsy-card">
+      <div id="epilepsy-heading" class="epilepsy-heading">&#9888; Photosensitivity Warning</div>
       <p class="epilepsy-body" id="epilepsy-body">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
-      <div style="display:flex;gap:1rem;">
+      <div class="epilepsy-actions">
         <button id="epilepsy-cancel" class="epilepsy-btn epilepsy-btn--cancel">Cancel</button>
         <button id="epilepsy-confirm" class="epilepsy-btn epilepsy-btn--confirm">I understand, continue</button>
       </div>
@@ -2625,17 +2606,17 @@
               Using photometric measurements from the ALCDEF Light Curve Database, I developed statistical models to estimate period convergence requirements and used those results to design an observing strategy.
             </p>
             <p class="card-body">
-              To improve observational efficiency under variable viewing conditions, I built an open-source scheduling tool that integrates orbital ephemerides, lunar sky brightness models, and site visibility constraints to prioritize high-quality observing windows. The goal is to reduce wasted telescope time and improve cadence reliability through more reliable phase sampling. The tool recently completed its commissioning with success, coordinating photometry across four observatories in the Canary Islands, Chile, Australia, and Andover to recover a rotational period that's resonant with an Earth day. 
+              To improve observational efficiency under variable viewing conditions, I built an open-source scheduling tool that integrates orbital ephemerides, lunar sky brightness models, and site visibility constraints to prioritize high-quality observing windows. The goal is to reduce wasted telescope time and improve cadence reliability through more reliable phase sampling. The tool recently completed its commissioning with success, coordinating photometry across four observatories in the Canary Islands, Chile, Australia, and Andover to recover a rotational period that's resonant with an Earth day.
             </p>
 
             <p class="card-body">
               The call went out publicly on March 2, featured by Slooh's community team after I coordinated with their staff. Jo booked three Canary One missions that day. Shad0 imaged from Chile Two and Australia One, returned plate-solved files with confirmed ephemeris matches, and asked what else needed filling. Lee scheduled 99 over the following three weeks, lost power to high winds once, taught himself Google Drive to transfer the files, and delivered 80 FITS before Cindygraber faded below the noise floor. Our team is preparing the results for submission to the Minor Planet Bulletin.
             </p>
-            
+
             <p class="card-body">
               A note on methods: I evaluated supervised learning approaches for period convergence prediction early in this project, but found statistical modeling better supported by the dataset characteristics. This work inspired me to separately apply CMA-ES evolutionary optimization to cadence scheduling.
             </p>
-            
+
           </div>
         </div>
 
@@ -2662,7 +2643,7 @@
   <section id="writing" class="section">
     <div class="section-inner">
       <h2 class="section-heading" data-label="Writing"><span class="sr-only">Writing</span></h2>
-      <p class="writing-intro">I don't view writing very differently from thinking; a careful argument is its own form of rigor. Much of my best insights have happened midsentence, midconviction.</p>
+      <p class="writing-intro">I don't view writing very differently from thinking; a careful argument is its own form of rigor. Many of my best insights have happened midsentence, midconviction.</p>
       <div class="writing-list">
 
         <div class="writing-item">
@@ -2806,23 +2787,23 @@
       <h2 class="section-heading" data-label="Highlights"><span class="sr-only">Highlights</span></h2>
       <div class="highlights-table">
 
-        
+
         <div class="highlights-row">
           <div class="highlights-year">2026&ndash;2027</div>
           <div class="highlights-item">
             <h3>Fellowship Finalist, Brace Center for Gender Studies</h3>
-            <p>I was  selected to write an archival research paper on Jewish masculinity and World War II. I found how the <i>American Jewish Yearbook</i> systematically constructed idealized images of Jewish men that negotiated with secular preferences while remaining distinctively Jewish.</p>
+            <p>I was selected to write an archival research paper on Jewish masculinity and World War II. I found how the <i>American Jewish Yearbook</i> systematically constructed idealized images of Jewish men that negotiated with secular preferences while remaining distinctively Jewish.</p>
           </div>
         </div>
-        
+
         <div class="highlights-row">
           <div class="highlights-year">2026 &ndash;</div>
           <div class="highlights-item">
             <h3>Varsity Cross Country Captain</h3>
-            <p>I was elected captain of a 75-athlete roster for the 2026 season. I've been working to shift the team's metrics of success so that effort is recognized regardless of speed. My personal records are 16:30 for 5K XC, and 4:24 for 1500m.</p>
+            <p>I was elected captain of a 75-athlete roster for the 2026 season. I've been working to shift the team's metrics of success so that effort is recognized regardless of speed. My personal records are 16:30 for 5K XC and 4:24 for 1500m.</p>
           </div>
         </div>
-        
+
         <div class="highlights-row">
           <div class="highlights-year">2025 &ndash;</div>
           <div class="highlights-item">
@@ -2851,7 +2832,7 @@
           <div class="highlights-year">2024</div>
           <div class="highlights-item">
             <h3>Media Fluency Curriculum Module, Phillips Academy</h3>
-            <p>In collaboration with a teacher in freshman year, I built a fabricated historical website with false citations for deployment across multiple junior-level History 300 classes. We distributed it as an authentic primary source, and the site was accepted as genuine by the majority of students before the <span class="trail-word" data-word="deception was revealed">deception was revealed</span>. The point was to teach students that sources of information must be scrutinized, even if they come from an authoritative source  (like a teacher in this case).</p>
+            <p>In collaboration with a teacher in freshman year, I built a fabricated historical website with false citations for deployment across multiple junior-level History 300 classes. We distributed it as an authentic primary source, and the site was accepted as genuine by the majority of students before the <span class="trail-word" data-word="deception was revealed">deception was revealed</span>. The point was to teach students that sources of information must be scrutinized, even if they come from an authoritative source (like a teacher in this case).</p>
           </div>
         </div>
 
@@ -2917,7 +2898,7 @@
             <div class="spine-impact">Intense thought requires the freedom of the woods to inspire and calm the mind. Awareness arrives mid-stride.</div>
           </div>
         </div>
-        
+
         <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Encounters with the Archdruid</span></div>
           <div class="spine-panel">
@@ -2926,7 +2907,7 @@
             <div class="spine-impact">This book puts a conservationist and an engineer in the same wilderness repeatedly. McPhee never lets either one fully win.</div>
           </div>
         </div>
-        
+
         <div class="book-spine" role="listitem" tabindex="0">
          <div class="spine-title"><span>20,000 Leagues</span></div>
          <div class="spine-panel">
@@ -2971,7 +2952,7 @@
             <div class="spine-impact">Robert's commitment to fulfilling his purpose, however futile he thinks it may be, is the ultimate standard for integrity.</div>
           </div>
         </div>
-        
+
         <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Jane Eyre</span></div>
           <div class="spine-panel">
@@ -3007,7 +2988,7 @@
             <div class="spine-impact">As I wrote in 7th grade, Brooks made me realize that 'you can't find your purpose; your purpose has to find you.'</div>
           </div>
         </div>
-        
+
 <!--
         <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Meditations on First Philosophy</span></div>
@@ -3036,7 +3017,7 @@
             <div class="spine-impact">The universe is absurd and indifferent, and somehow that turns out to be a relief.</div>
           </div>
         </div>
-        
+
         <div class="book-spine" role="listitem" tabindex="0">
           <div class="spine-title"><span>Ender's Game (Series)</span></div>
           <div class="spine-panel">
@@ -3078,20 +3059,20 @@
     <!--<a href="https://github.com/HenryZimme/asteroid-scheduler" target="_blank" rel="noopener">Asteroid Scheduler</a>-->
     <!--<a href="https://sites.google.com/view/faith-and-doubt" target="_blank" rel="noopener">Believing Belief</a>-->
 
-    
+
     <a href="https://orcid.org/0009-0009-5524-1593" target="_blank" rel="noopener" aria-label="ORCID" class="footer-orcid-icon">
       <img src="/assets/icons/ORCID-iD_icon_vector.svg" alt="ORCID iD" width="32" height="32" loading="lazy">
     </a>
-    
+
     <a href="https://github.com/HenryZimme" target="_blank" rel="noopener" aria-label="GitHub" class="footer-github-icon">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
       </svg>
     </a>
-    
+
     <a href="https://www.cssdesignawards.com/sites/henry-zimmerman/49035/" target="_blank" rel="noopener" class="footer-cssda" aria-label="CSS Design Awards Winner">
       <img src="/assets/icons/cssda-special-kudos-yellow.svg" alt="CSSDA Website Special Kudos Winner" width="32" height="32" loading="lazy">
-    </a>    
+    </a>
 
   </div>
 </footer>
@@ -3161,8 +3142,7 @@
     }
   })();
 </script>
-<!-- reading trail -->
-<button id="trail-toggle" title="Reading trail" aria-label="Toggle reading trail"><img src="/favicon.svg" width="24" height="24" alt="" aria-hidden="true"></button>
+<!-- trail toggle retired -->
 
 <div id="trail-card" role="status" aria-live="polite">
   <span class="trail-grip" aria-hidden="true"><img src="/favicon.svg" width="16" height="16" alt="" aria-hidden="true">Trail &rsaquo;</span>
