@@ -40,15 +40,15 @@
   <style>
     /*
       page-specific overrides only.
-      do NOT redefine: article-wrap, article-title, article-body p/h2,
+      no redefine: article-wrap, article-title, article-body p/h2,
       figure, figcaption, or @media print — all of those live in subpages.css.
-      if a rule applies to more than one page, move it to subpages.css instead.
+      if a rule applies to more than one page, move to subpages.css instead.
 
-      common legitimate uses:
+      common legit uses:
         - blockquote styling (if this page has long quoted passages)
         - a custom layout class unique to this page (e.g. .two-col-figures)
         - article-subtitle if the page has one
-        - works-cited / bibliography variant if different from .bibliography
+        - works-cited / bibliography variant if diff from .bibliography
     */
   </style>
 </head>
@@ -75,9 +75,9 @@
       class="article-wrap"                            → max-width 65ch   (essays, ~65 chars/line)
       class="article-wrap article-wrap--wide"         → max-width 800px  (research pages with data tables / figures)
       class="article-wrap article-wrap--full"         → max-width 1200px (rare: poster-embed pages, e.g. ccd_calibration)
-    pick the tier by adding the modifier class; never redeclare the widths locally —
+    pick the tier by adding the modifier class; never redeclare the widths locally
     the modifiers use compound specificity (.article-wrap.article-wrap--wide) so a
-    page-local redefinition cannot silently beat them.
+    page-local redefinition cant beat them quietly
   -->
   <main id="main">
   <article class="article-wrap">
@@ -97,13 +97,12 @@
         article-byline:
           - solo:        "By Henry Zimmerman"
           - co-authored: "Henry Zimmerman and Firstname Lastname"   (no "By")
-          - multi-author: "Henry Zimmerman &middot; Dr. X &middot; Ms. Y"
           - if no byline is appropriate for the piece, omit this div entirely
       -->
       <div class="article-byline">By Henry Zimmerman</div>
 
       <!--
-        optional: article-subtitle (e.g. lisbon.html)
+        optnl: article-subtitle (e.g. lisbon.html)
         <p class="article-subtitle">Subtitle text here</p>
       -->
     </header>
