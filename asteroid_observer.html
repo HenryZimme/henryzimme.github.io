@@ -11,18 +11,24 @@
 <meta property="og:url" content="https://www.henryzimmerman.net/asteroid_observer.html">
 <meta property="og:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Asteroid Observer | Henry Zimmerman">
+<meta name="twitter:title" content="Asteroid Observer">
 <meta name="twitter:description" content="Interactive heliocentric orbit tool for multi-site asteroid observation planning.">
 <meta name="twitter:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
 <link rel="canonical" href="https://www.henryzimmerman.net/asteroid_observer.html">
 <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=EB+Garamond:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=EB+Garamond:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300&display=swap"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
 <link rel="stylesheet" href="/css/subpages.css">
   <style>
-html { height: 100%; background: var(--bg); }
+  /* page-specific tokens (subpages.css provides the shared set) */
+  :root {
+    --mono:     'JetBrains Mono', monospace;
+    --divider:  rgba(196, 162, 88, 0.18);
+  }
+
+  html { height: 100%; background: var(--bg); }
   body {
     width: 100%; min-height: 100%;
     background: var(--bg);
@@ -35,12 +41,12 @@ html { height: 100%; background: var(--bg); }
   }
 
   /*  site nav  */
-  
+
   nav a { pointer-events: auto; }
-  
-  
-  
-  
+
+
+
+
 
   /* info panel grid: subtitle full-width, then body | note  */
   #info-panel {
@@ -223,7 +229,7 @@ html { height: 100%; background: var(--bg); }
 
   /*  mobile  */
   @media (max-width: 740px) {/* tighter nav */
-    
+
 
     /* collapse info panel to subtitle line only, body + note hidden */
     #info-panel {
@@ -303,7 +309,7 @@ html { height: 100%; background: var(--bg); }
 
 <script>
 /* ============================================================================
-   asteroid_engine.html  v8
+   asteroid_engine.html v8
    canvas + requestAnimationFrame visualization of heliocentric asteroid orbit.
    reads ASTEROID_DATA (json injected by asteroid_sim_v8.py).
    ============================================================================ */
@@ -1341,5 +1347,12 @@ html { height: 100%; background: var(--bg); }
 
 }());
 </script>
-</main></body>
+</main>
+
+  <!-- writing-nav.js: included per the shared-subpage convention (no-ops when
+       its elements are absent). No #back-to-top button here: this page is a
+       fixed-viewport instrument that never scrolls 400px, so the button could
+       never trigger (audit UX-04). -->
+  <script src="/js/writing-nav.js" defer></script>
+</body>
 </html>

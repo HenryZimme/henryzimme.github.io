@@ -1,3 +1,9 @@
+/* deferred.css — homepage deferred styles.
+   ⚠ KEEP IN SYNC ⚠ A byte-identical copy of this file is inlined in index.html as
+   <style id="deferred-fallback" disabled> (the async-CSS onerror fallback).
+   ANY edit here MUST be mirrored into that block — or regenerate it by copying
+   this file's content between the <style id="deferred-fallback" disabled> tags. */
+
 /* tooltip */
     #star-tooltip {
       position: fixed;
@@ -26,22 +32,22 @@
       z-index: 150;
       min-width: 180px;
       max-width: 260px;
-      
+
       /* 1. When hidden, it shouldn't block clicks */
       opacity: 0;
-      pointer-events: none; 
-      
+      pointer-events: none;
+
       /* 2. Wait 0.4 seconds before fading out and disabling clicks */
       transition: opacity 0.2s ease 0.4s, pointer-events 0s linear 0.4s;
     }
 
-    #star-popover.visible { 
+    #star-popover.visible {
       /* 3. Appear instantly with NO delay when the class is added */
-      opacity: 1; 
+      opacity: 1;
       pointer-events: all;
       transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s;
     }
-    
+
     /* 4. The Magic Trick: Keep it visible if the mouse makes it to the popover! */
     #star-popover:hover {
       opacity: 1;
@@ -274,8 +280,6 @@
       transition: border-color 0.18s;
     }
     .about-footnote a:hover { border-bottom-color: var(--blue); }
-    .footnote-wrap {
-    }
     .footnote-toggle {
       background: none;
       border: none;
@@ -761,14 +765,15 @@
       opacity: 0.7;
     }
 
-    /* back to top */
+    /* back to top — geometry matches subpages.css (44px, border hover) so the
+       button looks identical on the homepage and every subpage */
     #back-to-top {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
       right: 32px;
       z-index: 300;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       background: var(--panel);
       border: 1px solid var(--panel-border);
       color: var(--gold);
@@ -776,17 +781,19 @@
       cursor: pointer;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease, filter 0.2s ease;
+      transition: opacity 0.25s ease, border-color 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: var(--radius-0, 0);
+      padding: 0;
     }
     #back-to-top.visible {
       opacity: 1;
       pointer-events: auto;
     }
     #back-to-top:hover {
-      filter: brightness(1.4);
+      border-color: var(--gold);
     }
 
     /* cepheid simulation */
@@ -865,7 +872,7 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--panel-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-soft, 6px);
       padding: 1.25rem 1.5rem;
       width: 250px;
     }
@@ -883,8 +890,8 @@
     .hud-row:last-child { border-bottom: none; }
     .hud-label { color: rgba(255,255,255,0.58); }
     .hud-val--text   { color: var(--text); }
-    .hud-val--red    { color: #fca5a5; }
-    .hud-val--green  { color: #86efac; }
+    .hud-val--red    { color: var(--red, #fca5a5); }
+    .hud-val--green  { color: var(--green, #86efac); }
     .hud-val--purple { color: #c4b5fd; }
     #hud-plot-container {
       position: absolute;
@@ -896,7 +903,7 @@
       height: 185px;
       background: rgba(7,9,26,0.55);
       border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 3px;
+      border-radius: var(--radius-soft, 6px);
       overflow: hidden;
       opacity: 0;
       transition: opacity 0.5s;
@@ -933,7 +940,7 @@
       pointer-events: auto;
       background: rgba(7,9,26,0.85);
       border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 999px;
+      border-radius: var(--radius-pill, 999px);
       padding: 0.2rem;
       display: flex;
       gap: 2px;
@@ -943,7 +950,7 @@
       color: rgba(255,255,255,0.52);
       border: none;
       padding: 0.45rem 1.4rem;
-      border-radius: 999px;
+      border-radius: var(--radius-pill, 999px);
       font-size: 11px;
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
@@ -980,7 +987,7 @@
     .sim-load-line:first-child {
       font-size: 13px;
       letter-spacing: 0.22em;
-      color: #c4a258;
+      color: var(--gold);
     }
 
     /* sim responsive layout */
@@ -1007,7 +1014,7 @@
         top: auto; right: auto;
         width: auto;
         margin: 0 1.5rem 1rem;
-        border-radius: 0.5rem;
+        border-radius: var(--radius-soft, 6px);
         padding: 1rem 1.25rem;
       }
       #sim-stage {
@@ -1099,7 +1106,7 @@
       margin-bottom: 20px;
       border-radius: 1px;
     }
-    
+
     /* individual book spine, base height; JS overrides per content length */
     .book-spine {
       position: relative;
@@ -1338,7 +1345,7 @@
     }
     .modal-card-link:hover { opacity: 1; }
 
-    
+
 /* card call-to-action base layout */
 .card-cta {
   display: block;
@@ -1550,59 +1557,7 @@
       border-bottom-color: var(--gold);
     }
 
-    /* toggle, left side, clear of back-to-top */
-    #trail-toggle { display: none !important; }
-    #trail-toggle-retired {
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
-      left: 32px;
-      z-index: 300;
-      width: 40px;
-      height: 40px;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, border-color 0.18s, width 0.25s ease, padding 0.25s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    #trail-toggle img {
-      width: 26px;
-      height: 26px;
-      display: block;
-      flex-shrink: 0;
-      opacity: 0.85;
-      transition: opacity 0.18s;
-    }
-    /* label shown once on first visit, before any word is found */
-    #trail-toggle .trail-toggle-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0;
-      transition: opacity 0.25s ease 0.1s;
-      pointer-events: none;
-    }
-    #trail-toggle.trail-ready {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #trail-toggle.trail-on {
-      border-color: var(--gold);
-    }
-    #trail-toggle.trail-on img { opacity: 1; }
-    #trail-toggle:hover {
-      border-color: var(--gold);
-    }
-    #trail-toggle:hover img { opacity: 1; }
+    /* trail toggle retired */
 
     /* floating card */
     #trail-card {
@@ -1819,6 +1774,26 @@
     }
 
 /* epilepsy warning modal */
+.epilepsy-card {
+  max-width: 400px;
+  margin: 2rem;
+  background: rgba(7,9,26,0.95);
+  border: 1px solid rgba(196,162,88,0.3);
+  border-radius: var(--radius-soft, 6px);
+  padding: 2rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+.epilepsy-heading {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.epilepsy-actions {
+  display: flex;
+  gap: 1rem;
+}
 .epilepsy-body {
   font-size: 13px;
   color: rgba(226,221,212,0.85);
@@ -1848,7 +1823,7 @@
 .epilepsy-btn {
   flex: 1;
   padding: 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--radius-soft, 6px);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   cursor: pointer;
@@ -1866,7 +1841,7 @@
 .epilepsy-btn--confirm {
   background: rgba(196,162,88,0.12);
   border: 1px solid rgba(196,162,88,0.4);
-  color: #c4a258;
+  color: var(--gold);
 }
 .epilepsy-btn--confirm:hover {
   background: rgba(196,162,88,0.22);

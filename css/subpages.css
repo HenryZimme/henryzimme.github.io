@@ -1,4 +1,4 @@
-/* 
+/*
    subpages.css: shared chrome for all subpages
    covers: tokens, reset, nav, article scaffold, back-to-top, footer-nav,
            skip link, focus-visible, reduced-motion
@@ -15,6 +15,15 @@
   --panel:        rgba(7, 9, 26, 0.84);
   --panel-border: rgba(196, 162, 88, 0.18);
   --blue:         #78a5d2;
+  /* semantic status colors — one value each, shared by every sim/HUD surface
+     (deferred.css carries the same pair for the homepage; keep them in sync) */
+  --red:          #fca5a5;   /* hot / bad / warning  */
+  --green:        #86efac;   /* cool / good / confirm */
+  /* corner-radius language: the site is square by default, pills for chips,
+     soft only for HUD panels and modals — nothing else */
+  --radius-0:     0;
+  --radius-soft:  6px;
+  --radius-pill:  999px;
 }
 
 /* reset */
@@ -104,15 +113,20 @@ nav {
 }
 
 /* article scaffold */
-/* wide layout variant for research pages with data tables or figures */
-.article-wrap--wide {
+.article-wrap {
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: 120px 28px 100px;
+}
+
+/* wide variant for research pages */
+.article-wrap.article-wrap--wide {
   max-width: 800px;
 }
 
-.article-wrap {
+/* full variant for poster-embed pages (e.g. ccd_calibration) */
+.article-wrap.article-wrap--full {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 120px 28px 100px;
 }
 
 .article-meta {
@@ -426,8 +440,8 @@ sup a:hover { text-decoration: underline; }
     --blue:         #1a4a8a;
   }
 
-  nav, #back-to-top, .epilepsy-modal,
-  .modal-overlay, footer a[href]:not([href=""]) { display: none !important; }
+  nav, #back-to-top, #epilepsy-modal,
+  #object-modal, footer a[href]:not([href=""]) { display: none !important; }
 
   body { font-size: 12pt; line-height: 1.6; }
 
@@ -451,4 +465,117 @@ sup a:hover { text-decoration: underline; }
   overflow: hidden;
   clip: rect(0,0,0,0);
   white-space: nowrap;
+}
+
+/* ── research variant ─────────────────────────────────────────────────────
+   For appendix-style research pages (dense body text, boxed figures,
+   bibliography-grade captions). Add class="article-body article-body--research"
+   on the body div and .article-title--appendix on the h1 — do NOT redeclare
+   these per page. */
+.article-body.article-body--research p {
+  font-family: 'EB Garamond', serif;
+  font-size: 17px;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  line-height: 1.72;
+}
+.article-body.article-body--research h2 {
+  font-family: 'EB Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 60px 0 24px;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 12px;
+}
+.article-body.article-body--research figure {
+  margin: 48px 0;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  padding: 20px;
+}
+.article-body.article-body--research figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: none; /* the boxed figure supplies the frame */
+}
+.article-body.article-body--research figcaption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-top: 20px;
+  padding-left: 16px;
+  border-left: 2px solid var(--gold-dim);
+  text-transform: none;
+  letter-spacing: normal;
+  opacity: 1;
+}
+
+/* appendix title: larger display size for method/appendix pages */
+.article-title.article-title--appendix {
+  font-size: clamp(36px, 5vw, 48px);
+  line-height: 1.1;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 740px) {
+  .article-body.article-body--research h2 { font-size: 22px; margin: 40px 0 20px; }
+  .article-body.article-body--research figure { padding: 10px; }
+}
+
+/* epilepsy warning modal (synced with deferred.css) */
+.epilepsy-card {
+  max-width: 400px;
+  margin: 2rem;
+  background: rgba(7,9,26,0.95);
+  border: 1px solid rgba(196,162,88,0.3);
+  border-radius: var(--radius-soft, 6px);
+  padding: 2rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+.epilepsy-heading {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.epilepsy-body {
+  font-size: 13px;
+  color: rgba(226,221,212,0.85);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.epilepsy-actions {
+  display: flex;
+  gap: 1rem;
+}
+.epilepsy-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: var(--radius-soft, 6px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.epilepsy-btn--cancel {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.5);
+}
+.epilepsy-btn--cancel:hover {
+  border-color: rgba(255,255,255,0.28);
+  color: rgba(255,255,255,0.75);
+}
+.epilepsy-btn--confirm {
+  background: rgba(196,162,88,0.12);
+  border: 1px solid rgba(196,162,88,0.4);
+  color: var(--gold);
+}
+.epilepsy-btn--confirm:hover {
+  background: rgba(196,162,88,0.22);
+  border-color: rgba(196,162,88,0.65);
 }

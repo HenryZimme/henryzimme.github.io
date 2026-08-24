@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Diagnosing a 1/year Sampling Alias in OGLE-LMC-CEP-1347 | Henry Zimmerman</title>
-  <meta name="description" content="Methodological appendix for the OGLE-LMC-CEP-1347 binary Cepheid research project, detailing frequency analysis, alias detection, and 
+  <meta name="description" content="Methodological appendix for the OGLE-LMC-CEP-1347 binary Cepheid research project, detailing frequency analysis, alias detection, and
 orbital modeling.">
   <meta property="og:title" content="Methodological Appendix: CEP-1347 Analysis | Henry Zimmerman">
   <meta property="og:description" content="Methodological appendix for the OGLE-LMC-CEP-1347 binary Cepheid research project, covering frequency analysis, alias detection, and orbital modeling.">
@@ -19,8 +19,8 @@ orbital modeling.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
   <script>
     MathJax = {
       tex: {
@@ -31,48 +31,18 @@ orbital modeling.">
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
+    /* page-specific rules only */
 
-    .article-wrap--wide { max-width: 800px; }
-    
-    .appendix-label { 
-      font-family: 'JetBrains Mono', monospace; font-size: 12px; 
-      color: var(--gold); text-transform: uppercase; letter-spacing: 0.22em; 
-      margin-bottom: 20px; display: block; 
+    .appendix-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--gold); text-transform: uppercase; letter-spacing: 0.22em;
+      margin-bottom: 20px; display: block;
     }
-    
-    .article-title { 
-      font-family: 'EB Garamond', serif; font-size: clamp(36px, 5vw, 48px); 
-      font-weight: 400; line-height: 1.1; margin-bottom: 30px; 
-    }
-
-    .article-body p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; }
 
     .bibliography h2 {
       font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400;
       color: var(--text); margin: 0 0 24px;
       border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;
-    }
-
-    .bibliography p {
-      font-size: 15px;
-    }
-    
-    .article-body h2 { 
-      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400; 
-      color: var(--text); margin: 60px 0 24px; 
-      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; 
-    }
-
-    figure { 
-      margin: 48px 0; background: var(--panel); 
-      border: 1px solid var(--panel-border); padding: 20px; 
-    }
-    figure img { width: 100%; height: auto; display: block; }
-    
-    figcaption { 
-      font-family: 'JetBrains Mono', monospace; font-size: 12.5px; 
-      color: var(--text-dim); line-height: 1.6; margin-top: 20px; 
-      padding-left: 16px; border-left: 2px solid var(--gold-dim); 
     }
 
     .code-note {
@@ -84,10 +54,6 @@ orbital modeling.">
       border-top: 1px solid var(--panel-border);
       padding-top: 20px;
     }
-
-@media (max-width: 740px) {.article-wrap--wide { padding: 0 24px; margin-top: 100px; } 
-      .article-body h2 { font-size: 22px; margin: 40px 0 20px; }
-      figure { padding: 10px; }}
 
   </style>
   <link rel="manifest" href="/site.webmanifest">
@@ -106,25 +72,22 @@ orbital modeling.">
 <article class="article-wrap article-wrap--wide">
   <header>
     <span class="appendix-label">Methodological Appendix</span>
-    <h1 class="article-title">Diagnosing a 1/year Sampling Alias in OGLE-LMC-CEP-1347</h1>
+    <h1 class="article-title article-title--appendix">Diagnosing a 1/year Sampling Alias in OGLE-LMC-CEP-1347</h1>
     <p style="font-style: italic; color: var(--gold); margin-top: -10px;">This appendix documents the pipeline I constructed to clean OGLE light curves, investigate tidal residuals, and diagnose the sampling limits of ground-based photometry.</p>
   </header>
 
-  <div class="article-body">
+  <div class="article-body article-body--research">
     <h2>1. Chandrasekhar and the Kappa Mechanism</h2>
-    <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism, specifically whether the non-linear dynamics of Cepheid pulsation survive intact inside a binary with extreme tidal forces. After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I looked for an observational study on tidal impacts in 
+    <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism, specifically whether the non-linear dynamics of Cepheid pulsation survive intact inside a binary with extreme tidal forces. After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I looked for an observational study on tidal impacts in
       Cepheids, yet found a significant gap in the literature.</p>
-    
+
     <p>At the 247th AAS Meeting, I discussed this gap with many Cepheid researchers (including Scott Call, Barry Madore, and Eric Hintz). The consensus was that while tidal impacts were theoretically inevitable in short period systems, none were expected to exist, and none had been found. This was because to become Cepheids, stars would first have to survive Red Giant Branch expansion, which would consume any close companions. Neilson et al. (2015) documented how rarely Cepheids survive short-period orbits without prior mass transfer, and derived a theoretical limit of $P_{\text{orb}} > 240$ days from angular momentum transport calculations. Following the discovery of OGLE-LMC-CEP-1347 by Bogumił Pilecki ($P_{\text{orb}} = 58.85d$), I realized this system was a rare chance to test Cepheid pulsation models directly.</p>
 
-    <p>To isolate the residuals, I fit and subtracted multiple Fourier series to the $1O$ and $2O$ pulsation modes. Because the star is in a tight 
+    <p>To isolate the residuals, I fit and subtracted multiple Fourier series to the $1O$ and $2O$ pulsation modes. Because the star is in a tight
 orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z/c$) using orbital parameters from Pilecki et al. (2022). This pipeline achieved a residual precision of ~0.01 mag RMS. That is comparable to the amplitude of a low-amplitude non-radial mode, which set the sensitivity floor for what the photometry could plausibly detect.</p>
 
     <figure>
-      <picture>
-        <source srcset="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.webp" type="image/webp">
-        <picture><source srcset="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.webp" type="image/webp"><img loading="lazy" src="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.png" alt="Period-folded OGLE I-band light curve of OGLE-LMC-CEP-1347, first overtone mode."></picture>
-      </picture>
+      <picture><source srcset="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.webp" type="image/webp"><img loading="lazy" src="assets/figs/OGLE_LMC_CEP_1347_1O_Pulsation_Phased.png" alt="Period-folded OGLE I-band light curve of OGLE-LMC-CEP-1347, first overtone mode."></picture>
       <figcaption>Figure 1: First-overtone (1O) mode phased light curve. Prewhitening this dominant signal was the prerequisite for investigating the underlying residuals predicted by distorted polytrope models.</figcaption>
     </figure>
 
@@ -132,10 +95,7 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
     <p>My initial searches for phase-locked amplitude modulation yielded ambiguous results. However, following a reanalysis suggested by Dr. Barry Madore, I performed a deeper look into the residual power spectrum. Using simultaneous weighted dual-domain fitting across the OGLE $V$ and $I$ bands, I found a symmetric frequency triplet with a spacing of $\Delta f \approx 0.0074$ c/d. The ΔBIC surface, however, showed significance concentrated at two isolated epochs rather than persisting across the full baseline. That looked like a window function artifact, not a coherent stellar mode.</p>
 
     <figure>
-      <picture>
-        <source srcset="assets/figs/CEP-1347_dynamic_spectrum.webp" type="image/webp">
-        <picture><source srcset="assets/figs/CEP-1347_dynamic_spectrum.webp" type="image/webp"><img loading="lazy" src="assets/figs/CEP-1347_dynamic_spectrum.png" alt="Dynamic spectrum of residual frequencies."></picture>
-      </picture>
+      <picture><source srcset="assets/figs/CEP-1347_dynamic_spectrum.webp" type="image/webp"><img loading="lazy" src="assets/figs/CEP-1347_dynamic_spectrum.png" alt="Dynamic spectrum of residual frequencies."></picture>
       <figcaption>Figure 2: Dynamic spectrum used to verify the candidate multiplet. The signal's temporal incoherence across the baseline suggested it wasn't necessarily intrinsic to the stellar surface.</figcaption>
     </figure>
 
@@ -161,7 +121,7 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
 
     <h2>5. Spectroscopic Follow-up and Future Work</h2>
     <p>This photometric aliasing problem is the primary driver for our transition to high-resolution spectroscopy. By obtaining phase-constrained spectra with ESPRESSO, we can test the merger hypothesis directly against these abundance signatures. The spectroscopic approach sidesteps the sampling limits that make ground-based photometric period searches unreliable for this system. As Co-Investigator and primary author of the Science Justification, I am currently preparing a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki.</p>
-    
+
   </div>
 
   <div class="bibliography">
@@ -175,10 +135,8 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
   </div>
 </article>
 </main>
-  
-<button id="back-to-top" aria-label="Back to top">
-    ↑
-</button>
+
+<button id="back-to-top" aria-label="Back to top">↑</button>
 
 <script src="/js/writing-nav.js" defer></script>
 </body>

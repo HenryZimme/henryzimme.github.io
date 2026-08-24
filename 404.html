@@ -17,8 +17,8 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
 html { scroll-behavior: smooth; }
@@ -44,7 +44,7 @@ html { scroll-behavior: smooth; }
     }
 
     /* ── Nav ─────────────────────────────────────────────── */
-    
+
     .nav-links {
       display: flex;
       gap: 38px;
@@ -278,8 +278,15 @@ html { scroll-behavior: smooth; }
       H = canvas.height = window.innerHeight;
     }
 
+    // reduced-motion users get one static frame instead of the 30fps twinkle
+    // loop (same policy as the homepage star renderer)
+    let animate = !(
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+
     function draw(ts) {
-      if (ts - last_t < FRAME_MS) { requestAnimationFrame(draw); return; }
+      if (animate && ts - last_t < FRAME_MS) { requestAnimationFrame(draw); return; }
       last_t = ts;
 
       ctx.clearRect(0, 0, W, H);
@@ -287,7 +294,9 @@ html { scroll-behavior: smooth; }
       const t = ts / 1000;
 
       for (const s of stars) {
-        const twinkle = 0.55 + 0.45 * Math.sin(t * s.speed + s.phase);
+        const twinkle = animate
+          ? 0.55 + 0.45 * Math.sin(t * s.speed + s.phase)
+          : 0.8; // static, mid-range brightness when motion is reduced
         const a = s.alpha * (s.named ? twinkle : 0.6 + 0.4 * twinkle);
 
         ctx.beginPath();
@@ -298,13 +307,13 @@ html { scroll-behavior: smooth; }
       }
 
       ctx.globalAlpha = 1;
-      requestAnimationFrame(draw);
+      if (animate) requestAnimationFrame(draw);
     }
 
     build_stars();
     resize();
     window.addEventListener('resize', resize);
-    requestAnimationFrame(draw);
+    requestAnimationFrame(draw); // draws frame 0 even when animate === false
   })();
 </script>
 

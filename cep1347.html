@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OGLE-LMC-CEP-1347 | Henry Zimmerman</title>
   <meta name="description" content="Interactive simulation of OGLE-LMC-CEP-1347, the lowest-mass Cepheid in a double-lined binary. OGLE-IV photometry and Pilecki+ 2022 radial velocities.">
-  <meta property="og:title" content="OGLE-LMC-CEP-1347: Interactive Binary Cepheid Simulation">
+  <meta property="og:title" content="OGLE-LMC-CEP-1347: Interactive Binary Cepheid Simulation | Henry Zimmerman">
   <meta property="og:description" content="The lowest-mass classical Cepheid in a double-lined binary, orbiting in 58.85 days. Built from OGLE-IV photometry and Pilecki+ 2022 spectroscopy.">
   <meta property="og:url" content="https://www.henryzimmerman.net/cep1347.html">
   <meta property="og:type" content="website">
@@ -19,8 +19,8 @@
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@300;400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
     /* page-specific tokens (subpages.css provides the rest) */
@@ -203,7 +203,7 @@
       margin-left: 8px;
     }
 
-    
+
 
     .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; text-transform: uppercase; letter-spacing: 0.14em; transition: color 0.18s; }
     .back-link:hover { color: var(--text); }
@@ -214,16 +214,16 @@
       margin: 120px auto 100px;
       padding: 0 40px;
     }
-    
-    .appendix-label { 
-      font-family: 'JetBrains Mono', monospace; font-size: 12px; 
-      color: var(--gold); text-transform: uppercase; letter-spacing: 0.22em; 
-      margin-bottom: 20px; display: block; 
+
+    .appendix-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--gold); text-transform: uppercase; letter-spacing: 0.22em;
+      margin-bottom: 20px; display: block;
     }
-    
-    .article-title { 
-      font-family: 'EB Garamond', serif; font-size: clamp(36px, 5vw, 48px); 
-      font-weight: 400; line-height: 1.1; margin-bottom: 30px; 
+
+    .article-title {
+      font-family: 'EB Garamond', serif; font-size: clamp(36px, 5vw, 48px);
+      font-weight: 400; line-height: 1.1; margin-bottom: 30px;
     }
 
     .article-content p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; }
@@ -237,11 +237,11 @@
     .bibliography p {
       font-size: 15px;
     }
-    
-    .article-content h2 { 
-      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400; 
-      color: var(--text); margin: 60px 0 24px; 
-      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; 
+
+    .article-content h2 {
+      font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400;
+      color: var(--text); margin: 60px 0 24px;
+      border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;
     }
 
     /* parameter table */
@@ -390,12 +390,12 @@
 
   <!-- epilepsy modal -->
   <div id="epilepsy-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(7,9,26,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
-    <div style="max-width:400px;margin:2rem;background:rgba(7,9,26,0.95);border:1px solid rgba(196,162,88,0.3);border-radius:12px;padding:2rem;font-family:'JetBrains Mono',monospace;">
-      <div style="font-size:10px;letter-spacing:0.2em;color:#c4a258;text-transform:uppercase;margin-bottom:1rem;">&#9888; Photosensitivity Warning</div>
-      <p style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: rgba(226,221,212,0.85); line-height: 1.7; margin-bottom: 1.5rem;">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
-      <div style="display:flex;gap:1rem;">
-        <button onclick="document.getElementById('epilepsy-modal').style.display='none';" style="flex:1;padding:0.6rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">Cancel</button>
-        <button onclick="document.getElementById('epilepsy-modal').style.display='none';window.setMode('realtime');" style="flex:1;padding:0.6rem;background:rgba(196,162,88,0.12);border:1px solid rgba(196,162,88,0.4);border-radius:6px;color:#c4a258;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">I understand, continue</button>
+    <div class="epilepsy-card">
+      <div id="epilepsy-heading" class="epilepsy-heading">&#9888; Photosensitivity Warning</div>
+      <p class="epilepsy-body">Real-time mode shows the Cepheid pulsating with the true physical ratio between the 1O pulsation frequency and the orbital frequency. This produces rapid brightness changes at 4.3 cycles per second that may affect people with photosensitive epilepsy or migraines. Do not enable if you have a history of photosensitive conditions.</p>
+      <div class="epilepsy-actions">
+        <button id="epilepsy-cancel" class="epilepsy-btn epilepsy-btn--cancel">Cancel</button>
+        <button id="epilepsy-confirm" class="epilepsy-btn epilepsy-btn--confirm">I understand, continue</button>
       </div>
     </div>
   </div>
@@ -438,20 +438,20 @@
       </div>
     </div>
 
-    <!-- mode buttons -->
+    <!-- mode buttons: bound by cepheid-engine.js + the epilepsy modal script below -->
     <div id="mode-bar">
-      <button class="btn-mode" id="btn-orbital"    onclick="setMode('orbital')">Orbital</button>
-      <button class="btn-mode" id="btn-pulsation"  onclick="setMode('pulsation')">Pulsation</button>
-      <button class="btn-mode" id="btn-realtime"   onclick="document.getElementById('epilepsy-modal').style.display='flex'">Real-Time &#9888;</button>
+      <button class="btn-mode" id="btn-orbital">Orbital</button>
+      <button class="btn-mode" id="btn-pulsation">Pulsation</button>
+      <button class="btn-mode" id="btn-realtime">Real-Time &#9888;</button>
     </div>
 
-    <!-- playback controls (play/pause + speed) -->
+    <!-- playback controls (play/pause + speed): bound by cepheid-engine.js -->
     <div id="playback-bar">
-      <button class="btn-mode" id="btn-play" onclick="cepTogglePlay()" aria-pressed="true" aria-label="Pause or play the simulation">&#9208; Pause</button>
+      <button class="btn-mode" id="btn-play" aria-pressed="true" aria-label="Pause or play the simulation">&#9208; Pause</button>
       <span class="pb-label">Speed</span>
-      <button class="btn-mode" id="btn-speed-half" onclick="cepSetSpeed(0.5)" aria-pressed="false">0.5&times;</button>
-      <button class="btn-mode" id="btn-speed-1"    onclick="cepSetSpeed(1)"   aria-pressed="true">1&times;</button>
-      <button class="btn-mode" id="btn-speed-2"    onclick="cepSetSpeed(2)"   aria-pressed="false">2&times;</button>
+      <button class="btn-mode" id="btn-speed-half" aria-pressed="false">0.5&times;</button>
+      <button class="btn-mode" id="btn-speed-1"    aria-pressed="true">1&times;</button>
+      <button class="btn-mode" id="btn-speed-2"    aria-pressed="false">2&times;</button>
     </div>
 
     <!-- orbital param strip -->
@@ -552,7 +552,7 @@
 
   </main>
 
-  <button id="back-to-top" aria-label="Back to top">&#8593;</button>
+  <button id="back-to-top" aria-label="Back to top">↑</button>
 
   <!-- film mode: activated by ?film query param -->
   <script>
@@ -609,21 +609,31 @@
     })();
   </script>
 
-  <!-- back to top -->
+  <!-- back to top + epilepsy modal wiring: delegated to writing-nav.js (btt)
+       and this small script (modal) instead of inline onclick handlers -->
+  <script src="/js/writing-nav.js" defer></script>
   <script>
-    const backToTopBtn = document.getElementById('back-to-top');
+    (function () {
+      var modal = document.getElementById('epilepsy-modal');
+      var openBtn = document.getElementById('btn-realtime');
+      var cancelBtn = document.getElementById('epilepsy-cancel');
+      var confirmBtn = document.getElementById('epilepsy-confirm');
+      if (!modal || !openBtn) return;
 
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 500) {
-        backToTopBtn.classList.add('visible');
-      } else {
-        backToTopBtn.classList.remove('visible');
-      }
-    }, { passive: true });
-
-    backToTopBtn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      openBtn.addEventListener('click', function () {
+        modal.style.display = 'flex';
+        if (cancelBtn) cancelBtn.focus();
+      });
+      if (cancelBtn) cancelBtn.addEventListener('click', function () {
+        modal.style.display = 'none';
+        openBtn.focus();
+      });
+      if (confirmBtn) confirmBtn.addEventListener('click', function () {
+        modal.style.display = 'none';
+        if (typeof window.setMode === 'function') window.setMode('realtime');
+        openBtn.focus();
+      });
+    })();
   </script>
 
   <!-- lazy-load sim engine when canvas enters viewport (matches index.html pattern) -->
