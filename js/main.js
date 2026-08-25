@@ -124,7 +124,7 @@ const featured_objects = [
     card_url: "#card-usgr",
     has_sim: true, // interactive simulation lives on the U_Sgr_abs.html subpage
     type: "Classical Cepheid Variable  |  Open Cluster M25",
-    writeup: "My first independent research target. U Sgr sits inside M25, a loose open cluster you can just resolve in binoculars, which made it a good starting point: bright enough to work with a modest telescope, with enough nearby cluster stars to build a reliable differential photometry reference frame. What I didn't expect was how cleanly dust extinction would separate the V-band error from the I-band."
+    writeup: "My first independent research target. U Sgr sits inside the open cluster  M25, which made it a good starting point: bright enough to work with a modest telescope, and with enough nearby cluster stars to build a reliable differential photometry reference frame. I did not expect how cleanly dust extinction would separate the V-band error from the I-band."
   },
   {
     name: "7605 Cindygraber | v = 16.0",
@@ -134,7 +134,7 @@ const featured_objects = [
     card_url: "#card-cindygraber",
     has_sim: true, // interactive simulation lives on the asteroid_observer.html subpage
     type: "Main-Belt Asteroid  |  Propagated sky position",
-    writeup: "7605 Cindygraber has no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler mattered as much as the telescope time. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
+    writeup: "7605 Cindygraber had no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler I built mattered as much as the telescope time. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
   },
   {
     name: "19243 Bunting | v = 15.9",
@@ -143,7 +143,7 @@ const featured_objects = [
     image_url: "/assets/pops/bunting_sub.jpeg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Propagated sky position",
-    writeup: "19243 Bunting has no confirmed synodic rotation period. In my astronomy research class, we are determining it through multi-band photometry, using the same open-source scheduler and pipeline as my parallel campaign on 7605 Cindygraber. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
+    writeup: "19243 Bunting has no confirmed synodic rotation period. We determined it through R-band photometry at Phillips Academy Observatory, using the same open-source scheduler as my parallel campaign on 7605 Cindygraber. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
   },
   {
     name: "5745 1991 AN | V \u2248 17.9",
@@ -152,7 +152,7 @@ const featured_objects = [
     card_url: "#card-astcadence",
     has_sim: true, // interactive simulation is the astcadence.html demo itself
     type: "Main-Belt Asteroid  |  Demonstration target",
-    writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate the cadence-optimization framework. A 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the gap between uniform and optimized sampling is largest: uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds; the optimized cadence succeeds in 100%. The marker above is 2-body propagated from its astorb orbital elements to today's date."
+    writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate my cadence-optimization framework. As it's a 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the difference between uniform and optimized sampling is largest. Uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds, while the optimized cadence succeeds in 100%. The marker above is 2-body propagated from its astorb orbital elements to today's date."
   },
   {
     name: "HD 344787 | v = 9.32",
@@ -162,7 +162,7 @@ const featured_objects = [
     simbad_id: "HD344787",
     pipeline: true,
     type: "Active Investigation  |  Northern Sky",
-    writeup: "At the 247th AAS meeting, I watched Dupree et al. present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like Polaris (<a href=\"https://doi.org/10.1051/0004-6361/202040123\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">Ripepi et al. 2021</a>)? Is it alone, or is something else there, invisible and waiting to be found?"
+    writeup: "At the 247th AAS meeting, I watched Dupree et al. present evidence that Betelgeuse has a hidden companion star, detected not by seeing it directly but by watching it stir up the giant star's atmosphere as it orbits (<a href=\"https://ui.adsabs.harvard.edu/abs/2026ApJ...998...50D/abstract\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">ApJ 998, 50</a>). That talk left me with a question: if you can find a hidden companion in Betelgeuse that way, what about a quiet star like HD 344787, a low-amplitude Cepheid that looks a lot like the binary Polaris (<a href=\"https://doi.org/10.1051/0004-6361/202040123\" target=\"_blank\" rel=\"noopener\" style=\"color:#d4693a\">Ripepi et al. 2021</a>)? Is it alone, or is something else there, waiting to be found?"
   }
 ];
 
@@ -1620,9 +1620,10 @@ let hint_alpha = 0;
 let hint_dismissed = false;
 let hint_target = null; // set once in pick_hint_target after catalog loads
 
-// pick a random featured star whose label zone won't overlap nav, hero text, or legend.
-// safe zone: y between 90 and cssH-90, label box clears hero text column
-// (left ~42% of canvas, bottom 55% of height).
+// pick a random featured star whose label zone won't overlap nav, hero text, or legend pills.
+// safe zone: y between 90 and cssH-20, label box clears hero text column
+// (left ~42% of canvas, bottom 55% of height) and right-side pill column
+// (right 220px, bottom 38% of height).
 function pick_hint_target() {
   if (!featured_stars.length) { hint_target = null; return; }
   const is_mobile = cssW <= 740;
@@ -1632,8 +1633,8 @@ function pick_hint_target() {
   const safe = featured_stars.filter(s => {
     // exclude HD 344787 from hint callout
     if (s.name && s.name.startsWith('HD 344787')) return false;
-    // vertical: clear nav (90px) and legend (90px from bottom)
-    if (s.y < 90 || s.y > cssH - 90) return false;
+    // vertical: clear nav (90px top) and bottom edge (20px)
+    if (s.y < 90 || s.y > cssH - 20) return false;
     // compute label x based on which side has room
     const label_left = s.x > cssW * 0.55;
     const lx = label_left
@@ -1641,10 +1642,13 @@ function pick_hint_target() {
       : Math.min(cssW - label_w / 2 - 8, s.x + offset);
     const label_bot      = s.y - 42 + label_h / 2;
     const label_left_edge = lx - label_w / 2;
+    const label_right_edge = lx + label_w / 2;
     // hero text occupies roughly left 42% of canvas, below 45% of height
     const in_hero_col  = label_left_edge < cssW * 0.42;
     const in_hero_vert = label_bot > cssH * 0.45;
     if (in_hero_col && in_hero_vert) return false;
+    // right-side legend pills occupy right ~220px, bottom 38% of viewport
+    if (!is_mobile && label_right_edge > cssW - 220 && label_bot > cssH * 0.62) return false;
     return true;
   });
   const eligible = featured_stars.filter(s => !(s.name && s.name.startsWith('HD 344787')));
@@ -2042,9 +2046,9 @@ init();
 
 // -- HTML legend pills + sky <-> research hover link --
 // Featured objects appear as focusable, screen-readable pills (replacing the
-// old canvas legend). Hovering a pill or a research card lights up that
-// object's star on the sky; pills link to their research card and fade out
-// once scrolled past the hero. Runs on defer, so the DOM is ready.
+// old canvas legend). Hovering a pill lights up that object's star on the
+// sky; clicking opens the object modal (which already links to the research
+// card). Pills fade out once scrolled past the hero. Runs on defer, DOM ready.
 (function () {
   const legend = document.getElementById('sky-legend');
   if (!legend) return;
@@ -2059,10 +2063,11 @@ init();
   featured_objects.forEach((o, i) => {
     const color = FEATURED_COLORS[i] || FEATURED_COLORS[0];
     const short = (o.name || '').split(' | ')[0].trim();
-    const pill  = document.createElement(o.card_url ? 'a' : 'span');
+    const pill  = document.createElement('button');
     pill.className = 'legend-pill';
+    pill.type = 'button';
     pill.style.setProperty('--c', color);
-    if (o.card_url) pill.href = o.card_url;
+    pill.addEventListener('click', () => open_modal(o));
     pill.innerHTML = '<span class="legend-dot"></span><span>' + short + '</span>' +
       (o.elements ? '<span class="legend-live">Live</span>' : '') +
       (o.has_sim ? '<span class="legend-sim">Sim</span>' : '');
