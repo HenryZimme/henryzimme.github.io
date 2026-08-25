@@ -22,7 +22,7 @@
        URLs are versioned (v32)
        if Google updates the font the hash changes and these
        will 404 silently
-       VERIFY by filtering Network > Font in DevTools periodically -->
+       VERIFY by filtering Network > Font in DevTools periodically (1 * mo^-1) -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2">
   <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -45,7 +45,7 @@
       --radius-pill: 999px;
     }
 
-    /* Metric-matched Georgia fallback reduces layout shift while EB Garamond loads.
+    /* metric-matched Georgia fallback reduces layout shift while EB Garamond loads */
     @font-face {
       font-family: 'EB Garamond Fallback';
       src: local('Georgia'), local('Georgia-Regular');
