@@ -115,6 +115,7 @@ nav {
 /* article scaffold */
 .article-wrap {
   max-width: 72ch;
+  font-size: 20px; /* sync ch res w/ paragraph txt */
   margin: 0 auto;
   padding: 120px 28px 100px;
 }

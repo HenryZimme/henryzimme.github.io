@@ -286,12 +286,12 @@
   <div id="divider"></div>
 
   <div id="controls">
-    <button class="spd-btn" data-dur="500">Slow</button>
-    <button class="spd-btn active" data-dur="100">Med</button>
-    <button class="spd-btn" data-dur="20">Fast</button>
-    <button class="spd-btn hide-mobile" data-dur="4">Faster</button>
-    <button class="spd-btn hide-mobile" data-dur="0">Max</button>
-    <button class="spd-btn pause-btn" data-dur="-1">⏸</button>
+    <button class="spd-btn" data-dur="500" aria-pressed="false">Slow</button>
+    <button class="spd-btn active" data-dur="100" aria-pressed="true">Med</button>
+    <button class="spd-btn" data-dur="20" aria-pressed="false">Fast</button>
+    <button class="spd-btn hide-mobile" data-dur="4" aria-pressed="false">Faster</button>
+    <button class="spd-btn hide-mobile" data-dur="0" aria-pressed="false">Max</button>
+    <button class="spd-btn pause-btn" data-dur="-1" aria-pressed="false">⏸</button>
     <div class="sep"></div>
     <div id="scrub-wrap">
       <button class="spd-btn step-btn" id="btn-minus-1d">◄◄ 1d</button>
@@ -1172,7 +1172,7 @@
 
   // ---
   let cur_fi      = 0;
-  let frame_dur   = 100;    // ms per animation frame; -1 = paused
+  let frame_dur   = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? -1 : 100;
   let last_t      = null;
   let accum_t     = 0;
   let raf_id      = null;

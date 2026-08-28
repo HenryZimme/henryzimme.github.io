@@ -1214,7 +1214,7 @@
     var dt_ms = Math.min(now - lastTime, 100);
     lastTime = now;
     // freeze time when paused or scrolled off-screen; otherwise scale by speed.
-    // realtime mode is force-locked to 1x: speeding the 4.3 Hz flash would push it
+    // realtime mode is force-locked to 1x: speeding the ~2.9 Hz flash would push it
     // into the photosensitive-seizure danger band.
     if (paused || offscreen) dt_ms = 0;
     else if (currentMode !== 'realtime') dt_ms *= speed;

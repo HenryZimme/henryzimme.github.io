@@ -1039,7 +1039,7 @@ function on_touch_end(e) {
 
   // don't intercept taps on UI elements layered above the canvas, popover is fixed-position over the hero and would otherwise trigger star detection
   const el = document.elementFromPoint(tx, ty);
-  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card') || el.closest('#sky-legend') || el.closest('.trail-word') || el.closest('#trail-card') || el.closest('#trail-toggle'))) return;
+  if (el && (el.closest('#star-popover') || el.closest('.book-spine') || el.closest('.project-card') || el.closest('#sky-legend') || el.closest('.trail-word') || el.closest('#trail-card'))) return;
 
   if (!canvas_exposed_at(tx, ty)) return;
 
@@ -1708,7 +1708,7 @@ document.querySelectorAll('.card-toggle').forEach(function(btn) {
 });
 
 // on-load hash routing for direct research card links (e.g. henryzimmerman.net/#card-cep1347)
-const card_ids = ['card-cep1347', 'card-cindygraber', 'card-usgr'];
+const card_ids = ['card-cep1347', 'card-cindygraber', 'card-usgr', 'card-astcadence'];
 const hash_target = window.location.hash.slice(1); // strip leading #
 if (card_ids.includes(hash_target)) {
   const card_el = document.getElementById(hash_target);
@@ -1838,7 +1838,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   let active    = false;
   let observer  = null;
 
-  const toggle     = document.getElementById('trail-toggle');
   const card       = document.getElementById('trail-card');
   const hintText   = document.getElementById('trail-hint-text');
   const nEl        = document.getElementById('trail-n');
@@ -1847,7 +1846,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   const listEl     = document.getElementById('trail-words-list');
   const completeEl = document.getElementById('trail-complete');
 
-  if (!toggle || !card) return;
+  if (!card) return;
 
   // set total count from DOM
   if (totalEl) totalEl.textContent = TOTAL;
@@ -1966,7 +1965,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   function showCard() {
     active = true;
     document.body.classList.add('trail-active');
-    toggle.classList.add('trail-on');
     card.classList.add('trail-card-visible');
     card.classList.remove('trail-collapsed');
     scheduleCollapse();
@@ -1984,14 +1982,9 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   function hideCard() {
     active = false;
     document.body.classList.remove('trail-active');
-    toggle.classList.remove('trail-on');
     card.classList.remove('trail-card-visible');
     if (observer) { observer.disconnect(); observer = null; }
   }
-
-  toggle.addEventListener('click', function () {
-    if (active) hideCard(); else showCard();
-  });
 
   var collapseBtn = document.getElementById('trail-collapse');
   if (collapseBtn) collapseBtn.addEventListener('click', function (e) {
@@ -2003,9 +1996,6 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   activateListeners();
 
   function activateToggle() {
-    toggle.classList.add('trail-ready');
-    // show the collapsed grip tab as the on-load entry point (the floating
-    // toggle is retired; the grip is now the trail's signifier)
     if (!active) card.classList.add('trail-card-visible', 'trail-collapsed');
   }
 
