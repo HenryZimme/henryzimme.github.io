@@ -134,7 +134,7 @@ const featured_objects = [
     card_url: "#card-cindygraber",
     has_sim: true, // interactive simulation lives on the asteroid_observer.html subpage
     type: "Main-Belt Asteroid  |  Propagated sky position",
-    writeup: "7605 Cindygraber had no confirmed synodic rotation period. I picked it partly for that reason: it's a gap in the catalog that's measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler I built mattered as much as the telescope time. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
+    writeup: "7605 Cindygraber had no confirmed synodic rotation period. I picked it partly for that reason: it's a bright, high-lattitude asteroid measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler I built mattered as much as the telescope time. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
   },
   {
     name: "19243 Bunting | v = 15.9",
