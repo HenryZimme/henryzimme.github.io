@@ -1,7 +1,9 @@
 /* deferred.css — homepage deferred styles.
-   ⚠ KEEP IN SYNC ⚠ A byte-identical copy of this file is inlined in index.html as
+   KEEP IN SYNC
+   a byte-identical copy of this file is inlined in index.html as
    <style id="deferred-fallback" disabled> (the async-CSS onerror fallback).
-   ANY edit here MUST be mirrored into that block — or regenerate it by copying
+   ANY edit here MUST be mirrored into that block
+   also can  regenerate it by copying
    this file's content between the <style id="deferred-fallback" disabled> tags. */
 
 /* tooltip */
@@ -33,22 +35,22 @@
       min-width: 180px;
       max-width: 260px;
 
-      /* 1. When hidden, it shouldn't block clicks */
+      /* 1. when hidden, it shouldn't block clicks */
       opacity: 0;
       pointer-events: none;
 
-      /* 2. Wait 0.4 seconds before fading out and disabling clicks */
+      /* 2. await 0.4 seconds before fading out and disabling clicks */
       transition: opacity 0.2s ease 0.4s, pointer-events 0s linear 0.4s;
     }
 
     #star-popover.visible {
-      /* 3. Appear instantly with NO delay when the class is added */
+      /* 3. appear instantly with NO delay when the class is added */
       opacity: 1;
       pointer-events: all;
       transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s;
     }
 
-    /* 4. The Magic Trick: Keep it visible if the mouse makes it to the popover! */
+    /* 4. keep visible if the mouse makes it to the popover! */
     #star-popover:hover {
       opacity: 1;
       pointer-events: all;
@@ -84,13 +86,15 @@
     }
 
     /* modal */
+    /* z:400, must cover #trail-card/#back-to-top (z:300); sits below
+       #epilepsy-modal (z:1000), needs top z order */
     #object-modal {
       position: fixed;
       inset: 0;
       background: rgba(5, 7, 18, 0.88);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      z-index: 200;
+      z-index: 400;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -206,17 +210,12 @@
       padding: 100px 52px;
       scroll-margin-top: 72px;
     }
-    /* weak-device path: blur is the costliest thing to composite over the
-       animating canvas on scroll; drop it and lean on a more opaque panel. */
     body.perf-lite .section {
       backdrop-filter: none; -webkit-backdrop-filter: none;
       background: rgba(7, 9, 26, 0.93);
     }
 
-    /* cepheid-sim is not a .section but is a nav target */
     #cepheid-sim { scroll-margin-top: 72px; }
-    /* about + research both carry 100px padding = ~200px into research;
-       trim research's top to match the ~100px rhythm elsewhere */
     #research { padding-top: 32px; }
 
     .section-inner {
@@ -234,7 +233,6 @@
       white-space: nowrap;
     }
 
-    /* ::before = mono label pulled from data-label; ::after = decorative rule */
     .section-heading {
       font-family: 'EB Garamond', serif;
       font-size: clamp(32px, 5vw, 48px);
@@ -287,7 +285,7 @@
       padding: 0 0 1px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.08em;
       color: var(--text-dim);
       text-transform: uppercase;
       opacity: 0.45;
@@ -331,11 +329,11 @@
     }
 
     .meta-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.16em;
+
+      font-family: 'Spectral', serif;
+      font-size: 13.5px;
+      letter-spacing: 0.04em;
       color: var(--gold);
-      text-transform: uppercase;
       margin-bottom: 6px;
     }
 
@@ -396,7 +394,7 @@
     .card-id {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.12em;
       color: var(--gold);
       text-transform: uppercase;
       margin-bottom: 13px;
@@ -498,7 +496,7 @@
     .tag {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.04em;
       color: var(--text-dim);
       border: 1px solid rgba(226, 221, 212, 0.15);
       padding: 3px 10px;
@@ -508,7 +506,7 @@
     /* artifact line: scannable links surfaced above the fold (Variant B) */
     .card-primary { margin: 0 0 10px; }
     .card-artifacts { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; margin: 0 0 20px; }
-    .artifact-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(226, 221, 212, 0.4); padding-bottom: 1px; transition: color 0.18s, border-color 0.18s; white-space: nowrap; }
+    .artifact-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(226, 221, 212, 0.4); padding-bottom: 1px; transition: color 0.18s, border-color 0.18s; white-space: nowrap; }
     .artifact-link:hover { color: var(--gold); border-bottom-color: var(--gold); }
     .artifact-link.ext:hover { color: var(--blue); border-bottom-color: var(--blue); }
     .artifact-sep { color: var(--gold-dim); margin: 0 10px; font-size: 11px; }
@@ -517,7 +515,7 @@
       display: inline-block;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.08em;
       color: var(--gold);
       text-decoration: none;
       text-transform: uppercase;
@@ -617,17 +615,18 @@
     }
 
     .writing-venue {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.15em;
+     
+      font-family: 'Spectral', serif;
+      font-style: italic;
+      font-size: 13.5px;
+      letter-spacing: 0.02em;
       color: var(--gold);
-      text-transform: uppercase;
     }
 
     .writing-date {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.08em;
+      font-family: 'Spectral', serif;
+      font-size: 12.5px;
+      letter-spacing: 0.02em;
       color: var(--text-dim);
     }
 
@@ -749,7 +748,7 @@
     .footer-links a {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.08em;
       color: var(--text-dim);
       text-decoration: none;
       text-transform: uppercase;
@@ -765,8 +764,6 @@
       opacity: 0.7;
     }
 
-    /* back to top — geometry matches subpages.css (44px, border hover) so the
-       button looks identical on the homepage and every subpage */
     #back-to-top {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
@@ -1427,7 +1424,7 @@
         flex: 1 1 100%;
       }
       /* shrink meta text slightly to fit narrow column */
-      .about-meta .meta-label { font-size: 10px; }
+      .about-meta .meta-label { font-size: 12px; }
       .about-meta .meta-value { font-size: 13px; line-height: 1.52; }
 
       /* ── research ─────────────────────────────────────────────────────────── */
@@ -1846,4 +1843,35 @@
 .epilepsy-btn--confirm:hover {
   background: rgba(196,162,88,0.22);
   border-color: rgba(196,162,88,0.65);
+}
+
+
+body:has(.nav-hamburger.open) #trail-card,
+body:has(.nav-hamburger.open) #back-to-top {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition-delay: 0s !important;
+}
+
+
+@media (max-width: 740px) {
+  #trail-card.trail-card-visible.trail-collapsed:not([data-engaged]) {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+
+#back-to-top.bt-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+@media (max-width: 740px) {
+  #back-to-top {
+    right: 14px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
 }

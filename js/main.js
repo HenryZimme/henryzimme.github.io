@@ -15,7 +15,7 @@ const PERF = (() => {
   const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const coarse = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
 
-  // GPU class from the WebGL renderer string. The GPU, not the CPU, composites
+  // GPU class from  WebGL renderer string. The GPU, **not the CPU**, composites
   // the blurred panels over the animating canvas, so it matters most here.
   let gpuWeak = false, gpuStrong = false;
   try {
@@ -1603,6 +1603,18 @@ mobile_nav.querySelectorAll('.mobile-link').forEach(a => {
 
 // -- back to top --
 const back_to_top_btn = document.getElementById('back-to-top');
+
+(function () {
+  const shelf = document.getElementById('bookshelf');
+  if (!shelf || !back_to_top_btn || !('IntersectionObserver' in window)) return;
+  const mobile_mq = window.matchMedia('(max-width: 740px)');
+  const shelf_io = new IntersectionObserver((entries) => {
+    if (!mobile_mq.matches) return;
+    back_to_top_btn.classList.toggle('bt-hidden', entries[0].isIntersecting);
+  }, { threshold: 0.12 });
+  shelf_io.observe(shelf);
+})();
+
 window.addEventListener('scroll', () => {
   back_to_top_btn.classList.toggle('visible', window.scrollY >= research_scroll_top);
 
@@ -1919,6 +1931,9 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
     e.preventDefault();
     e.stopPropagation(); // don't let the click reach parent handlers (e.g. writing-row navigation)
     if (!active) showCard();
+    // visitor has engaged with the trail at least once: from now on the
+    // collapsed grip may persist on mobile (see deferred.css tier 0.2)
+    card.dataset.engaged = '1';
     const word = e.currentTarget.dataset.word;
     if (found.indexOf(word) !== -1) return;
     // remove first-word hint from clicked element
