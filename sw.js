@@ -6,7 +6,7 @@
 //   - KaTeX is self-hosted under /assets/katex/ and rides the same-origin static path
 //
 // bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v48';
+const CACHE_VERSION = 'v49';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
