@@ -23,14 +23,8 @@ orbital modeling.">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
-  <script>
-    MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']]
-      }
-    };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link rel="stylesheet" href="/assets/katex/katex.min.css">
+  <link rel="stylesheet" href="/assets/katex/math.css">
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
     /* page-specific rules only */
@@ -57,6 +51,31 @@ orbital modeling.">
       padding-top: 20px;
     }
 
+    html { scroll-behavior: smooth; }
+    [id^="sec-"] { scroll-margin-top: 80px; }
+
+    /* sticky section nav (mirrors astcadence.html) */
+    #section-nav {
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, calc(-50% - 6px));
+      display: flex; gap: 22px; width: max-content; max-width: 60%;
+      opacity: 0;
+      transition: opacity 0.32s ease, transform 0.32s ease;
+      pointer-events: none;
+    }
+    #section-nav[data-visible="true"] { opacity: 1; transform: translate(-50%, -50%); pointer-events: auto; }
+    #section-nav a {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.28); text-decoration: none;
+      padding: 4px 0; border-bottom: 1px solid transparent;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    #section-nav a:hover { color: rgba(255,255,255,0.7); }
+    #section-nav a[aria-current="true"] { color: var(--gold); border-bottom-color: var(--gold-dim); }
+    @media (max-width: 1100px) { #section-nav { gap: 16px; } }
+    @media (max-width: 740px) { #section-nav { display: none !important; } }
+
   </style>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
@@ -67,19 +86,28 @@ orbital modeling.">
 
 <nav aria-label="Primary">
   <a href="index.html" class="nav-name">Henry Zimmerman</a>
+  <nav aria-label="Page sections" id="section-nav" hidden>
+    <a href="#main" data-section="sec-top">Top</a>
+    <a href="#sec-kappa" data-section="sec-kappa">Background</a>
+    <a href="#sec-frequency" data-section="sec-frequency">Frequency</a>
+    <a href="#sec-tidal" data-section="sec-tidal">Tidal</a>
+    <a href="#sec-window" data-section="sec-window">Window</a>
+    <a href="#sec-followup" data-section="sec-followup">Follow-up</a>
+    <a href="#sec-references" data-section="sec-references">References</a>
+  </nav>
   <a href="index.html#research" class="nav-back">← Back to Research</a>
 </nav>
 
 <main id="main">
 <article class="article-wrap article-wrap--wide">
-  <header>
+  <header id="sec-top">
     <span class="appendix-label">Methodological Appendix</span>
     <h1 class="article-title article-title--appendix">Diagnosing a 1/year Sampling Alias in OGLE-LMC-CEP-1347</h1>
     <p style="font-style: italic; color: var(--gold); margin-top: -10px;">This appendix documents the pipeline I constructed to clean OGLE light curves, investigate tidal residuals, and diagnose the sampling limits of ground-based photometry.</p>
   </header>
 
   <div class="article-body article-body--research">
-    <h2>1. Chandrasekhar and the Kappa Mechanism</h2>
+    <h2 id="sec-kappa">1. Chandrasekhar and the Kappa Mechanism</h2>
     <p>This investigation started with a curiosity that emerged from my first Cepheid project: while studying U Sagittarii, I found myself wondering whether external forces could perturb the kappa mechanism, specifically whether the non-linear dynamics of Cepheid pulsation survive intact inside a binary with extreme tidal forces. After studying Chandrasekhar's <em>The Equilibrium of Distorted Polytropes</em>, I looked for an observational study on tidal impacts in
       Cepheids, yet found a significant gap in the literature.</p>
 
@@ -93,7 +121,7 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
       <figcaption>Figure 1: First-overtone (1O) mode phased light curve. Prewhitening this dominant signal was the prerequisite for investigating the underlying residuals predicted by distorted polytrope models.</figcaption>
     </figure>
 
-    <h2>2. Frequency Analysis & Bayesian Model Selection</h2>
+    <h2 id="sec-frequency">2. Frequency Analysis & Bayesian Model Selection</h2>
     <p>My initial searches for phase-locked amplitude modulation yielded ambiguous results. However, following a reanalysis suggested by Dr. Barry Madore, I performed a deeper look into the residual power spectrum. Using simultaneous weighted dual-domain fitting across the OGLE $V$ and $I$ bands, I found a symmetric frequency triplet with a spacing of $\Delta f \approx 0.0074$ c/d. The ΔBIC surface, however, showed significance concentrated at two isolated epochs rather than persisting across the full baseline. That looked like a window function artifact, not a coherent stellar mode.</p>
 
     <figure>
@@ -101,7 +129,7 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
       <figcaption>Figure 2: Dynamic spectrum used to verify the candidate multiplet. The signal's temporal incoherence across the baseline suggested it wasn't necessarily intrinsic to the stellar surface.</figcaption>
     </figure>
 
-    <h2>3. Physical Constraints & Tidal Modulation</h2>
+    <h2 id="sec-tidal">3. Physical Constraints & Tidal Modulation</h2>
     <p>Applying Kepler’s Third Law to the system masses ($M_{\text{cep}} = 3.41 \pm 0.08 M_{\odot}$, $M_{\text{comp}} = 1.89 \pm 0.04 M_{\odot}$), I determined an orbital separation of 111 $R_{\odot}$. Using the approximation $\Delta R / R \approx (M_{\text{comp}}/M_{\text{cep}}) \cdot (R_{\text{cep}}/a)^3$, I estimated a geometric tidal modulation of ~0.1%. Marginal signals were detected phase-locked with the orbit at a ~3$\sigma$ level, though these remain ambiguous due to potential photometric blending with the companion. The detected power also shows a pronounced asymmetry between the two sidebands (SNR = 9.2 at $f_1 - f_{\text{orb}}$ versus 5.8 at $f_1 + f_{\text{orb}}$), inconsistent with the symmetric response expected from a genuine tidal modulation and further supporting a non-astrophysical origin.</p>
 
     <figure>
@@ -109,7 +137,7 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
       <figcaption>Figure 3: Lomb-Scargle periodogram of residuals (log-scale) centered on $f_{\text{resid}}$. The absence of coherent power at the orbital sidebands ($f \pm f_{\text{orb}}$) establishes a firm upper limit on tidal interaction. The sensitivity limit ($\sim$14 mmag) is comparable to the predicted 0.1% tidal signal, motivating the transition to spectroscopic velocity diagnostics.</figcaption>
     </figure>
 
-    <h2>4. Window Function Diagnostic and the Discovery That Wasn't</h2>
+    <h2 id="sec-window">4. Window Function Diagnostic and the Discovery That Wasn't</h2>
     <p>The dual-domain analysis had produced a concrete result: a candidate rotation period of 135 ± 15 days, over five σ longer than the 58.85-day orbit and superficially consistent with the tidal synchronization picture. This seemed like a very solid finding, but the ΔBIC surface had shown significance concentrated at two isolated epochs rather than persisting across the full baseline, and I wanted to understand why before attaching a physical interpretation to the period.</p>
 
     <p>The statistical favorability for the rotational model required a check against the sampling artifacts of the OGLE cadence. I modeled the spectral window using exact timestamps and unit weights. The result was definitive: the candidate splitting $\Delta f \approx 0.0074$ c/d aligned almost perfectly with a harmonic of the $1/yr$ ($\approx 0.0027$ c/d) sampling alias.</p>
@@ -121,13 +149,13 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
 
     <p>This result demonstrates that the apparent rotational signal is entirely explained by the OGLE spectral window. The peak of the residual power spectrum sits within measurement uncertainty of the central window peak, and the ±1/yr sidelobes align with secondary residual peaks to the same precision. The ±2/yr sidelobes are also recovered. Residual power remains at other frequencies, but none clears a significance threshold consistent with a coherent astrophysical signal. The so-called 135-day "rotation" was an artifact of the Earth's orbit, not the underlying Cepheid physics. Had the alias gone undiagnosed, the false rotational claim would have been published supporting the merger hypothesis.</p>
 
-    <h2>5. Spectroscopic Follow-up and Future Work</h2>
+    <h2 id="sec-followup">5. Spectroscopic Follow-up and Future Work</h2>
     <p>This photometric aliasing problem is the primary driver for our transition to high-resolution spectroscopy. By obtaining phase-constrained spectra with ESPRESSO, we can test the merger hypothesis directly against these abundance signatures. The spectroscopic approach sidesteps the sampling limits that make ground-based photometric period searches unreliable for this system. As Co-Investigator and primary author of the Science Justification, I am currently preparing a VLT/ESPRESSO Phase 1 proposal with Dr. Bogumił Pilecki.</p>
 
   </div>
 
   <div class="bibliography">
-    <h2>References</h2>
+    <h2 id="sec-references">References</h2>
     <p>Chandrasekhar, S. (1933). <em>The Equilibrium of Distorted Polytropes. II. The Tidal Distortion and the Periods of Small Free Oscillations.</em> MNRAS, 93, 462.</p>
     <p>Neilson, H. R. et al. (2015). The occurrence of classical Cepheids in binary systems. <em>A&amp;A</em>, 580, A42. <a href="https://doi.org/10.1051/0004-6361/201424408" target="_blank" rel="noopener">doi:10.1051/0004-6361/201424408<span class="sr-only"> (opens in new tab)</span></a></p>
 <p>Espinoza-Arancibia, N. &amp; Pilecki, B. (2025). A Novel <i> q</i>-PED Method: Precise Physical Properties of a Merger-origin Binary Cepheid OGLE-LMC-CEP-1347.  <em>ApJ</em> 981 L35. <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener">doi:10.3847/2041-8213/adb96b<span class="sr-only"> (opens in new tab)</span></a></p>
@@ -141,5 +169,43 @@ orbit, I applied a barycentric correction ($t_{\text{corr}} = t_{\text{obs}} - z
 <button id="back-to-top" aria-label="Back to top">↑</button>
 
 <script src="/js/writing-nav.js" defer></script>
+  <script>
+  /* sticky section nav: appears once the header scrolls away, highlights active section */
+  (function(){
+    const nav=document.getElementById('section-nav'); if(!nav) return;
+    nav.hidden=false;
+    const links=[...nav.querySelectorAll('a[data-section]')];
+    const targets=links.map(a=>document.getElementById(a.dataset.section)).filter(Boolean);
+    const head=document.getElementById('sec-top');
+    const setVisible=()=>{
+      const bottom = head ? head.getBoundingClientRect().bottom : 800;
+      nav.dataset.visible = bottom < 80 ? 'true' : 'false';
+    };
+    const setActive=()=>{
+      let active=null, bestDist=Infinity;
+      const probe=120;
+      for(const t of targets){
+        const r=t.getBoundingClientRect();
+        if(r.top<=probe){ const d=probe-r.top; if(d<bestDist){bestDist=d; active=t.id;} }
+      }
+      if(!active && targets[0]) active=targets[0].id;
+      links.forEach(a=>{
+        if(a.dataset.section===active) a.setAttribute('aria-current','true');
+        else a.removeAttribute('aria-current');
+      });
+    };
+    setVisible(); setActive();
+    addEventListener('scroll', ()=>{ setVisible(); setActive(); }, {passive:true});
+    // "Top" goes to the real page top, not the header's offset
+    links[0].addEventListener('click',e=>{
+      e.preventDefault();
+      scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+      history.replaceState(null,'',location.pathname);
+    });
+  })();
+  </script>
+  <script defer src="/assets/katex/katex.min.js"></script>
+  <script defer src="/assets/katex/auto-render.min.js"></script>
+  <script defer src="/assets/katex/math.js" data-root="main" data-resolve="main" data-dollar="1"></script>
 </body>
 </html>

@@ -2620,7 +2620,7 @@ body:has(.nav-hamburger.open) #back-to-top {
               Lower H means a sharper posterior. A sharper posterior means fewer candidate periods can plausibly fit the data.
             </p>
             <p class="card-body">
-              The Boltzmann form is the maximum-entropy distribution consistent with the fit residuals (Jaynes 1957). At T = 2&sigma;&sup2;, the same posterior coincides with the profile likelihood of a Gaussian-noise &chi;&sup2; fit, so the surrogate matches what the recovery actually computes.
+              The Boltzmann form is the maximum-entropy distribution consistent with the fit residuals (Jaynes 1957). At \(T = 2\sigma^2\), the same posterior coincides with the profile likelihood of a Gaussian-noise \(\chi^2\) fit, so the surrogate matches what the recovery actually computes.
             </p>
             <p class="card-body">
               Nothing here is supervised. Each asteroid's truth model is just a Fourier fit to its archival photometry, so I can simulate observations at any cadence and compute H directly on the light curve. The training corpus supplies plausible lightcurves, not labels. A JAX-vmapped CMA-ES does the optimization across a 248-asteroid training set from the merged ALCDEF-LCDB corpus I built.
@@ -2645,15 +2645,15 @@ body:has(.nav-hamburger.open) #back-to-top {
           <button class="card-toggle" aria-expanded="false" aria-controls="card-expand-1" aria-label="Read more about CEP-1347 merger-origin investigation">Read more</button>
           <div class="card-expand" id="card-expand-1">
             <p class="card-body">
-              I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary in the Large Magellanic Cloud with the shortest known orbital period for a Cepheid (58.85 ± 0.08 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I isolated a frequency triplet consistent with a non-radial mode, with spacing $\Delta$f ≈ 0.0074 c/d. I validated this with dual-domain frequency and time-evolution $O-C$ Monte Carlo simulations, finding Prot ≈ 135 ± 15 days. This is over five σ longer than the 58.85 day orbit. Since tidal theory predicts synchronization precedes circularization by $>10$x, this asynchronous rotation in a circular orbit would suggest recent merger spindown.
+              I analyzed six years of OGLE photometry for OGLE-LMC-CEP-1347, a double-overtone binary in the Large Magellanic Cloud with the shortest known orbital period for a Cepheid (58.85 ± 0.08 days). Using a custom prewhitening and Light-Time Travel Effect correction pipeline, I isolated a frequency triplet consistent with a non-radial mode, with spacing \(\Delta f \approx 0.0074\) c/d. I validated this with dual-domain frequency and time-evolution $O-C$ Monte Carlo simulations, finding \(P_\mathrm{rot} \approx 135 \pm 15\) days. This is over \(5\sigma\) longer than the 58.85 day orbit. Since tidal theory predicts synchronization precedes circularization by \(>10\times\), this asynchronous rotation in a circular orbit would suggest recent merger spindown.
             </p>
             <p class="card-body">
-              Update (March 2026): My window function analysis revealed a &Delta;f degeneracy with the 1-year OGLE sampling aliases. After confirming the candidate was an artifact rather than a stellar signal, I emailed Dr. Pilecki (who discovered the system in 2022) to retract my preliminary rotational finding and propose a spectroscopic follow-up. He agreed to serve as PI. ESO requires proposal authors to hold an affiliation with a PhD-granting institution; after contacting ESO Operations Support and obtaining Dr. Pilecki's approval, I registered under CAMK Warsaw. I wrote the Science Justification; the proposal is in preparation.
+              Update (March 2026): My window function analysis revealed a \(\Delta f\) degeneracy with the 1-year OGLE sampling aliases. After confirming the candidate was an artifact rather than a stellar signal, I emailed Dr. Pilecki (who discovered the system in 2022) to retract my preliminary rotational finding and propose a spectroscopic follow-up. He agreed to serve as PI. ESO requires proposal authors to hold an affiliation with a PhD-granting institution; after contacting ESO Operations Support and obtaining Dr. Pilecki's approval, I registered under CAMK Warsaw. I wrote the Science Justification; the proposal is in preparation.
             </p>
             <p class="card-body">
               For readers interested in the full analysis pipeline, including the alias diagnostic that invalidated the candidate rotational signal, see the Methodological Appendix.
             </p>
-            <p class="card-body">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase &#981;<sub>1</sub>&nbsp;=&nbsp;0.40&ndash;0.60, where the Cepheid is at minimum atmospheric turbulence (v<sub>turb</sub>&nbsp;&#8776;&nbsp;3&nbsp;km&thinsp;s<sup>&minus;1</sup>), and orbital phases where the Cepheid's Li I 6707 &Aring; doublet and the companion's Fe I line (0.33 &Aring; away) are separated enough that the Fe I wing contamination stays under 12% of the noise floor. The interactive simulation makes both constraints visible at once.</p>
+            <p class="card-body">ESPRESSO observations must satisfy two simultaneous constraints: pulsation phase \(\phi_1 = 0.40\text{--}0.60\), where the Cepheid is at minimum atmospheric turbulence (\(v_\mathrm{turb} \approx 3\ \mathrm{km\,s^{-1}}\)), and orbital phases where the Cepheid's Li I 6707 &Aring; doublet and the companion's Fe I line (0.33 &Aring; away) are separated enough that the Fe I wing contamination stays under 12% of the noise floor. The interactive simulation makes both constraints visible at once.</p>
           </div>
         </div>
 
@@ -3164,10 +3164,18 @@ body:has(.nav-hamburger.open) #back-to-top {
   new IntersectionObserver((entries, obs) => {
     if (!entries[0].isIntersecting) return;
     obs.disconnect();
-    window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']] } };
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
-    document.head.appendChild(s);
+    // KaTeX, self-hosted; async=false keeps katex -> auto-render -> math.js in order
+    for (const href of ['/assets/katex/katex.min.css', '/assets/katex/math.css']) {
+      const l = document.createElement('link');
+      l.rel = 'stylesheet'; l.href = href;
+      document.head.appendChild(l);
+    }
+    for (const src of ['/assets/katex/katex.min.js', '/assets/katex/auto-render.min.js', '/assets/katex/math.js']) {
+      const s = document.createElement('script');
+      s.src = src; s.async = false;
+      if (src.endsWith('math.js')) Object.assign(s.dataset, { root: '#research', resolve: '.card-expand', dollar: '1' });
+      document.body.appendChild(s);
+    }
   }, { rootMargin: '300px' }).observe(document.getElementById('research'));
 </script>
 

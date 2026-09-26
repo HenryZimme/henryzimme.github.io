@@ -5,9 +5,11 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+  <link rel="stylesheet" href="/assets/katex/katex.min.css">
+  <link rel="stylesheet" href="/assets/katex/math.css">
+  <script defer src="/assets/katex/katex.min.js"></script>
+  <script defer src="/assets/katex/auto-render.min.js"></script>
+  <script defer src="/assets/katex/math.js" data-resolve="body" data-dollar="1"></script>
 
   <title>C.A.S.A.P. Phase 15: Absolute Ego Death</title>
   <style>
@@ -344,11 +346,11 @@
         'are you sure you were invited?',
         'one last chance...',
         'this site might not be for you.',
-        'i think it's time to leave now.',
+        "i think it's time to leave now.",
         'you should go.',
         'leave.',
         'no, you. leave, now.',
-        'do i look like i'm joking?'
+        "do i look like i'm joking?"
       ];
       hint.style.color = 'rgba(200,100,100,0.7)';
       hint.textContent = msgs[Math.min(attempts-1, msgs.length-1)];
@@ -947,7 +949,7 @@
         const q = mathQuestions[Math.floor(Math.random() * mathQuestions.length)];
         const el = document.getElementById('mathQuestion');
         el.textContent = q;
-        if (window.renderMathInElement) renderMathInElement(el, {delimiters:[{left:'$$',right:'$$',display:true}]});
+        if (window.siteMath) siteMath.render(el);
       };
       mathAnswer.addEventListener('focus', renderMathQuestion);
       mathAnswer.addEventListener('input', () => { if (Math.random() < 0.25) renderMathQuestion(); });

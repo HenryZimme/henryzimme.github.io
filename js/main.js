@@ -1714,7 +1714,7 @@ document.querySelectorAll('.card-toggle').forEach(function(btn) {
     const expand = card.querySelector('.card-expand');
     const open = card.classList.toggle('card-open');
     expand.style.maxHeight = open ? expand.scrollHeight + 'px' : '0';
-    btn.textContent = open ? 'Read less \u2191' : 'Read more \u2193';
+    btn.textContent = open ? 'Read less' : 'Read more';
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
 });

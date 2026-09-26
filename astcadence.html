@@ -26,6 +26,8 @@
   <!-- shared chrome (tokens, nav, skip link, focus ring, back-to-top) comes from
        subpages.css; the style block below keeps only app-specific layout -->
   <link rel="stylesheet" href="/css/subpages.css">
+  <link rel="stylesheet" href="/assets/katex/katex.min.css">
+  <link rel="stylesheet" href="/assets/katex/math.css">
   <style>
     /* tokens: shared set lives in subpages.css. Status colors use the shared
        --red / --green (UX-06); nothing app-specific needs redefining here. */
@@ -481,7 +483,7 @@
   <nav aria-label="Primary">
     <a href="index.html" class="nav-name">Henry Zimmerman</a>
     <nav aria-label="Page sections" id="section-nav" hidden>
-      <a href="#sec-sandbox" data-section="sec-sandbox">Sandbox</a>
+      <a href="#sim-section" data-section="sim-section">Sandbox</a>
       <a href="#sec-corpus" data-section="sec-corpus">Corpus</a>
       <a href="#sec-methods" data-section="sec-methods">Methods</a>
       <a href="#sec-references" data-section="sec-references">References</a>
@@ -541,7 +543,7 @@
             </div>
           </div>
         </div>
-        <p class="pg-legend"><span class="pg-leg-item"><span class="pg-leg-curve"></span>solid curve: variance explained (left axis)</span><span class="pg-leg-item"><span class="pg-leg-post"></span>dotted line: posterior p(P) &prop; e<sup>&minus;RSS / 2σ²</sup>, peak-normalised</span><span class="pg-leg-item pg-leg-hint">Click any peak (or use ← → Enter) to fold the lightcurve below at that period.</span></p>
+        <p class="pg-legend"><span class="pg-leg-item"><span class="pg-leg-curve"></span>solid curve: variance explained (left axis)</span><span class="pg-leg-item"><span class="pg-leg-post"></span>dotted line: posterior \(p(P) \propto e^{-\mathrm{RSS}/2\sigma^2}\), peak-normalised</span><span class="pg-leg-item pg-leg-hint">Click any peak (or use ← → Enter) to fold the lightcurve below at that period.</span></p>
 
         <p class="sr-only" id="pg-live" aria-live="polite" aria-atomic="true"></p>
 
@@ -587,11 +589,11 @@
       <hr class="article-divider">
 
       <div class="exp-meta" id="sec-corpus" style="margin-bottom:14px">Corpus objects</div>
-      <p class="exp-lead">Five short-period rotators are selectable; <strong>5745 is the default</strong>. The optimized cadence was selected by CMA-ES against the alias rate averaged across the 248-asteroid training set, where 96% of objects have A<sub>2</sub>/A<sub>1</sub> &gt; 1 (median 5.7). The loss is therefore dominated by harmonic-rich rotators, and the three high-A<sub>2</sub>/A<sub>1</sub> objects in the table are recovered in almost every CV seed. The sinusoidal pair (852, 6870) gains little, or at some N regresses, because their lightcurve geometry isn't what the loss was averaging over. The final column is alias rate at N = 8, uniform &rarr; optimized (production CV).</p>
+      <p class="exp-lead">Five short-period rotators are selectable; <strong>5745 is the default</strong>. The optimized cadence was selected by CMA-ES against the alias rate averaged across the 248-asteroid training set, where 96% of objects have \(A_2/A_1\) &gt; 1 (median 5.7). The loss is therefore dominated by harmonic-rich rotators, and the three high-\(A_2/A_1\) objects in the table are recovered in almost every CV seed. The sinusoidal pair (852, 6870) gains little, or at some N regresses, because their lightcurve geometry isn't what the loss was averaging over. The final column is alias rate at N = 8, uniform &rarr; optimized (production CV).</p>
       <div class="table-scroll">
       <table class="object-table">
         <thead>
-          <tr><th>Object</th><th>P (h)</th><th>Amplitude</th><th>A₂ / A₁</th><th>A<sub>R</sub> (N = 8)</th></tr>
+          <tr><th>Object</th><th>P (h)</th><th>Amplitude</th><th>\(A_2/A_1\)</th><th>\(A_R\) (N = 8)</th></tr>
         </thead>
         <tbody>
           <tr class="is-default"><td>5745 &middot; 1991 AN <span class="obj-tag">default</span></td><td>4.09</td><td>0.82 mag</td><td>13.0</td><td>1.00 &rarr; 0.00</td></tr>
@@ -607,13 +609,13 @@
 
       <div class="exp-body">
 
-        <p>5745 is the default because uniform 8-observation sampling fails to recover the true period in 100% of CV seeds, while the optimized 8-observation cadence succeeds in 100%. Its V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (A<sub>2</sub>/A<sub>1</sub> &asymp; 13). The demo samples that model at 8, 9, or 10 times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares uniform spacing against a single short-period-bin cadence selected by CMA-ES on the 248-asteroid training set, cross-validated 5-fold. Selecting a different object applies that same optimized cadence to it, which is why the gain varies object to object.</p>
+        <p>5745 is the default because uniform 8-observation sampling fails to recover the true period in 100% of CV seeds, while the optimized 8-observation cadence succeeds in 100%. Its V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (\(A_2/A_1\) &asymp; 13). The demo samples that model at 8, 9, or 10 times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares uniform spacing against a single short-period-bin cadence selected by CMA-ES on the 248-asteroid training set, cross-validated 5-fold. Selecting a different object applies that same optimized cadence to it, which is why the gain varies object to object.</p>
 
-        <p>For 5745, the schedules differ in <em>which peak the periodogram favors</em>. Under uniform sampling the highest peak frequently lands at an alias (P &asymp; 3.49 h or 4.91 h, the 1-day aliases of 4.087 h) or another competing peak; under the optimized cadence the true 4.087 h peak dominates in every seed. The periodogram, argmax, and posterior shown above are computed for one fixed noise draw, while the A<sub>R</sub> readout in the HUD is a 128-trial Monte Carlo (64 on mobile) over independent noise draws; the production CV reports A<sub>R</sub> = 1.00 for 5745 at N = 8 uniform, but the sandbox's smaller MC will read 0.97–0.99 depending on how many of its 128 draws happen to recover the true period. On the 57-asteroid short-period holdout (P &isin; [2.2, 8] h, never seen in training), the same procedure reduces A<sub>R</sub> from 0.693 to 0.590 at N = 8, 0.631 to 0.524 at N = 9, 0.574 to 0.508 at N = 10. The N = 8 and N = 9 gains are the largest in the sweep (Δ &asymp; 0.10); by N = 10 the marginal improvement narrows to Δ &asymp; 0.07.</p>
+        <p>For 5745, the schedules differ in <em>which peak the periodogram favors</em>. Under uniform sampling the highest peak frequently lands at an alias (P &asymp; 3.49 h or 4.91 h, the 1-day aliases of 4.087 h) or another competing peak; under the optimized cadence the true 4.087 h peak dominates in every seed. The periodogram, argmax, and posterior shown above are computed for one fixed noise draw, while the \(A_R\) readout in the HUD is a 128-trial Monte Carlo (64 on mobile) over independent noise draws; the production CV reports \(A_R\) = 1.00 for 5745 at N = 8 uniform, but the sandbox's smaller MC will read 0.97–0.99 depending on how many of its 128 draws happen to recover the true period. On the 57-asteroid short-period holdout (P &isin; [2.2, 8] h, never seen in training), the same procedure reduces \(A_R\) from 0.693 to 0.590 at N = 8, 0.631 to 0.524 at N = 9, 0.574 to 0.508 at N = 10. The N = 8 and N = 9 gains are the largest in the sweep (Δ &asymp; 0.10); by N = 10 the marginal improvement narrows to Δ &asymp; 0.07.</p>
 
-        <p>Why optimize the empirical alias rate directly instead of a cheaper spectral proxy? The obvious first move is to suppress the sampling window's sidelobes. The spectral window |W(f)|² = |Σ<sub>j</sub> e<sup>2πi f t<sub>j</sub></sup>|² / N² depends only on the observing times, and for a pure sinusoid those sidelobes are exactly where the aliases land, so I built a metric that minimizes a period-weighted window RMS on a GPU grid and refines with CMA-ES. It works only for a sinusoidal signal. A least-squares periodogram fits a single sinusoid at each trial frequency (VanderPlas 2018), and when the lightcurve has power spread across harmonics, the tallest peak routinely lands on a harmonic or alias of the true period rather than the period itself; recovery then takes a multi-term Fourier model. 96% of the 248-asteroid training corpus has A<sub>2</sub>/A<sub>1</sub> &gt; 1, 58% has A<sub>2</sub>/A<sub>1</sub> &gt; 5, and the median is 5.7, so window RMS, which is blind to harmonic content, mispredicts where most of these aliases land. I rank cadences by the FALC alias rate measured on the real corpus and drive CMA-ES with a differentiable stand-in for that discrete rate: the Shannon entropy of the RSS pseudo-posterior p(f) &prop; exp(&minus;RSS(f) / T*), with T* = 2σ² fixing the pseudo-posterior to the exact Gaussian posterior. The entropy tracks the alias rate closely (ρ(H, A<sub>R</sub>) = 0.86 raw, 0.99 binned at N = 10) and is smooth enough to optimize, so the window-RMS metric was discarded.</p>
+        <p>Why optimize the empirical alias rate directly instead of a cheaper spectral proxy? The obvious first move is to suppress the sampling window's sidelobes. The spectral window \(|W(f)|^2 = \bigl|\sum_j e^{2\pi i f t_j}\bigr|^2 / N^2\) depends only on the observing times, and for a pure sinusoid those sidelobes are exactly where the aliases land, so I built a metric that minimizes a period-weighted window RMS on a GPU grid and refines with CMA-ES. It works only for a sinusoidal signal. A least-squares periodogram fits a single sinusoid at each trial frequency (VanderPlas 2018), and when the lightcurve has power spread across harmonics, the tallest peak routinely lands on a harmonic or alias of the true period rather than the period itself; recovery then takes a multi-term Fourier model. 96% of the 248-asteroid training corpus has \(A_2/A_1\) &gt; 1, 58% has \(A_2/A_1\) &gt; 5, and the median is 5.7, so window RMS, which is blind to harmonic content, mispredicts where most of these aliases land. I rank cadences by the FALC alias rate measured on the real corpus and drive CMA-ES with a differentiable stand-in for that discrete rate: the Shannon entropy of the RSS pseudo-posterior \(p(f) \propto \exp[-\mathrm{RSS}(f)/T^*]\), with \(T^* = 2\sigma^2\) fixing the pseudo-posterior to the exact Gaussian posterior. The entropy tracks the alias rate closely (\(\rho(H, A_R)\) = 0.86 raw, 0.99 binned at N = 10) and is smooth enough to optimize, so the window-RMS metric was discarded.</p>
 
-        <p>A<sub>2</sub>/A<sub>1</sub> only weakly predicts the per-object gain. In the short bin at N = 10, the per-object delta Δ = A<sub>R</sub><sup>uniform</sup> − A<sub>R</sub><sup>optimized</sup> (positive = optimization helps) is correlated with A<sub>2</sub>/A<sub>1</sub> at Spearman ρ = +0.18 (p = 0.06; Pearson r = +0.14 against log A<sub>2</sub>/A<sub>1</sub>, p = 0.15); per-object noise from the CMA-ES seed, CV folds, and individual lightcurve geometry swamps the signal. Binning collapses the noise: across five A<sub>2</sub>/A<sub>1</sub> quintiles at N = 10, the quintile-mean Δ runs −0.034, −0.011, +0.040, +0.097, +0.064 (median A<sub>2</sub>/A<sub>1</sub> in each: 1.85, 5.10, 7.46, 13.80, 36.03), with a binned Spearman of ρ = +0.90 (p = 0.04). The same monotonicity is visible at N = 9 (quartile means 0.057, 0.142, 0.243, 0.093) and N = 8 (−0.011, −0.020, +0.127, +0.059), though four bins is not enough for either to reach significance. At N = 10, splitting into four quartiles, the optimized cadence regresses on 67% of the low-A<sub>2</sub>/A<sub>1</sub> quartile (median A<sub>2</sub>/A<sub>1</sub> = 2.5) and on 51% of the short-period corpus overall; the improvements concentrate in the upper two quartiles. That is the trade a single corpus-averaged cadence makes: it wins on the harmonic-rich majority that drives the loss and gives back a small amount on the sinusoidal minority. Stratifying the cadence selection by A<sub>2</sub>/A<sub>1</sub> (or running a per-object optimization) would be the path to closing that gap.</p>
+        <p>\(A_2/A_1\) only weakly predicts the per-object gain. In the short bin at N = 10, the per-object delta \(\Delta = A_R^{\mathrm{uniform}} - A_R^{\mathrm{optimized}}\) (positive = optimization helps) is correlated with \(A_2/A_1\) at Spearman ρ = +0.18 (p = 0.06; Pearson r = +0.14 against \(\log A_2/A_1\), p = 0.15); per-object noise from the CMA-ES seed, CV folds, and individual lightcurve geometry swamps the signal. Binning collapses the noise: across five \(A_2/A_1\) quintiles at N = 10, the quintile-mean Δ runs −0.034, −0.011, +0.040, +0.097, +0.064 (median \(A_2/A_1\) in each: 1.85, 5.10, 7.46, 13.80, 36.03), with a binned Spearman of ρ = +0.90 (p = 0.04). The same monotonicity is visible at N = 9 (quartile means 0.057, 0.142, 0.243, 0.093) and N = 8 (−0.011, −0.020, +0.127, +0.059), though four bins is not enough for either to reach significance. At N = 10, splitting into four quartiles, the optimized cadence regresses on 67% of the low-\(A_2/A_1\) quartile (median \(A_2/A_1\) = 2.5) and on 51% of the short-period corpus overall; the improvements concentrate in the upper two quartiles. That is the trade a single corpus-averaged cadence makes: it wins on the harmonic-rich majority that drives the loss and gives back a small amount on the sinusoidal minority. Stratifying the cadence selection by \(A_2/A_1\) (or running a per-object optimization) would be the path to closing that gap.</p>
 
       </div>
 
@@ -627,9 +629,9 @@
           <tr><td>Observations per night N</td><td>8 / 9 / 10</td></tr>
           <tr><td>Optimizer</td><td>CMA-ES, 8 generations, K-fold CV</td></tr>
           <tr><td>Period bin</td><td>Short (P &isin; [2.2, 8] h)</td></tr>
-          <tr><td>Holdout A<sub>R</sub> (N = 8) &middot; uniform &rarr; optimized</td><td>0.693 &rarr; 0.590</td></tr>
-          <tr><td>Holdout A<sub>R</sub> (N = 9) &middot; uniform &rarr; optimized</td><td>0.631 &rarr; 0.524</td></tr>
-          <tr><td>Holdout A<sub>R</sub> (N = 10) &middot; uniform &rarr; optimized</td><td>0.574 &rarr; 0.508</td></tr>
+          <tr><td>Holdout \(A_R\) (N = 8) &middot; uniform &rarr; optimized</td><td>0.693 &rarr; 0.590</td></tr>
+          <tr><td>Holdout \(A_R\) (N = 9) &middot; uniform &rarr; optimized</td><td>0.631 &rarr; 0.524</td></tr>
+          <tr><td>Holdout \(A_R\) (N = 10) &middot; uniform &rarr; optimized</td><td>0.574 &rarr; 0.508</td></tr>
         </tbody>
       </table>
 
@@ -1243,8 +1245,18 @@ window.addEventListener('load',()=>{
     });
   };
   setActive(); addEventListener('scroll', setActive, {passive:true});
+  // sandbox is the first section: scroll to the true page top, not to its offset
+  const top=links.find(a=>a.dataset.section==='sim-section');
+  if(top) top.addEventListener('click',e=>{
+    e.preventDefault();
+    scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    history.replaceState(null,'','#sim-section');
+  });
 })();
 </script>
   <script src="/js/writing-nav.js" defer></script>
+  <script defer src="/assets/katex/katex.min.js"></script>
+  <script defer src="/assets/katex/auto-render.min.js"></script>
+  <script defer src="/assets/katex/math.js" data-resolve="#explanation"></script>
 </body>
 </html>

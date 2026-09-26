@@ -1,0 +1,65 @@
+/* math.css | henryzimmerman.net: pairs with math.js */
+
+.katex { font-size: 1.08em; }
+.katex-display { margin: 0.9em 0; overflow-x: auto; overflow-y: hidden; }
+
+.tex { position: relative; border-radius: 2px; cursor: text; }
+.tex:focus { outline: none; }
+.tex:focus-visible { outline: 1px dashed var(--gold, #c4a258); outline-offset: 3px; }
+.katex-display.tex { display: block; }
+
+/* staged resolve: the typeset box keeps its layout the whole time; the raw TeX
+   is laid over it (absolute, clipped to the same box), so nothing reflows */
+.tex-resolve .katex-html {
+  opacity: 0;
+  filter: blur(2px);
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+.tex-resolve.is-resolved .katex-html { opacity: 1; filter: none; }
+
+.tex-src {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 400 0.72em/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0;
+  color: var(--text-dim, rgba(226, 221, 212, 0.72));
+  opacity: 0.6;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.35s ease;
+}
+.katex-display > .tex-src { justify-content: center; justify-content: safe center; }
+.tex-resolve.is-resolved > .tex-src { opacity: 0; }
+
+/* copy button: fixed on <body>, above page chrome; hidden on scroll so it never
+   floats over a nav or modal it doesn't belong to */
+.tex-copy {
+  position: fixed;
+  z-index: 10000;
+  margin: 0;
+  padding: 3px 8px;
+  font: 500 10px/1.4 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold, #c4a258);
+  background: var(--bg, #07091a);
+  border: 1px solid var(--gold-dim, rgba(196, 162, 88, 0.25));
+  border-radius: 3px;
+  cursor: pointer;
+}
+.tex-copy[hidden] { display: none; }
+.tex-copy:hover, .tex-copy:focus-visible { border-color: var(--gold, #c4a258); }
+.tex-copy.is-done { color: var(--green, #86efac); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tex-resolve .katex-html, .tex-src { transition: none; }
+}
+@media print {
+  .tex-resolve .katex-html { opacity: 1 !important; filter: none !important; }
+  .tex-src, .tex-copy { display: none !important; }
+}

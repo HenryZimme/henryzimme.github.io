@@ -2,10 +2,11 @@
 // strat:
 //   - static assets (JS, CSS, JSON, fonts, images): cache-first, background-update
 //   - HTML pages: network-first, fall back to cache
-//   - 3rd-party (gstatic fonts, jsdelivr, alasky): cache-first, no fallback
+//   - 3rd-party (gstatic fonts, alasky): cache-first, no fallback
+//   - KaTeX is self-hosted under /assets/katex/ and rides the same-origin static path
 //
 // bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v46';
+const CACHE_VERSION = 'v48';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const CACHE_THIRD   = `third-party-${CACHE_VERSION}`;
@@ -58,8 +59,7 @@ self.addEventListener('fetch', e => {
 
   // Third-party origins: cache-first, no fallback needed
   if (url.origin === 'https://fonts.gstatic.com' ||
-      url.origin === 'https://fonts.googleapis.com' ||
-      url.origin === 'https://cdn.jsdelivr.net') {
+      url.origin === 'https://fonts.googleapis.com') {
     e.respondWith(cacheFirst(request, CACHE_THIRD));
     return;
   }
