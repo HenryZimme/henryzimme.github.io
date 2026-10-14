@@ -1691,7 +1691,7 @@ setTimeout(() => {
 }, 1200);
 
 // shared contact address
-const CONTACT_EMAIL = ['henry.s.zimmer', 'man', '@gmail.com'].join(''); // 3mAiI 0bfusciati0n
+const CONTACT_EMAIL = ['henr', 'y', '@henryzimmerman.net'].join(''); // 3mAiI 0bfusciati0n
 
 (function() {
   const el = document.getElementById('contact-email');
