@@ -99,12 +99,5 @@
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
-  <!-- baghdad deliberately unpublished: live but unlisted; keep out of the sitemap -->
- <!-- <url>
-    <loc>https://www.henryzimmerman.net/baghdad.html</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.6</priority>
-  </url> -->
 
 </urlset>

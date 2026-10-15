@@ -34,4 +34,13 @@ Disallow: /
 User-agent: Bytespider
 Disallow: /
 
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: webzio
+Disallow: /
+
 Sitemap: https://www.henryzimmerman.net/sitemap.xml

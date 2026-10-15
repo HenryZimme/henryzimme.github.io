@@ -9,20 +9,22 @@
   <meta property="og:description" content="The lowest-mass classical Cepheid in a double-lined binary, orbiting in 58.85 days. Built from OGLE-IV photometry and Pilecki+ 2022 spectroscopy.">
   <meta property="og:url" content="https://www.henryzimmerman.net/cep1347.html">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
+  <meta property="og:image" content="https://www.henryzimmerman.net/assets/og/cep1347.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Interactive animation of the OGLE-LMC-CEP-1347 binary Cepheid system showing pulsation and orbital dynamics">
+  <meta name="twitter:image:alt" content="Interactive animation of the OGLE-LMC-CEP-1347 binary Cepheid system showing pulsation and orbital dynamics">
+  <meta property="og:site_name" content="Henry Zimmerman">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="OGLE-LMC-CEP-1347: Interactive Binary Cepheid Simulation">
   <meta name="twitter:description" content="The lowest-mass classical Cepheid in a double-lined binary, orbiting in 58.85 days.">
-  <meta name="twitter:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
+  <meta name="twitter:image" content="https://www.henryzimmerman.net/assets/og/cep1347.jpg">
   <link rel="canonical" href="https://www.henryzimmerman.net/cep1347.html">
   <meta name="theme-color" content="#07091a">
   <link rel="icon" href="https://www.henryzimmerman.net/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"></noscript>
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/eb-garamond-latin-400-normal.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/eb-garamond-latin-400-italic.woff2">
+  <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/subpages.css">
   <style>
     /* page-specific tokens (subpages.css provides the rest) */
@@ -377,6 +379,35 @@
   </style>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "OGLE-LMC-CEP-1347",
+    "description": "Interactive simulation of OGLE-LMC-CEP-1347, the lowest-mass Cepheid in a double-lined binary. OGLE-IV photometry and Pilecki+ 2022 radial velocities.",
+    "url": "https://www.henryzimmerman.net/cep1347.html",
+    "image": "https://www.henryzimmerman.net/assets/og/cep1347.jpg",
+    "author": {
+      "@type": "Person",
+      "@id": "https://www.henryzimmerman.net/#person",
+      "name": "Henry Zimmerman",
+      "url": "https://www.henryzimmerman.net/"
+    },
+    "about": [
+      "OGLE-LMC-CEP-1347",
+      "Classical Cepheid variables",
+      "Binary stars",
+      "Large Magellanic Cloud"
+    ],
+    "dateModified": "2026-04-05",
+    "citation": [
+      "https://doi.org/10.1051/0004-6361/202349022",
+      "https://doi.org/10.3847/2041-8213/ac9fcc",
+      "https://doi.org/10.3847/2041-8213/adb96b",
+      "https://doi.org/10.48550/arXiv.1504.05966"
+    ]
+  }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -418,7 +449,7 @@
     </div>
 
     <!-- live HUD stats: matches index.html structure exactly -->
-    <div id="hud-stats" aria-live="polite" aria-atomic="false">
+    <div id="hud-stats">
       <div class="hud-row">
         <span class="hud-label">V-band mag</span>
         <span class="hud-val" id="hud-mag">--</span>

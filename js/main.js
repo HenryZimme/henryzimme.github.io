@@ -50,22 +50,26 @@ const PERF = (() => {
 if (!PERF.backdrop) document.body.classList.add('perf-lite');
 
 // Runtime safety net: sample real frame intervals for ~1.5s; if we are clearly
-// below the tier's target, drop one tier once (downgrade-only, no oscillation).
-let _fps_samples = [], _fps_checked = false;
+// below the tier's target, drop one tier per check (downgrade-only).
+let _fps_samples = [];
 function perf_fps_guard(dt_ms) {
-  if (_fps_checked || PERF.tier === 0) return;
+  if (PERF.tier === 0 || !_fps_samples) return;
   if (dt_ms > 4 && dt_ms < 400) _fps_samples.push(dt_ms); // ignore throttled gaps
   if (_fps_samples.length < 45) return;
-  _fps_checked = true;
   _fps_samples.sort((a, b) => a - b);
   const fps = 1000 / _fps_samples[_fps_samples.length >> 1];
+  _fps_samples = [];
   if (fps < PERF.fps - 6) {
     PERF.tier = Math.max(0, PERF.tier - 1);
+    if (PERF.tier === 0) twinkle_active = false;
+    bg_layer = null;
     PERF.renderScale = PERF.tier === 0 ? Math.min(PERF.renderScale, 1.5) : Math.min(PERF.renderScale, 2);
     PERF.meteors = false;
     PERF.backdrop = PERF.tier >= 1;
     if (!PERF.backdrop) document.body.classList.add('perf-lite');
     size_canvas();
+  } else {
+    _fps_samples = null;
   }
 }
 
@@ -73,6 +77,7 @@ function perf_fps_guard(dt_ms) {
 // The backing store is renderScale larger, with a matching ctx transform, so
 // stars stay circular (backing aspect == display aspect) and crisp on retina.
 let cssW = 0, cssH = 0;
+let bg_layer = null; // tiers 0-1: static background raster
 function size_canvas() {
   cssW = document.documentElement.clientWidth;   // excludes scrollbar -> matches CSS width:100%
   cssH = document.documentElement.clientHeight;
@@ -82,6 +87,7 @@ function size_canvas() {
   canvas.style.width = cssW + 'px';
   canvas.style.height = cssH + 'px';
   ctx.setTransform(s, 0, 0, s, 0, 0);
+  bg_layer = null;
 }
 const tooltip = document.getElementById('star-tooltip');
 const modal = document.getElementById('object-modal');
@@ -128,31 +134,31 @@ const featured_objects = [
   },
   {
     name: "7605 Cindygraber | v = 16.0",
-    elements: { a: 3.15282762, e: 0.07401538, i: 25.868948, Om: 311.681380, w: 271.311393, M: 332.940660 }, // astorb osculating, epoch _EL_EPOCH_JD
+    elements: { a: 3.152935273, e: 0.070762817, i: 25.916120, Om: 311.442317, w: 273.796908, M: 304.890636 }, // JPL SBDB
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=7605&view=VOP",
     image_url: "/assets/pops/cindygraber_sub.jpeg",
     card_url: "#card-cindygraber",
     has_sim: true, // interactive simulation lives on the asteroid_observer.html subpage
     type: "Main-Belt Asteroid  |  Propagated sky position",
-    writeup: "7605 Cindygraber had no confirmed synodic rotation period. I picked it partly for that reason: it's a bright, high-lattitude asteroid measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler I built mattered as much as the telescope time. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
+    writeup: "7605 Cindygraber had no confirmed synodic rotation period. I picked it partly for that reason: it's a bright, high-lattitude asteroid measurable with modest aperture if you get the cadence right. The asteroid's near-12-hour period meant that a single site campaigns would fail on it, which is why the scheduler I built mattered as much as the telescope time. The marker tracks a 2-body propagation of its JPL SBDB elements to today; the magnitude is indicative."
   },
   {
     name: "19243 Bunting | v = 15.9",
-    elements: { a: 2.33160189, e: 0.24297852, i: 23.731834, Om: 5.997668, w: 59.550527, M: 266.834658 }, // astorb osculating, epoch _EL_EPOCH_JD
+    elements: { a: 2.330469134, e: 0.243232989, i: 23.742289, Om: 5.944379, w: 59.756137, M: 72.849421 }, // JPL SBDB
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19243&view=VOP",
     image_url: "/assets/pops/bunting_sub.jpeg",
     card_url: "#card-cindygraber",
     type: "Main-Belt Asteroid  |  Propagated sky position",
-    writeup: "19243 Bunting has no confirmed synodic rotation period. We determined it through R-band photometry at Phillips Academy Observatory, using the same open-source scheduler as my parallel campaign on 7605 Cindygraber. The marker tracks a 2-body propagation of its astorb elements to today; the magnitude is indicative."
+    writeup: "19243 Bunting has no confirmed synodic rotation period. We determined it through R-band photometry at Phillips Academy Observatory, using the same open-source scheduler as my parallel campaign on 7605 Cindygraber. The marker tracks a 2-body propagation of its JPL SBDB elements to today; the magnitude is indicative."
   },
   {
     name: "5745 1991 AN | V \u2248 17.9",
-    elements: { a: 2.19058518, e: 0.15971583, i: 4.882955, Om: 23.189503, w: 28.442397, M: 159.002585 }, // astorb osculating, epoch _EL_EPOCH_JD
+    elements: { a: 2.191005291, e: 0.159108252, i: 4.882328, Om: 23.168426, w: 28.441990, M: 16.408352 }, // JPL SBDB
     catalog_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=5745&view=VOP",
     card_url: "#card-astcadence",
     has_sim: true, // interactive simulation is the astcadence.html demo itself
     type: "Main-Belt Asteroid  |  Demonstration target",
-    writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate my cadence-optimization framework. As it's a 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the difference between uniform and optimized sampling is largest. Uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds, while the optimized cadence succeeds in 100%. The marker above is 2-body propagated from its astorb orbital elements to today's date."
+    writeup: "5745, provisional designation 1991 AN, is the asteroid I use to demonstrate my cadence-optimization framework. As it's a 4.087-hour rotator with a strongly bimodal lightcurve (A\u2082/A\u2081 \u2248 13), it's the asteroid where the difference between uniform and optimized sampling is largest. Uniform 8-observation sampling fails to recover the true period in 100% of cross-validation seeds, while the optimized cadence succeeds in 100%. The marker above is 2-body propagated from its JPL SBDB orbital elements to today's date."
   },
   {
     name: "HD 344787 | v = 9.32",
@@ -230,7 +236,7 @@ function reproject() {
 // ---
 // minor-planet ephemeris: 2-body propagation of osculating elements to a date.
 // elements carry { a (AU), e, i, Om, w, M } with angles in degrees at _EL_EPOCH_JD.
-const _EL_EPOCH_JD = 2459300.5;            // osculating epoch of stored elements
+const _EL_EPOCH_JD = 2461200.5;            // 2026-06-09 TDB
 const _GAUSS_K = 0.01720209895;            // gaussian gravitational constant, rad/day
 const _DEG = Math.PI / 180;
 const _OBLIQ = 23.43928 * _DEG;
@@ -349,6 +355,7 @@ function rebuild_indexes() {
   featured_stars  = star_data.filter(s => s.featured);
   named_stars     = star_data.filter(s => s.name && !s.featured);
   bg_bright_stars = star_data.filter(s => !s.featured && !s.name && s.size > 1.0);
+  bg_layer = null;
   build_named_grad_cache();
 }
 
@@ -575,7 +582,20 @@ const _bg_buckets = Array.from({ length: BG_ALPHA_BUCKETS }, () => []);
 
 // batched background star drawing, uses pre-grouped color buckets built at catalog load.
 // sets fillStyle once per color group instead of once per star (~9000 → handful of state changes).
-function draw_background_stars_batched() {
+function draw_background_stars() {
+  if (PERF.tier >= 2) return draw_background_stars_batched(ctx);
+  if (!bg_layer) {
+    bg_layer = document.createElement('canvas');
+    bg_layer.width = canvas.width;
+    bg_layer.height = canvas.height;
+    const c = bg_layer.getContext('2d');
+    c.setTransform(PERF.renderScale, 0, 0, PERF.renderScale, 0, 0);
+    draw_background_stars_batched(c);
+  }
+  ctx.drawImage(bg_layer, 0, 0, cssW, cssH);
+}
+
+function draw_background_stars_batched(ctx) {
   const TWO_PI = Math.PI * 2;
   for (const color in bg_stars_by_color) {
     // Distribute this color's stars into alpha buckets
@@ -820,7 +840,7 @@ function draw_frame() {
   hover_star = null;
   let min_d = 14;
 
-  draw_background_stars_batched();
+  draw_background_stars();
   draw_meteors();
 
   for (const s of star_data) {
@@ -1615,15 +1635,17 @@ const back_to_top_btn = document.getElementById('back-to-top');
   shelf_io.observe(shelf);
 })();
 
+let scroll_raf = 0;
 window.addEventListener('scroll', () => {
-  back_to_top_btn.classList.toggle('visible', window.scrollY >= research_scroll_top);
-
-  // compare scrollY against cached doc-absolute bottom, no getElementById or getBoundingClientRect
-  nav_el.classList.toggle('nav--scrolled', window.scrollY >= hero_scroll_bottom);
-
-  // refresh viewport rect on scroll (layout is already dirty here) so
-  // canvas_exposed_at never calls getBoundingClientRect on mousemove
-  if (hero_el) hero_rect_cache = hero_el.getBoundingClientRect();
+  if (scroll_raf) return;
+  scroll_raf = requestAnimationFrame(() => {
+    scroll_raf = 0;
+    // read before writes; canvas_exposed_at reuses this rect
+    if (hero_el) hero_rect_cache = hero_el.getBoundingClientRect();
+    const sy = window.scrollY;
+    back_to_top_btn.classList.toggle('visible', sy >= research_scroll_top);
+    nav_el.classList.toggle('nav--scrolled', sy >= hero_scroll_bottom);
+  });
 }, { passive: true });
 back_to_top_btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
@@ -1674,6 +1696,7 @@ function dismiss_hint() {
   const t1 = performance.now();
   (function fade_out(t) {
     hint_alpha = Math.max(0, 1 - (t - t1) / 500);
+    if (!twinkle_active) kick_render();
     if (hint_alpha > 0) requestAnimationFrame(fade_out);
   })(t1);
 }
@@ -1683,6 +1706,7 @@ setTimeout(() => {
   (function fade_in(t) {
     if (hint_dismissed) return;
     hint_alpha = Math.min(1, (t - t0) / 700);
+    if (!twinkle_active) kick_render();
     if (hint_alpha < 1) requestAnimationFrame(fade_in);
   })(t0);
   setTimeout(() => {
@@ -1819,7 +1843,7 @@ document.getElementById('epilepsy-confirm').addEventListener('click', () => {
   if (!img) return;
 
   function on_profile_load() {
-    if (!REDUCE_MOTION) twinkle_active = true;
+    if (!REDUCE_MOTION && PERF.tier > 0) twinkle_active = true;
     if (hero_visible && !raf_id) raf_id = requestAnimationFrame(draw);
     // fade out shimmer and placeholder text
     const frame = img.closest('.profile-frame');

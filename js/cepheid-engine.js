@@ -49,11 +49,12 @@
   var GAMMA_SYS     = 239.97; // km/s (Pilecki+ 2022 Table 1)
 
   // ── starfield: static LMC background, generated once on first resize ──────
-  var bgStars = null;
+  var bgStars = null, bgLayers = null, bgUrl = null;
   var bgStarsW = 0, bgStarsH = 0;
+  var BG_GROUPS = [[3.1, 0], [4.3, 2.1], [5.6, 4.2]]; // [period s, phase]
   function ensureBgStars(cw, ch) {
     if (bgStars && bgStarsW === cw && bgStarsH === ch) return;
-    bgStarsW = cw; bgStarsH = ch;
+    bgStarsW = cw; bgStarsH = ch; bgLayers = null;
     var rng = function(seed) { // deterministic LCG so starfield is stable across frames
       var s = seed;
       return function() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
@@ -89,51 +90,81 @@
   function drawBgStars(cw, ch, par_tx, par_ty, t_s) {
     ensureBgStars(cw, ch);
     if (!bgStars) return;
+    if (!par_tx && !par_ty) {
+      if (!bgLayers) buildBgLayers(cw, ch);
+      if (LITE) return;
+      ctx.save();
+      for (var g = 0; g < bgLayers.length; g++) {
+        ctx.globalAlpha = (1 + 0.08 * Math.sin(2 * Math.PI * t_s / BG_GROUPS[g][0] + BG_GROUPS[g][1])) / 1.08;
+        ctx.drawImage(bgLayers[g], 0, 0, cw, ch);
+      }
+      ctx.restore();
+      return;
+    }
     ctx.save();
     for (var i = 0; i < bgStars.length; i++) {
       var s = bgStars[i];
       // twinkle: ±8% alpha oscillation, slow, unique period per star
       var twinkle = 1 + 0.08 * Math.sin(2 * Math.PI * t_s / s.twp + s.twf);
-      var eff_a = Math.max(0, s.a * twinkle);
       // parallax counter-shift: stars with low dep move less than camera
-      var sx = s.x + par_tx * (s.dep - 1);
-      var sy = s.y + par_ty * (s.dep - 1);
-      // star disc
-      ctx.globalAlpha = eff_a;
-      ctx.fillStyle = s.c || '#ffffff';
-      ctx.beginPath();
-      ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
-      ctx.fill();
-      // diffraction spikes: 4-arm cross (4-vane spider pattern).
-      // each arm is a sub-pixel-wide filled rectangle with a gradient approximating
-      // the sinc² falloff from Fraunhofer diffraction by a thin rectangular obstruction:
-      // I(r) ∝ sinc²(r/r0), approximated by a steep-initial then long-tail gradient.
-      // no diagonal arms, a 4-vane spider produces exactly 4 perpendicular spikes.
-      if (s.spike_len > 0) {
-        var sl   = s.spike_len;
-        var sa   = eff_a * 0.68; // spike peak alpha: slightly below star disc alpha
-        var arms = [[1,0],[-1,0],[0,1],[0,-1]]; // right, left, down, up
-        for (var ai = 0; ai < arms.length; ai++) {
-          var ax = arms[ai][0], ay = arms[ai][1];
-          ctx.save();
-          ctx.translate(sx, sy);
-          ctx.rotate(Math.atan2(ay, ax));
-          // gradient along spike arm: sinc²-like falloff
-          var grad = ctx.createLinearGradient(0, 0, sl, 0);
-          grad.addColorStop(0.00, hexToRgba(s.c || '#ffffff', sa));
-          grad.addColorStop(0.06, hexToRgba(s.c || '#ffffff', sa * 0.68));
-          grad.addColorStop(0.20, hexToRgba(s.c || '#ffffff', sa * 0.22));
-          grad.addColorStop(0.50, hexToRgba(s.c || '#ffffff', sa * 0.06));
-          grad.addColorStop(1.00, 'rgba(0,0,0,0)');
-          ctx.fillStyle = grad;
-          // 0.55px height, sub-pixel thin, as a real diffraction spike would be
-          ctx.fillRect(0, -0.275, sl, 0.55);
-          ctx.restore();
-        }
-      }
+      paintBgStar(ctx, s, s.x + par_tx * (s.dep - 1), s.y + par_ty * (s.dep - 1), Math.max(0, s.a * twinkle));
     }
     ctx.globalAlpha = 1;
     ctx.restore();
+  }
+  function buildBgLayers(cw, ch) {
+    var d = renderDpr();
+    bgLayers = (LITE ? [0] : BG_GROUPS).map(function() {
+      var c = document.createElement('canvas');
+      c.width = Math.ceil(cw * d); c.height = Math.ceil(ch * d);
+      c.getContext('2d').setTransform(d, 0, 0, d, 0, 0);
+      return c;
+    });
+    for (var i = 0; i < bgStars.length; i++) {
+      var s = bgStars[i];
+      paintBgStar(bgLayers[i % bgLayers.length].getContext('2d'), s, s.x, s.y, Math.min(1, s.a * (LITE ? 1 : 1.08)));
+    }
+    if (LITE) bgLayers[0].toBlob(function(b) {
+      if (!b) return;
+      if (bgUrl) URL.revokeObjectURL(bgUrl);
+      bgUrl = URL.createObjectURL(b);
+      simCanvas.style.background = 'url(' + bgUrl + ') 0 0 / ' + cw + 'px ' + ch + 'px no-repeat';
+    });
+  }
+  function paintBgStar(ctx, s, sx, sy, eff_a) {
+    // star disc
+    ctx.globalAlpha = eff_a;
+    ctx.fillStyle = s.c || '#ffffff';
+    ctx.beginPath();
+    ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
+    ctx.fill();
+    // diffraction spikes: 4-arm cross (4-vane spider pattern).
+    // each arm is a sub-pixel-wide filled rectangle with a gradient approximating
+    // the sinc² falloff from Fraunhofer diffraction by a thin rectangular obstruction:
+    // I(r) ∝ sinc²(r/r0), approximated by a steep-initial then long-tail gradient.
+    // no diagonal arms, a 4-vane spider produces exactly 4 perpendicular spikes.
+    if (s.spike_len > 0) {
+      var sl   = s.spike_len;
+      var sa   = eff_a * 0.68; // spike peak alpha: slightly below star disc alpha
+      var arms = [[1,0],[-1,0],[0,1],[0,-1]]; // right, left, down, up
+      for (var ai = 0; ai < arms.length; ai++) {
+        var ax = arms[ai][0], ay = arms[ai][1];
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(Math.atan2(ay, ax));
+        // gradient along spike arm: sinc²-like falloff
+        var grad = ctx.createLinearGradient(0, 0, sl, 0);
+        grad.addColorStop(0.00, hexToRgba(s.c || '#ffffff', sa));
+        grad.addColorStop(0.06, hexToRgba(s.c || '#ffffff', sa * 0.68));
+        grad.addColorStop(0.20, hexToRgba(s.c || '#ffffff', sa * 0.22));
+        grad.addColorStop(0.50, hexToRgba(s.c || '#ffffff', sa * 0.06));
+        grad.addColorStop(1.00, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        // 0.55px height, sub-pixel thin, as a real diffraction spike would be
+        ctx.fillRect(0, -0.275, sl, 0.55);
+        ctx.restore();
+      }
+    }
   }
   // fourier r=2 fit to pilecki rv residuals (r²=0.927); [a0, a1, b1, a2, b2]
   var PULS_C        = [0.1623, 3.3790, -15.6020, -4.3673, -3.2070];
@@ -337,6 +368,21 @@
   var ctx       = simCanvas ? simCanvas.getContext('2d') : null;
   var preview   = document.getElementById('sim-preview');
   var plotUI    = document.getElementById('hud-plot-container');
+  var conn      = navigator.connection || {};
+  var LITE      = false;
+  function renderDpr() {
+    var d = window.devicePixelRatio || 1;
+    if (document.documentElement.classList.contains('film-mode')) return d;
+    return Math.min(d, LITE ? 1 : 2);
+  }
+  function enableLite() {
+    if (LITE || !ctx) return;
+    LITE = true;
+    Object.defineProperty(ctx, 'shadowBlur', { get: function() { return 0; }, set: function() {} });
+  }
+  if ((typeof PERF !== 'undefined' && PERF.tier === 0) || conn.saveData ||
+      (navigator.hardwareConcurrency || 4) <= 2) enableLite();
+  var fpsSamples = [];
 
   var hud = {
     mag:        document.getElementById('hud-mag'),
@@ -361,15 +407,19 @@
     return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
   }
 
+  var plotRect = null, plotRectAt = 0;
   function getPlotRect() {
     if (!plotUI) return null;
+    var t = performance.now();
+    if (plotRect && t - plotRectAt < 500) return plotRect;
     var pr = plotUI.getBoundingClientRect();
     var sr = simCanvas.getBoundingClientRect();
-    return { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height };
+    plotRectAt = t;
+    return (plotRect = { px: pr.left - sr.left, py: pr.top - sr.top, pw: pr.width, ph: pr.height });
   }
 
   function getStarArea() {
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = renderDpr();
     var w = simCanvas.width / dpr;
     var h = simCanvas.height / dpr;
     var isMob = window.innerWidth <= 740;
@@ -1199,11 +1249,20 @@
     }
     // capture first-frame timestamp for film-mode fade-in and end card
     var isFilm = document.documentElement.classList.contains('film-mode');
+    if (!isFilm && !paused && !offscreen && lastTime !== null) {
+      if (LITE && now - lastTime < 31) { requestAnimationFrame(animate); return; }
+      if (!LITE && fpsSamples.length < 60) {
+        fpsSamples.push(now - lastTime);
+        if (fpsSamples.length === 60 && fpsSamples.sort(function(a, b) { return a - b; })[30] > 26) {
+          enableLite(); resize();
+        }
+      }
+    }
     if (isFilm) updateFilmTimeline(now);
     if (isFilm && filmFadeStartTime === null) filmFadeStartTime = now;
 
     var p = data.physics_frames;
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = renderDpr();
     var cw = simCanvas.width / dpr;
     var ch = simCanvas.height / dpr;
 
@@ -1852,6 +1911,7 @@
   window.setMode = function(mode) {
     if (!MODES.has(mode)) return;
     currentMode = mode;
+    plotRect = null;
     trail1 = []; trail2 = [];
     lastTime = null;
     pulsTime = 0;
@@ -1940,8 +2000,9 @@
   // ── resize ─────────────────────────────────────────────────────────────────
 
   function resize() {
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = renderDpr();
     var rect = simCanvas.getBoundingClientRect();
+    plotRect = null;
     simCanvas.width = rect.width * dpr;
     simCanvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -2045,7 +2106,10 @@
 
 
       // stage 2: fetch full JSON in background, swap seamlessly
-      fetch(fullUrl).then(function(r2) {
+      var conn = navigator.connection || {};
+      var lite = conn.saveData || /2g/.test(conn.effectiveType || '') ||
+                 (typeof PERF !== 'undefined' && PERF.tier === 0);
+      if (!lite) fetch(fullUrl).then(function(r2) {
         if (!r2.ok) return;
         return r2.json();
       }).then(function(fullData) {

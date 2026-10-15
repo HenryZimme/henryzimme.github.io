@@ -13,21 +13,20 @@
   <meta name="twitter:description" content="I'm a very confident person who is generally wary of confidence and false certainty (especially my own). Time-domain astronomy, philosophy, running, and a lot of reading.">
   <link rel="canonical" href="https://www.henryzimmerman.net/">
   <meta property="og:url" content="https://www.henryzimmerman.net/">
-  <meta property="og:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
-  <meta name="twitter:image" content="https://www.henryzimmerman.net/assets/prev/og-preview.jpeg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <meta property="og:image" content="https://www.henryzimmerman.net/assets/og/index.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Henry Zimmerman: star field homepage with research targets marked">
+  <meta name="twitter:image:alt" content="Henry Zimmerman: star field homepage with research targets marked">
+  <meta property="og:site_name" content="Henry Zimmerman">
+  <meta name="twitter:image" content="https://www.henryzimmerman.net/assets/og/index.jpg">
   <link rel="preload" as="fetch" href="/data/stars_named.json" fetchpriority="high" crossorigin>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- EB Garamond woff2 preloads and bypasses the two-hop googleapis -> gstatic chain.
-       URLs are versioned (v32)
-       if Google updates the font the hash changes and these
-       will 404 silently
-       VERIFY by filtering Network > Font in DevTools periodically (1 * mo^-1) -->
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/eb-garamond-latin-400-normal.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/eb-garamond-latin-400-italic.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/spectral-latin-400-italic.woff2">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="/css/fonts.css" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/css/fonts.css"></noscript>
   <style>:root {
       --bg: #07091a;
       --gold: #c4a258;
@@ -55,15 +54,13 @@
       line-gap-override: 0%;
     }
 
-    /* EB Garamond 400 inlined, eliminates the googleapis CSS round-trip for LCP.
-       woff2 files are already preloaded above; these rules make them immediately
-       usable without waiting for the async Google Fonts stylesheet to arrive */
+    /* EB Garamond 400 inlined for LCP */
     @font-face {
       font-family: 'EB Garamond';
       font-style: normal;
       font-weight: 400;
       font-display: swap;
-      src: url('https://fonts.gstatic.com/s/ebgaramond/v32/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2') format('woff2');
+      src: url('/assets/fonts/eb-garamond-latin-400-normal.woff2') format('woff2');
       unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
     @font-face {
@@ -71,7 +68,7 @@
       font-style: italic;
       font-weight: 400;
       font-display: swap;
-      src: url('https://fonts.gstatic.com/s/ebgaramond/v32/SlGWmQSNjdsmc35JDF1K5GRweDs1ZyHKpWg.woff2') format('woff2');
+      src: url('/assets/fonts/eb-garamond-latin-400-italic.woff2') format('woff2');
       unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
@@ -2279,6 +2276,7 @@ body:has(.nav-hamburger.open) #back-to-top {
   {
     "@context": "https://schema.org",
     "@type": "Person",
+    "@id": "https://www.henryzimmerman.net/#person",
     "name": "Henry Zimmerman",
     "url": "https://www.henryzimmerman.net/",
     "image": "https://www.henryzimmerman.net/assets/pfps/HSZ_Headshot_BW.webp",
@@ -2525,7 +2523,7 @@ body:has(.nav-hamburger.open) #back-to-top {
 
           <div class="footnote-wrap">
             <button class="footnote-toggle" aria-expanded="false">About the star field ↓</button>
-            <p class="about-footnote" id="about-footnote-body">The star field is drawn from the <a href="http://tdc-www.harvard.edu/catalogs/bsc5.html" target="_blank" rel="noopener">Yale Bright Star Catalog</a>, in case you were wondering. Tap or hover to see names; click to open in <a href="https://simbad.cds.unistra.fr/simbad/" target="_blank" rel="noopener">SIMBAD</a>. Sky images from <a href="https://alasky.u-strasbg.fr/hips-image-services/hips2fits" target="_blank" rel="noopener">CDS hips2fits</a> (DSS2) for stars, and <a href="https://atlas.fallingstar.com/" target="_blank" rel="noopener">ATLAS</a> (via <a href="https://catch.astro.umd.edu/" target="_blank" rel="noopener">CATCH</a>) for asteroids. Shape models are from <a href="https://damit.cuni.cz/projects/damit/" target="_blank" rel="noopener">DAMIT</a>. Asteroid markers are 2-body propagated from <a href="https://vizier.cds.unistra.fr/viz-bin/cat/B/astorb" target="_blank" rel="noopener">astorb</a> orbital elements to the current date, so they drift across the sky as the page is revisited.</p>
+            <p class="about-footnote" id="about-footnote-body">The star field is drawn from the <a href="http://tdc-www.harvard.edu/catalogs/bsc5.html" target="_blank" rel="noopener">Yale Bright Star Catalog</a>, in case you were wondering. Tap or hover to see names; click to open in <a href="https://simbad.cds.unistra.fr/simbad/" target="_blank" rel="noopener">SIMBAD</a>. Sky images from <a href="https://alasky.u-strasbg.fr/hips-image-services/hips2fits" target="_blank" rel="noopener">CDS hips2fits</a> (DSS2) for stars, and <a href="https://atlas.fallingstar.com/" target="_blank" rel="noopener">ATLAS</a> (via <a href="https://catch.astro.umd.edu/" target="_blank" rel="noopener">CATCH</a>) for asteroids. Shape models are from <a href="https://damit.cuni.cz/projects/damit/" target="_blank" rel="noopener">DAMIT</a>. Asteroid markers are 2-body propagated from <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL SBDB</a> orbital elements to the current date, so they drift across the sky as the page is revisited.</p>
           </div>
         </div>
 
@@ -2574,8 +2572,8 @@ body:has(.nav-hamburger.open) #back-to-top {
   <!-- controls -->
   <div id="sim-controls">
     <div class="mode-pill">
-      <button id="btn-orbital" class="btn-mode" onclick="window.setMode('orbital')">ORBITAL</button>
-      <button id="btn-pulsation" class="btn-mode" onclick="window.setMode('pulsation')">PULSATION</button>
+      <button id="btn-orbital" class="btn-mode" onclick="window.setMode && window.setMode('orbital')">ORBITAL</button>
+      <button id="btn-pulsation" class="btn-mode" onclick="window.setMode && window.setMode('pulsation')">PULSATION</button>
       <button id="btn-realtime" class="btn-mode" title="Physically accurate pulsation rate &#215;85">REAL-TIME &#9888;</button>
     </div>
   </div>
@@ -2806,7 +2804,7 @@ body:has(.nav-hamburger.open) #back-to-top {
               <div class="writing-date">March 2025</div>
             </div>
             <div class="writing-content">
-              <h3><a href="https://thereverecom.wordpress.com/2025/03/24/whats-at-stake-in-greenland/" target="_blank" rel="noopener">What's at Stake in Greenland? &#8599;</a></h3>
+              <h3><a href="https://the-revere.com/2025/03/24/whats-at-stake-in-greenland/" target="_blank" rel="noopener">What's at Stake in Greenland? &#8599;</a></h3>
               <p>Trump's Arctic ambitions, Greenland's 2008 Self-Government Act, and why coercive US posturing sets a sovereignty precedent that benefits Russia and China far more than it benefits the US.</p>
             </div>
           </div>
@@ -3179,39 +3177,6 @@ body:has(.nav-hamburger.open) #back-to-top {
   }, { rootMargin: '300px' }).observe(document.getElementById('research'));
 </script>
 
-<script>
-  // load eb garamond 500 just before #bookshelf enters the viewport
-  (function () {
-    var loaded = false;
-    var target = document.getElementById('bookshelf');
-    if (!target) return;
-
-    function load_garamond_500() {
-      if (loaded) return;
-      loaded = true;
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500&display=swap';
-      document.head.appendChild(link);
-    }
-
-    if ('IntersectionObserver' in window) {
-      var observer = new IntersectionObserver(
-        function (entries) {
-          if (entries[0].isIntersecting) {
-            load_garamond_500();
-            observer.disconnect();
-          }
-        },
-        { rootMargin: '600px' }  // fires ~600px before section reaches viewport
-      );
-      observer.observe(target);
-    } else {
-      // fallback: load immediately if IntersectionObserver unsupported
-      load_garamond_500();
-    }
-  })();
-</script>
 <!-- trail toggle retired -->
 
 <div id="trail-card" role="status" aria-live="polite">
