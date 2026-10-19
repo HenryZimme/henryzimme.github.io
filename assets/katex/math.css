@@ -44,8 +44,6 @@
   margin: 0;
   padding: 3px 8px;
   font: 500 10px/1.4 'JetBrains Mono', ui-monospace, monospace;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--gold, #c4a258);
   background: var(--bg, #07091a);
   border: 1px solid var(--gold-dim, rgba(196, 162, 88, 0.25));

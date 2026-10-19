@@ -54,7 +54,6 @@
     #section-nav[data-visible="true"] { opacity: 1; transform: translate(-50%, -50%); pointer-events: auto; }
     #section-nav a {
       font-family: 'JetBrains Mono', monospace; font-size: 10px;
-      text-transform: uppercase; letter-spacing: 0.14em;
       color: rgba(255,255,255,0.28); text-decoration: none;
       padding: 4px 0; border-bottom: 1px solid transparent;
       transition: color 0.2s ease, border-color 0.2s ease;
@@ -97,15 +96,11 @@
     .ctl-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
       color: rgba(255,255,255,0.45);
     }
     .btn-mode {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
       padding: 6px 14px;
       background: transparent;
       border: 1px solid rgba(255,255,255,0.18);
@@ -126,7 +121,7 @@
     .obj-dd { position: relative; }
     .obj-select {
       font-family: 'JetBrains Mono', monospace; font-size: 10px;
-      text-transform: uppercase; letter-spacing: 0.12em; text-align: left;
+      text-align: left;
       padding: 6px 30px 6px 14px; line-height: 1.2; min-width: 206px;
       background: transparent; border: 1px solid rgba(255,255,255,0.18);
       color: rgba(255,255,255,0.72); cursor: pointer;
@@ -146,7 +141,7 @@
     .obj-menu[hidden] { display: none; }
     .obj-menu li {
       font-family: 'JetBrains Mono', monospace; font-size: 10px;
-      text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+      white-space: nowrap;
       padding: 6px 12px; color: rgba(255,255,255,0.7); cursor: pointer;
     }
     .obj-menu li:hover, .obj-menu li:focus { background: rgba(196,162,88,0.12); color: var(--gold); outline: none; }
@@ -203,8 +198,6 @@
     .hud-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
       color: rgba(255,255,255,0.50);
       width: 78px;
       white-space: nowrap;
@@ -220,8 +213,6 @@
     .pg-hint {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
       color: rgba(255,255,255,0.32);
       pointer-events: none;
       text-align: right;
@@ -267,7 +258,7 @@
       background: rgba(7,9,26,0.4); padding: 12px 14px;
     }
     .pop-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-    .pop-title { font-family:'JetBrains Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:.12em; color: var(--gold); }
+    .pop-title { font-family:'JetBrains Mono',monospace; font-size:9px; color: var(--gold); }
     .pop-legend { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.06em; color: rgba(255,255,255,.45); }
     .pdot { display:inline-block; width:7px; height:7px; border-radius:50%; vertical-align:middle; margin-right:3px; }
     .pdot.pu { background: var(--red); }
@@ -275,7 +266,7 @@
     .pdot.pc { background: #a98cd0; }
     .pop-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .pop-btn {
-      font-family:'JetBrains Mono',monospace; font-size:8.5px; text-transform:uppercase; letter-spacing:.1em;
+      font-family:'JetBrains Mono',monospace; font-size:8.5px;
       padding:4px 9px; background:transparent; border:1px solid rgba(255,255,255,0.18);
       color:rgba(255,255,255,0.6); cursor:pointer; white-space:nowrap; transition:all .2s ease;
     }
@@ -299,8 +290,6 @@
     .tile-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
       color: var(--gold);
       margin-bottom: 4px;
     }
@@ -331,9 +320,7 @@
     .exp-meta {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      text-transform: uppercase;
       color: var(--gold);
-      letter-spacing: 0.2em;
       margin-bottom: 12px;
     }
     .exp-title {
@@ -367,8 +354,6 @@
     }
     .param-table th {
       text-align: left;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
       color: var(--gold);
       padding: 10px 0;
       border-bottom: 1px solid var(--panel-border);
@@ -384,12 +369,12 @@
     .param-table td:last-child { text-align: right; color: var(--text); }
     /* per-object table (multi-column) */
     .object-table { width:100%; border-collapse:collapse; margin:32px 0 28px; font-family:'JetBrains Mono',monospace; font-size:11px; }
-    .object-table th { text-align:right; text-transform:uppercase; letter-spacing:0.08em; color:var(--gold); padding:10px 0 10px 16px; border-bottom:1px solid var(--panel-border); font-weight:400; white-space:nowrap; }
+    .object-table th { text-align:right; color:var(--gold); padding:10px 0 10px 16px; border-bottom:1px solid var(--panel-border); font-weight:400; white-space:nowrap; }
     .object-table th:first-child { text-align:left; padding-left:0; }
     .object-table td { padding:9px 0 9px 16px; border-bottom:1px solid rgba(196,162,88,0.08); color:var(--text); text-align:right; white-space:nowrap; }
     .object-table td:first-child { text-align:left; padding-left:0; color:rgba(255,255,255,0.7); }
     .object-table tr.is-default td:first-child { color:var(--gold); }
-    .object-table .obj-tag { color:rgba(255,255,255,0.35); font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; margin-left:8px; }
+    .object-table .obj-tag { color:rgba(255,255,255,0.5); font-size:8.5px; margin-left:8px; }
     .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 
     /* mode guide */
@@ -404,8 +389,6 @@
     .mode-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
       color: var(--gold);
       width: 90px;
       flex-shrink: 0;
@@ -426,12 +409,12 @@
     .ref-list li {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      color: rgba(255,255,255,0.30);
+      color: rgba(255,255,255,0.5);
       padding: 5px 0;
       border-bottom: 1px solid rgba(196,162,88,0.05);
       line-height: 1.5;
     }
-    .ref-list a { color: rgba(196,162,88,0.55); text-decoration: none; }
+    .ref-list a { color: rgba(196,162,88,0.75); text-decoration: underline; text-underline-offset: 3px; }
     .ref-list a:hover { color: var(--gold); }
 
     /* footer nav */
@@ -629,7 +612,7 @@
       <div class="table-scroll">
       <table class="object-table">
         <thead>
-          <tr><th>Object</th><th>P (h)</th><th>Amplitude</th><th>\(A_2/A_1\)</th><th>\(A_R\) (N = 8)</th></tr>
+          <tr><th>Object</th><th>P (h)</th><th>Amplitude</th><th aria-label="A2/A1">\(A_2/A_1\)</th><th aria-label="AR (N = 8)">\(A_R\) (N = 8)</th></tr>
         </thead>
         <tbody>
           <tr class="is-default"><td>5745 &middot; 1991 AN <span class="obj-tag">default</span></td><td>4.09</td><td>0.82 mag</td><td>13.0</td><td>1.00 &rarr; 0.00</td></tr>

@@ -98,8 +98,6 @@ nav {
 .nav-back {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--text-dim);
   text-decoration: none;
   border-bottom: 1px solid var(--panel-border);
@@ -133,8 +131,6 @@ nav {
 .article-meta {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--gold);
   margin-bottom: 18px;
 }
@@ -222,6 +218,12 @@ nav {
   margin-bottom: 36px;
 }
 
+/* links in running text need a non-color cue (WCAG 1.4.1) */
+.article-body p > a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* footnote reference links (standardized pattern) */
 a.footnote-ref {
   color: var(--blue);
@@ -252,8 +254,6 @@ a.footnote-ref:hover {
   opacity: 0.8;
   margin-top: 12px;
   line-height: 1.5;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
 /* footnotes */
@@ -267,6 +267,8 @@ sup a {
 sup a:hover { text-decoration: underline; }
 
 .footnotes {
+  overflow-wrap: anywhere;
+  word-break: break-word;
   margin-top: 3em;
   border-top: 1px solid var(--panel-border);
   padding-top: 1.5em;
@@ -292,6 +294,8 @@ sup a:hover { text-decoration: underline; }
 
 /* bibliography */
 .bibliography {
+  overflow-wrap: anywhere;
+  word-break: break-word;
   margin-top: 3em;
   border-top: 1px solid var(--panel-border);
   padding-top: 1.5em;
@@ -305,8 +309,9 @@ sup a:hover { text-decoration: underline; }
   text-indent: -1.5em;
 }
 .bibliography a {
-  color: rgba(196, 162, 88, 0.7);
-  text-decoration: none;
+  color: rgba(196, 162, 88, 0.75);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .bibliography a:hover {
   color: var(--gold);
@@ -359,9 +364,7 @@ sup a:hover { text-decoration: underline; }
   padding: 11px 22px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
-  letter-spacing: 0.1em;
   color: var(--gold);
-  text-transform: uppercase;
   text-decoration: none;
   border: 1px solid var(--gold);
   background: transparent;
@@ -538,9 +541,7 @@ sup a:hover { text-decoration: underline; }
 }
 .epilepsy-heading {
   font-size: 10px;
-  letter-spacing: 0.2em;
   color: var(--gold);
-  text-transform: uppercase;
   margin-bottom: 1rem;
 }
 .epilepsy-body {

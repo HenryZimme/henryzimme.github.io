@@ -106,9 +106,7 @@
     .usgr-hud-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
-      letter-spacing: 0.08em;
       color: rgba(226,221,212,0.35);
-      text-transform: uppercase;
     }
     .usgr-hud-val {
       font-family: 'JetBrains Mono', monospace;
@@ -210,7 +208,7 @@
           </div>
         </div>
         <button id="usgr-play" type="button" aria-pressed="true" aria-label="Pause or play the pulsation simulation"
-          style="position:absolute; top:12px; right:12px; z-index:5; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:5px 10px; background:rgba(7,9,26,0.7); border:1px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.7); cursor:pointer;">&#9208; Pause</button>
+          style="position:absolute; top:12px; right:12px; z-index:5; font-family:'JetBrains Mono',monospace; font-size:10px; padding:5px 10px; background:rgba(7,9,26,0.7); border:1px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.7); cursor:pointer;">&#9208; Pause</button>
       </figure>
 
       <p>
@@ -469,7 +467,7 @@
         ctx.font = "9px 'JetBrains Mono', monospace";
         ctx.fillStyle = 'rgba(196,162,88,0.5)';
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-        ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, lc_py + 6);
+        ctx.fillText('V-band light curve \u00B7 pulsation phase', px + inset, lc_py + 6);
 
         ctx.textAlign = 'right';
         ctx.fillStyle = 'rgba(196,162,88,0.75)';
@@ -552,7 +550,7 @@
         ctx.font = "9px 'JetBrains Mono', monospace";
         ctx.fillStyle = 'rgba(120,165,210,0.55)';
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-        ctx.fillText('RADIAL VELOCITY \u00B7 HOCDE\u0301 ET AL. 2026', px + inset, rv_py + 4);
+        ctx.fillText('Radial velocity \u00B7 Hocde\u0301 et al. 2026', px + inset, rv_py + 4);
 
         ctx.textAlign = 'right';
         ctx.fillStyle = 'rgba(120,165,210,0.75)';
@@ -614,7 +612,7 @@
         ctx.font = "9px 'JetBrains Mono', monospace";
         ctx.fillStyle = 'rgba(134,239,172,0.55)';
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-        ctx.fillText('RADIUS \u00B7 BAADE-WESSELINK  (p=1.27, Trahin+2021 P-R)', px + inset + 2, ry + 3);
+        ctx.fillText('Radius \u00B7 Baade-Wesselink  (p=1.27, Trahin+2021 P-R)', px + inset + 2, ry + 3);
         ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(134,239,172,0.85)';
         ctx.fillText(cur_r.toFixed(1) + ' R\u2609', px + pw - inset - 2, ry + 3);
 

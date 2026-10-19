@@ -40,14 +40,16 @@
       pointer-events: none;
 
       /* 2. await 0.4 seconds before fading out and disabling clicks */
-      transition: opacity 0.2s ease 0.4s, pointer-events 0s linear 0.4s;
+      visibility: hidden;
+      transition: opacity 0.2s ease 0.4s, pointer-events 0s linear 0.4s, visibility 0s linear 0.6s;
     }
 
     #star-popover.visible {
       /* 3. appear instantly with NO delay when the class is added */
       opacity: 1;
+      visibility: visible;
       pointer-events: all;
-      transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s;
+      transition: opacity 0.15s ease 0s, pointer-events 0s linear 0s, visibility 0s linear 0s;
     }
 
     /* 4. keep visible if the mouse makes it to the popover! */
@@ -99,10 +101,11 @@
       align-items: center;
       justify-content: center;
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.28s;
+      transition: opacity 0.28s, visibility 0s linear 0.28s;
     }
-    #object-modal.visible { opacity: 1; pointer-events: all; }
+    #object-modal.visible { opacity: 1; visibility: visible; pointer-events: all; transition: opacity 0.28s, visibility 0s; }
 
     .modal-inner {
       max-width: 580px;
@@ -119,9 +122,7 @@
     .modal-type {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
-      letter-spacing: 0.18em;
       color: var(--gold);
-      text-transform: uppercase;
       margin-bottom: 10px;
     }
 
@@ -150,8 +151,6 @@
       text-decoration: none;
       border: 1px solid var(--gold-dim);
       padding: 7px 16px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
       transition: background 0.18s, color 0.18s;
     }
     .modal-simbad:hover { background: var(--gold); color: var(--bg); }
@@ -243,16 +242,6 @@
       letter-spacing: -0.01em;
       padding: 10px 0 0;
     }
-    .section-heading::before {
-      content: attr(data-label);
-      display: block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 18px;
-      letter-spacing: 0.28em;
-      color: var(--gold);
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
     .section-heading::after {
       content: '';
       display: block;
@@ -285,10 +274,8 @@
       padding: 0 0 1px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.08em;
       color: var(--text-dim);
-      text-transform: uppercase;
-      opacity: 0.45;
+      opacity: 0.75;
       cursor: pointer;
       transition: opacity 0.18s;
     }
@@ -394,9 +381,7 @@
     .card-id {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.12em;
       color: var(--gold);
-      text-transform: uppercase;
       margin-bottom: 13px;
     }
 
@@ -455,9 +440,7 @@
       position: relative;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.12em;
       color: var(--gold);
-      text-transform: uppercase;
       cursor: pointer;
       opacity: 0.80;
       transition: opacity 0.18s;
@@ -496,17 +479,15 @@
     .tag {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.04em;
       color: var(--text-dim);
       border: 1px solid rgba(226, 221, 212, 0.15);
       padding: 3px 10px;
-      text-transform: uppercase;
     }
 
     /* artifact line: scannable links surfaced above the fold (Variant B) */
     .card-primary { margin: 0 0 10px; }
     .card-artifacts { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; margin: 0 0 20px; }
-    .artifact-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(226, 221, 212, 0.4); padding-bottom: 1px; transition: color 0.18s, border-color 0.18s; white-space: nowrap; }
+    .artifact-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(226, 221, 212, 0.4); padding-bottom: 1px; transition: color 0.18s, border-color 0.18s; white-space: nowrap; }
     .artifact-link:hover { color: var(--gold); border-bottom-color: var(--gold); }
     .artifact-link.ext:hover { color: var(--blue); border-bottom-color: var(--blue); }
     .artifact-sep { color: var(--gold-dim); margin: 0 10px; font-size: 11px; }
@@ -515,10 +496,8 @@
       display: inline-block;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.08em;
       color: var(--gold);
       text-decoration: none;
-      text-transform: uppercase;
       border-bottom: 1px solid var(--gold);
       padding-bottom: 1px;
       transition: opacity 0.18s;
@@ -583,9 +562,7 @@
       cursor: pointer;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.14em;
       color: var(--text-dim);
-      text-transform: uppercase;
       opacity: 0.75;
       transition: opacity 0.18s;
       padding: 0;
@@ -711,8 +688,6 @@
       gap: 10px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11.5px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
       color: var(--gold);
       text-decoration: none;
       border: 1px solid var(--gold-dim);
@@ -748,10 +723,8 @@
     .footer-links a {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.08em;
       color: var(--text-dim);
       text-decoration: none;
-      text-transform: uppercase;
       transition: color 0.18s;
     }
     .footer-links a:hover { color: var(--gold); }
@@ -826,9 +799,7 @@
     .sim-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      letter-spacing: 0.22em;
       color: var(--gold);
-      text-transform: uppercase;
       margin: 0 0 10px;
     }
     .sim-title {
@@ -927,10 +898,8 @@
       pointer-events: none;
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.5);
       margin: 0;
-      text-transform: uppercase;
       text-align: center;
     }
     .mode-pill {
@@ -1374,16 +1343,11 @@
       /* ── sections ─────────────────────────────────────────────────────────── */
       .section { padding: 64px 20px; }
 
-      /* section heading: tighten label size and bottom gap so content
+      /* section heading: tighten size and bottom gap so content
          starts closer on a small screen */
       .section-heading {
         font-size: 28px;
         margin-bottom: 36px;
-      }
-      .section-heading::before {
-        font-size: 13px;
-        letter-spacing: 0.22em;
-        margin-bottom: 8px;
       }
 
       /* ── about ────────────────────────────────────────────────────────────── */
@@ -1591,7 +1555,7 @@
       display: none; align-items: center; justify-content: center; gap: 6px;
       writing-mode: vertical-rl; text-orientation: mixed;
       font-family: 'JetBrains Mono', monospace; font-size: 9px;
-      letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+      color: var(--gold);
       opacity: 0.9; user-select: none;
     }
     #trail-card.trail-collapsed .trail-grip { display: flex; }
@@ -1617,9 +1581,7 @@
     .trail-card-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      letter-spacing: 0.2em;
       color: var(--gold);
-      text-transform: uppercase;
     }
     .trail-card-count {
       font-family: 'JetBrains Mono', monospace;
@@ -1782,9 +1744,7 @@
 }
 .epilepsy-heading {
   font-size: 10px;
-  letter-spacing: 0.2em;
   color: var(--gold);
-  text-transform: uppercase;
   margin-bottom: 1rem;
 }
 .epilepsy-actions {

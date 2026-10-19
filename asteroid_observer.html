@@ -68,9 +68,7 @@
     grid-column: 1 / -1;
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
-    letter-spacing: 0.09em;
     color: var(--text-dim);
-    text-transform: uppercase;
   }
   #info-body {
     grid-column: 1;
@@ -89,7 +87,7 @@
     letter-spacing: 0.03em;
     line-height: 1.65;
     color: var(--text-dim);
-    opacity: 0.7;
+    opacity: 0.75;
     align-self: end;
   }
 
@@ -132,12 +130,11 @@
     z-index: 10;
   }
   #header-title {
+    margin: 0;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 500;
     color: var(--text-dim);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
   }
   #header-right {
     margin-left: auto;
@@ -282,7 +279,7 @@
 
 <div id="sim-wrap">
   <div id="header">
-    <span id="header-title">— —</span>
+    <h1 id="header-title">— —</h1>
     <span id="header-right">heliocentric orbit · ecliptic j2000</span>
   </div>
 
@@ -448,7 +445,7 @@
       dial_area_h = rp_h - hud_area_h - time_area_h;
 
       // DIAL_R guaranteed to sit fully inside dial zone (24px clearance each side)
-      DIAL_R  = Math.min(RIGHT_W * 0.30, (dial_area_h - 48) / 2);
+      DIAL_R  = Math.max(0, Math.min(RIGHT_W * 0.30, (dial_area_h - 48) / 2));
       DIAL_CX = RIGHT_X + RIGHT_W / 2;
       DIAL_CY = HEADER_H + SCENE_H + dial_area_h / 2;
       HUD_Y   = HEADER_H + SCENE_H + dial_area_h;
@@ -477,7 +474,7 @@
       dial_area_h = CONTENT_H - hud_area_h - time_area_h;
 
       // DIAL_R guaranteed to sit fully inside dial zone (32px clearance each side)
-      DIAL_R  = Math.min(RIGHT_W * 0.42, (dial_area_h - 64) / 2);
+      DIAL_R  = Math.max(0, Math.min(RIGHT_W * 0.42, (dial_area_h - 64) / 2));
       DIAL_CX = RIGHT_X + RIGHT_W / 2;
       DIAL_CY = HEADER_H + dial_area_h / 2;
       HUD_Y   = HEADER_H + dial_area_h;
@@ -928,6 +925,7 @@
     ctx.beginPath(); ctx.rect(RIGHT_X, dial_panel_top, RIGHT_W, HUD_Y - dial_panel_top);
     ctx.fillStyle = C_BG; ctx.fill();
     ctx.restore();
+    if (R === 0) return; // no room for the dial on short portrait screens
 
     // outer ring fill
     ctx.save();
@@ -1016,7 +1014,7 @@
     ctx.save();
     ctx.font      = '9px JetBrains Mono, monospace';
     ctx.textAlign = 'center'; ctx.fillStyle = C_DIM;
-    ctx.fillText('ROTATIONAL PHASE', cx, dial_panel_top + 18);
+    ctx.fillText('Rotational phase', cx, dial_panel_top + 18);
     ctx.restore();
   }
 
@@ -1091,7 +1089,7 @@
     ctx.save();
     ctx.font = '9px JetBrains Mono, monospace';
     ctx.fillStyle = C_DIM; ctx.textAlign = 'left';
-    ctx.fillText('OBSERVABILITY \u00b7 \u00b17 DAYS', x0, TIME_Y + 12);
+    ctx.fillText('Observability \u00b7 \u00b17 days', x0, TIME_Y + 12);
     ctx.restore();
 
     // rolling window: ±7 days in frames (frame_stride_h hours/frame)

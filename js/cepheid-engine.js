@@ -960,7 +960,7 @@
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(96,165,250,0.85)';
-    ctx.fillText('RADIAL VELOCITIES (KM/S) \u00B7 ORBITAL PHASE', px + inset, py + 6);
+    ctx.fillText('Radial velocities (km/s) \u00B7 orbital phase', px + inset, py + 6);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#ffe4a0';
     ctx.fillText('\u2014 Cepheid', px + pw - inset, py + 6);
@@ -1082,7 +1082,7 @@
     ctx.font = '10px \'JetBrains Mono\', monospace';
     ctx.fillStyle = 'rgba(96,165,250,0.85)';
     ctx.textAlign = 'left';
-    ctx.fillText('V-BAND LIGHT CURVE \u00B7 PULSATION PHASE', px + inset, py + 14);
+    ctx.fillText('V-band light curve \u00B7 pulsation phase', px + inset, py + 14);
 
     // legend top-right
     ctx.font = '10px \'JetBrains Mono\', monospace';
@@ -1862,7 +1862,7 @@
           ctx.font = '12px \'JetBrains Mono\', monospace';
           ctx.fillStyle = 'rgba(226,221,212,0.65)';
           ctx.letterSpacing = '0.08em';
-          ctx.fillText('CLASSICAL CEPHEID  \u00B7  DOUBLE-LINED SPECTROSCOPIC BINARY  \u00B7  LMC', ecX, ecY - 8);
+          ctx.fillText('Classical Cepheid  \u00B7  double-lined spectroscopic binary  \u00B7  LMC', ecX, ecY - 8);
 
           // divider
           ctx.shadowBlur = 0;
