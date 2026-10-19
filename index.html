@@ -785,7 +785,7 @@
       font-style: italic;
       color: var(--text-dim);
       line-height: 1.75;
-      max-width: 640px;
+      max-width: 65ch;
       margin-bottom: 40px;
       border-left: 2px solid var(--gold-dim);
       padding-left: 20px;
@@ -796,6 +796,7 @@
       line-height: 1.78;
       color: var(--text-dim);
       margin-bottom: 22px;
+      max-width: 65ch;
     }
 
     .card-summary {
@@ -804,6 +805,7 @@
       line-height: 1.78;
       color: var(--text-dim);
       margin-bottom: 18px;
+      max-width: 65ch;
     }
 
     .card-expand {
@@ -896,7 +898,7 @@
       font-size: 15.5px;
       color: var(--text-dim);
       line-height: 1.75;
-      max-width: 600px;
+      max-width: 65ch;
       margin-bottom: 36px;
     }
 
@@ -1011,6 +1013,7 @@
       font-size: 14.5px;
       color: var(--text-dim);
       line-height: 1.65;
+      max-width: 65ch;
     }
 
     @media (max-width: 740px) {
@@ -1064,6 +1067,7 @@
       font-size: 14.5px;
       color: var(--text-dim);
       line-height: 1.6;
+      max-width: 65ch;
     }
 
     .highlights-cta {
@@ -1181,12 +1185,6 @@
       z-index: 20;
       pointer-events: none;
     }
-    .sim-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--gold);
-      margin: 0 0 10px;
-    }
     .sim-title {
       font-family: 'EB Garamond', serif;
       font-size: clamp(22px, 3vw, 34px);
@@ -1278,11 +1276,11 @@
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 4rem);
-      max-width: 820px;
+      max-width: 75ch;
       z-index: 20;
       pointer-events: none;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
       color: rgba(255,255,255,0.5);
       margin: 0;
       text-align: center;
@@ -1400,7 +1398,7 @@
         width: auto;
         max-width: none;
         padding: 0 1.5rem 1.5rem;
-        font-size: 10px;
+        font-size: 11px;
       }
       #rv-legend { display: none; }
     }
@@ -1965,7 +1963,7 @@
     .trail-card-count { margin-left: auto; }
     .trail-card-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
       color: var(--gold);
     }
     .trail-card-count {
@@ -2128,7 +2126,7 @@
   font-family: 'JetBrains Mono', monospace;
 }
 .epilepsy-heading {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--gold);
   margin-bottom: 1rem;
 }
@@ -2265,7 +2263,7 @@ body:has(.nav-hamburger.open) #back-to-top {
       background: rgba(7, 9, 26, 0.55);
       border: 1px solid rgba(226, 221, 212, 0.14);
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
       color: var(--text-dim); text-decoration: none; cursor: pointer;
       transition: border-color 0.18s, color 0.18s, transform 0.18s;
     }
@@ -2278,11 +2276,11 @@ body:has(.nav-hamburger.open) #back-to-top {
       box-shadow: 0 0 8px 1px var(--c); flex-shrink: 0;
     }
     .legend-live {
-      font-size: 8.5px; padding: 1px 5px; border: 1px solid #5ecfa0;
+      font-size: 11px; padding: 1px 5px; border: 1px solid #5ecfa0;
       border-radius: 3px; color: #5ecfa0; letter-spacing: 0.12em;
     }
     .legend-sim {
-      font-size: 8.5px; padding: 1px 5px; border: 1px solid #b48be0;
+      font-size: 11px; padding: 1px 5px; border: 1px solid #b48be0;
       border-radius: 3px; color: #b48be0; letter-spacing: 0.12em;
     }
     /* color dot on each research card, matched to its star */
@@ -2403,8 +2401,8 @@ body:has(.nav-hamburger.open) #back-to-top {
   <!-- hero -->
   <span id="stars" style="position: absolute; top: 0;"></span>
   <section id="hero">
-    <p class="hero-eyebrow">Phillips Academy Andover</p>
     <h1 class="hero-name"><span class="line">Henry</span><span class="line">Zimmerman</span></h1>
+    <p class="hero-eyebrow">Phillips Academy Andover</p>
     <p class="hero-tagline">Eyes on the sky, feet on the ground.</p>
 <div id="sky-legend" aria-label="Research objects on the sky above, hover to locate one, click to learn more"></div>
     <div class="hero-arrow" aria-hidden="true"></div>
@@ -2485,7 +2483,6 @@ body:has(.nav-hamburger.open) #back-to-top {
 
   <!-- description block -->
   <div id="sim-info">
-    <p class="sim-label">Live Simulation</p>
     <h2 class="sim-title">OGLE-LMC-CEP-1347</h2>
     <div class="sim-rule"></div>
     <p class="sim-body">

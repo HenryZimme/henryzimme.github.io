@@ -307,6 +307,7 @@ sup a:hover { text-decoration: underline; }
   line-height: 1.65;
   padding-left: 1.5em;
   text-indent: -1.5em;
+  max-width: 58ch;
 }
 .bibliography a {
   color: rgba(196, 162, 88, 0.75);
@@ -482,6 +483,7 @@ sup a:hover { text-decoration: underline; }
   color: var(--text-dim);
   margin-bottom: 24px;
   line-height: 1.72;
+  max-width: 58ch;
 }
 .article-body.article-body--research h2 {
   font-family: 'EB Garamond', serif;
@@ -515,6 +517,7 @@ sup a:hover { text-decoration: underline; }
   text-transform: none;
   letter-spacing: normal;
   opacity: 1;
+  max-width: 75ch;
 }
 
 /* appendix title: larger display size for method/appendix pages */
@@ -540,7 +543,7 @@ sup a:hover { text-decoration: underline; }
   font-family: 'JetBrains Mono', monospace;
 }
 .epilepsy-heading {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--gold);
   margin-bottom: 1rem;
 }

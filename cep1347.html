@@ -93,9 +93,9 @@
 
     .hud-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      color: rgba(255,255,255,0.50);
-      width: 70px;
+      font-size: 11px;
+      color: var(--text-dim);
+      width: 84px;
     }
 
     .hud-val {
@@ -126,7 +126,7 @@
 
     .btn-mode {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
       padding: 6px 14px;
       background: transparent;
       border: 1px solid rgba(255,255,255,0.18);
@@ -145,8 +145,8 @@
       left: 0; right: 0;
       text-align: center;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      color: rgba(255,255,255,0.22);
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
       pointer-events: none;
       z-index: 10;
     }
@@ -164,16 +164,16 @@
     /* scroll indicator */
     #scroll-hint {
       position: absolute;
-      bottom: 20px;
+      bottom: calc(28vh + 12px);
       right: 28px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      color: rgba(255,255,255,0.20);
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
       z-index: 10;
       animation: pulse-hint 3s ease-in-out infinite;
     }
     @keyframes pulse-hint {
-      0%, 100% { opacity: 0.5; }
+      0%, 100% { opacity: 0.7; }
       50% { opacity: 1; }
     }
 
@@ -190,8 +190,8 @@
     }
     #playback-bar .pb-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      color: rgba(255,255,255,0.32);
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
       margin-left: 8px;
     }
 
@@ -218,7 +218,7 @@
       font-weight: 400; line-height: 1.1; margin-bottom: 30px;
     }
 
-    .article-content p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; }
+    .article-content p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; max-width: 58ch; }
 
     .bibliography h2 {
       font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400;
@@ -242,7 +242,7 @@
       border-collapse: collapse;
       margin: 40px 0;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
     }
     .param-table th {
       text-align: left;
@@ -283,7 +283,7 @@
     .mode-item:first-child { border-top: 1px solid rgba(196,162,88,0.08); }
     .mode-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
+      font-size: 11px;
       color: var(--gold);
       width: 90px;
       flex-shrink: 0;
@@ -295,6 +295,7 @@
       color: var(--text-dim);
       line-height: 1.72;
       margin-bottom: 24px;
+      max-width: 58ch;
     }
 
     /* ── film mode ── */
@@ -342,7 +343,7 @@
       .hud-label { width: 56px; }
       #mode-bar { bottom: calc(32vh + 14px); gap: 4px; }
       #playback-bar { bottom: calc(32vh + 48px); gap: 4px; }
-      .btn-mode { font-size: 9px; padding: 5px 10px; }
+      .btn-mode { font-size: 11px; padding: 5px 10px; }
       #orb-params { display: none; }
       #hud-plot-container { height: 32vh; }
       #scroll-hint { display: none; }
