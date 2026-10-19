@@ -6,7 +6,7 @@
 //   - responses over MAX_CACHE_BYTES (PDFs) are left to the HTTP cache
 //
 // bump CACHE_VERSION when deploying changes to force all clients to re-fetch.
-const CACHE_VERSION = 'v50';
+const CACHE_VERSION = 'v51';
 const CACHE_STATIC  = `static-${CACHE_VERSION}`;
 const CACHE_PAGES   = `pages-${CACHE_VERSION}`;
 const MAX_CACHE_BYTES = 2_000_000;
