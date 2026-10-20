@@ -123,6 +123,11 @@ nav {
   max-width: 800px;
 }
 
+/* research pages: references span the figure width like the body text */
+.article-wrap--wide .bibliography p {
+  max-width: none;
+}
+
 /* full variant for poster-embed pages (e.g. ccd_calibration) */
 .article-wrap.article-wrap--full {
   max-width: 1200px;
@@ -310,6 +315,9 @@ sup a:hover { text-decoration: underline; }
   max-width: 58ch;
 }
 .bibliography a {
+  display: inline-block; /* keep a DOI on one line unless it is wider than the column */
+  max-width: 100%;
+  text-indent: 0;
   color: rgba(196, 162, 88, 0.75);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -483,7 +491,6 @@ sup a:hover { text-decoration: underline; }
   color: var(--text-dim);
   margin-bottom: 24px;
   line-height: 1.72;
-  max-width: 58ch;
 }
 .article-body.article-body--research h2 {
   font-family: 'EB Garamond', serif;

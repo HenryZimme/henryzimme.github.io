@@ -432,11 +432,11 @@
     return { w: w, h: star_h, full_h: h, mobile: isMob };
   }
 
-  // largest zoom whose full orbit (discs + labels) stays in the star area and clear of #sim-info / #hud-table
+  // largest zoom whose full orbit (discs + labels), or the pulsating disc, stays in the star area and clear of #sim-info / #hud-table
   var orbitFit = null, orbitFitAt = 0;
-  function getOrbitFit(p, sw, sh) {
+  function getOrbitFit(p, sw, sh, puls) {
     var now = performance.now();
-    if (orbitFit && now - orbitFitAt < 500 && orbitFit.sw === sw && orbitFit.sh === sh) return orbitFit;
+    if (orbitFit && now - orbitFitAt < 500 && orbitFit.sw === sw && orbitFit.sh === sh && orbitFit.puls === puls) return orbitFit;
     orbitFitAt = now;
     var sr = simCanvas.getBoundingClientRect(), M = 10, E = 4;
     var blocks = [];
@@ -447,7 +447,7 @@
       var l = b.left - sr.left, t = b.top - sr.top, r = b.right - sr.left, bt = b.bottom - sr.top;
       if (b.width && b.height && r > 0 && l < sw && bt > 0 && t < sh) blocks.push([l - M, t - M, r + M, bt + M]);
     });
-    var key = [sw, sh, p.x2.length, maxR1].concat(blocks.map(function(b) { return b.map(Math.round).join(','); })).join('|');
+    var key = [sw, sh, p.x2.length, maxR1, puls].concat(blocks.map(function(b) { return b.map(Math.round).join(','); })).join('|');
     if (orbitFit && orbitFit.key === key) return orbitFit;
 
     ctx.save();
@@ -455,7 +455,7 @@
     var lw1 = ctx.measureText('Cepheid').width + 10, lw2 = ctx.measureText('Companion').width + 10;
     ctx.restore();
     var n = p.x2.length, step = Math.max(1, Math.floor(n / 180));
-    var z0 = (Math.min(sw, sh) * 0.50) / bounds.a2, cx = sw / 2;
+    var z0 = puls ? (Math.min(sw, sh) * 0.35) / maxR1 : (Math.min(sw, sh) * 0.50) / bounds.a2, cx = sw / 2;
 
     function hits(l, t, r, b) {
       for (var k = 0; k < blocks.length; k++) {
@@ -469,11 +469,13 @@
       var e = pr * Math.SQRT1_2;
       if (hits(sx - pr, sy - e, sx + pr, sy + e) || hits(sx - e, sy - pr, sx + e, sy + pr)) return false;
       var side = (sx - sw * 0.44) / (sw * 0.24), g = pr + 9;
+      if (!lw) return true;
       if (side < 0.99 && hits(sx + g, sy - 9, sx + g + lw, sy + 9)) return false;
       if (side > 0.01 && hits(Math.max(4, sx - g - lw), sy - 9, sx - g, sy + 9)) return false;
       return true;
     }
     function fits(z, cy) {
+      if (puls) return bodyFits(cx, cy, maxR1 * z, 0);
       for (var i = 0; i < n; i += step) {
         if (!bodyFits(cx + p.x1[i] * z, cy + p.y1[i] * z, Math.max(2, maxR1 * z), lw1)) return false;
         if (!bodyFits(cx + p.x2[i] * z, cy + p.y2[i] * z, Math.max(2, COMPANION_RAD * z), lw2)) return false;
@@ -490,7 +492,7 @@
       }
     }
     if (orbitFit && (orbitFit.zoom !== best.zoom || orbitFit.cy !== best.cy)) trail_fade_start = Date.now();
-    return (orbitFit = { key: key, sw: sw, sh: sh, zoom: best.zoom, cx: cx, cy: best.cy });
+    return (orbitFit = { key: key, sw: sw, sh: sh, puls: puls, zoom: best.zoom, cx: cx, cy: best.cy });
   }
 
   // ── rv precomputation ──────────────────────────────────────────────────────
@@ -1218,7 +1220,7 @@
     var b = (brightness !== undefined) ? Math.max(0, Math.min(1, brightness)) : 0.5;
 
     // bloom: tighter radius so disc color stays readable, alpha lifted slightly to compensate
-    var bloom_r = pr * 2.5;
+    var bloom_r = Math.min(pr * 2.5, pr + 160);
     var bloom_a = is_cepheid ? (0.10 + b * 0.18) : 0.08;
     var grad = ctx.createRadialGradient(spx, spy, pr * 0.4, spx, spy, bloom_r);
     grad.addColorStop(0,   hexToRgba(c, bloom_a));
@@ -1230,7 +1232,8 @@
     ctx.fill();
 
     // core glow: halved shadowBlur so amber disc wins over white scatter
-    ctx.shadowBlur  = pr * (is_cepheid ? 0.9 + b * 0.6 : 0.7);
+    // blur cost scales with disc area: fade it out on large discs, where the bloom gradient already carries the glow
+    ctx.shadowBlur  = Math.min(40, pr * (is_cepheid ? 0.9 + b * 0.6 : 0.7)) * Math.max(0, Math.min(1, (120 - pr) / 40));
     ctx.shadowColor = c;
 
     // disc
@@ -1385,7 +1388,7 @@
     var sw = star.w, sh = star.h;
 
     var zoom, cx, cy;
-    if (currentMode === 'pulsation') {
+    if (isFilm && currentMode === 'pulsation') {
       zoom = (Math.min(sw, sh) * 0.14) / maxR1;
       cx = sw / 2;
       cy = sh * 0.35;
@@ -1394,7 +1397,7 @@
       cx = sw / 2;
       cy = sh / 2;
     } else {
-      var fit = getOrbitFit(p, sw, sh);
+      var fit = getOrbitFit(p, sw, sh, currentMode === 'pulsation');
       zoom = fit.zoom;
       cx = fit.cx;
       cy = fit.cy;
@@ -1537,38 +1540,24 @@
       if (trail2.length > TRAIL_LEN) trail2.shift();
 
       ctx.save();
-      // Cepheid trail, temperature-coloured tapered stroke
-      if (trail1.length > 2) {
-        for (var ti = 1; ti < trail1.length; ti++) {
-          var tf = ti / trail1.length;
-          var tw = tf * tf * (isFilm ? 5.5 : 3.5);
-          var ta = tf * tf * (isFilm ? 0.75 : 0.55) * trail_fade_mul;
-          if (ta <= 0) continue;
+      // one stroke per 10-point chunk instead of per segment: ~10x fewer raster calls
+      var strokeTrail = function(tr, wMax, aMax, colAt) {
+        var n = tr.length;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        for (var i = 1; i < n; i += 10) {
+          var j = Math.min(n - 1, i + 9), tf = j / n, a = tf * tf * aMax * trail_fade_mul;
+          if (a <= 0) continue;
           ctx.beginPath();
-          ctx.moveTo(trail1[ti-1].x, trail1[ti-1].y);
-          ctx.lineTo(trail1[ti].x,   trail1[ti].y);
-          ctx.strokeStyle = hexToRgba(trail1[ti].col, ta);
-          ctx.lineWidth   = tw;
-          ctx.lineCap     = 'round';
+          ctx.moveTo(tr[i - 1].x, tr[i - 1].y);
+          for (var k = i; k <= j; k++) ctx.lineTo(tr[k].x, tr[k].y);
+          ctx.strokeStyle = colAt(tr[j], a);
+          ctx.lineWidth = tf * tf * wMax;
           ctx.stroke();
         }
-      }
-      // Companion trail, red, same taper
-      if (trail2.length > 2) {
-        for (var ti2 = 1; ti2 < trail2.length; ti2++) {
-          var tf2 = ti2 / trail2.length;
-          var tw2 = tf2 * tf2 * (isFilm ? 4.4 : 2.8);
-          var ta2 = tf2 * tf2 * (isFilm ? 0.65 : 0.45) * trail_fade_mul;
-          if (ta2 <= 0) continue;
-          ctx.beginPath();
-          ctx.moveTo(trail2[ti2-1].x, trail2[ti2-1].y);
-          ctx.lineTo(trail2[ti2].x,   trail2[ti2].y);
-          ctx.strokeStyle = 'rgba(248,113,113,' + ta2.toFixed(3) + ')';
-          ctx.lineWidth   = tw2;
-          ctx.lineCap     = 'round';
-          ctx.stroke();
-        }
-      }
+      };
+      if (trail1.length > 2) strokeTrail(trail1, isFilm ? 5.5 : 3.5, isFilm ? 0.75 : 0.55, function(pt, a) { return hexToRgba(pt.col, a); });
+      if (trail2.length > 2) strokeTrail(trail2, isFilm ? 4.4 : 2.8, isFilm ? 0.65 : 0.45, function(pt, a) { return 'rgba(248,113,113,' + a.toFixed(3) + ')'; });
       ctx.restore();
     }
 
@@ -1995,7 +1984,7 @@
       btn.style.boxShadow = 'inset 0 0 0 1px rgba(196,162,88,0.45)';
       btn.setAttribute('aria-pressed', 'true');
     }
-    syncPlaybackUI(); // speed is locked in realtime mode, reflect that on the controls
+    syncPlaybackUI(); // no speed button is active in realtime
     if (!loopRunning) requestAnimationFrame(animate); // reflect new mode on a paused frame
   };
 
@@ -2013,10 +2002,9 @@
       if (!el) return;
       var active = !realtime && speed === pair[1];
       el.style.background = active ? 'rgba(196,162,88,0.18)' : 'transparent';
-      el.style.color = realtime ? 'rgba(255,255,255,0.28)' : (active ? '#c4a258' : 'rgba(255,255,255,0.52)');
+      el.style.color = active ? '#c4a258' : 'rgba(255,255,255,0.52)';
       el.style.boxShadow = active ? 'inset 0 0 0 1px rgba(196,162,88,0.45)' : 'none';
       el.setAttribute('aria-pressed', active ? 'true' : 'false');
-      el.disabled = realtime; // speed has no effect in realtime (flash rate is locked)
     });
   }
 
@@ -2039,7 +2027,7 @@
   }
 
   window.cepSetSpeed = function(v) {
-    if (currentMode === 'realtime') return; // locked for photosensitivity safety
+    if (currentMode === 'realtime') window.setMode('orbital'); // a speed choice leaves realtime; its flash rate is never sped up
     speed = v;
     syncPlaybackUI();
   };

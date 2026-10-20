@@ -26,176 +26,11 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/eb-garamond-latin-400-italic.woff2">
   <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/subpages.css">
+  <link rel="stylesheet" href="/css/sim.css">
   <style>
-    /* page-specific tokens (subpages.css provides the rest) */
-    :root {
-      --red:          #f87171;
-      --green:        #86efac;
-    }
-
     html { scroll-behavior: smooth; }
 
-    /* ── sim viewport ── */
-    #sim-section {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-      min-height: 500px;
-      overflow: hidden;
-      background: var(--bg);
-    }
-
-    #simCanvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-    }
-
-    /* loading overlay */
-    #sim-preview {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      pointer-events: none;
-      transition: opacity 0.65s ease;
-    }
-
-    .sim-load-line {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: rgba(196,162,88,0.55);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-
-    /* HUD: stats top-left */
-    #hud-stats {
-      position: absolute;
-      top: 72px; left: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    .hud-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hud-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      width: 84px;
-    }
-
-    .hud-val {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--gold);
-    }
-
-    #hud-teff-swatch {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--gold);
-      flex-shrink: 0;
-    }
-
-    .hud-phase-row { margin-top: 4px; }
-
-    /* mode buttons */
-    #mode-bar {
-      position: absolute;
-      bottom: calc(28vh + 18px);
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 6px;
-      z-index: 10;
-    }
-
-    .btn-mode {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      padding: 6px 14px;
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.18);
-      color: rgba(255,255,255,0.4);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .btn-mode:hover { color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.35); }
-    .btn-mode:disabled { cursor: default; opacity: 0.55; }
-
-    /* orbital params strip */
-    #orb-params {
-      position: absolute;
-      bottom: calc(28vh - 2px);
-      left: 0; right: 0;
-      text-align: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,0.5);
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    /* plot panel */
-    #hud-plot-container {
-      position: absolute;
-      left: 0; right: 0;
-      bottom: 0;
-      height: 28vh;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    /* scroll indicator */
-    #scroll-hint {
-      position: absolute;
-      bottom: calc(28vh + 12px);
-      right: 28px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,0.75);
-      z-index: 10;
-      animation: pulse-hint 3s ease-in-out infinite;
-    }
-    @keyframes pulse-hint {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
-    }
-
-    /* playback controls */
-    #playback-bar {
-      position: absolute;
-      bottom: calc(28vh + 56px);
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      z-index: 10;
-    }
-    #playback-bar .pb-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,0.5);
-      margin-left: 8px;
-    }
-
-
+    #cepheid-sim { margin-top: 72px; }
 
     .back-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-decoration: none; transition: color 0.18s; }
     .back-link:hover { color: var(--text); }
@@ -204,7 +39,7 @@
     #explanation {
       max-width: 800px;
       margin: 120px auto 100px;
-      padding: 0 40px;
+      padding: 0 28px;
     }
 
     .appendix-label {
@@ -218,7 +53,7 @@
       font-weight: 400; line-height: 1.1; margin-bottom: 30px;
     }
 
-    .article-content p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; max-width: 58ch; }
+    .article-content p { font-family: 'EB Garamond', serif; font-size: 17px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.72; }
 
     .bibliography h2 {
       font-family: 'EB Garamond', serif; font-size: 26px; font-weight: 400;
@@ -227,7 +62,7 @@
     }
 
     .bibliography p {
-      font-size: 15px;
+      max-width: none;
     }
 
     .article-content h2 {
@@ -295,27 +130,24 @@
       color: var(--text-dim);
       line-height: 1.72;
       margin-bottom: 24px;
-      max-width: 58ch;
     }
 
     /* ── film mode ── */
     html.film-mode body        { overflow: hidden; cursor: none; }
     html.film-mode *           { cursor: none !important; }
     html.film-mode nav         { display: none !important; }
-    html.film-mode #hud-stats  { top: 20px; }
+    html.film-mode #hud-table  { top: 20px; }
     html.film-mode #explanation { display: none !important; }
     html.film-mode #back-to-top { display: none !important; }
-    html.film-mode #scroll-hint { display: none !important; }
-    html.film-mode #mode-bar   { display: none !important; }
-    html.film-mode #playback-bar { display: none !important; }
+    html.film-mode #sim-info   { display: none !important; }
+    html.film-mode #sim-dock   { display: none !important; }
     html.film-mode #epilepsy-modal { display: none !important; }
-    html.film-mode #sim-section {
-      height: 100vh; width: 100vw;
+    html.film-mode #cepheid-sim {
+      height: 100vh; width: 100vw; margin: 0;
       position: fixed; top: 0; left: 0;
     }
-    html.film-mode #hud-plot-container { height: 40vh; }
+    html.film-mode #hud-plot-container { height: 40vh; bottom: 0; left: 0; transform: none; width: 100%; max-width: none; background: none; border: none; }
     html.film-mode #sim-preview { display: none !important; }
-    html.film-mode #orb-params  { display: none !important; }
 
     #film-watermark {
       display: none; position: fixed;
@@ -339,14 +171,6 @@
 
     /* ── mobile (page-specific only; subpages.css handles nav/footer/resp) ── */
     @media (max-width: 740px) {
-      #hud-stats { top: 64px; left: 12px; }
-      .hud-label { width: 56px; }
-      #mode-bar { bottom: calc(32vh + 14px); gap: 4px; }
-      #playback-bar { bottom: calc(32vh + 48px); gap: 4px; }
-      .btn-mode { font-size: 11px; padding: 5px 10px; }
-      #orb-params { display: none; }
-      #hud-plot-container { height: 32vh; }
-      #scroll-hint { display: none; }
       #explanation { padding: 0 24px; margin-top: 100px; }
       .mode-desc { font-size: 16px; line-height: 1.75; }
       #explanation h2 { font-size: 22px; margin: 40px 0 20px; }
@@ -355,9 +179,8 @@
 
     /* ── print: hide sim chrome (subpages.css handles the rest) ── */
     @media print {
-      #sim-section, #epilepsy-modal, .modal-overlay,
-      #film-watermark, #film-diag, #mode-bar, #playback-bar,
-      #scroll-hint, #orb-params, #hud-stats, #hud-plot-container { display: none !important; }
+      #cepheid-sim, #epilepsy-modal, .modal-overlay,
+      #film-watermark, #film-diag { display: none !important; }
     }
   </style>
   <link rel="manifest" href="/site.webmanifest">
@@ -418,72 +241,59 @@
 
   <main id="main">
 
-  <!-- sim viewport -->
-  <section id="sim-section" aria-label="Interactive simulation of OGLE-LMC-CEP-1347">
+  <section id="cepheid-sim" aria-label="Interactive simulation of OGLE-LMC-CEP-1347">
 
-    <canvas id="simCanvas" role="img" aria-label="Interactive animation of the OGLE-LMC-CEP-1347 binary Cepheid system showing pulsation and orbital dynamics"></canvas>
+  <!-- description block -->
+  <div id="sim-info">
+    <h2 class="sim-title">OGLE-LMC-CEP-1347</h2>
+    <div class="sim-rule"></div>
+    <p class="sim-body">
+      The binary Cepheid I spent the past few months studying. This is built from real Fourier fits to six years of OGLE photometry; the same light curve I used to search for non-radial modes. Use the mode buttons below to isolate the orbital motion, the pulsation cycle, or see both running simultaneously at their true physical frequency ratio.
+    </p>
+  </div>
 
-    <!-- loading sequence -->
-    <div id="sim-preview">
-      <span class="sim-load-line" id="sll-0">Loading OGLE-IV photometry &middot; 187 epochs</span>
-      <span class="sim-load-line" id="sll-1">Fitting Fourier model &middot; P<sub style="font-size:8px">1</sub> = 0.690 d</span>
-      <span class="sim-load-line" id="sll-2">Computing orbital solution &middot; Pilecki+ 2022</span>
-      <span class="sim-load-line" id="sll-3">Initializing Baade-Wesselink integration</span>
+  <!-- telemetry HUD -->
+  <div id="hud-table">
+    <div class="hud-inner">
+      <div class="hud-row"><span class="hud-label">V-band mag</span><span id="hud-mag" class="hud-val hud-val--text">--</span></div>
+      <div class="hud-row"><span class="hud-label">T<sub>eff</sub> Cepheid</span><span style="display:flex;align-items:center;gap:6px;"><span id="hud-teff" class="hud-val hud-val--red">-- K</span><span id="hud-teff-swatch" style="display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0;transition:background 0.3s;"></span></span></div>
+      <div class="hud-row"><span class="hud-label">R&#8321; Cepheid</span><span id="hud-rad" class="hud-val hud-val--green">-- R&#9737;</span></div>
+      <div class="hud-row"><span class="hud-label" id="hud-phase-label">&#966;<sub>orb</sub> orbital</span><span id="hud-phase" class="hud-val hud-val--purple">--</span></div>
     </div>
+  </div>
 
-    <!-- live HUD stats: matches index.html structure exactly -->
-    <div id="hud-stats">
-      <div class="hud-row">
-        <span class="hud-label">V-band mag</span>
-        <span class="hud-val" id="hud-mag">--</span>
-      </div>
-      <div class="hud-row">
-        <span class="hud-label">T<sub>eff</sub> Cepheid</span>
-        <span style="display:flex;align-items:center;gap:6px;">
-          <span class="hud-val" id="hud-teff">-- K</span>
-          <span id="hud-teff-swatch" style="display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--gold);transition:background 0.3s;"></span>
-        </span>
-      </div>
-      <div class="hud-row">
-        <span class="hud-label">R&#8321; Cepheid</span>
-        <span class="hud-val" id="hud-rad">-- R&#9737;</span>
-      </div>
-      <div class="hud-row hud-phase-row">
-        <span class="hud-label" id="hud-phase-label">&#966;<sub>orb</sub> orbital</span>
-        <span class="hud-val" id="hud-phase">--</span>
-      </div>
-    </div>
-
-    <!-- mode buttons: bound by cepheid-engine.js + the epilepsy modal script below -->
-    <div id="mode-bar">
-      <button class="btn-mode" id="btn-orbital">Orbital</button>
-      <button class="btn-mode" id="btn-pulsation">Pulsation</button>
-      <button class="btn-mode" id="btn-realtime">Real-Time &#9888;</button>
-    </div>
-
-    <!-- playback controls (play/pause + speed): bound by cepheid-engine.js -->
-    <div id="playback-bar">
-      <button class="btn-mode" id="btn-play" aria-pressed="true" aria-label="Pause or play the simulation">&#9208; Pause</button>
-      <span class="pb-label">Speed</span>
-      <button class="btn-mode" id="btn-speed-half" aria-pressed="false">0.5&times;</button>
-      <button class="btn-mode" id="btn-speed-1"    aria-pressed="true">1&times;</button>
-      <button class="btn-mode" id="btn-speed-2"    aria-pressed="false">2&times;</button>
-    </div>
-
-    <!-- orbital param strip -->
-    <div id="orb-params">
-      P<sub>orb</sub> = 58.85 d &nbsp;&middot;&nbsp;
-      K&#x2081; = 28.5 km s&#x207B;&#xB9; (Cepheid RV) &nbsp;&middot;&nbsp;
-      K&#x2082; = 51.56 km s&#x207B;&#xB9; (companion RV) &nbsp;&middot;&nbsp;
-      P<sub>puls</sub> = 0.690 d
-    </div>
-
-    <!-- transparent div that the canvas uses for plot-area geometry -->
+  <!-- stage: canvas + plot overlay -->
+  <div id="sim-stage">
+    <canvas id="simCanvas" role="img" aria-label="Interactive simulation of the OGLE-LMC-CEP-1347 binary Cepheid system showing orbital and pulsation dynamics"></canvas>
     <div id="hud-plot-container"></div>
+    <div id="sim-preview">
+      <div class="sim-loading-panel">
+        <span class="sim-load-line" id="sll-0">OGLE-LMC-CEP-1347</span>
+        <span class="sim-load-line" id="sll-1">A Cepheid variable in the Large Magellanic Cloud</span>
+        <span class="sim-load-line" id="sll-2">Binary system &middot; orbital period 58.85 days</span>
+        <span class="sim-load-line" id="sll-3">Pilecki et al. 2022 &middot; Espinoza-Arancibia &amp; Pilecki 2025</span>
+      </div>
+    </div>
+  </div>
 
-    <div id="scroll-hint">scroll for explanation &darr;</div>
+  <div id="sim-dock">
+  <div id="sim-controls">
+    <div class="mode-pill">
+      <button id="btn-orbital" class="btn-mode" onclick="window.setMode && window.setMode('orbital')">ORBITAL</button>
+      <button id="btn-pulsation" class="btn-mode" onclick="window.setMode && window.setMode('pulsation')">PULSATION</button>
+    </div>
+    <div class="mode-pill" id="playback-bar">
+      <button class="btn-mode" id="btn-play" aria-pressed="true" aria-label="Pause or play the simulation">&#9208; Pause</button>
+      <button class="btn-mode" id="btn-speed-half" aria-pressed="false">0.5&times;</button>
+      <button class="btn-mode" id="btn-speed-1" aria-pressed="true">1&times;</button>
+      <button class="btn-mode" id="btn-speed-2" aria-pressed="false">2&times;</button>
+      <button id="btn-realtime" class="btn-mode" title="Physically accurate pulsation rate &#215;85">REAL-TIME &#9888;</button>
+    </div>
+  </div>
+  <p class="sim-params">K&#8321; = 28.5 km/s &middot; K&#8322; = 51.6 km/s &middot; P<sub>orb</sub> = 58.85 d &middot; Pulsation P<sub>puls</sub> = 0.690 d | Orbital and physical parameters from <a href="https://doi.org/10.3847/2041-8213/adb96b" target="_blank" rel="noopener" class="sim-cite">Espinoza-Arancibia &amp; Pilecki (2025)</a> and <a href="https://doi.org/10.3847/2041-8213/ac9fcc" target="_blank" rel="noopener" class="sim-cite">Pilecki et al. (2022)</a>.</p>
+  </div>
 
-  </section>
+</section>
 
   <!-- explanation -->
   <section id="explanation">
@@ -496,9 +306,9 @@
 
       <p>OGLE-LMC-CEP-1347 is a Cepheid variable in the Large Magellanic Cloud, roughly 165,000 light-years away, that by standard stellar evolution theory should not exist. The simulation above, built from OGLE-IV photometry spanning 2010&ndash;2016 (187 epochs) and spectroscopic radial velocities from Pilecki et al. (2022), shows the Cepheid (amber) and its companion (red) orbiting in 58.85 days, the tightest orbit known for any Cepheid (Pilecki et al. 2022).</p>
 
-      <p>Cepheids are used as the primary rung of the cosmic distance ladder: a Cepheid's pulsation period predicts its intrinsic luminosity, so measuring how bright it appears tells you how far away it is. What makes CEP-1347 exceptional is that it breaks the evolutionary model underpinning all of that. A star massive enough to become a Cepheid (3.41 M&#x2609;) should first swell into a red giant, expanding far enough to disrupt any 59-day orbit it might have been in. That CEP-1347 is still here, pulsating inside a compact binary, is the anomaly that makes it worth studying.</p>
+      <p>Cepheids are used as the primary rung of the cosmic distance ladder: a Cepheid's pulsation period predicts its intrinsic luminosity, so measuring how bright it appears indicates how far away it is. CEP-1347 is exceptional, though, because it breaks the evolutionary model almost every Cepheid follows. A star massive enough to become a Cepheid (3.41 M&#x2609;) should first swell into a red giant, expanding far enough to disrupt any 59-day orbit it might have been in. CEP-1347's existence inside  a compact binary is the reason for further study.</p>
 
-      <p>The leading explanation is a stellar merger: the Cepheid formed from the coalescence of two lower-mass stars in a former inner triple system, with the current companion as the surviving outer star. Its mass, compact orbit, mass ratio, and an inferred ~0.9 Gyr age discrepancy between the components all point in the same direction. A pending VLT spectroscopic proposal aims to test whether the Cepheid's photosphere retains a chemical fingerprint of that event through detailed abundance analysis.</p>
+      <p>The leading explanation of this anomaly is a stellar merger: the Cepheid formed from the coalescence of two lower-mass stars in a former inner triple system, with the current companion as the surviving outer star. Its mass, compact orbit, mass ratio, and an inferred ~0.9 Gyr age discrepancy between the components support that conclusion. A VLT spectroscopic proposal aims to test whether the Cepheid's photosphere retains a chemical fingerprint of that event through detailed abundance analysis.</p>
 
     </div>
 
