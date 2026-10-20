@@ -861,7 +861,7 @@
     .hud-val--purple { color: #c4b5fd; }
     #hud-plot-container {
       position: absolute;
-      bottom: 6.5rem;
+      bottom: 8.25rem;
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 5rem);
@@ -875,24 +875,26 @@
       transition: opacity 0.5s;
       z-index: 10;
     }
-    #sim-controls {
-      position: absolute;
-      bottom: 3rem;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      pointer-events: none;
-    }
-    .sim-params {
+    #sim-dock {
       position: absolute;
       bottom: 0.75rem;
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 4rem);
-      max-width: 75ch;
       z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      pointer-events: none;
+    }
+    #sim-controls {
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+    .sim-params {
+      max-width: 75ch;
       pointer-events: none;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
@@ -998,10 +1000,13 @@
         border-left: none;
         border-right: none;
       }
+      #sim-dock { display: contents; }
       #sim-controls {
         position: relative;
         bottom: auto; left: auto;
         transform: none;
+        max-width: 100%;
+        box-sizing: border-box;
         padding: 1rem 1.5rem 0.5rem;
         pointer-events: auto;
         align-self: center;
@@ -1486,6 +1491,7 @@
       /* canvas first, hud table hidden (not co-visible with canvas at this width) */
       #sim-stage { order: -1; }
       #hud-table { display: none; }
+      .btn-mode { padding: 0.45rem 0.9rem; }
 
       /* ── footer ───────────────────────────────────────────────────────────── */
       footer { flex-direction: column; gap: 20px; align-items: flex-start; padding: 36px 20px; }

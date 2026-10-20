@@ -432,6 +432,67 @@
     return { w: w, h: star_h, full_h: h, mobile: isMob };
   }
 
+  // largest zoom whose full orbit (discs + labels) stays in the star area and clear of #sim-info / #hud-table
+  var orbitFit = null, orbitFitAt = 0;
+  function getOrbitFit(p, sw, sh) {
+    var now = performance.now();
+    if (orbitFit && now - orbitFitAt < 500 && orbitFit.sw === sw && orbitFit.sh === sh) return orbitFit;
+    orbitFitAt = now;
+    var sr = simCanvas.getBoundingClientRect(), M = 10, E = 4;
+    var blocks = [];
+    ['sim-info', 'hud-table'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var b = el.getBoundingClientRect();
+      var l = b.left - sr.left, t = b.top - sr.top, r = b.right - sr.left, bt = b.bottom - sr.top;
+      if (b.width && b.height && r > 0 && l < sw && bt > 0 && t < sh) blocks.push([l - M, t - M, r + M, bt + M]);
+    });
+    var key = [sw, sh, p.x2.length, maxR1].concat(blocks.map(function(b) { return b.map(Math.round).join(','); })).join('|');
+    if (orbitFit && orbitFit.key === key) return orbitFit;
+
+    ctx.save();
+    ctx.font = '12px \'JetBrains Mono\', monospace';
+    var lw1 = ctx.measureText('Cepheid').width + 10, lw2 = ctx.measureText('Companion').width + 10;
+    ctx.restore();
+    var n = p.x2.length, step = Math.max(1, Math.floor(n / 180));
+    var z0 = (Math.min(sw, sh) * 0.50) / bounds.a2, cx = sw / 2;
+
+    function hits(l, t, r, b) {
+      for (var k = 0; k < blocks.length; k++) {
+        var q = blocks[k];
+        if (r > q[0] && l < q[2] && b > q[1] && t < q[3]) return true;
+      }
+      return false;
+    }
+    function bodyFits(sx, sy, pr, lw) {
+      if (sx - pr < E || sx + pr > sw - E || sy - pr < E || sy + pr > sh - E) return false;
+      var e = pr * Math.SQRT1_2;
+      if (hits(sx - pr, sy - e, sx + pr, sy + e) || hits(sx - e, sy - pr, sx + e, sy + pr)) return false;
+      var side = (sx - sw * 0.44) / (sw * 0.24), g = pr + 9;
+      if (side < 0.99 && hits(sx + g, sy - 9, sx + g + lw, sy + 9)) return false;
+      if (side > 0.01 && hits(Math.max(4, sx - g - lw), sy - 9, sx - g, sy + 9)) return false;
+      return true;
+    }
+    function fits(z, cy) {
+      for (var i = 0; i < n; i += step) {
+        if (!bodyFits(cx + p.x1[i] * z, cy + p.y1[i] * z, Math.max(2, maxR1 * z), lw1)) return false;
+        if (!bodyFits(cx + p.x2[i] * z, cy + p.y2[i] * z, Math.max(2, COMPANION_RAD * z), lw2)) return false;
+      }
+      return true;
+    }
+
+    var best = { zoom: z0 * 0.3, cy: sh / 2 };
+    search:
+    for (var f = 1; f >= 0.3; f -= 0.02) {
+      for (var d = 0; d <= sh / 2; d += 4) {
+        if (fits(z0 * f, sh / 2 + d)) { best = { zoom: z0 * f, cy: sh / 2 + d }; break search; }
+        if (d && fits(z0 * f, sh / 2 - d)) { best = { zoom: z0 * f, cy: sh / 2 - d }; break search; }
+      }
+    }
+    if (orbitFit && (orbitFit.zoom !== best.zoom || orbitFit.cy !== best.cy)) trail_fade_start = Date.now();
+    return (orbitFit = { key: key, sw: sw, sh: sh, zoom: best.zoom, cx: cx, cy: best.cy });
+  }
+
   // ── rv precomputation ──────────────────────────────────────────────────────
 
   function buildRV() {
@@ -1328,10 +1389,15 @@
       zoom = (Math.min(sw, sh) * 0.14) / maxR1;
       cx = sw / 2;
       cy = sh * 0.35;
-    } else {
+    } else if (isFilm) {
       zoom = (Math.min(sw, sh) * 0.50) / bounds.a2;
       cx = sw / 2;
       cy = sh / 2;
+    } else {
+      var fit = getOrbitFit(p, sw, sh);
+      zoom = fit.zoom;
+      cx = fit.cx;
+      cy = fit.cy;
     }
 
     // screen positions
@@ -2002,9 +2068,9 @@
   function resize() {
     var dpr = renderDpr();
     var rect = simCanvas.getBoundingClientRect();
-    plotRect = null;
-    simCanvas.width = rect.width * dpr;
-    simCanvas.height = rect.height * dpr;
+    plotRect = null; orbitFit = null;
+    simCanvas.width = Math.round(rect.width * dpr);
+    simCanvas.height = Math.round(rect.height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     trail_fade_start = Date.now(); bgStars = null;
     if (!loopRunning) requestAnimationFrame(animate); // repaint frozen frame at new size
@@ -2081,6 +2147,7 @@
       if (plotUI) plotUI.style.opacity = '1';
 
       window.addEventListener('resize', resize);
+      if (window.ResizeObserver) new ResizeObserver(function() { resize(); }).observe(simCanvas);
       resize();
       if (document.documentElement.classList.contains('film-mode')) {
         // film mode is an explicit cinematic experience, always plays, ignores reduced-motion default
