@@ -2098,7 +2098,6 @@ init();
     pill.style.setProperty('--c', color);
     pill.addEventListener('click', () => open_modal(o));
     pill.innerHTML = '<span class="legend-dot"></span><span>' + short + '</span>' +
-      (o.elements ? '<span class="legend-live">Live</span>' : '') +
       (o.has_sim ? '<span class="legend-sim">Sim</span>' : '');
     const focus_on = () => {
       pill_focus_star = starByName(o.name);
