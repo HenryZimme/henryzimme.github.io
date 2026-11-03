@@ -236,14 +236,20 @@
       display: inline-block; width: 16px; height: 0; vertical-align: middle;
       border-bottom: 2px solid var(--leg-curve, var(--red)); margin: 0 5px 3px 0;
     }
+    /* page title + lede above the sandbox (same pattern as cep1347's #sim-info) */
+    .sim-head { max-width: 680px; margin-bottom: 10px; }
+    .sim-head h1 {
+      font-size: clamp(26px, 3.4vw, 36px);
+      font-weight: 400; line-height: 1.12;
+      margin: 0 0 12px; color: var(--text); text-wrap: balance;
+    }
+    .sim-lede { font-size: 18px; line-height: 1.55; color: var(--text-dim); margin: 0; }
     .pg-callout {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.02em;
-      margin: 0 0 12px;
-      padding-left: 10px;
-      border-left: 2px solid rgba(196,162,88,0.45);
+      font-size: 17px;
+      line-height: 1.5;
+      color: var(--text);
+      max-width: 68ch;
+      margin: 4px 0 6px;
     }
 
     /* tile row */
@@ -282,8 +288,8 @@
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
     @keyframes fold-pulse {
-      0%   { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold-dim), 0 0 18px rgba(196,162,88,0.18); }
-      100% { border-color: var(--panel-border); box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent; }
+      0%   { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold-dim); }
+      100% { border-color: var(--panel-border); box-shadow: 0 0 0 0 transparent; }
     }
     #fold-tile.pulse { animation: fold-pulse 0.6s ease-out; }
     @media (prefers-reduced-motion: reduce) { #fold-tile.pulse { animation: none; } }
@@ -317,24 +323,16 @@
       margin: 0 auto;
       padding: 80px 24px 100px;
     }
-    .exp-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--gold);
-      margin-bottom: 12px;
-    }
-    .exp-title {
-      font-size: clamp(28px, 4vw, 40px);
+    /* section headings: same treatment as .article-body--research h2 in subpages.css */
+    .exp-h2 {
+      font-size: 26px;
       font-weight: 400;
-      line-height: 1.1;
-      margin: 0 0 32px;
       color: var(--text);
+      margin: 64px 0 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--panel-border);
     }
-    .article-divider {
-      border: 0;
-      border-top: 1px solid var(--panel-border);
-      margin: 40px 0;
-    }
+    .exp-h2:first-child { margin-top: 0; }
     .exp-body p {
       font-size: 20px;
       margin-bottom: 28px;
@@ -432,7 +430,7 @@
 
     /* mobile */
     @media (max-width: 740px) {
-      #sim-section { padding: 60px 14px 28px; min-height: auto; gap: 12px; }
+      #sim-section { padding: 88px 14px 28px; min-height: auto; gap: 12px; }
       .sim-stage { gap: 10px; }
       .tiles { grid-template-columns: 1fr; }
       .object-table { font-size:8.5px; }
@@ -443,7 +441,10 @@
       #seg, #nobs { display: flex; flex-wrap: wrap; gap: 0; }
       #seg .btn-mode, #nobs .btn-mode { flex: 1 1 0; margin-left: 0; border-left-width: 0; }
       #seg .btn-mode:first-child, #nobs .btn-mode:first-child { border-left-width: 1px; }
-      .pg-callout { font-size: 12px; padding-left: 8px; margin: 4px 0 8px; }
+      .pg-callout { font-size: 16px; margin: 2px 0 4px; }
+      .sim-head h1 { font-size: 26px; }
+      .sim-lede { font-size: 17px; }
+      .exp-h2 { font-size: 22px; margin-top: 48px; }
       #explanation { padding: 60px 20px 80px; }
       .exp-body p { font-size: 18px; }
       /* HUD: turn the overlay into a strip below the chart on mobile */
@@ -517,6 +518,11 @@
 
       <div class="sim-stage">
 
+        <header class="sim-head">
+          <h1>Entropy-Guided Intra-Night Cadence</h1>
+          <p class="sim-lede">Period recovery from one night of asteroid photometry is an inverse problem: a handful of brightness measurements, many possible spin periods that could have produced them. Which periods become confusable depends entirely on when during the night you observed.</p>
+        </header>
+
         <div class="ctl-row">
           <div class="ctl-group ctl-group-object">
             <span class="ctl-label" id="lbl-object">Object</span>
@@ -543,7 +549,7 @@
           </div>
         </div>
 
-        <p class="pg-callout">The dotted posterior shows where probability mass actually sits. Switching schedule moves it from the alias onto the true period.</p>
+        <p class="pg-callout">The dotted posterior shows which periods probability lies on. For 5745, switching to the optimized schedule moves it from the alias onto the true period, while the same schedule worsens period recovery for 6870.</p>
 
         <div class="hero-wrap">
           <canvas id="pg" height="320" tabindex="0" role="application" aria-label="Matched-template periodogram for the current schedule. Use Left and Right arrow keys to move between detected peaks, then press Enter to fold the lightcurve at the selected peak."></canvas>
@@ -602,13 +608,8 @@
     <!-- explanation -->
     <section id="explanation">
 
-      <div class="exp-meta">Asteroid Photometry · Cadence Optimization</div>
-      <h1 class="exp-title" id="sec-methods">Entropy-Guided Intra-Night Cadence</h1>
-
-      <hr class="article-divider">
-
-      <div class="exp-meta" id="sec-corpus" style="margin-bottom:14px">Corpus objects</div>
-      <p class="exp-lead">Five short-period rotators are selectable; <strong>5745 is the default</strong>. The optimized cadence was selected by CMA-ES against the alias rate averaged across the 248-asteroid training set, where 96% of objects have \(A_2/A_1\) &gt; 1 (median 5.7). The loss is therefore dominated by harmonic-rich rotators, and the three high-\(A_2/A_1\) objects in the table are recovered in almost every CV seed. The sinusoidal pair (852, 6870) gains little, or at some N regresses, because their lightcurve geometry isn't what the loss was averaging over. The final column is alias rate at N = 8, uniform &rarr; optimized (production CV).</p>
+      <h2 class="exp-h2" id="sec-corpus">Corpus objects</h2>
+      <p class="exp-lead">Five short-period rotators are selectable; <strong>5745 is the default</strong>. The optimized cadence was selected by CMA-ES against the alias rate averaged across the 248-asteroid training set, where 96% of objects have \(A_2/A_1\) &gt; 1 (median 5.7). The loss is therefore dominated by harmonic-rich rotators, and the three high-\(A_2/A_1\) objects in the table are recovered in almost every CV seed. The sinusoidal pair doesn't benefit the same way: 852 improves only modestly (0.83 &rarr; 0.68), and 6870 gets worse (0.29 &rarr; 0.65), because the optimization isn't over lightcurve geometry. The final column is alias rate at N = 8, uniform &rarr; optimized (production CV).</p>
       <div class="table-scroll">
       <table class="object-table">
         <thead>
@@ -624,7 +625,7 @@
       </table>
       </div>
 
-      <hr class="article-divider">
+      <h2 class="exp-h2" id="sec-methods">Methods</h2>
 
       <div class="exp-body">
 
@@ -634,12 +635,11 @@
 
         <p>Why is it useful to optimize the empirical alias rate directly if we could instead optimize a cheaper spectral proxy? Well, I tried that. I first attempted to suppress the sampling window's sidelobes. The spectral window \(|W(f)|^2 = \bigl|\sum_j e^{2\pi i f t_j}\bigr|^2 / N^2\) depends only on the observing times, and for a pure sinusoid those sidelobes are exactly where the aliases land, so I built a metric that minimizes a period-weighted window RMS on a GPU grid and refines with CMA-ES. It works only for a sinusoidal signal. A least-squares periodogram fits a single sinusoid at each trial frequency (VanderPlas 2018), and when the lightcurve has power spread across harmonics, the tallest peak routinely lands on a harmonic or alias of the true period rather than the period itself; recovery then takes a multi-term Fourier model. 96% of the 248-asteroid training corpus has \(A_2/A_1\) &gt; 1, 58% has \(A_2/A_1\) &gt; 5, and the median is 5.7, so window RMS, which is blind to harmonic content, mispredicts where most of these aliases land. I rank cadences by the FALC alias rate measured on the real corpus and drive CMA-ES with a differentiable stand-in for that discrete rate: the Shannon entropy of the RSS pseudo-posterior \(p(f) \propto \exp[-\mathrm{RSS}(f)/T^*]\), with \(T^* = 2\sigma^2\) fixing the pseudo-posterior to the Gaussian profile posterior. The entropy follows the alias rate closely (\(\rho(H, A_R)\) = 0.86 raw, 0.99 binned at N = 10) and is smooth enough to optimize, so the window-RMS metric was discarded.</p>
 
-        <p>\(A_2/A_1\) only weakly predicts the per-object gain. In the short bin at N = 10, the per-object delta \(\Delta = A_R^{\mathrm{uniform}} - A_R^{\mathrm{optimized}}\) (positive = optimization helps) is correlated with \(A_2/A_1\) at Spearman ρ = +0.18 (p = 0.06; Pearson r = +0.14 against \(\log A_2/A_1\), p = 0.15); per-object noise from the CMA-ES seed, CV folds, and individual lightcurve geometry swamps the signal. Binning reduces the noise significantly: across five \(A_2/A_1\) quintiles at N = 10, the quintile-mean Δ runs −0.034, −0.011, +0.040, +0.097, +0.064 (median \(A_2/A_1\) in each: 1.85, 5.10, 7.46, 13.80, 36.03), with a binned Spearman of ρ = +0.90 (p = 0.04, one-sided). A similar monotonicity is visible at N = 9 (quartile means 0.057, 0.142, 0.243, 0.093) and N = 8 (−0.011, −0.020, +0.127, +0.059), though four bins is not enough for either to reach significance. At N = 10, splitting into four quartiles, the optimized cadence regresses on 67% of the low-\(A_2/A_1\) quartile (median \(A_2/A_1\) = 2.5) and on 51% of the short-period corpus overall; the improvements concentrate in the upper two quartiles. Given corpus averaging, the near-pareto frontier the optimizer finds is most effective on the harmonic-rich majority that drives the reward function and gives back a small amount of that gain on the sinusoidal minority. Stratifying the cadence selection by \(A_2/A_1\) (or running a per-object optimization) could rebalance the trade-offs, but there's likely no strategy that doesn't leave gains on the table for some given subset of asteroids. Instead, what this method gives is a way to know <i>which</i> asteroids you are designing for and how you weight your different scientific objectives.</p>
+        <p>\(A_2/A_1\) only weakly predicts the per-object gain. In the short bin at N = 10, the per-object delta \(\Delta = A_R^{\mathrm{uniform}} - A_R^{\mathrm{optimized}}\) (positive = optimization helps) is correlated with \(A_2/A_1\) at Spearman ρ = +0.18 (p = 0.06; Pearson r = +0.14 against \(\log A_2/A_1\), p = 0.15); per-object noise from the CMA-ES seed, CV folds, and individual lightcurve geometry swamps the signal. Binning makes the trend interpretable: across five \(A_2/A_1\) quintiles at N = 10, the quintile-mean Δ runs −0.034, −0.011, +0.040, +0.097, +0.064 (median \(A_2/A_1\) in each: 1.85, 5.10, 7.46, 13.80, 36.03), with a binned Spearman of ρ = +0.90 (p = 0.04, one-sided). A similar monotonicity is visible at N = 9 (quartile means +0.057, +0.142, +0.243, +0.093) and N = 8 (−0.011, −0.020, +0.127, +0.059), though four bins is not enough for either to reach significance. At N = 10, splitting into four quartiles, the optimized cadence regresses on 67% of the low-\(A_2/A_1\) quartile (median \(A_2/A_1\) = 2.5) and on 51% of the short-period corpus overall; the improvements concentrate in the upper two quartiles. Given corpus averaging, the near-pareto frontier the optimizer finds is most effective on the harmonic-rich majority that drives the reward function and gives back a small amount of that gain on the sinusoidal minority. Stratifying the cadence selection by \(A_2/A_1\) (or running a per-object optimization) could reduce some of the imbalance, but it would likely take a multicalibration scheme to definitively do so in the optimization, which in turn would sacrifice the computational efficiency of this approach.</p>
 
       </div>
 
-      <hr class="article-divider">
-      <div class="exp-meta" style="margin-bottom:20px">Shared parameters</div>
+      <h2 class="exp-h2">Shared parameters</h2>
       <table class="param-table">
         <tbody>
           <tr><td>Lightcurve model</td><td>4-term Fourier (fit per object)</td></tr>
@@ -654,8 +654,7 @@
         </tbody>
       </table>
 
-      <hr class="article-divider">
-      <div class="exp-meta" id="sec-references" style="margin-bottom:16px">Data &amp; References</div>
+      <h2 class="exp-h2" id="sec-references">Data &amp; References</h2>
       <ul class="ref-list">
         <li>Lam, Margot, Whittaker &amp; Myhrvold 2023, <i>Determination of 1929 asteroid rotation periods from WISE data</i>, Planet. Sci. J. 4, 61 &middot; <a href="https://doi.org/10.3847/PSJ/acc5e4" target="_blank" rel="noopener">doi:10.3847/PSJ/acc5e4</a></li>
         <li>Harris, Young, Bowell et al. 1989, <i>Photoelectric observations of asteroids (FALC)</i>, Icarus 77, 171 &middot; <a href="https://doi.org/10.1016/0019-1035(89)90015-8" target="_blank" rel="noopener">doi:10.1016/0019-1035(89)90015-8</a></li>
@@ -803,12 +802,6 @@ function drawPeriodogram(power,peaks,foldP,argP,col,post){
   x.setLineDash([]);x.globalAlpha=1;
   x.fillStyle=css('--gold');x.font="500 10px 'JetBrains Mono',monospace";x.textAlign='center';
   x.fillText('true P',Xp(P_TRUE),padT-6);
-  // fill under curve
-  const grad=x.createLinearGradient(0,padT,0,Y(0));
-  grad.addColorStop(0,col+'55');grad.addColorStop(1,col+'04');
-  x.beginPath();x.moveTo(X(0),Y(0));
-  for(let i=0;i<power.length;i++)x.lineTo(X(i),Y(power[i]));
-  x.lineTo(X(power.length-1),Y(0));x.closePath();x.fillStyle=grad;x.fill();
   // curve
   x.beginPath();for(let i=0;i<power.length;i++){const px=X(i),py=Y(power[i]);i?x.lineTo(px,py):x.moveTo(px,py);}
   x.strokeStyle=col;x.lineWidth=1.8;x.stroke();
