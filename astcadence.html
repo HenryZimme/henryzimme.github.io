@@ -117,7 +117,7 @@
       background: rgba(196,162,88,0.15);
       box-shadow: inset 0 0 0 1px rgba(196,162,88,0.30);
     }
-    /* object dropdown — fully custom (no native popup flash); matches resting .btn-mode */
+    /* object dropdown (no native popup flash); matches resting .btn-mode */
     .obj-dd { position: relative; }
     .obj-select {
       font-family: 'JetBrains Mono', monospace; font-size: 10px;
@@ -236,7 +236,7 @@
       display: inline-block; width: 16px; height: 0; vertical-align: middle;
       border-bottom: 2px solid var(--leg-curve, var(--red)); margin: 0 5px 3px 0;
     }
-    /* page title + lede above the sandbox (same pattern as cep1347's #sim-info) */
+    /* page title + lede above the sandbox (same as cep1347's #sim-info) */
     .sim-head { max-width: 680px; margin-bottom: 10px; }
     .sim-head h1 {
       font-size: clamp(26px, 3.4vw, 36px);
@@ -520,7 +520,7 @@
 
         <header class="sim-head">
           <h1>Entropy-Guided Intra-Night Cadence</h1>
-          <p class="sim-lede">Period recovery from one night of asteroid photometry is an inverse problem: a handful of brightness measurements, many possible spin periods that could have produced them. Which periods become confusable depends entirely on when during the night you observed.</p>
+          <p class="sim-lede">Period recovery from one night of asteroid photometry is an inverse problem where a handful of brightness measurements could have come from  many possible spin periods. When you observe determines which periods become confusable.</p>
         </header>
 
         <div class="ctl-row">
@@ -609,7 +609,7 @@
     <section id="explanation">
 
       <h2 class="exp-h2" id="sec-corpus">Corpus objects</h2>
-      <p class="exp-lead">Five short-period rotators are selectable; <strong>5745 is the default</strong>. The optimized cadence was selected by CMA-ES against the alias rate averaged across the 248-asteroid training set, where 96% of objects have \(A_2/A_1\) &gt; 1 (median 5.7). The loss is therefore dominated by harmonic-rich rotators, and the three high-\(A_2/A_1\) objects in the table are recovered in almost every CV seed. The sinusoidal pair doesn't benefit the same way: 852 improves only modestly (0.83 &rarr; 0.68), and 6870 gets worse (0.29 &rarr; 0.65), because the optimization isn't over lightcurve geometry. The final column is alias rate at N = 8, uniform &rarr; optimized (production CV).</p>
+      <p class="exp-lead">You can select any of the five short-period rotators from the larger set; I set 5745 as the default. The optimized cadence was selected by CMA-ES against the alias rate averaged across the 248-asteroid training set, where 96% of objects have \(A_2/A_1\) &gt; 1 (median 5.7). The loss is therefore dominated by harmonic-rich rotators, and the three high-\(A_2/A_1\) objects in the table are recovered in almost every CV seed. The sinusoidal pair doesn't benefit the same way: 852 improves only modestly (0.83 &rarr; 0.68), and 6870 gets worse (0.29 &rarr; 0.65), because the optimization isn't calibratd over lightcurve geometry. The final column is alias rate at N = 8, uniform &rarr; optimized (production CV).</p>
       <div class="table-scroll">
       <table class="object-table">
         <thead>
@@ -629,7 +629,7 @@
 
       <div class="exp-body">
 
-        <p>5745 is the default because uniform 8-observation sampling fails to recover the true period in 100% of CV seeds, while the optimized 8-observation cadence succeeds in 100%. Its V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (\(A_2/A_1\) &asymp; 13). The demo samples that model at 8, 9, or 10 times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares uniform spacing against a single short-period-bin cadence selected by CMA-ES on the 248-asteroid training set, cross-validated 5-fold. Selecting a different object applies that same optimized cadence to it, which is why the gain varies object to object.</p>
+        <p>I set 5745 as the default example because uniform 8-observation sampling fails to recover the true period in 100% of CV seeds, while the optimized 8-observation cadence succeeds in 100%. Its V-band lightcurve is a 4-term Fourier model with a strongly bimodal shape (\(A_2/A_1\) &asymp; 13). The demo (based on my full simulation code) samples that model at 8, 9, or 10 times within an 8-hour night, adds Gaussian noise at σ = 0.04 mag, and compares uniform spacing against a single short-period-bin cadence selected by CMA-ES on the 248-asteroid training set, cross-validated 5-fold. Selecting a different object applies that same optimized cadence to it, which is why the gain varies object to object.</p>
 
         <p>For 5745, the schedules differ in <em>which peak the periodogram favors</em>. Under uniform sampling the highest peak frequently lands at an alias (P &asymp; 3.49 h or 4.91 h, the 1-day aliases of 4.087 h) or another competing peak; under the optimized cadence the true 4.087 h peak dominates in every seed. The periodogram, argmax, and posterior shown above are computed for one fixed noise draw, while the \(A_R\) readout in the HUD is a 128-trial Monte Carlo (64 on mobile) over independent noise draws; the production CV reports \(A_R\) = 1.00 for 5745 at N = 8 uniform, but the sandbox's smaller MC will read 0.97–0.99 depending on how many of its 128 draws happen to recover the true period. On the 57-asteroid short-period holdout (P &isin; [2.2, 8] h, never seen in training), the same procedure reduces \(A_R\) from 0.693 to 0.590 at N = 8, 0.631 to 0.524 at N = 9, 0.574 to 0.508 at N = 10. The N = 8 and N = 9 gains are the largest (Δ &asymp; 0.10); by N = 10 the marginal improvement drops to Δ &asymp; 0.07.</p>
 
