@@ -1,6 +1,6 @@
 """Render 1200x630 og:image JPEGs for subpages.
 
-usage: python3 scripts/og_images.py http://127.0.0.1:8000
+usage: python3 scripts/og_images.py http://127.0.0.1:4242
 """
 import io, sys, pathlib
 from PIL import Image
@@ -26,7 +26,9 @@ PAGES = {
     'borderlands':       ('header', 'text', 0, (1440, 900)),
     'lisbon':            ('header', 'text', 0, (1440, 900)),
     'afonso':            ('header', 'text', 0, (1440, 900)),
+    'sdi':               ('header', 'text', 0, (1440, 900)),
     'believingbelief':   ('header', 'text', 0, (1440, 900)),
+    
 }
 HIDE = 'nav, .back-to-top, #back-to-top, .site-nav, #trail-card { visibility: hidden !important; }'
 TEXT_BOX = """sel => {
