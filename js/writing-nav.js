@@ -8,12 +8,13 @@ const nav_pages = [
   { slug: 'descartes',       title: 'Disproving Descartes',          section: 'writing'  },
   { slug: 'believingbelief', title: 'Believing Belief',              section: 'writing'  },
   { slug: 'borderlands',     title: 'New Mestiza, Old Divisions',    section: 'writing'  },
+  { slug: 'sdi',             title: 'Strategic Defense Dogma',       section: 'writing'  },
   { slug: 'lisbon',          title: 'The Lisbon Catalyst',           section: 'writing'  },
-  { slug: 'calls',           title: 'Calls',                        section: 'writing'  },
+  { slug: 'calls',           title: 'Calls',                         section: 'writing'  },
   { slug: 'afonso',          title: 'King Afonso I',                 section: 'writing'  },
   { slug: 'japan',           title: "Japan's Labor Policy",          section: 'writing'  },
   { slug: 'muralism',        title: 'Muerte al Invasor',             section: 'writing'  },
-  { slug: 'ccd_calibration', title: 'CCD Characterization',         section: 'research' },
+  { slug: 'ccd_calibration', title: 'CCD Characterization',          section: 'research' },
 ];
 
 (function () {
@@ -43,8 +44,7 @@ const nav_pages = [
 })();
 
 // back-to-top button (shared across all subpages)
-// replaces the inline <script> that was duplicated in every page.
-// threshold: 400px | variable: btt | arrow: ↑ (literal unicode)
+// threshold: 400px | variable: btt | arrow: ↑ (literal unicode, easy render)
 (function () {
   const btt = document.getElementById('back-to-top');
   if (!btt) return;

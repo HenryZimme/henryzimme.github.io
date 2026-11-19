@@ -4,7 +4,7 @@
   <!-- Root -->
   <url>
     <loc>https://www.henryzimmerman.net/</loc>
-    <lastmod>2026-04-26</lastmod>
+    <lastmod>2026-011-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -54,7 +54,13 @@
     <loc>https://www.henryzimmerman.net/calls.html</loc>
     <lastmod>2025-09-01</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.henryzimmerman.net/sdi.html</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.henryzimmerman.net/lisbon.html</loc>
@@ -92,7 +98,6 @@
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
-  <!-- muralism: linked from the homepage Writing list, live and indexable, so it belongs in the sitemap -->
   <url>
     <loc>https://www.henryzimmerman.net/muralism.html</loc>
     <lastmod>2025-06-01</lastmod>
